@@ -1,27 +1,23 @@
-# Wazoo Worlds API
+# Worlds API
 
-Worlds API is the infrastructure layer for SPARQL-based neuro-symbolic agents.
-
-Facilitation of reasoning and inference over knowledge bases close to the edge
-is the primary function of Worlds API.
+Worlds API is a REST API that can be used to manage, query, update, and reason
+over [SPARQL 1.1](https://www.w3.org/TR/sparql11-overview/)-compatible stores at
+the edge, within arm's reach of your AI agent.
 
 ## BYOB
 
-Bring your own brain.
-
-Worlds API is a REST API that can be used to manage SPARQL stores at the edge,
-within arm's reach of your AI agent.
+Bring your own **brain**. The Worlds API is agnostic to the agent using it.
 
 ## Design
 
 Worlds API is designed to be simple and easy to use. You can embed it in your
-agent applications, or run it as a separate service.
+agent applications, or run it locally or on the cloud.
 
 ## Etymology
 
-- **Quad** (also known as triple or triplet) is the atomic unit of knowledge.
-- **Store** is a set of RDF quads. Each RDF store or collection of RDF stores is
-  a knowledge base.
+- **Quad** is the atomic unit of knowledge (also known as triple or triplet).
+- **Store** is a set of RDF quads. Each RDF store or network of RDF stores is a
+  knowledge base.
 
 We posit that knowledge bases are a form of digital twin, a reified perspective
 or mirror of the world.
@@ -55,4 +51,4 @@ file:///C:/Users/ethan/Documents/GitHub/worlds-api/src/oxigraph/oxigraph-service
 
 ---
 
-Developed with <3 [**@FartLabs**](https://github.com/FartLabs).
+Developed with 🧪 [**@FartLabs**](https://github.com/FartLabs)
