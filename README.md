@@ -74,6 +74,14 @@ file:///C:/Users/ethan/Documents/GitHub/worlds-api/src/oxigraph/oxigraph-service
 | encodeStore trig     |          3.1 µs |       318,700 | (  3.0 µs …   3.8 µs) |   3.2 µs |   3.8 µs |   3.8 µs |
 ```
 
+## Papers
+
+This work is inspired by the following research papers:
+
+- [A Benchmark to Understand the Role of Knowledge Graphs on Large Language Model's Accuracy for Question Answering on Enterprise SQL Databases](https://arxiv.org/abs/2311.07509)
+- [Thinking with Knowledge Graphs](https://arxiv.org/abs/2412.10654v1)
+- [Graph Constrained Reasoning](https://github.com/RManLuo/graph-constrained-reasoning)
+
 ---
 
 Developed with 🧪 [**@FartLabs**](https://github.com/FartLabs)
