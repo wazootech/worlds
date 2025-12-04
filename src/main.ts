@@ -5,11 +5,15 @@ import { Scalar } from "@scalar/hono-api-reference";
 
 const app = new OpenAPIHono();
 
-// Register the API routes.
+// Register the API routes for v1.
 for await (
   const entry of expandGlob("**/*.ts", { root: "./src/api/v1" })
 ) {
   const module = await import(toFileUrl(entry.path).href);
+  if (!(module.app instanceof OpenAPIHono)) {
+    continue;
+  }
+
   app.route("/v1", module.app);
 }
 
@@ -22,7 +26,7 @@ app.doc("/doc", {
   },
 });
 
-// Use the middleware to serve the Scalar API Reference.
+// Generate the Scalar API reference.
 app.get("/scalar", Scalar({ url: "/doc" }));
 
 export default app satisfies Deno.ServeDefaultExport;
