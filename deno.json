@@ -15,6 +15,18 @@
   "tasks": {
     "start": "deno serve -A src/main.ts",
     "test": "deno test -A --unstable-kv",
-    "bench": "deno bench -A"
+    "bench": "deno bench -A",
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "check": "deno check",
+    "precommit": {
+      "description": "Runs fmt, lint, check, and test",
+      "dependencies": [
+        "test",
+        "fmt",
+        "lint",
+        "check"
+      ]
+    }
   }
 }
