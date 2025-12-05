@@ -26,17 +26,17 @@ formal semantics to the edge.
 - Reasoning over Retrieval: Agents do not just query data; they require
   explainable reasoning chains. By leveraging formal ontologies, Worlds API
   allows agents to derive conclusions from axioms rather than relying solely on
-  black-box probabilities.
-- Consistency at Machine Speed: In an agentic workflow, conflicting data (e.g.,
+  black-box probabilities. Graph-based RAG of dense enterprise knowledge for
+  autonomous agents.
+- Consistency at Machine Speed: In an agentic workflow, conflicting state (e.g.,
   an entity classified as both "Open" and "Closed") must be detected
-  immediately. This API supports the consistency checking required to prevent
+  immediately. This API guarentees atomic consistency required to prevent
   autonomous hallucinations or operational errors.
 - Open-World Assumption: Unlike proprietary graph databases that assume missing
-  data is false, Worlds API supports open-world reasoning. This allows agents to
-  treat unstated facts as "unknown," prompting them to seek additional
-  information rather than rejecting valid options due to incomplete data,
-  enabling compatibility and the ability for programs to be interoperable
-  without ever meeting or coordinating with each other.
+  data is false, Worlds API supports open-world reasoning. This enables
+  interoperable programs to treat unstated facts as "unknown," prompting them to
+  seek additional data sources rather than rejecting valid options due to
+  incomplete data.
 
 ## Etymology
 

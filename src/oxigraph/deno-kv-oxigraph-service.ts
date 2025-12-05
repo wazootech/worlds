@@ -1,10 +1,11 @@
 import type { Store } from "oxigraph";
-import type { DecodableEncoding, OxigraphService } from "./oxigraph-service.ts";
+import type { OxigraphService } from "./oxigraph-service.ts";
+import type { DecodableEncoding } from "./oxigraph-encoding.ts";
 import {
   decodableEncodings,
   decodeStore,
   encodeStore,
-} from "./oxigraph-service.ts";
+} from "./oxigraph-encoding.ts";
 
 export class DenoKvOxigraphService implements OxigraphService {
   public constructor(

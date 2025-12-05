@@ -3,7 +3,7 @@ import {
   decodableEncodings,
   decodeStore,
   encodeStore,
-} from "./oxigraph-service.ts";
+} from "./oxigraph-encoding.ts";
 
 const compressionFormats: CompressionFormat[] = [
   "deflate",

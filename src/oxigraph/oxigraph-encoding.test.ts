@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { namedNode, quad, Store } from "oxigraph";
-import { decodeStore, encodeStore } from "./oxigraph-service.ts";
+import { decodeStore, encodeStore } from "./oxigraph-encoding.ts";
 
 Deno.test("encodeStore and decodeStore with gzip compression", async () => {
   const store = new Store();
