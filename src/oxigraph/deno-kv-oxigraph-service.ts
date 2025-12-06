@@ -1,5 +1,5 @@
 import { toArrayBuffer } from "@std/streams";
-import { Quad, Store } from "oxigraph";
+import { Quad, Store, Term } from "oxigraph";
 import type { OxigraphService } from "./oxigraph-service.ts";
 import type { DecodableEncoding } from "./oxigraph-encoding.ts";
 import {
@@ -20,7 +20,7 @@ export class DenoKvOxigraphService implements OxigraphService {
     id: string,
   ): Promise<Store | null> {
     const result = await this.kv.get<Uint8Array>([...this.prefix, id]);
-    if (result.value === null || result.versionstamp === null) {
+    if (result.value === null) {
       return null;
     }
 
@@ -72,7 +72,10 @@ export class DenoKvOxigraphService implements OxigraphService {
     await this.setStore(id, store);
   }
 
-  public async query(id: string, query: string): Promise<unknown> {
+  public async query(
+    id: string,
+    query: string,
+  ): Promise<boolean | Map<string, Term>[] | Quad[] | string> {
     const store = await this.getStore(id);
     if (!store) {
       throw new Error("Store not found");

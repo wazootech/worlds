@@ -2,7 +2,7 @@ import { assertEquals } from "@std/assert";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Store } from "oxigraph";
 import { DenoKvOxigraphService } from "#/oxigraph/deno-kv-oxigraph-service.ts";
-import { app, withOxigraphService } from "./stores.ts";
+import { app, withOxigraphService } from "./route.ts";
 
 Deno.test("POST /v1/stores/{store} appends data", async () => {
   const kv = await Deno.openKv(":memory:");

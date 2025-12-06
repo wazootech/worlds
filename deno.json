@@ -9,7 +9,8 @@
     "@std/streams": "jsr:@std/streams@^1.0.14",
     "@std/fs": "jsr:@std/fs@^1.0.20",
     "hono": "npm:hono@^4.10.7",
-    "oxigraph": "npm:oxigraph@^0.5.2"
+    "oxigraph": "npm:oxigraph@^0.5.2",
+    "zod": "npm:zod@^4.1.13"
   },
   "tasks": {
     "start": "deno serve -A --unstable-kv src/main.ts",

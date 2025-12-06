@@ -8,7 +8,7 @@ const app = new OpenAPIHono();
 // Register the v1 API routes.
 
 for await (
-  const entry of expandGlob("**/*.ts", { root: "./src/api/v1" })
+  const entry of expandGlob("**/route.ts", { root: "./src/v1/routes" })
 ) {
   const module = await import(toFileUrl(entry.path).href);
   if (!(module.app instanceof OpenAPIHono)) {

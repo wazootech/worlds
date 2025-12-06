@@ -2,7 +2,8 @@ import { assert, assertEquals } from "@std/assert";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Store } from "oxigraph";
 import { DenoKvOxigraphService } from "#/oxigraph/deno-kv-oxigraph-service.ts";
-import { app, withOxigraphService } from "./stores.ts";
+import { withOxigraphService } from "../route.ts";
+import { app } from "./route.ts";
 
 Deno.test("GET /v1/stores/{store}/sparql executes SPARQL Query", async () => {
   const kv = await Deno.openKv(":memory:");

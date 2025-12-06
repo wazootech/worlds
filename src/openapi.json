@@ -245,10 +245,10 @@
           {
             "schema": {
               "type": "string",
-              "description": "SPARQL query string"
+              "description": "A read-only SPARQL query (SELECT, ASK, CONSTRUCT, DESCRIBE). Use this to research the graph structure, find existing entities, or check properties. DO NOT use INSERT/DELETE here."
             },
             "required": true,
-            "description": "SPARQL query string",
+            "description": "A read-only SPARQL query (SELECT, ASK, CONSTRUCT, DESCRIBE). Use this to research the graph structure, find existing entities, or check properties. DO NOT use INSERT/DELETE here.",
             "name": "query",
             "in": "query"
           },
