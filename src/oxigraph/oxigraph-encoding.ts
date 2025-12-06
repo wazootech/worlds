@@ -1,13 +1,13 @@
 import { Store } from "oxigraph";
 
 /**
- * DecodableEncoding is the type of encoding formats that can be decoded.
+ * DecodableEncoding is the type of encoding format that can be decoded.
  */
 export type DecodableEncoding =
   typeof decodableEncodings[keyof typeof decodableEncodings];
 
 /**
- * decodableEncodings is the set of encoding formats that can be decoded.
+ * decodableEncodings is the set of encoding format that can be decoded.
  */
 export const decodableEncodings = {
   jsonld: "application/ld+json",
@@ -16,13 +16,13 @@ export const decodableEncodings = {
 } as const;
 
 /**
- * EncodableEncoding is the type of encoding formats that can be encoded.
+ * EncodableEncoding is the type of encoding format that can be encoded.
  */
 export type EncodableEncoding =
   typeof encodableEncodings[keyof typeof encodableEncodings];
 
 /**
- * encodableEncodings is the set of encoding formats that can be encoded.
+ * encodableEncodings is the set of encoding format that can be encoded.
  */
 export const encodableEncodings = {
   ...decodableEncodings,

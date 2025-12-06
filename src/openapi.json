@@ -1,0 +1,177 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "version": "0.0.1",
+    "title": "Worlds API",
+    "description": "Worlds API is a REST API that can be used to manage, query, update, and reason over SPARQL 1.1-compatible stores at the edge.",
+    "contact": {
+      "url": "https://github.com/FartLabs/worlds-api/issues"
+    }
+  },
+  "components": {
+    "schemas": {
+      "V1Store": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/v1/stores/{store}": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "my-graph-db"
+            },
+            "required": true,
+            "name": "store",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get a store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V1Store"
+                }
+              },
+              "application/ld+json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/n-quads": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/trig": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "text/turtle": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/n-triples": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "text/n3": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/rdf+xml": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Store not found"
+          },
+          "406": {
+            "description": "Not Acceptable"
+          }
+        }
+      },
+      "put": {
+        "description": "Overwrite the store's contents",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "my-graph-db"
+            },
+            "required": true,
+            "name": "store",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "description": "RDF Data",
+          "content": {
+            "application/n-quads": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "text/turtle": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "application/ld+json": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "application/trig": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Store updated successfully"
+          },
+          "400": {
+            "description": "Invalid RDF data"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete the store",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "my-graph-db"
+            },
+            "required": true,
+            "name": "store",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Store deleted"
+          }
+        }
+      }
+    }
+  }
+}
