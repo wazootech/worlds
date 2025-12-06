@@ -149,6 +149,61 @@
           },
           "400": {
             "description": "Invalid RDF data"
+          },
+          "412": {
+            "description": "Precondition Failed"
+          }
+        }
+      },
+      "post": {
+        "description": "Add quads to the store",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "my-graph-db"
+            },
+            "required": true,
+            "name": "store",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "description": "RDF Data",
+          "content": {
+            "application/n-quads": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "text/turtle": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "application/ld+json": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "application/trig": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Store updated successfully"
+          },
+          "400": {
+            "description": "Invalid RDF data"
           }
         }
       },
@@ -169,6 +224,203 @@
         "responses": {
           "204": {
             "description": "Store deleted"
+          }
+        }
+      }
+    },
+    "/v1/stores/{store}/sparql": {
+      "get": {
+        "description": "Execute a SPARQL query (read-only)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "my-graph-db"
+            },
+            "required": true,
+            "name": "store",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "SPARQL query string"
+            },
+            "required": true,
+            "description": "SPARQL query string",
+            "name": "query",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "default-graph-uri",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "named-graph-uri",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Query results",
+            "content": {
+              "application/sparql-results+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              "application/sparql-results+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/n-quads": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/turtle": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "post": {
+        "description": "Execute a SPARQL query or update",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "my-graph-db"
+            },
+            "required": true,
+            "name": "store",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "description": "SPARQL Query or Update",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string"
+                  },
+                  "update": {
+                    "type": "string"
+                  },
+                  "default-graph-uri": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "named-graph-uri": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "application/sparql-query": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/sparql-update": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Query results or Update success",
+            "content": {
+              "application/sparql-results+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              "application/sparql-results+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Update successful (no content)"
+          },
+          "400": {
+            "description": "Bad Request"
           }
         }
       }

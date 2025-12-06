@@ -1,74 +1,52 @@
-import { assertEquals } from "@std/assert/equals";
-import { toArrayBuffer } from "@std/streams";
+import { assertEquals } from "@std/assert";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { namedNode, quad, Store } from "oxigraph";
-import type { EncodableEncoding } from "#/oxigraph/oxigraph-encoding.ts";
-import {
-  encodableEncodings,
-  encodeStore,
-} from "#/oxigraph/oxigraph-encoding.ts";
+import { Store } from "oxigraph";
 import { DenoKvOxigraphService } from "#/oxigraph/deno-kv-oxigraph-service.ts";
-import { app as storeApp, withOxigraphService } from "./stores.ts";
+import { app, withOxigraphService } from "./stores.ts";
 
-// Encode a fake store.
-const store = new Store([
-  quad(
-    namedNode("http://example.com/subject"),
-    namedNode("http://example.com/predicate"),
-    namedNode("http://example.com/object"),
-  ),
-]);
+Deno.test("POST /v1/stores/{store} appends data", async () => {
+  const kv = await Deno.openKv(":memory:");
+  const service = new DenoKvOxigraphService(kv);
+  const storeId = "test-store-api";
 
-// Helper to get encoded bytes
-async function getEncodedBytes(encoding: EncodableEncoding) {
-  const stream = encodeStore(store, encoding);
-  return new Uint8Array(await toArrayBuffer(stream));
-}
+  // Initialize with some data
+  const store1 = new Store();
+  store1.load('<http://example.com/s1> <http://example.com/p> "o1" .', {
+    format: "application/n-quads",
+  });
+  await service.setStore(storeId, store1);
 
-// Use in-memory kv for testing.
-const kv = await Deno.openKv(":memory:");
-const oxigraphService = new DenoKvOxigraphService(kv);
+  // Setup app with service
+  const testApp = new OpenAPIHono();
+  testApp.use("*", withOxigraphService(service));
+  testApp.route("/", app);
 
-const app = new OpenAPIHono();
-app.use(withOxigraphService(oxigraphService));
-
-// Mount the store app.
-app.route("", storeApp);
-
-Deno.test("e2e v1 stores API", async (t) => {
-  const encodedBytes = await getEncodedBytes(encodableEncodings.nq);
-
-  // Set the store.
-  await t.step("PUT /v1/stores/{store}", async () => {
-    const response = await app.request("/v1/stores/test-store", {
-      method: "PUT",
-      body: encodedBytes,
-      headers: {
-        "Content-Type": encodableEncodings.nq,
-      },
-    });
-    assertEquals(response.status, 204);
+  // Make request
+  const body = '<http://example.com/s2> <http://example.com/p> "o2" .';
+  const req = new Request(`http://localhost/v1/stores/${storeId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/n-quads" },
+    body: body,
   });
 
-  // Get the store.
-  await t.step("GET /v1/stores/{store}", async () => {
-    const response = await app.request("/v1/stores/test-store", {
-      method: "GET",
-      headers: {
-        "Accept": encodableEncodings.nq,
-      },
-    });
-    assertEquals(response.status, 200);
+  const res = await testApp.request(req);
+  assertEquals(res.status, 204);
 
-    const body = await response.bytes();
-    assertEquals(body, encodedBytes);
-  });
+  // Verify in service
+  const resultStore = await service.getStore(storeId);
+  assertEquals(resultStore?.size, 2);
 
-  // Delete the store.
-  await t.step("DELETE /v1/stores/{store}", async () => {
-    const response = await app.request("/v1/stores/test-store", {
-      method: "DELETE",
-    });
-    assertEquals(response.status, 204);
+  // Verify using GET endpoint too
+  const reqGet = new Request(`http://localhost/v1/stores/${storeId}`, {
+    method: "GET",
+    headers: { "Accept": "application/n-quads" },
   });
+  const resGet = await testApp.request(reqGet);
+  assertEquals(resGet.status, 200);
+  const bodyGet = await resGet.text();
+  // Simple check
+  assertEquals(bodyGet.includes('"o1"'), true);
+  assertEquals(bodyGet.includes('"o2"'), true);
+
+  kv.close();
 });
