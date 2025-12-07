@@ -3,7 +3,15 @@ import { toFileUrl } from "@std/path/to-file-url";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 
+import { DenoKvOxigraphService } from "#/oxigraph/deno-kv-oxigraph-service.ts";
+import { withOxigraphService } from "#/v1/routes/stores/route.ts";
+
 const app = new OpenAPIHono();
+
+const kv = await Deno.openKv(":memory:");
+const service = new DenoKvOxigraphService(kv);
+
+app.use("*", withOxigraphService(service));
 
 // Register the v1 API routes.
 
