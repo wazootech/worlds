@@ -3,6 +3,9 @@ import { type Quad, type Term } from "oxigraph";
 import type { OxigraphServiceEnv } from "../route.ts";
 import {
   v1QuerySparqlInputSchema,
+  v1RdfContentSchema,
+  v1SparqlFormInputSchema,
+  v1SparqlResultsSchema,
   v1StoreParamsSchema,
 } from "#/v1/schemas/stores.ts";
 
@@ -14,22 +17,17 @@ export const v1SparqlRoute = createRoute({
   description: "Execute a SPARQL query (read-only)",
   request: {
     params: v1StoreParamsSchema,
-    query: z.object({
-      query: v1QuerySparqlInputSchema.shape.query,
-      "default-graph-uri": z.union([z.string(), z.array(z.string())])
-        .optional(),
-      "named-graph-uri": z.union([z.string(), z.array(z.string())]).optional(),
-    }),
+    query: v1QuerySparqlInputSchema,
   },
   responses: {
     200: {
       description: "Query results",
       content: {
-        "application/sparql-results+json": { schema: z.object({}) },
+        "application/sparql-results+json": { schema: v1SparqlResultsSchema },
         "application/sparql-results+xml": { schema: z.string() },
         "text/csv": { schema: z.string() },
-        "application/n-quads": { schema: z.string() },
-        "text/turtle": { schema: z.string() },
+        "application/n-quads": { schema: v1RdfContentSchema },
+        "text/turtle": { schema: v1RdfContentSchema },
       },
     },
     400: { description: "Bad Request" },
@@ -46,16 +44,7 @@ export const v1SparqlPostRoute = createRoute({
       description: "SPARQL Query or Update",
       content: {
         "application/x-www-form-urlencoded": {
-          schema: z.object({
-            query: z.string().optional(),
-            update: z.string().optional(),
-            "default-graph-uri": z
-              .union([z.string(), z.array(z.string())])
-              .optional(),
-            "named-graph-uri": z
-              .union([z.string(), z.array(z.string())])
-              .optional(),
-          }),
+          schema: v1SparqlFormInputSchema,
         },
         "application/sparql-query": { schema: z.string() },
         "application/sparql-update": { schema: z.string() },
@@ -66,7 +55,7 @@ export const v1SparqlPostRoute = createRoute({
     200: {
       description: "Query results or Update success",
       content: {
-        "application/sparql-results+json": { schema: z.object({}) },
+        "application/sparql-results+json": { schema: v1SparqlResultsSchema },
         "application/sparql-results+xml": { schema: z.string() },
         "text/csv": { schema: z.string() },
       },

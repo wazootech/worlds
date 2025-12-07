@@ -1,6 +1,8 @@
 import { z } from "@hono/zod-openapi";
-// Define schemas for RDF/JS terms
-const termSchema = z.object({
+
+// Define schemas for RDF/JS terms.
+
+const v1TermSchema = z.object({
   termType: z.enum([
     "NamedNode",
     "BlankNode",
@@ -17,11 +19,11 @@ const termSchema = z.object({
   }).optional(),
 }).describe("An RDF/JS Term");
 
-const quadSchema = z.object({
-  subject: termSchema,
-  predicate: termSchema,
-  object: termSchema,
-  graph: termSchema,
+const v1QuadSchema = z.object({
+  subject: v1TermSchema,
+  predicate: v1TermSchema,
+  object: v1TermSchema,
+  graph: v1TermSchema,
 }).describe("An RDF/JS Quad");
 
 /**
@@ -36,7 +38,7 @@ export const v1StoreParamsSchema = z.object({
 
 export const v1SparqlBindingsSchema = z.record(
   z.string(),
-  termSchema.optional(),
+  v1TermSchema.optional(),
 );
 
 export const v1QuerySparqlOutputSchema = z.object({
@@ -44,7 +46,7 @@ export const v1QuerySparqlOutputSchema = z.object({
     z.string(),
     z.boolean(),
     z.array(v1SparqlBindingsSchema),
-    z.array(quadSchema),
+    z.array(v1QuadSchema),
   ]).describe(
     "The query result: string for DESCRIBE queries, boolean for ASK queries, array of variable bindings for SELECT queries, or array of RDF quads for CONSTRUCT queries.",
   ),
@@ -54,14 +56,45 @@ export const v1QuerySparqlInputSchema = z.object({
   query: z.string().describe(
     "A read-only SPARQL query (SELECT, ASK, CONSTRUCT, DESCRIBE). Use this to research the graph structure, find existing entities, or check properties. DO NOT use INSERT/DELETE here.",
   ),
+  "default-graph-uri": z.union([z.string(), z.array(z.string())]).optional(),
+  "named-graph-uri": z.union([z.string(), z.array(z.string())]).optional(),
 });
 
 export const v1UpdateSparqlInputSchema = z.object({
   query: z.string().describe(
     "A modification SPARQL query (INSERT, DELETE, LOAD, CLEAR). Use this to persist new facts or update existing ones. Ensure you have validated the schema and prefixes before executing.",
   ),
+  "default-graph-uri": z.union([z.string(), z.array(z.string())]).optional(),
+  "named-graph-uri": z.union([z.string(), z.array(z.string())]).optional(),
+});
+
+export const v1SparqlFormInputSchema = z.object({
+  query: z.string().optional(),
+  update: z.string().optional(),
+  "default-graph-uri": z.union([z.string(), z.array(z.string())]).optional(),
+  "named-graph-uri": z.union([z.string(), z.array(z.string())]).optional(),
+});
+
+export const v1SparqlResultsSchema = z.object({
+  head: z.object({
+    vars: z.array(z.string()).optional(),
+  }),
+  boolean: z.boolean().optional(),
+  results: z.object({
+    bindings: z.array(z.record(
+      z.string(),
+      z.object({
+        type: z.string(),
+        value: z.string(),
+        "xml:lang": z.string().optional(),
+        datatype: z.string().optional(),
+      }),
+    )),
+  }).optional(),
 });
 
 export const v1StoreSchema = z.object({
   id: z.string(),
 }).openapi("V1Store");
+
+export const v1RdfContentSchema = z.string().openapi({ format: "binary" });

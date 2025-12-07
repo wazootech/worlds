@@ -1,6 +1,6 @@
 import { accepts } from "@std/http/negotiation";
 import type { MiddlewareHandler } from "hono";
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { OxigraphService } from "#/oxigraph/oxigraph-service.ts";
 import type {
   DecodableEncoding,
@@ -13,7 +13,11 @@ import {
   encodeStore,
 } from "#/oxigraph/oxigraph-encoding.ts";
 
-import { v1StoreParamsSchema, v1StoreSchema } from "#/v1/schemas/stores.ts";
+import {
+  v1RdfContentSchema,
+  v1StoreParamsSchema,
+  v1StoreSchema,
+} from "#/v1/schemas/stores.ts";
 
 // Establish the app's environment.
 
@@ -35,7 +39,6 @@ export function withOxigraphService(
 export const app = new OpenAPIHono<OxigraphServiceEnv>();
 
 // Define shared schemas.
-const rdfContentSchema = z.string().openapi({ format: "binary" });
 
 // Define routes.
 
@@ -53,7 +56,7 @@ export const v1GetStoreRoute = createRoute({
         ...Object.fromEntries(
           Object.values(encodableEncodings).map((encoding) => [
             encoding,
-            { schema: rdfContentSchema },
+            { schema: v1RdfContentSchema },
           ]),
         ),
       },
@@ -72,10 +75,10 @@ export const v1PutStoreRoute = createRoute({
     body: {
       description: "RDF Data",
       content: {
-        "application/n-quads": { schema: rdfContentSchema },
-        "text/turtle": { schema: rdfContentSchema },
-        "application/ld+json": { schema: rdfContentSchema },
-        "application/trig": { schema: rdfContentSchema },
+        "application/n-quads": { schema: v1RdfContentSchema },
+        "text/turtle": { schema: v1RdfContentSchema },
+        "application/ld+json": { schema: v1RdfContentSchema },
+        "application/trig": { schema: v1RdfContentSchema },
       },
     },
   },
@@ -95,10 +98,10 @@ export const v1PostStoreRoute = createRoute({
     body: {
       description: "RDF Data",
       content: {
-        "application/n-quads": { schema: rdfContentSchema },
-        "text/turtle": { schema: rdfContentSchema },
-        "application/ld+json": { schema: rdfContentSchema },
-        "application/trig": { schema: rdfContentSchema },
+        "application/n-quads": { schema: v1RdfContentSchema },
+        "text/turtle": { schema: v1RdfContentSchema },
+        "application/ld+json": { schema: v1RdfContentSchema },
+        "application/trig": { schema: v1RdfContentSchema },
       },
     },
   },

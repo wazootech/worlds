@@ -296,7 +296,60 @@
               "application/sparql-results+json": {
                 "schema": {
                   "type": "object",
-                  "properties": {}
+                  "properties": {
+                    "head": {
+                      "type": "object",
+                      "properties": {
+                        "vars": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "boolean": {
+                      "type": "boolean"
+                    },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "bindings": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "type": "string"
+                                },
+                                "xml:lang": {
+                                  "type": "string"
+                                },
+                                "datatype": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "value"
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "bindings"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "head"
+                  ]
                 }
               },
               "application/sparql-results+xml": {
@@ -311,12 +364,14 @@
               },
               "application/n-quads": {
                 "schema": {
-                  "type": "string"
+                  "type": "string",
+                  "format": "binary"
                 }
               },
               "text/turtle": {
                 "schema": {
-                  "type": "string"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }
@@ -401,7 +456,60 @@
               "application/sparql-results+json": {
                 "schema": {
                   "type": "object",
-                  "properties": {}
+                  "properties": {
+                    "head": {
+                      "type": "object",
+                      "properties": {
+                        "vars": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "boolean": {
+                      "type": "boolean"
+                    },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "bindings": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "type": "string"
+                                },
+                                "xml:lang": {
+                                  "type": "string"
+                                },
+                                "datatype": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "value"
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "bindings"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "head"
+                  ]
                 }
               },
               "application/sparql-results+xml": {

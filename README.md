@@ -1,42 +1,20 @@
-# Worlds API
+# Worlds API™
 
-Worlds API is a REST API that can be used to manage, query, update, and reason
+Worlds API™ is a REST API that can be used to manage, query, update, and reason
 over [SPARQL 1.1](https://www.w3.org/TR/sparql11-overview/)-compatible stores at
 the edge, placing knowledge within arm's reach of your AI agent.
 
 ## BYOB
 
-Bring your own **brain**. The Worlds API is agnostic to the agent using it.
+Bring your own **brain**. Worlds API™ is agnostic to the agent using it.
 
 ## Design
 
-Worlds API is designed to be simple and easy to use. You can embed it in your
+Worlds API™ is designed to be simple and easy to use. You can embed it in your
 agent applications, or run it locally or on the cloud.
 
 We aren't just handing off our work to agents, we're coming up with entirely new
 ways to work by delegating agents strategically and autonomously.
-
-## Motivation
-
-Legacy data architectures, designed for human-driven lookups, often collapse
-under the demands of autonomous agents that must infer, plan, and act on
-millions of decisions daily. Worlds API bridges the "Agentic Gap" by introducing
-formal semantics to the edge.
-
-- Reasoning over Retrieval: Agents do not just query data; they require
-  explainable reasoning chains. By leveraging formal ontologies, Worlds API
-  allows agents to derive conclusions from axioms rather than relying solely on
-  black-box probabilities. Graph-based RAG of dense enterprise knowledge for
-  autonomous agents.
-- Consistency at Machine Speed: In an agentic workflow, conflicting state (e.g.,
-  an entity classified as both "Open" and "Closed") must be detected
-  immediately. This API guarentees atomic consistency required to prevent
-  autonomous hallucinations or operational errors.
-- Open-World Assumption: Unlike proprietary graph databases that assume missing
-  data is false, Worlds API supports open-world reasoning. This enables
-  interoperable programs to treat unstated facts as "unknown," prompting them to
-  seek additional data sources rather than rejecting valid options due to
-  incomplete data.
 
 ## Etymology
 
@@ -49,6 +27,15 @@ formal semantics to the edge.
 
 We named the "Worlds API" after the management of multiple, coexisting
 **Worlds** and their components.
+
+## Codegen
+
+Generate TypeScript client SDKs using
+[hey-api/openapi-ts](https://github.com/hey-api/openapi-ts):
+
+```bash
+deno -A npm:@hey-api/openapi-ts -i ./src/openapi.json -o ./src/client
+```
 
 ## Benchmarks
 
@@ -76,11 +63,16 @@ file:///C:/Users/ethan/Documents/GitHub/worlds-api/src/oxigraph/oxigraph-service
 
 ## Papers
 
-This work is inspired by the following research papers:
+This work is inspired by some of the following research papers:
 
+- [Thinking with Knowledge Graphs: Enhancing LLM Reasoning Through Structured Data](https://arxiv.org/abs/2412.10654)
 - [A Benchmark to Understand the Role of Knowledge Graphs on Large Language Model's Accuracy for Question Answering on Enterprise SQL Databases](https://arxiv.org/abs/2311.07509)
-- [Thinking with Knowledge Graphs](https://arxiv.org/abs/2412.10654v1)
-- [Graph Constrained Reasoning](https://github.com/RManLuo/graph-constrained-reasoning)
+- [Jelly: a Fast and Convenient RDF Serialization Format](https://arxiv.org/abs/2506.11298)
+- [An AI System to Help Scientists Write Expert-Level Empirical Software](https://arxiv.org/abs/2509.06503)
+- [NeSy is Alive and Well: A LLM-Driven Symbolic Approach for Better Code Comment Data Generation and Classification](https://arxiv.org/abs/2402.16910)
+- [Inverse Knowledge Search over Verifiable Reasoning: Synthesizing a Scientific Encyclopedia from a Long Chains-of-Thought Knowledge Base](https://arxiv.org/abs/2510.26854)
+- [What You See Is What It Does: A Structural Pattern for Legible Software](https://arxiv.org/abs/2508.14511)
+- [Graph-Constrained Reasoning: Faithful Reasoning on Knowledge Graphs with Large Language Models](https://arxiv.org/abs/2410.13080)
 
 ---
 
