@@ -43,6 +43,7 @@ export const app = new OpenAPIHono<OxigraphServiceEnv>();
 export const v1GetStoreRoute = createRoute({
   method: "get",
   path: "/v1/stores/{store}",
+  operationId: "getStore",
   request: {
     params: v1StoreParamsSchema,
   },
@@ -67,6 +68,7 @@ export const v1GetStoreRoute = createRoute({
 export const v1PutStoreRoute = createRoute({
   method: "put",
   path: "/v1/stores/{store}",
+  operationId: "setStore",
   description: "Overwrite the store's contents",
   request: {
     params: v1StoreParamsSchema,
@@ -90,6 +92,7 @@ export const v1PutStoreRoute = createRoute({
 export const v1PostStoreRoute = createRoute({
   method: "post",
   path: "/v1/stores/{store}",
+  operationId: "addQuads",
   description: "Add quads to the store",
   request: {
     params: v1StoreParamsSchema,
@@ -112,6 +115,7 @@ export const v1PostStoreRoute = createRoute({
 export const v1DeleteStoreRoute = createRoute({
   method: "delete",
   path: "/v1/stores/{store}",
+  operationId: "removeStore",
   description: "Delete the store",
   request: {
     params: v1StoreParamsSchema,

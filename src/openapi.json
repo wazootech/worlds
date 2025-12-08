@@ -26,12 +26,13 @@
   },
   "security": [
     {
-      "apiKey": []
+      "bearerAuth": []
     }
   ],
   "paths": {
     "/v1/stores/{store}": {
       "get": {
+        "operationId": "getStore",
         "parameters": [
           {
             "schema": {
@@ -106,6 +107,7 @@
         }
       },
       "put": {
+        "operationId": "setStore",
         "description": "Overwrite the store's contents",
         "parameters": [
           {
@@ -161,6 +163,7 @@
         }
       },
       "post": {
+        "operationId": "addQuads",
         "description": "Add quads to the store",
         "parameters": [
           {
@@ -213,6 +216,7 @@
         }
       },
       "delete": {
+        "operationId": "removeStore",
         "description": "Delete the store",
         "parameters": [
           {
@@ -235,6 +239,7 @@
     },
     "/v1/stores/{store}/sparql": {
       "get": {
+        "operationId": "sparqlQuery",
         "description": "Execute a SPARQL query (read-only)",
         "parameters": [
           {
@@ -387,6 +392,7 @@
         }
       },
       "post": {
+        "operationId": "sparqlUpdate",
         "description": "Execute a SPARQL query or update",
         "parameters": [
           {

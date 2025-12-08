@@ -16,6 +16,7 @@ export const app = new OpenAPIHono<OxigraphServiceEnv>();
 export const v1SparqlRoute = createRoute({
   method: "get",
   path: "/v1/stores/{store}/sparql",
+  operationId: "sparqlQuery",
   description: "Execute a SPARQL query (read-only)",
   request: {
     params: v1StoreParamsSchema,
@@ -39,6 +40,7 @@ export const v1SparqlRoute = createRoute({
 export const v1SparqlPostRoute = createRoute({
   method: "post",
   path: "/v1/stores/{store}/sparql",
+  operationId: "sparqlUpdate",
   description: "Execute a SPARQL query or update",
   request: {
     params: v1StoreParamsSchema,

@@ -19,11 +19,7 @@ app.use("*", withOxigraphService(service));
 
 app.use(
   "*",
-  bearerAuth({
-    verifyToken: (token) => {
-      return token === Deno.env.get("SECRET_TOKEN");
-    },
-  }),
+  bearerAuth({ token: Deno.env.get("SECRET_TOKEN")! }),
 );
 
 // Register the v1 API routes.
@@ -54,16 +50,15 @@ export const openapiConfig = {
   },
   components: {
     securitySchemes: {
-      apiKey: {
-        type: "apiKey",
-        in: "header",
-        name: "X-API-Key",
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
       },
     },
   },
   security: [
     {
-      apiKey: [],
+      bearerAuth: [],
     },
   ],
 };
