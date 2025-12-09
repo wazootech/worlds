@@ -1,6 +1,6 @@
 import { assertRejects } from "@std/assert/rejects";
 import { createApp } from "../../../main.ts";
-import { kvAppContext } from "#/v1/app-context.ts";
+import { kvAppContext } from "#/app-context.ts";
 import { InternalWorldsApiSdk } from "./internal-worlds-api-sdk.ts";
 
 const kv = await Deno.openKv(":memory:");

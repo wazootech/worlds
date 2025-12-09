@@ -1,6 +1,6 @@
 import { assert, assertEquals } from "@std/assert";
 import { Store } from "oxigraph";
-import { kvAppContext } from "#/v1/app-context.ts";
+import { kvAppContext } from "#/app-context.ts";
 import createApp from "./route.ts";
 
 const kv = await Deno.openKv(":memory:");

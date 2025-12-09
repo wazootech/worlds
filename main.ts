@@ -1,8 +1,8 @@
 import { Router } from "@fartlabs/rt";
 import { expandGlob } from "@std/fs";
 import { toFileUrl } from "@std/path";
-import type { AppContext } from "#/v1/app-context.ts";
-import { kvAppContext } from "#/v1/app-context.ts";
+import type { AppContext } from "#/app-context.ts";
+import { kvAppContext } from "#/app-context.ts";
 
 const kv = await Deno.openKv(Deno.env.get("DENO_KV_PATH"));
 

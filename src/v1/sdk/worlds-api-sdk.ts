@@ -1,6 +1,3 @@
-import type { z } from "zod";
-import { v1SparqlQueryResultsSchema } from "#/v1/schemas.ts";
-
 /**
  * WorldsApiSdk is a TypeScript SDK for the Worlds API.
  */
@@ -75,8 +72,7 @@ export class WorldsApiSdk {
       body: data,
     });
     if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
   }
 
@@ -91,8 +87,7 @@ export class WorldsApiSdk {
       },
     });
     if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
   }
 
@@ -103,7 +98,8 @@ export class WorldsApiSdk {
   public async query(
     storeId: string,
     query: string,
-  ): Promise<z.infer<typeof v1SparqlQueryResultsSchema>> {
+    // deno-lint-ignore no-explicit-any
+  ): Promise<any> {
     const response = await fetch(
       `${this.options.baseUrl}/stores/${storeId}/sparql`,
       {
@@ -121,8 +117,7 @@ export class WorldsApiSdk {
     }
 
     const json = await response.json();
-    // Validate and parse the response using the schema
-    return v1SparqlQueryResultsSchema.parse(json);
+    return json;
   }
 
   /**

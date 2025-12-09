@@ -1,5 +1,6 @@
 import { toArrayBuffer } from "@std/streams";
-import { Quad, Store, Term } from "oxigraph";
+import type { Quad, Term } from "oxigraph";
+import { Store } from "oxigraph";
 import type { OxigraphService } from "./oxigraph-service.ts";
 import type { DecodableEncoding } from "./oxigraph-encoding.ts";
 import {
