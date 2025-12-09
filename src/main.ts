@@ -6,7 +6,7 @@ import { Scalar } from "@scalar/hono-api-reference";
 import { DenoKvOxigraphService } from "#/oxigraph/deno-kv-oxigraph-service.ts";
 import { withOxigraphService } from "#/oxigraph/oxigraph-middleware.ts";
 
-const app = new OpenAPIHono();
+export const app = new OpenAPIHono();
 
 // Initialize Oxigraph service.
 
@@ -21,7 +21,7 @@ app.use(
   "/v1/*",
   bearerAuth({
     verifyToken(token, _ctx) {
-      return token === (Deno.env.get("SECRET_TOKEN") ?? "test-token");
+      return token === (Deno.env.get("API_KEY") ?? "test-token");
     },
   }),
 );

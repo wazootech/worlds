@@ -97,4 +97,7 @@ export const v1StoreSchema = z.object({
   id: z.string(),
 }).openapi("V1Store");
 
-export const v1RdfContentSchema = z.string().openapi({ format: "binary" });
+export const v1RdfContentSchema = z.unknown().openapi({
+  type: "string",
+  format: "binary",
+});

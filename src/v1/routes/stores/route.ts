@@ -153,13 +153,20 @@ app.openapi(v1PutStoreRoute, async (ctx) => {
     return ctx.json({ error: "Unsupported Content-Type" }, 400);
   }
 
-  if (!ctx.req.raw.body) {
+  /*
+   * We use ctx.req.text() directly to buffer the body.
+   * This ensures consistent behavior across different content types and middleware interactions.
+   */
+  const bodyText = await ctx.req.text();
+
+  if (!bodyText) {
     return ctx.json({ error: "Body is empty or null" }, 400);
   }
 
   try {
+    const stream = new Blob([bodyText]).stream();
     const store = await decodeStore(
-      ctx.req.raw.body,
+      stream,
       contentType as DecodableEncoding,
     );
 
@@ -182,13 +189,19 @@ app.openapi(v1PostStoreRoute, async (ctx) => {
     return ctx.json({ error: "Unsupported Content-Type" }, 400);
   }
 
-  if (!ctx.req.raw.body) {
+  /*
+   * We use ctx.req.text() directly.
+   */
+  const bodyText = await ctx.req.text();
+
+  if (!bodyText) {
     return ctx.json({ error: "Body is empty or null" }, 400);
   }
 
   try {
+    const stream = new Blob([bodyText]).stream();
     const store = await decodeStore(
-      ctx.req.raw.body,
+      stream,
       contentType as DecodableEncoding,
     );
 

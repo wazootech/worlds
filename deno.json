@@ -15,6 +15,7 @@
   "tasks": {
     "start": "deno serve -A --env --unstable-kv src/main.ts",
     "test": "deno test -A --unstable-kv",
+    "test:sdk": "deno -A --env src/v1/sdk/example.ts",
     "bench": "deno bench -A",
     "fmt": "deno fmt",
     "lint": "deno lint --unstable-kv",
