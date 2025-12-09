@@ -80,9 +80,9 @@ export class WorldsApiSdk {
   }
 
   /**
-   * deleteStore deletes a store from the Worlds API.
+   * removeStore removes a store from the Worlds API.
    */
-  public async deleteStore(storeId: string): Promise<void> {
+  public async removeStore(storeId: string): Promise<void> {
     const response = await fetch(`${this.options.baseUrl}/stores/${storeId}`, {
       method: "DELETE",
       headers: {

@@ -68,8 +68,8 @@ Deno.test("e2e WorldsApiSdk", async (t) => {
     assert(store !== null);
   });
 
-  await t.step("deleteStore deletes the store", async () => {
-    const store = await sdk.deleteStore("test");
+  await t.step("removeStore removes the store", async () => {
+    const store = await sdk.removeStore("test");
     assert(store !== null);
   });
 });
