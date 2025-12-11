@@ -1,8 +1,10 @@
 import { Router } from "@fartlabs/rt";
 import type { AppContext } from "#/app-context.ts";
 import { authorizeRequest } from "#/accounts/authorize.ts";
+import { plans, reachedPlanLimit } from "#/accounts/plans.ts";
 import { parseSparqlRequest } from "./sparql-request-parser.ts";
 import { serializeSparqlResult } from "./sparql-result-serializer.ts";
+import { Store } from "oxigraph";
 
 export default ({ oxigraphService, accountsService }: AppContext) => {
   return new Router()
@@ -21,7 +23,7 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         !authorized.admin &&
         !authorized.account?.accessControl.stores.includes(storeId)
       ) {
-        return new Response("Unauthorized", { status: 401 });
+        return new Response("Store not found", { status: 404 });
       }
 
       const url = new URL(ctx.request.url);
@@ -54,12 +56,7 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         return new Response("Unauthorized", { status: 401 });
       }
 
-      if (
-        !authorized.admin &&
-        !authorized.account?.accessControl.stores.includes(storeId)
-      ) {
-        return new Response("Unauthorized", { status: 401 });
-      }
+      // Access check deferred to handle lazy claiming
 
       let parsed;
       try {
@@ -73,10 +70,50 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
       const { query, update } = parsed;
 
       try {
+        const metadata = await oxigraphService.getMetadata(storeId);
+
+        if (metadata) {
+          // Check access (404 privacy)
+          if (
+            !authorized.admin &&
+            !authorized.account?.accessControl.stores.includes(storeId)
+          ) {
+            return new Response("Store not found", { status: 404 });
+          }
+        }
+
         if (query) {
+          if (!metadata) {
+            return new Response("Store not found", { status: 404 });
+          }
           const result = await oxigraphService.query(storeId, query);
           return Response.json(serializeSparqlResult(result));
         } else if (update) {
+          if (!metadata) {
+            // Lazy claiming
+            if (!authorized.admin && authorized.account) {
+              if (reachedPlanLimit(authorized.account)) {
+                return Response.json(
+                  {
+                    error: "Plan limit reached",
+                    limit: plans[authorized.account.plan].stores,
+                  },
+                  { status: 403 },
+                );
+              }
+              // Add to access control
+              authorized.account.accessControl.stores.push(storeId);
+              await accountsService.set(authorized.account);
+            }
+
+            // Determine owner
+            const owner = authorized.account?.id ||
+              (authorized.admin ? "admin" : "unknown");
+
+            // Create empty store
+            await oxigraphService.setStore(storeId, owner, new Store());
+          }
+
           await oxigraphService.update(storeId, update);
           return new Response(null, { status: 204 });
         } else {

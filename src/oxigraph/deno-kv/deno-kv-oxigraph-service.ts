@@ -67,7 +67,7 @@ export class DenoKvOxigraphService implements OxigraphService {
     return store;
   }
 
-  public async getStoreMetadata(
+  public async getMetadata(
     id: string,
   ): Promise<StoreMetadata | null> {
     const result = await this.kv.get<StoreMetadata>(
@@ -78,16 +78,17 @@ export class DenoKvOxigraphService implements OxigraphService {
 
   public async setStore(
     id: string,
+    owner: string,
     store: Store,
   ): Promise<void> {
-    // 1. Get the stream from the encoder
+    // Get the stream from the encoder
     const stream = encodeStore(
       store,
       this.storageEncoding,
       new CompressionStream(this.compressionFormat),
     );
 
-    // 2. Consume the stream into a Uint8Array
+    // Consume the stream into a Uint8Array
     const encodedBuffer = new Uint8Array(await toArrayBuffer(stream));
 
     const metadataResult = await this.kv.get<StoreMetadata>(
@@ -98,13 +99,15 @@ export class DenoKvOxigraphService implements OxigraphService {
       tripleCount: 0,
       size: 0,
       createdAt: Date.now(),
+      createdBy: owner,
       updatedAt: Date.now(),
     };
     metadata.tripleCount = store.size;
     metadata.size = encodedBuffer.length;
     metadata.updatedAt = Date.now();
+    metadata.createdBy = metadataResult.value?.createdBy ?? owner;
 
-    // 3. Perform atomic update
+    // Perform atomic update
     const commitResult = await this.kv.atomic()
       .set(this.storeKey(id), encodedBuffer)
       .set(this.storeMetadataKey(id), metadata)
@@ -116,17 +119,69 @@ export class DenoKvOxigraphService implements OxigraphService {
     }
   }
 
-  public async addQuads(id: string, quads: Quad[]): Promise<void> {
-    // 1. Get existing store (or new)
-    const store = await this.getStore(id) ?? (new Store());
+  public async addQuads(
+    id: string,
+    owner: string,
+    quads: Quad[],
+  ): Promise<void> {
+    const storeKey = this.storeKey(id);
+    const metadataKey = this.storeMetadataKey(id);
 
-    // 2. Add quads
+    // Get existing store and metadata atomically (snapshot)
+    const [storeResult, metadataResult] = await this.kv.getMany<
+      [Uint8Array, StoreMetadata]
+    >([storeKey, metadataKey]);
+
+    // Decode store
+    let store: Store;
+    if (storeResult.value === null) {
+      store = new Store();
+    } else {
+      const stream = ReadableStream.from([storeResult.value]);
+      store = await decodeStore(
+        stream,
+        this.storageEncoding,
+        new DecompressionStream(this.compressionFormat),
+      );
+    }
+
+    // Add quads
     for (const quad of quads) {
       store.add(quad);
     }
 
-    // 3. Save (this will update metadata)
-    await this.setStore(id, store);
+    // Encode store
+    const stream = encodeStore(
+      store,
+      this.storageEncoding,
+      new CompressionStream(this.compressionFormat),
+    );
+    const encodedBuffer = new Uint8Array(await toArrayBuffer(stream));
+
+    // Update metadata
+    const metadata = metadataResult.value ?? {
+      id,
+      tripleCount: 0,
+      size: 0,
+      createdAt: Date.now(),
+      createdBy: owner,
+      updatedAt: Date.now(),
+    };
+    metadata.tripleCount = store.size;
+    metadata.size = encodedBuffer.length;
+    metadata.updatedAt = Date.now();
+    metadata.createdBy = metadataResult.value?.createdBy ?? owner;
+
+    // Perform atomic update
+    const commitResult = await this.kv.atomic()
+      .set(storeKey, encodedBuffer)
+      .set(metadataKey, metadata)
+      .check(metadataResult)
+      .commit();
+
+    if (!commitResult.ok) {
+      throw new Error("Failed to commit store");
+    }
   }
 
   public async query(
@@ -147,8 +202,11 @@ export class DenoKvOxigraphService implements OxigraphService {
       throw new Error("Store not found");
     }
 
+    const metadata = await this.getMetadata(id);
+    const owner = metadata?.createdBy ?? "unknown";
+
     store.update(query);
-    await this.setStore(id, store);
+    await this.setStore(id, owner, store);
   }
 
   public async removeStore(id: string): Promise<void> {

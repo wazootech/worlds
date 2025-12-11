@@ -7,7 +7,7 @@ import { InternalWorlds } from "./internal-worlds.ts";
 
 const kv = await Deno.openKv(":memory:");
 
-Deno.test("e2e InternalWorldsSdk", async (t) => {
+Deno.test("e2e InternalWorlds", async (t) => {
   const sdk = new InternalWorlds({
     baseUrl: "http://localhost/v1",
     apiKey: Deno.env.get("ADMIN_ACCOUNT_ID")!,
@@ -15,7 +15,8 @@ Deno.test("e2e InternalWorldsSdk", async (t) => {
 
   globalThis.fetch = (
     input: RequestInfo | URL,
-    init?: RequestInit,
+    // deno-lint-ignore no-explicit-any
+    init?: any,
   ): Promise<Response> => {
     const request = new Request(input, init);
     return accountsApp(kvAppContext(kv)).fetch(request);
@@ -101,7 +102,8 @@ Deno.test("e2e InternalWorldsSdk", async (t) => {
   const usageApp = (await import("#/v1/routes/usage/route.ts")).default;
   globalThis.fetch = (
     input: RequestInfo | URL,
-    init?: RequestInit,
+    // deno-lint-ignore no-explicit-any
+    init?: any,
   ): Promise<Response> => {
     const request = new Request(input, init);
     return usageApp(kvAppContext(kv)).fetch(request);
@@ -111,7 +113,8 @@ Deno.test("e2e InternalWorldsSdk", async (t) => {
     // Create an account first
     globalThis.fetch = (
       input: RequestInfo | URL,
-      init?: RequestInit,
+      // deno-lint-ignore no-explicit-any
+      init?: any,
     ): Promise<Response> => {
       const request = new Request(input, init);
       return accountsApp(kvAppContext(kv)).fetch(request);
@@ -128,7 +131,8 @@ Deno.test("e2e InternalWorldsSdk", async (t) => {
     // Switch back to usage app
     globalThis.fetch = (
       input: RequestInfo | URL,
-      init?: RequestInit,
+      // deno-lint-ignore no-explicit-any
+      init?: any,
     ): Promise<Response> => {
       const request = new Request(input, init);
       return usageApp(kvAppContext(kv)).fetch(request);

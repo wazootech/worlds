@@ -1,5 +1,4 @@
 import type { AccountUsageSummary } from "#/accounts/accounts-service.ts";
-import type { StoreMetadata } from "#/oxigraph/oxigraph-service.ts";
 
 /**
  * Worlds is a TypeScript SDK for the Worlds API.
@@ -154,41 +153,6 @@ export class Worlds {
         Authorization: `Bearer ${this.options.apiKey}`,
       },
     });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  }
-
-  /**
-   * listStores retrieves all stores accessible to the authenticated account.
-   */
-  public async listStores(): Promise<string[]> {
-    const response = await fetch(`${this.options.baseUrl}/stores`, {
-      headers: {
-        Authorization: `Bearer ${this.options.apiKey}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  }
-
-  /**
-   * getStoreMetadata retrieves metadata about a specific store.
-   */
-  public async getStoreMetadata(storeId: string): Promise<StoreMetadata> {
-    const response = await fetch(
-      `${this.options.baseUrl}/stores/${storeId}/metadata`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`,
-        },
-      },
-    );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

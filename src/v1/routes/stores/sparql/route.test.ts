@@ -34,7 +34,7 @@ Deno.test("GET /v1/stores/{store}/sparql executes SPARQL Query", async () => {
   store.load('<http://example.com/s> <http://example.com/p> "o" .', {
     format: "application/n-quads",
   });
-  await ctx.oxigraphService.setStore(storeId, store);
+  await ctx.oxigraphService.setStore(storeId, "test-account", store);
 
   const query = encodeURIComponent("SELECT ?s WHERE { ?s ?p ?o }");
   const req = new Request(
@@ -69,7 +69,7 @@ Deno.test("POST /v1/stores/{store}/sparql (form-urlencoded) executes SPARQL Quer
   store.load('<http://example.com/s> <http://example.com/p> "o" .', {
     format: "application/n-quads",
   });
-  await ctx.oxigraphService.setStore(storeId, store);
+  await ctx.oxigraphService.setStore(storeId, "test-account", store);
 
   const body = new URLSearchParams({ query: "SELECT ?s WHERE { ?s ?p ?o }" });
   const req = new Request(`http://localhost/v1/stores/${storeId}/sparql`, {
@@ -99,7 +99,7 @@ Deno.test("POST /v1/stores/{store}/sparql (sparql-query) executes SPARQL Query",
   store.load('<http://example.com/s> <http://example.com/p> "o" .', {
     format: "application/n-quads",
   });
-  await ctx.oxigraphService.setStore(storeId, store);
+  await ctx.oxigraphService.setStore(storeId, "test-account", store);
 
   const query = "SELECT ?s WHERE { ?s ?p ?o }";
   const req = new Request(`http://localhost/v1/stores/${storeId}/sparql`, {
@@ -124,7 +124,7 @@ Deno.test("POST /v1/stores/{store}/sparql (direct) executes SPARQL Update", asyn
 
   // Initialize store (empty)
   const store = new Store();
-  await ctx.oxigraphService.setStore(storeId, store);
+  await ctx.oxigraphService.setStore(storeId, "test-account", store);
 
   const update =
     'INSERT DATA { <http://example.com/s> <http://example.com/p> "o" }';

@@ -12,35 +12,10 @@ import {
 } from "#/oxigraph/oxigraph-encoding.ts";
 import type { AppContext } from "#/app-context.ts";
 import { authorizeRequest } from "#/accounts/authorize.ts";
+import { plans, reachedPlanLimit } from "#/accounts/plans.ts";
 
 export default ({ oxigraphService, accountsService }: AppContext) => {
   return new Router()
-    .get("/v1/stores", async (ctx) => {
-      const authorized = await authorizeRequest(accountsService, ctx.request);
-      if (!authorized) {
-        return new Response("Unauthorized", { status: 401 });
-      }
-
-      // Admin users get all stores
-      if (authorized.admin) {
-        const allStores = await oxigraphService.listStores();
-        return Response.json(allStores);
-      }
-
-      // Regular users get only their accessible stores
-      if (!authorized.account) {
-        return new Response("Unauthorized", { status: 401 });
-      }
-
-      // If wildcard access, return all stores
-      if (authorized.account.accessControl.stores.includes("*")) {
-        const allStores = await oxigraphService.listStores();
-        return Response.json(allStores);
-      }
-
-      // Return only accessible stores
-      return Response.json(authorized.account.accessControl.stores);
-    })
     .get("/v1/stores/:store", async (ctx) => {
       const storeId = ctx.params?.pathname.groups.store;
       if (!storeId) {
@@ -56,7 +31,7 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         !authorized.admin &&
         !authorized.account?.accessControl.stores.includes(storeId)
       ) {
-        return new Response("Unauthorized", { status: 401 });
+        return new Response("Store not found", { status: 404 });
       }
 
       const store = await oxigraphService.getStore(storeId);
@@ -101,10 +76,10 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         !authorized.admin &&
         !authorized.account?.accessControl.stores.includes(storeId)
       ) {
-        return new Response("Unauthorized", { status: 401 });
+        return new Response("Store not found", { status: 404 });
       }
 
-      const metadata = await oxigraphService.getStoreMetadata(storeId);
+      const metadata = await oxigraphService.getMetadata(storeId);
       if (!metadata) {
         return new Response("Store not found", { status: 404 });
       }
@@ -118,18 +93,40 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
       }
 
       const authorized = await authorizeRequest(accountsService, ctx.request);
-      if (!authorized) {
+      if (!authorized || (!authorized.admin && !authorized.account)) {
         return new Response("Unauthorized", { status: 401 });
       }
 
-      if (
-        !authorized.admin &&
-        !authorized.account?.accessControl.stores.includes(storeId)
-      ) {
-        return new Response("Unauthorized", { status: 401 });
-      }
+      // Check if store already exists
+      const existingMetadata = await oxigraphService.getMetadata(storeId);
 
-      // Check if the store exists and if we are creating a new store.
+      // For existing stores, verify access
+      if (existingMetadata) {
+        if (
+          !authorized.admin &&
+          !authorized.account?.accessControl.stores.includes(storeId)
+        ) {
+          // Privacy: Return 404 instead of 401 to hide existence
+          return new Response("Store not found", { status: 404 });
+        }
+      } else {
+        // For new stores, check plan limits (skip for admin)
+        if (!authorized.admin && authorized.account) {
+          if (reachedPlanLimit(authorized.account)) {
+            return Response.json(
+              {
+                error: "Plan limit reached",
+                limit: plans[authorized.account.plan].stores,
+              },
+              { status: 403 },
+            );
+          }
+
+          // Add store to account's access control
+          authorized.account.accessControl.stores.push(storeId);
+          await accountsService.set(authorized.account);
+        }
+      }
 
       const contentType = ctx.request.headers.get("Content-Type");
 
@@ -156,7 +153,11 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
           contentType as DecodableEncoding,
         );
 
-        await oxigraphService.setStore(storeId, store);
+        // Determine owner: use account ID if available, otherwise "admin" if admin
+        const owner = authorized.account?.id ||
+          (authorized.admin ? "admin" : "unknown");
+
+        await oxigraphService.setStore(storeId, owner, store);
         return new Response(null, { status: 204 });
       } catch (error) {
         return Response.json(
@@ -172,18 +173,40 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
       }
 
       const authorized = await authorizeRequest(accountsService, ctx.request);
-      if (!authorized) {
+      if (!authorized || (!authorized.admin && !authorized.account)) {
         return new Response("Unauthorized", { status: 401 });
       }
 
-      if (
-        !authorized.admin &&
-        !authorized.account?.accessControl.stores.includes(storeId)
-      ) {
-        return new Response("Unauthorized", { status: 401 });
-      }
+      // Check if store already exists
+      const existingMetadata = await oxigraphService.getMetadata(storeId);
 
-      // Check if the store exists and if we are creating a new store.
+      // For existing stores, verify access
+      if (existingMetadata) {
+        if (
+          !authorized.admin &&
+          !authorized.account?.accessControl.stores.includes(storeId)
+        ) {
+          // Privacy: Return 404 instead of 401 to hide existence
+          return new Response("Store not found", { status: 404 });
+        }
+      } else {
+        // For new stores, check plan limits (skip for admin)
+        if (!authorized.admin && authorized.account) {
+          if (reachedPlanLimit(authorized.account)) {
+            return Response.json(
+              {
+                error: "Plan limit reached",
+                limit: plans[authorized.account.plan].stores,
+              },
+              { status: 403 },
+            );
+          }
+
+          // Add store to account's access control
+          authorized.account.accessControl.stores.push(storeId);
+          await accountsService.set(authorized.account);
+        }
+      }
 
       const contentType = ctx.request.headers.get("Content-Type");
 
@@ -210,7 +233,11 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
           contentType as DecodableEncoding,
         );
 
-        await oxigraphService.addQuads(storeId, store.match());
+        // Determine owner: use account ID if available, otherwise "admin" if admin
+        const owner = authorized.account?.id ||
+          (authorized.admin ? "admin" : "unknown");
+
+        await oxigraphService.addQuads(storeId, owner, store.match());
         return new Response(null, { status: 204 });
       } catch (error) {
         return Response.json(
@@ -230,14 +257,47 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         return new Response("Unauthorized", { status: 401 });
       }
 
+      // Get store metadata to check ownership
+      const metadata = await oxigraphService.getMetadata(storeId);
+
+      // Privacy check: verify access list first
       if (
         !authorized.admin &&
         !authorized.account?.accessControl.stores.includes(storeId)
       ) {
-        return new Response("Unauthorized", { status: 401 });
+        return new Response("Store not found", { status: 404 });
+      }
+
+      if (!metadata) {
+        return new Response("Store not found", { status: 404 });
+      }
+
+      // Only allow deletion by owner or admin
+      if (!authorized.admin) {
+        if (
+          !authorized.account || metadata.createdBy !== authorized.account.id
+        ) {
+          return Response.json(
+            { error: "Forbidden: Only the store owner can delete this store" },
+            { status: 403 },
+          );
+        }
       }
 
       await oxigraphService.removeStore(storeId);
+
+      // Remove from account's access control
+      if (authorized.account) {
+        const originalLength = authorized.account.accessControl.stores.length;
+        authorized.account.accessControl.stores = authorized.account
+          .accessControl.stores.filter(
+            (id) => id !== storeId,
+          );
+        if (authorized.account.accessControl.stores.length < originalLength) {
+          await accountsService.set(authorized.account);
+        }
+      }
+
       return new Response(null, { status: 204 });
     });
 };

@@ -6,9 +6,9 @@ import type { Quad, Store, Term } from "oxigraph";
 export interface OxigraphService {
   listStores(): Promise<string[]>;
   getStore(id: string): Promise<Store | null>;
-  getStoreMetadata(id: string): Promise<StoreMetadata | null>;
-  setStore(id: string, store: Store): Promise<void>;
-  addQuads(id: string, quads: Quad[]): Promise<void>;
+  getMetadata(id: string): Promise<StoreMetadata | null>;
+  setStore(id: string, owner: string, store: Store): Promise<void>;
+  addQuads(id: string, owner: string, quads: Quad[]): Promise<void>;
   query(
     id: string,
     query: string,
@@ -40,6 +40,11 @@ export interface StoreMetadata {
    * createdAt is the time the store was created.
    */
   createdAt: number;
+
+  /**
+   * createdBy is the account ID of the user who created the store.
+   */
+  createdBy: string;
 
   /**
    * updatedAt is the time the store was last updated.

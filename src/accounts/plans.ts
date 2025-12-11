@@ -1,8 +1,4 @@
-import type {
-  Account,
-  AccountPlan,
-  AccountUsageSummary,
-} from "./accounts-service.ts";
+import type { Account, AccountPlan } from "./accounts-service.ts";
 
 /**
  * plans are the limits of resources an account can have access to.
@@ -21,9 +17,8 @@ export const plans: Record<AccountPlan, { stores: number }> = {
  */
 export function reachedPlanLimit(
   account: Account,
-  usageSummary: AccountUsageSummary,
 ): boolean {
-  const stores = Object.keys(usageSummary.stores).length;
+  const stores = account.accessControl.stores.length;
   if (stores >= plans[account.plan].stores) {
     return true;
   }

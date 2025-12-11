@@ -62,22 +62,6 @@ src/
 
 ### Stores
 
-#### `GET /v1/stores`
-
-List all stores accessible to the authenticated account.
-
-**Authorization:**
-
-- Admin users: Returns all stores
-- Regular users with wildcard (`*`): Returns all stores
-- Regular users: Returns only accessible stores
-
-**Response:**
-
-```json
-["store-1", "store-2", "store-3"]
-```
-
 #### `GET /v1/stores/{storeId}`
 
 Retrieve RDF data from a store.
@@ -271,7 +255,7 @@ For admin operations, use the `ADMIN_ACCOUNT_ID` environment variable value.
 
 - Account ID is their API key
 - Access controlled by `accessControl.stores` array
-- Wildcard `["*"]` grants access to all stores
+- Access controlled by `accessControl.stores` array
 - Specific store IDs limit access to those stores only
 
 ### Access Control Flow
@@ -315,7 +299,7 @@ interface Account {
   description: string; // Human-readable description
   plan: AccountPlan; // "free_plan" | "pro_plan"
   accessControl: {
-    stores: string[]; // Store IDs or ["*"] for wildcard
+    stores: string[]; // Store IDs
   };
 }
 ```
@@ -389,9 +373,6 @@ const client = new Worlds({
   apiKey: "your-account-id",
 });
 
-// List accessible stores
-const stores = await client.listStores();
-
 // Get store metadata
 const metadata = await client.getStoreMetadata("my-store");
 
@@ -437,7 +418,7 @@ await admin.createAccount({
   id: "new-user",
   description: "New user account",
   plan: "free_plan",
-  accessControl: { stores: ["*"] },
+  accessControl: { stores: [] },
 });
 
 // Get account
@@ -454,9 +435,6 @@ await admin.removeAccount("user-id");
 
 // Get account usage
 const usage = await admin.getAccountUsage("user-id");
-
-// Inherits all Worlds methods
-const stores = await admin.listStores();
 ```
 
 ---
@@ -658,7 +636,7 @@ await admin.createAccount({
   id: "test-user",
   description: "Test account",
   plan: "free_plan",
-  accessControl: { stores: ["*"] },
+  accessControl: { stores: [] },
 });
 
 console.log("API Key:", "test-user");

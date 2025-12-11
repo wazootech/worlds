@@ -13,7 +13,7 @@ const testAccount: Account = {
   description: "Test account for route tests",
   plan: "free_plan",
   accessControl: {
-    stores: ["*"], // Grant access to all stores for testing
+    stores: [], // Stores will be automatically added on creation
   },
 };
 await appContext.accountsService.set(testAccount);
@@ -43,10 +43,6 @@ const decodableFormats = [
 for (const { mime, data } of decodableFormats) {
   Deno.test(`PUT /v1/stores/{store} accepts ${mime}`, async () => {
     const storeId = `test-store-put-${mime.replace(/[^a-z0-9]/g, "-")}`;
-
-    // Grant access to this specific store
-    testAccount.accessControl.stores.push(storeId);
-    await appContext.accountsService.set(testAccount);
 
     const req = new Request(`http://localhost/v1/stores/${storeId}`, {
       method: "PUT",
@@ -83,10 +79,6 @@ const encodableFormats = [
 
 Deno.test("GET /v1/stores/{store} negotiates content negotiation", async (t) => {
   const storeId = "test-store-conneg";
-
-  // Grant access to this specific store
-  testAccount.accessControl.stores.push(storeId);
-  await appContext.accountsService.set(testAccount);
 
   // Setup data
   await app.fetch(
