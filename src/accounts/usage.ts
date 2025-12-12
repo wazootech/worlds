@@ -1,7 +1,7 @@
 import type {
   AccountUsageEvent,
   AccountUsageSummary,
-  StoreUsageSummary,
+  WorldUsageSummary,
 } from "#/accounts/accounts-service.ts";
 
 /**
@@ -11,47 +11,47 @@ export function updateUsageSummary(
   usageSummary: AccountUsageSummary,
   event: AccountUsageEvent,
 ): void {
-  // Initialize store usage if it doesn't exist.
-  if (event.params.storeId) {
-    usageSummary.stores[event.params.storeId] ??= emptyStoreUsageSummary(
+  // Initialize world usage if it doesn't exist.
+  if (event.params.worldId) {
+    usageSummary.worlds[event.params.worldId] ??= emptyWorldUsageSummary(
       event.timestamp,
     );
-    const storeUsageSummary = usageSummary.stores[event.params.storeId];
+    const worldUsageSummary = usageSummary.worlds[event.params.worldId];
 
-    // Update the store's last updated timestamp.
-    storeUsageSummary.updatedAt = event.timestamp;
+    // Update the world's last updated timestamp.
+    worldUsageSummary.updatedAt = event.timestamp;
   }
 
-  // Update the store's usage.
+  // Update the world's usage.
   switch (event.endpoint) {
-    case "GET /stores/{storeId}": {
-      usageSummary.stores[event.params.storeId].reads++;
+    case "GET /worlds/{worldId}": {
+      usageSummary.worlds[event.params.worldId].reads++;
       break;
     }
 
-    case "POST /stores/{storeId}":
-    case "PUT /stores/{storeId}":
-    case "DELETE /stores/{storeId}": {
-      usageSummary.stores[event.params.storeId].writes++;
+    case "POST /worlds/{worldId}":
+    case "PUT /worlds/{worldId}":
+    case "DELETE /worlds/{worldId}": {
+      usageSummary.worlds[event.params.worldId].writes++;
       break;
     }
 
-    case "GET /stores/{storeId}/sparql": {
-      usageSummary.stores[event.params.storeId].queries++;
+    case "GET /worlds/{worldId}/sparql": {
+      usageSummary.worlds[event.params.worldId].queries++;
       break;
     }
 
-    case "POST /stores/{storeId}/sparql": {
-      usageSummary.stores[event.params.storeId].updates++;
+    case "POST /worlds/{worldId}/sparql": {
+      usageSummary.worlds[event.params.worldId].updates++;
       break;
     }
   }
 }
 
 /**
- * emptyStoreUsageSummary creates an empty store usage summary.
+ * emptyWorldUsageSummary creates an empty world usage summary.
  */
-export function emptyStoreUsageSummary(timestamp: number): StoreUsageSummary {
+export function emptyWorldUsageSummary(timestamp: number): WorldUsageSummary {
   return {
     reads: 0,
     writes: 0,

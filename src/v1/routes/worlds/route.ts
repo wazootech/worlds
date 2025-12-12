@@ -16,10 +16,10 @@ import { plans, reachedPlanLimit } from "#/accounts/plans.ts";
 
 export default ({ oxigraphService, accountsService }: AppContext) => {
   return new Router()
-    .get("/v1/stores/:store", async (ctx) => {
-      const storeId = ctx.params?.pathname.groups.store;
-      if (!storeId) {
-        return new Response("Store ID required", { status: 400 });
+    .get("/v1/worlds/:world", async (ctx) => {
+      const worldId = ctx.params?.pathname.groups.world;
+      if (!worldId) {
+        return new Response("World ID required", { status: 400 });
       }
 
       const authorized = await authorizeRequest(accountsService, ctx.request);
@@ -29,14 +29,14 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
 
       if (
         !authorized.admin &&
-        !authorized.account?.accessControl.stores.includes(storeId)
+        !authorized.account?.accessControl.worlds.includes(worldId)
       ) {
-        return new Response("Store not found", { status: 404 });
+        return new Response("World not found", { status: 404 });
       }
 
-      const store = await oxigraphService.getStore(storeId);
-      if (!store) {
-        return new Response("Store not found", { status: 404 });
+      const metadata = await oxigraphService.getMetadata(worldId);
+      if (!metadata) {
+        return new Response("World not found", { status: 404 });
       }
 
       const supported = [
@@ -45,15 +45,30 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
       ];
       const encoding = accepts(ctx.request, ...supported) ?? "application/json";
       if (encoding === "application/json") {
-        return Response.json({ id: storeId });
+        return Response.json(metadata);
       }
 
       if (!(Object.values(encodableEncodings) as string[]).includes(encoding)) {
-        return Response.json({ id: storeId });
+        return new Response("Unsupported encoding", { status: 400 });
       }
 
       try {
+        const store = await oxigraphService.getStore(worldId);
+        if (!store) {
+          return new Response("World not found", { status: 404 });
+        }
+
         const data = encodeStore(store, encoding as EncodableEncoding);
+        if (authorized.account) {
+          await accountsService.meter({
+            id: crypto.randomUUID(),
+            accountId: authorized.account.id,
+            timestamp: Date.now(),
+            endpoint: "GET /worlds/{worldId}",
+            params: { worldId },
+            statusCode: 200,
+          });
+        }
         return new Response(data, {
           headers: { "Content-Type": encoding },
         });
@@ -61,10 +76,10 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         return Response.json({ error: "Encoding failed" }, { status: 500 });
       }
     })
-    .get("/v1/stores/:store/metadata", async (ctx) => {
-      const storeId = ctx.params?.pathname.groups.store;
-      if (!storeId) {
-        return new Response("Store ID required", { status: 400 });
+    .get("/v1/worlds/:world/usage", async (ctx) => {
+      const worldId = ctx.params?.pathname.groups.world;
+      if (!worldId) {
+        return new Response("World ID required", { status: 400 });
       }
 
       const authorized = await authorizeRequest(accountsService, ctx.request);
@@ -74,22 +89,29 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
 
       if (
         !authorized.admin &&
-        !authorized.account?.accessControl.stores.includes(storeId)
+        !authorized.account?.accessControl.worlds.includes(worldId)
       ) {
-        return new Response("Store not found", { status: 404 });
+        return new Response("World not found", { status: 404 });
       }
 
-      const metadata = await oxigraphService.getMetadata(storeId);
-      if (!metadata) {
-        return new Response("Store not found", { status: 404 });
+      const accountId = authorized.account?.id;
+      if (!accountId) {
+        if (authorized.admin) {
+          return new Response("Account context required", { status: 400 });
+        }
+        return new Response("Unauthorized", { status: 401 });
       }
 
-      return Response.json(metadata);
+      const usageSummary = await accountsService.getUsageSummary(accountId);
+
+      const worldUsage = usageSummary?.worlds[worldId] ||
+        { reads: 0, writes: 0 };
+      return Response.json(worldUsage);
     })
-    .put("/v1/stores/:store", async (ctx) => {
-      const storeId = ctx.params?.pathname.groups.store;
-      if (!storeId) {
-        return new Response("Store ID required", { status: 400 });
+    .put("/v1/worlds/:world", async (ctx) => {
+      const worldId = ctx.params?.pathname.groups.world;
+      if (!worldId) {
+        return new Response("World ID required", { status: 400 });
       }
 
       const authorized = await authorizeRequest(accountsService, ctx.request);
@@ -97,33 +119,33 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         return new Response("Unauthorized", { status: 401 });
       }
 
-      // Check if store already exists
-      const existingMetadata = await oxigraphService.getMetadata(storeId);
+      // Check if world already exists
+      const existingMetadata = await oxigraphService.getMetadata(worldId);
 
-      // For existing stores, verify access
+      // For existing worlds, verify access
       if (existingMetadata) {
         if (
           !authorized.admin &&
-          !authorized.account?.accessControl.stores.includes(storeId)
+          !authorized.account?.accessControl.worlds.includes(worldId)
         ) {
           // Privacy: Return 404 instead of 401 to hide existence
-          return new Response("Store not found", { status: 404 });
+          return new Response("World not found", { status: 404 });
         }
       } else {
-        // For new stores, check plan limits (skip for admin)
+        // For new worlds, check plan limits (skip for admin)
         if (!authorized.admin && authorized.account) {
           if (reachedPlanLimit(authorized.account)) {
             return Response.json(
               {
                 error: "Plan limit reached",
-                limit: plans[authorized.account.plan].stores,
+                limit: plans[authorized.account.plan].worlds,
               },
               { status: 403 },
             );
           }
 
-          // Add store to account's access control
-          authorized.account.accessControl.stores.push(storeId);
+          // Add world to account's access control
+          authorized.account.accessControl.worlds.push(worldId);
           await accountsService.set(authorized.account);
         }
       }
@@ -157,7 +179,17 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         const owner = authorized.account?.id ||
           (authorized.admin ? "admin" : "unknown");
 
-        await oxigraphService.setStore(storeId, owner, store);
+        await oxigraphService.setStore(worldId, owner, store);
+        if (authorized.account) {
+          await accountsService.meter({
+            id: crypto.randomUUID(),
+            accountId: authorized.account.id,
+            timestamp: Date.now(),
+            endpoint: "PUT /worlds/{worldId}",
+            params: { worldId },
+            statusCode: 204,
+          });
+        }
         return new Response(null, { status: 204 });
       } catch (error) {
         return Response.json(
@@ -166,10 +198,10 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         );
       }
     })
-    .post("/v1/stores/:store", async (ctx) => {
-      const storeId = ctx.params?.pathname.groups.store;
-      if (!storeId) {
-        return new Response("Store ID required", { status: 400 });
+    .post("/v1/worlds/:world", async (ctx) => {
+      const worldId = ctx.params?.pathname.groups.world;
+      if (!worldId) {
+        return new Response("World ID required", { status: 400 });
       }
 
       const authorized = await authorizeRequest(accountsService, ctx.request);
@@ -177,33 +209,33 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         return new Response("Unauthorized", { status: 401 });
       }
 
-      // Check if store already exists
-      const existingMetadata = await oxigraphService.getMetadata(storeId);
+      // Check if world already exists
+      const existingMetadata = await oxigraphService.getMetadata(worldId);
 
-      // For existing stores, verify access
+      // For existing worlds, verify access
       if (existingMetadata) {
         if (
           !authorized.admin &&
-          !authorized.account?.accessControl.stores.includes(storeId)
+          !authorized.account?.accessControl.worlds.includes(worldId)
         ) {
           // Privacy: Return 404 instead of 401 to hide existence
-          return new Response("Store not found", { status: 404 });
+          return new Response("World not found", { status: 404 });
         }
       } else {
-        // For new stores, check plan limits (skip for admin)
+        // For new worlds, check plan limits (skip for admin)
         if (!authorized.admin && authorized.account) {
           if (reachedPlanLimit(authorized.account)) {
             return Response.json(
               {
                 error: "Plan limit reached",
-                limit: plans[authorized.account.plan].stores,
+                limit: plans[authorized.account.plan].worlds,
               },
               { status: 403 },
             );
           }
 
-          // Add store to account's access control
-          authorized.account.accessControl.stores.push(storeId);
+          // Add world to account's access control
+          authorized.account.accessControl.worlds.push(worldId);
           await accountsService.set(authorized.account);
         }
       }
@@ -237,7 +269,17 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         const owner = authorized.account?.id ||
           (authorized.admin ? "admin" : "unknown");
 
-        await oxigraphService.addQuads(storeId, owner, store.match());
+        await oxigraphService.addQuads(worldId, owner, store.match());
+        if (authorized.account) {
+          await accountsService.meter({
+            id: crypto.randomUUID(),
+            accountId: authorized.account.id,
+            timestamp: Date.now(),
+            endpoint: "POST /worlds/{worldId}",
+            params: { worldId },
+            statusCode: 204,
+          });
+        }
         return new Response(null, { status: 204 });
       } catch (error) {
         return Response.json(
@@ -246,10 +288,10 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         );
       }
     })
-    .delete("/v1/stores/:store", async (ctx) => {
-      const storeId = ctx.params?.pathname.groups.store;
-      if (!storeId) {
-        return new Response("Store ID required", { status: 400 });
+    .delete("/v1/worlds/:world", async (ctx) => {
+      const worldId = ctx.params?.pathname.groups.world;
+      if (!worldId) {
+        return new Response("World ID required", { status: 400 });
       }
 
       const authorized = await authorizeRequest(accountsService, ctx.request);
@@ -257,19 +299,19 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
         return new Response("Unauthorized", { status: 401 });
       }
 
-      // Get store metadata to check ownership
-      const metadata = await oxigraphService.getMetadata(storeId);
+      // Get world metadata to check ownership
+      const metadata = await oxigraphService.getMetadata(worldId);
 
       // Privacy check: verify access list first
       if (
         !authorized.admin &&
-        !authorized.account?.accessControl.stores.includes(storeId)
+        !authorized.account?.accessControl.worlds.includes(worldId)
       ) {
-        return new Response("Store not found", { status: 404 });
+        return new Response("World not found", { status: 404 });
       }
 
       if (!metadata) {
-        return new Response("Store not found", { status: 404 });
+        return new Response("World not found", { status: 404 });
       }
 
       // Only allow deletion by owner or admin
@@ -278,22 +320,32 @@ export default ({ oxigraphService, accountsService }: AppContext) => {
           !authorized.account || metadata.createdBy !== authorized.account.id
         ) {
           return Response.json(
-            { error: "Forbidden: Only the store owner can delete this store" },
+            { error: "Forbidden: Only the world owner can delete this world" },
             { status: 403 },
           );
         }
       }
 
-      await oxigraphService.removeStore(storeId);
+      await oxigraphService.removeStore(worldId);
+      if (authorized.account) {
+        await accountsService.meter({
+          id: crypto.randomUUID(),
+          accountId: authorized.account.id,
+          timestamp: Date.now(),
+          endpoint: "DELETE /worlds/{worldId}",
+          params: { worldId },
+          statusCode: 204,
+        });
+      }
 
       // Remove from account's access control
       if (authorized.account) {
-        const originalLength = authorized.account.accessControl.stores.length;
-        authorized.account.accessControl.stores = authorized.account
-          .accessControl.stores.filter(
-            (id) => id !== storeId,
+        const originalLength = authorized.account.accessControl.worlds.length;
+        authorized.account.accessControl.worlds = authorized.account
+          .accessControl.worlds.filter(
+            (id) => id !== worldId,
           );
-        if (authorized.account.accessControl.stores.length < originalLength) {
+        if (authorized.account.accessControl.worlds.length < originalLength) {
           await accountsService.set(authorized.account);
         }
       }

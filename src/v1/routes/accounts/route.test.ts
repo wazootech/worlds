@@ -11,7 +11,7 @@ const testAccount: Account = {
   description: "Test account",
   plan: "free_plan",
   accessControl: {
-    stores: ["store-1", "store-2"],
+    worlds: ["store-1", "store-2"],
   },
 };
 
@@ -46,7 +46,7 @@ Deno.test("GET /v1/accounts/:accountId retrieves an account", async () => {
         id: "test-account-2",
         description: "Test account 2",
         plan: "pro_plan",
-        accessControl: { stores: [] },
+        accessControl: { worlds: [] },
       }),
     }),
   );
@@ -79,7 +79,7 @@ Deno.test("PUT /v1/accounts/:accountId updates an account", async () => {
         id: "test-account-3",
         description: "Original description",
         plan: "free_plan",
-        accessControl: { stores: ["store-1"] },
+        accessControl: { worlds: ["store-1"] },
       }),
     }),
   );
@@ -89,7 +89,7 @@ Deno.test("PUT /v1/accounts/:accountId updates an account", async () => {
     id: "test-account-3",
     description: "Updated description",
     plan: "pro_plan",
-    accessControl: { stores: ["store-1", "store-2", "store-3"] },
+    accessControl: { worlds: ["store-1", "store-2", "store-3"] },
   };
 
   const req = new Request("http://localhost/v1/accounts/test-account-3", {
@@ -115,7 +115,7 @@ Deno.test("PUT /v1/accounts/:accountId updates an account", async () => {
   const account = await getRes.json();
   assertEquals(account.description, "Updated description");
   assertEquals(account.plan, "pro_plan");
-  assertEquals(account.accessControl.stores.length, 3);
+  assertEquals(account.accessControl.worlds.length, 3);
 });
 
 Deno.test("DELETE /v1/accounts/:accountId removes an account", async () => {
@@ -131,7 +131,7 @@ Deno.test("DELETE /v1/accounts/:accountId removes an account", async () => {
         id: "test-account-4",
         description: "To be deleted",
         plan: "free_plan",
-        accessControl: { stores: [] },
+        accessControl: { worlds: [] },
       }),
     }),
   );
@@ -193,7 +193,7 @@ Deno.test("PUT /v1/accounts/:accountId returns 400 for ID mismatch", async () =>
       id: "account-b",
       description: "Mismatched ID",
       plan: "free_plan",
-      accessControl: { stores: [] },
+      accessControl: { worlds: [] },
     }),
   });
   const res = await app.fetch(req);

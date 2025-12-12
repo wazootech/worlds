@@ -25,7 +25,7 @@ export default ({ accountsService }: AppContext) => {
         const usageSummary = await accountsService.getUsageSummary(accountId);
         if (!usageSummary) {
           // Return empty usage summary if none exists yet
-          return Response.json({ stores: {} });
+          return Response.json({ worlds: {} });
         }
 
         return Response.json(usageSummary);
@@ -42,7 +42,7 @@ export default ({ accountsService }: AppContext) => {
 
       if (!usageSummary) {
         // Return empty usage summary if none exists yet
-        return Response.json({ stores: {} });
+        return Response.json({ worlds: {} });
       }
 
       return Response.json(usageSummary);

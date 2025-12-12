@@ -3,12 +3,12 @@ import type { Account, AccountPlan } from "./accounts-service.ts";
 /**
  * plans are the limits of resources an account can have access to.
  */
-export const plans: Record<AccountPlan, { stores: number }> = {
+export const plans: Record<AccountPlan, { worlds: number }> = {
   free_plan: {
-    stores: 100,
+    worlds: 100,
   },
   pro_plan: {
-    stores: 1_000_000,
+    worlds: 1_000_000,
   },
 };
 
@@ -18,8 +18,8 @@ export const plans: Record<AccountPlan, { stores: number }> = {
 export function reachedPlanLimit(
   account: Account,
 ): boolean {
-  const stores = account.accessControl.stores.length;
-  if (stores >= plans[account.plan].stores) {
+  const stores = account.accessControl.worlds.length;
+  if (stores >= plans[account.plan].worlds) {
     return true;
   }
 

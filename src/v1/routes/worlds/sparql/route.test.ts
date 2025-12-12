@@ -8,17 +8,17 @@ const kv = await Deno.openKv(":memory:");
 const ctx = kvAppContext(kv);
 const app = await createApp(ctx);
 
-// Create a test account with access to all test stores
+// Create a test account with access to all test worlds
 const testAccount: Account = {
   id: "test-account",
   description: "Test account for SPARQL route tests",
   plan: "free_plan",
   accessControl: {
-    stores: [
-      "test-store-sparql-get",
-      "test-store-sparql-post-form",
-      "test-store-sparql-post-query",
-      "test-store-sparql-update-direct",
+    worlds: [
+      "test-world-sparql-get",
+      "test-world-sparql-post-form",
+      "test-world-sparql-post-query",
+      "test-world-sparql-update-direct",
     ],
   },
 };
@@ -26,19 +26,19 @@ await ctx.accountsService.set(testAccount);
 
 const testApiKey = "test-account";
 
-Deno.test("GET /v1/stores/{store}/sparql executes SPARQL Query", async () => {
-  const storeId = "test-store-sparql-get";
+Deno.test("GET /v1/worlds/{world}/sparql executes SPARQL Query", async () => {
+  const worldId = "test-world-sparql-get";
 
   // Setup data directly via service
   const store = new Store();
   store.load('<http://example.com/s> <http://example.com/p> "o" .', {
     format: "application/n-quads",
   });
-  await ctx.oxigraphService.setStore(storeId, "test-account", store);
+  await ctx.oxigraphService.setStore(worldId, "test-account", store);
 
   const query = encodeURIComponent("SELECT ?s WHERE { ?s ?p ?o }");
   const req = new Request(
-    `http://localhost/v1/stores/${storeId}/sparql?query=${query}`,
+    `http://localhost/v1/worlds/${worldId}/sparql?query=${query}`,
     {
       method: "GET",
       headers: {
@@ -61,18 +61,18 @@ Deno.test("GET /v1/stores/{store}/sparql executes SPARQL Query", async () => {
   assertEquals(binding.s.value, "http://example.com/s");
 });
 
-Deno.test("POST /v1/stores/{store}/sparql (form-urlencoded) executes SPARQL Query", async () => {
-  const storeId = "test-store-sparql-post-form";
+Deno.test("POST /v1/worlds/{world}/sparql (form-urlencoded) executes SPARQL Query", async () => {
+  const worldId = "test-world-sparql-post-form";
 
   // Setup data directly via service
   const store = new Store();
   store.load('<http://example.com/s> <http://example.com/p> "o" .', {
     format: "application/n-quads",
   });
-  await ctx.oxigraphService.setStore(storeId, "test-account", store);
+  await ctx.oxigraphService.setStore(worldId, "test-account", store);
 
   const body = new URLSearchParams({ query: "SELECT ?s WHERE { ?s ?p ?o }" });
-  const req = new Request(`http://localhost/v1/stores/${storeId}/sparql`, {
+  const req = new Request(`http://localhost/v1/worlds/${worldId}/sparql`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -91,18 +91,18 @@ Deno.test("POST /v1/stores/{store}/sparql (form-urlencoded) executes SPARQL Quer
   assertEquals(json.length, 1);
 });
 
-Deno.test("POST /v1/stores/{store}/sparql (sparql-query) executes SPARQL Query", async () => {
-  const storeId = "test-store-sparql-post-query";
+Deno.test("POST /v1/worlds/{world}/sparql (sparql-query) executes SPARQL Query", async () => {
+  const worldId = "test-world-sparql-post-query";
 
   // Setup data directly via service
   const store = new Store();
   store.load('<http://example.com/s> <http://example.com/p> "o" .', {
     format: "application/n-quads",
   });
-  await ctx.oxigraphService.setStore(storeId, "test-account", store);
+  await ctx.oxigraphService.setStore(worldId, "test-account", store);
 
   const query = "SELECT ?s WHERE { ?s ?p ?o }";
-  const req = new Request(`http://localhost/v1/stores/${storeId}/sparql`, {
+  const req = new Request(`http://localhost/v1/worlds/${worldId}/sparql`, {
     method: "POST",
     headers: {
       "Content-Type": "application/sparql-query",
@@ -119,16 +119,16 @@ Deno.test("POST /v1/stores/{store}/sparql (sparql-query) executes SPARQL Query",
   assertEquals(json.length, 1);
 });
 
-Deno.test("POST /v1/stores/{store}/sparql (direct) executes SPARQL Update", async () => {
-  const storeId = "test-store-sparql-update-direct";
+Deno.test("POST /v1/worlds/{world}/sparql (direct) executes SPARQL Update", async () => {
+  const worldId = "test-world-sparql-update-direct";
 
   // Initialize store (empty)
   const store = new Store();
-  await ctx.oxigraphService.setStore(storeId, "test-account", store);
+  await ctx.oxigraphService.setStore(worldId, "test-account", store);
 
   const update =
     'INSERT DATA { <http://example.com/s> <http://example.com/p> "o" }';
-  const req = new Request(`http://localhost/v1/stores/${storeId}/sparql`, {
+  const req = new Request(`http://localhost/v1/worlds/${worldId}/sparql`, {
     method: "POST",
     headers: {
       "Content-Type": "application/sparql-update",
@@ -144,7 +144,7 @@ Deno.test("POST /v1/stores/{store}/sparql (direct) executes SPARQL Update", asyn
   const query = encodeURIComponent("SELECT * WHERE { ?s ?p ?o }");
   const resQuery = await app.fetch(
     new Request(
-      `http://localhost/v1/stores/${storeId}/sparql?query=${query}`,
+      `http://localhost/v1/worlds/${worldId}/sparql?query=${query}`,
       {
         method: "GET",
         headers: { "Authorization": `Bearer ${testApiKey}` },

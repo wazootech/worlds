@@ -2,6 +2,7 @@ import { assertRejects } from "@std/assert/rejects";
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { kvAppContext } from "#/app-context.ts";
 import accountsApp from "#/v1/routes/accounts/route.ts";
+import usageApp from "#/v1/routes/usage/route.ts";
 import type { Account } from "#/accounts/accounts-service.ts";
 import { InternalWorlds } from "./internal-worlds.ts";
 
@@ -28,7 +29,7 @@ Deno.test("e2e InternalWorlds", async (t) => {
     description: "Test account for SDK",
     plan: "free_plan",
     accessControl: {
-      stores: ["test-store-1", "test-store-2"],
+      worlds: ["test-world-1", "test-world-2"],
     },
   };
 
@@ -44,7 +45,7 @@ Deno.test("e2e InternalWorlds", async (t) => {
     const retrieved = await sdk.getAccount(testAccountId);
     assertExists(retrieved);
     assertEquals(retrieved.id, testAccountId);
-    assertEquals(retrieved.accessControl.stores.length, 2);
+    assertEquals(retrieved.accessControl.worlds.length, 2);
   });
 
   await t.step("updateAccount updates an existing account", async () => {
@@ -52,17 +53,17 @@ Deno.test("e2e InternalWorlds", async (t) => {
       ...testAccount,
       description: "Updated description",
       accessControl: {
-        stores: ["test-store-1", "test-store-2", "test-store-3"],
+        worlds: ["test-world-1", "test-world-2", "test-world-3"],
       },
     };
     await sdk.updateAccount(updatedAccount);
 
     const retrieved = await sdk.getAccount(testAccountId);
     assertEquals(retrieved.description, "Updated description");
-    assertEquals(retrieved.accessControl.stores.length, 3);
+    assertEquals(retrieved.accessControl.worlds.length, 3);
   });
 
-  await t.step("deleteAccount removes an account", async () => {
+  await t.step("removeAccount removes an account", async () => {
     await sdk.removeAccount(testAccountId);
 
     await assertRejects(
@@ -85,7 +86,7 @@ Deno.test("e2e InternalWorlds", async (t) => {
     );
   });
 
-  await t.step("deleteAccount fails with invalid auth", async () => {
+  await t.step("removeAccount fails with invalid auth", async () => {
     const invalidSdk = new InternalWorlds({
       baseUrl: "http://localhost/v1",
       apiKey: "invalid-key",
@@ -98,8 +99,6 @@ Deno.test("e2e InternalWorlds", async (t) => {
     );
   });
 
-  // Import usage app for usage tests
-  const usageApp = (await import("#/v1/routes/usage/route.ts")).default;
   globalThis.fetch = (
     input: RequestInfo | URL,
     // deno-lint-ignore no-explicit-any
@@ -124,7 +123,7 @@ Deno.test("e2e InternalWorlds", async (t) => {
       id: "usage-test-account",
       description: "Account for usage testing",
       plan: "free_plan",
-      accessControl: { stores: [] },
+      accessControl: { worlds: [] },
     };
     await sdk.createAccount(usageTestAccount);
 
@@ -140,6 +139,6 @@ Deno.test("e2e InternalWorlds", async (t) => {
 
     const usage = await sdk.getAccountUsage("usage-test-account");
     assert(typeof usage === "object");
-    assert(usage.stores !== undefined);
+    assert(usage.worlds !== undefined);
   });
 });

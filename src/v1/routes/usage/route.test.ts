@@ -16,7 +16,7 @@ const testAccount: Account = {
   description: "Test account for usage route tests",
   plan: "free_plan",
   accessControl: {
-    stores: ["test-store-1", "test-store-2"],
+    worlds: ["test-store-1", "test-store-2"],
   },
 };
 await appContext.accountsService.set(testAccount);
@@ -29,8 +29,8 @@ Deno.test("GET /v1/usage returns usage summary for authenticated user", async ()
     id: "event-1",
     accountId: "test-account",
     timestamp: Date.now(),
-    endpoint: "GET /stores/{storeId}",
-    params: { storeId: "test-store-1" },
+    endpoint: "GET /worlds/{worldId}",
+    params: { worldId: "test-store-1" },
     statusCode: 200,
   };
   await appContext.accountsService.meter(event);
@@ -45,8 +45,8 @@ Deno.test("GET /v1/usage returns usage summary for authenticated user", async ()
   assertEquals(res.status, 200);
 
   const usageSummary = await res.json();
-  assertEquals(typeof usageSummary.stores, "object");
-  assertEquals(usageSummary.stores["test-store-1"].reads, 1);
+  assertEquals(typeof usageSummary.worlds, "object");
+  assertEquals(usageSummary.worlds["test-store-1"].reads, 1);
 });
 
 Deno.test("GET /v1/usage returns empty summary when no usage exists", async () => {
@@ -56,7 +56,7 @@ Deno.test("GET /v1/usage returns empty summary when no usage exists", async () =
     description: "New account with no usage",
     plan: "free_plan",
     accessControl: {
-      stores: [],
+      worlds: [],
     },
   };
   await appContext.accountsService.set(newAccount);
@@ -71,7 +71,7 @@ Deno.test("GET /v1/usage returns empty summary when no usage exists", async () =
   assertEquals(res.status, 200);
 
   const usageSummary = await res.json();
-  assertEquals(usageSummary.stores, {});
+  assertEquals(usageSummary.worlds, {});
 });
 
 Deno.test("GET /v1/usage returns 401 without authentication", async () => {
@@ -88,8 +88,8 @@ Deno.test("GET /v1/usage with admin account and accountId query param", async ()
     id: "event-admin-test",
     accountId: "test-account",
     timestamp: Date.now(),
-    endpoint: "POST /stores/{storeId}",
-    params: { storeId: "test-store-2" },
+    endpoint: "POST /worlds/{worldId}",
+    params: { worldId: "test-store-2" },
     statusCode: 204,
   };
   await appContext.accountsService.meter(event);
@@ -108,8 +108,8 @@ Deno.test("GET /v1/usage with admin account and accountId query param", async ()
   assertEquals(res.status, 200);
 
   const usageSummary = await res.json();
-  assertEquals(typeof usageSummary.stores, "object");
-  assertEquals(usageSummary.stores["test-store-2"].writes, 1);
+  assertEquals(typeof usageSummary.worlds, "object");
+  assertEquals(usageSummary.worlds["test-store-2"].writes, 1);
 });
 
 Deno.test("GET /v1/usage with admin account but no accountId returns 400", async () => {

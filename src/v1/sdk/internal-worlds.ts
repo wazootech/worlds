@@ -4,6 +4,10 @@ import type {
 } from "#/accounts/accounts-service.ts";
 import { Worlds } from "./worlds.ts";
 
+export type { Account, AccountUsageSummary };
+
+export { Worlds };
+
 /**
  * InternalWorlds is a TypeScript SDK for internal/owner-only operations
  * on the Worlds API.

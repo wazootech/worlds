@@ -15,7 +15,7 @@ Deno.test("DenoKvAccountsService.set and get - create and retrieve account", asy
     description: "Test account",
     plan: "free_plan",
     accessControl: {
-      stores: ["store-1", "store-2"],
+      worlds: ["store-1", "store-2"],
     },
   };
 
@@ -26,7 +26,7 @@ Deno.test("DenoKvAccountsService.set and get - create and retrieve account", asy
   assertEquals(retrieved.id, "test-account-1");
   assertEquals(retrieved.description, "Test account");
   assertEquals(retrieved.plan, "free_plan");
-  assertEquals(retrieved.accessControl.stores, ["store-1", "store-2"]);
+  assertEquals(retrieved.accessControl.worlds, ["store-1", "store-2"]);
 
   kv.close();
 });
@@ -50,7 +50,7 @@ Deno.test("DenoKvAccountsService.set - updates existing account", async () => {
     description: "Original description",
     plan: "free_plan",
     accessControl: {
-      stores: ["store-1"],
+      worlds: ["store-1"],
     },
   };
 
@@ -60,7 +60,7 @@ Deno.test("DenoKvAccountsService.set - updates existing account", async () => {
     ...account,
     description: "Updated description",
     accessControl: {
-      stores: ["store-1", "store-2", "store-3"],
+      worlds: ["store-1", "store-2", "store-3"],
     },
   };
 
@@ -69,7 +69,7 @@ Deno.test("DenoKvAccountsService.set - updates existing account", async () => {
 
   assertExists(retrieved);
   assertEquals(retrieved.description, "Updated description");
-  assertEquals(retrieved.accessControl.stores.length, 3);
+  assertEquals(retrieved.accessControl.worlds.length, 3);
 
   kv.close();
 });
@@ -83,7 +83,7 @@ Deno.test("DenoKvAccountsService.remove - deletes account", async () => {
     description: "To be deleted",
     plan: "free_plan",
     accessControl: {
-      stores: [],
+      worlds: [],
     },
   };
 
@@ -106,8 +106,8 @@ Deno.test("DenoKvAccountsService.meter - records usage event and updates summary
     id: "event-1",
     accountId: "account-1",
     timestamp: Date.now(),
-    endpoint: "GET /stores/{storeId}",
-    params: { storeId: "store-1" },
+    endpoint: "GET /worlds/{worldId}",
+    params: { worldId: "store-1" },
     statusCode: 200,
   };
 
@@ -123,12 +123,12 @@ Deno.test("DenoKvAccountsService.meter - records usage event and updates summary
   const summaryKey = ["accounts", "account-1", "usage_summary"];
   const summaryResult = await kv.get<AccountUsageSummary>(summaryKey);
   assertExists(summaryResult.value);
-  assertEquals(summaryResult.value.stores["store-1"].reads, 1);
-  assertEquals(summaryResult.value.stores["store-1"].writes, 0);
-  assertEquals(summaryResult.value.stores["store-1"].queries, 0);
-  assertEquals(summaryResult.value.stores["store-1"].updates, 0);
+  assertEquals(summaryResult.value.worlds["store-1"].reads, 1);
+  assertEquals(summaryResult.value.worlds["store-1"].writes, 0);
+  assertEquals(summaryResult.value.worlds["store-1"].queries, 0);
+  assertEquals(summaryResult.value.worlds["store-1"].updates, 0);
   assertEquals(
-    summaryResult.value.stores["store-1"].updatedAt,
+    summaryResult.value.worlds["store-1"].updatedAt,
     event.timestamp,
   );
 
@@ -143,8 +143,8 @@ Deno.test("DenoKvAccountsService.meter - increments writes counter for POST", as
     id: "event-2",
     accountId: "account-2",
     timestamp: Date.now(),
-    endpoint: "POST /stores/{storeId}",
-    params: { storeId: "store-2" },
+    endpoint: "POST /worlds/{worldId}",
+    params: { worldId: "store-2" },
     statusCode: 204,
   };
 
@@ -153,8 +153,8 @@ Deno.test("DenoKvAccountsService.meter - increments writes counter for POST", as
   const summaryKey = ["accounts", "account-2", "usage_summary"];
   const summaryResult = await kv.get<AccountUsageSummary>(summaryKey);
   assertExists(summaryResult.value);
-  assertEquals(summaryResult.value.stores["store-2"].writes, 1);
-  assertEquals(summaryResult.value.stores["store-2"].reads, 0);
+  assertEquals(summaryResult.value.worlds["store-2"].writes, 1);
+  assertEquals(summaryResult.value.worlds["store-2"].reads, 0);
 
   kv.close();
 });
@@ -167,8 +167,8 @@ Deno.test("DenoKvAccountsService.meter - increments queries counter for SPARQL G
     id: "event-3",
     accountId: "account-3",
     timestamp: Date.now(),
-    endpoint: "GET /stores/{storeId}/sparql",
-    params: { storeId: "store-3" },
+    endpoint: "GET /worlds/{worldId}/sparql",
+    params: { worldId: "store-3" },
     statusCode: 200,
   };
 
@@ -177,8 +177,8 @@ Deno.test("DenoKvAccountsService.meter - increments queries counter for SPARQL G
   const summaryKey = ["accounts", "account-3", "usage_summary"];
   const summaryResult = await kv.get<AccountUsageSummary>(summaryKey);
   assertExists(summaryResult.value);
-  assertEquals(summaryResult.value.stores["store-3"].queries, 1);
-  assertEquals(summaryResult.value.stores["store-3"].updates, 0);
+  assertEquals(summaryResult.value.worlds["store-3"].queries, 1);
+  assertEquals(summaryResult.value.worlds["store-3"].updates, 0);
 
   kv.close();
 });
@@ -191,8 +191,8 @@ Deno.test("DenoKvAccountsService.meter - increments updates counter for SPARQL P
     id: "event-4",
     accountId: "account-4",
     timestamp: Date.now(),
-    endpoint: "POST /stores/{storeId}/sparql",
-    params: { storeId: "store-4" },
+    endpoint: "POST /worlds/{worldId}/sparql",
+    params: { worldId: "store-4" },
     statusCode: 204,
   };
 
@@ -201,8 +201,8 @@ Deno.test("DenoKvAccountsService.meter - increments updates counter for SPARQL P
   const summaryKey = ["accounts", "account-4", "usage_summary"];
   const summaryResult = await kv.get<AccountUsageSummary>(summaryKey);
   assertExists(summaryResult.value);
-  assertEquals(summaryResult.value.stores["store-4"].updates, 1);
-  assertEquals(summaryResult.value.stores["store-4"].queries, 0);
+  assertEquals(summaryResult.value.worlds["store-4"].updates, 1);
+  assertEquals(summaryResult.value.worlds["store-4"].queries, 0);
 
   kv.close();
 });
@@ -218,8 +218,8 @@ Deno.test("DenoKvAccountsService.meter - handles multiple events for same accoun
     id: "event-5a",
     accountId: "account-5",
     timestamp: baseTimestamp,
-    endpoint: "GET /stores/{storeId}",
-    params: { storeId: "store-5" },
+    endpoint: "GET /worlds/{worldId}",
+    params: { worldId: "store-5" },
     statusCode: 200,
   });
 
@@ -227,8 +227,8 @@ Deno.test("DenoKvAccountsService.meter - handles multiple events for same accoun
     id: "event-5b",
     accountId: "account-5",
     timestamp: baseTimestamp + 100,
-    endpoint: "GET /stores/{storeId}",
-    params: { storeId: "store-5" },
+    endpoint: "GET /worlds/{worldId}",
+    params: { worldId: "store-5" },
     statusCode: 200,
   });
 
@@ -236,18 +236,18 @@ Deno.test("DenoKvAccountsService.meter - handles multiple events for same accoun
     id: "event-5c",
     accountId: "account-5",
     timestamp: baseTimestamp + 200,
-    endpoint: "POST /stores/{storeId}",
-    params: { storeId: "store-5" },
+    endpoint: "POST /worlds/{worldId}",
+    params: { worldId: "store-5" },
     statusCode: 204,
   });
 
   const summaryKey = ["accounts", "account-5", "usage_summary"];
   const summaryResult = await kv.get<AccountUsageSummary>(summaryKey);
   assertExists(summaryResult.value);
-  assertEquals(summaryResult.value.stores["store-5"].reads, 2);
-  assertEquals(summaryResult.value.stores["store-5"].writes, 1);
+  assertEquals(summaryResult.value.worlds["store-5"].reads, 2);
+  assertEquals(summaryResult.value.worlds["store-5"].writes, 1);
   assertEquals(
-    summaryResult.value.stores["store-5"].updatedAt,
+    summaryResult.value.worlds["store-5"].updatedAt,
     baseTimestamp + 200,
   );
 
@@ -264,8 +264,8 @@ Deno.test("DenoKvAccountsService.meter - handles multiple stores for same accoun
     id: "event-6a",
     accountId: "account-6",
     timestamp,
-    endpoint: "GET /stores/{storeId}",
-    params: { storeId: "store-a" },
+    endpoint: "GET /worlds/{worldId}",
+    params: { worldId: "store-a" },
     statusCode: 200,
   });
 
@@ -273,18 +273,18 @@ Deno.test("DenoKvAccountsService.meter - handles multiple stores for same accoun
     id: "event-6b",
     accountId: "account-6",
     timestamp: timestamp + 100,
-    endpoint: "GET /stores/{storeId}",
-    params: { storeId: "store-b" },
+    endpoint: "GET /worlds/{worldId}",
+    params: { worldId: "store-b" },
     statusCode: 200,
   });
 
   const summaryKey = ["accounts", "account-6", "usage_summary"];
   const summaryResult = await kv.get<AccountUsageSummary>(summaryKey);
   assertExists(summaryResult.value);
-  assertEquals(summaryResult.value.stores["store-a"].reads, 1);
-  assertEquals(summaryResult.value.stores["store-b"].reads, 1);
-  assert(summaryResult.value.stores["store-a"]);
-  assert(summaryResult.value.stores["store-b"]);
+  assertEquals(summaryResult.value.worlds["store-a"].reads, 1);
+  assertEquals(summaryResult.value.worlds["store-b"].reads, 1);
+  assert(summaryResult.value.worlds["store-a"]);
+  assert(summaryResult.value.worlds["store-b"]);
 
   kv.close();
 });

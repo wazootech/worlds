@@ -8,8 +8,10 @@ const appContext = kvAppContext(kv);
 const app = new Router();
 
 const routes = [
-  "v1/routes/stores/route.ts",
-  "v1/routes/stores/sparql/route.ts",
+  "v1/routes/worlds/route.ts",
+  "v1/routes/worlds/sparql/route.ts",
+  "v1/routes/accounts/route.ts",
+  "v1/routes/usage/route.ts",
 ];
 
 for (const specifier of routes) {

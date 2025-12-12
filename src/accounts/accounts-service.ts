@@ -68,9 +68,9 @@ export type AccountPlan = "free_plan" | "pro_plan";
  */
 export interface AccountAccessControl {
   /**
-   * stores is a list of store IDs this account has access to.
+   * worlds is a list of world IDs this account has access to.
    */
-  stores: string[];
+  worlds: string[];
 }
 
 /**
@@ -78,38 +78,38 @@ export interface AccountAccessControl {
  * manages this summary automatically enabling quick access to usage data.
  */
 export interface AccountUsageSummary {
-  stores: {
-    [storeId: string]: StoreUsageSummary;
+  worlds: {
+    [worldId: string]: WorldUsageSummary;
   };
 }
 
 /**
- * StoreUsageSummary is a summary of usage for a store. The system
+ * WorldUsageSummary is a summary of usage for a world. The system
  * manages this summary automatically enabling quick access to usage data.
  */
-export interface StoreUsageSummary {
+export interface WorldUsageSummary {
   /**
-   * reads is the total number of reads associated with the store.
+   * reads is the total number of reads associated with the world.
    */
   reads: number;
 
   /**
-   * writes is the total number of writes associated with the store.
+   * writes is the total number of writes associated with the world.
    */
   writes: number;
 
   /**
-   * queries is the total number of queries associated with the store.
+   * queries is the total number of queries associated with the world.
    */
   queries: number;
 
   /**
-   * updates is the total number of updates associated with the store.
+   * updates is the total number of updates associated with the world.
    */
   updates: number;
 
   /**
-   * updatedAt is the Unix timestamp in milliseconds the store was last updated.
+   * updatedAt is the Unix timestamp in milliseconds the world was last updated.
    */
   updatedAt: number;
 }
@@ -153,9 +153,9 @@ export interface AccountUsageEvent {
  * AccountUsageEventEndpoint is a valid HTTP method and pathname.
  */
 type AccountUsageEventEndpoint =
-  | "GET /stores/{storeId}"
-  | "POST /stores/{storeId}"
-  | "PUT /stores/{storeId}"
-  | "DELETE /stores/{storeId}"
-  | "GET /stores/{storeId}/sparql"
-  | "POST /stores/{storeId}/sparql";
+  | "GET /worlds/{worldId}"
+  | "POST /worlds/{worldId}"
+  | "PUT /worlds/{worldId}"
+  | "DELETE /worlds/{worldId}"
+  | "GET /worlds/{worldId}/sparql"
+  | "POST /worlds/{worldId}/sparql";

@@ -1,24 +1,31 @@
 import type { AccountUsageSummary } from "#/accounts/accounts-service.ts";
 
+export type { AccountUsageSummary };
+
+/**
+ * WorldsOptions are the options for the Worlds API SDK.
+ */
+export interface WorldsOptions {
+  baseUrl: string;
+  apiKey: string;
+}
+
 /**
  * Worlds is a TypeScript SDK for the Worlds API.
  */
 export class Worlds {
   public constructor(
-    public readonly options: {
-      baseUrl: string;
-      apiKey: string;
-    },
+    public readonly options: WorldsOptions,
   ) {}
 
   /**
-   * getStore gets a store from the Worlds API.
+   * getWorld gets a world from the Worlds API.
    */
-  public async getStore(
-    storeId: string,
+  public async getWorld(
+    worldId: string,
     encoding: string,
   ): Promise<string | null> {
-    const response = await fetch(`${this.options.baseUrl}/stores/${storeId}`, {
+    const response = await fetch(`${this.options.baseUrl}/worlds/${worldId}`, {
       headers: {
         Authorization: `Bearer ${this.options.apiKey}`,
         "Accept": encoding,
@@ -36,20 +43,20 @@ export class Worlds {
   }
 
   /**
-   * setStore sets a store in the Worlds API.
+   * setWorld sets a world in the Worlds API.
    */
-  public async setStore(
-    storeId: string,
-    store: string,
+  public async setWorld(
+    worldId: string,
+    world: string,
     encoding: string,
   ): Promise<void> {
-    const response = await fetch(`${this.options.baseUrl}/stores/${storeId}`, {
+    const response = await fetch(`${this.options.baseUrl}/worlds/${worldId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${this.options.apiKey}`,
         "Content-Type": encoding,
       },
-      body: store,
+      body: world,
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -57,14 +64,14 @@ export class Worlds {
   }
 
   /**
-   * addQuads adds quads to a store in the Worlds API.
+   * addQuads adds quads to a world in the Worlds API.
    */
   public async addQuads(
-    storeId: string,
+    worldId: string,
     data: string,
     encoding: string,
   ): Promise<void> {
-    const response = await fetch(`${this.options.baseUrl}/stores/${storeId}`, {
+    const response = await fetch(`${this.options.baseUrl}/worlds/${worldId}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${this.options.apiKey}`,
@@ -78,10 +85,10 @@ export class Worlds {
   }
 
   /**
-   * removeStore removes a store from the Worlds API.
+   * removeWorld removes a world from the Worlds API.
    */
-  public async removeStore(storeId: string): Promise<void> {
-    const response = await fetch(`${this.options.baseUrl}/stores/${storeId}`, {
+  public async removeWorld(worldId: string): Promise<void> {
+    const response = await fetch(`${this.options.baseUrl}/worlds/${worldId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${this.options.apiKey}`,
@@ -93,16 +100,16 @@ export class Worlds {
   }
 
   /**
-   * query executes a SPARQL query against a store in the Worlds API.
+   * queryWorld executes a SPARQL query against a world in the Worlds API.
    * Uses POST with application/sparql-query for robustness.
    */
-  public async query(
-    storeId: string,
+  public async queryWorld(
+    worldId: string,
     query: string,
     // deno-lint-ignore no-explicit-any
   ): Promise<any> {
     const response = await fetch(
-      `${this.options.baseUrl}/stores/${storeId}/sparql`,
+      `${this.options.baseUrl}/worlds/${worldId}/sparql`,
       {
         method: "POST",
         headers: {
@@ -122,14 +129,14 @@ export class Worlds {
   }
 
   /**
-   * update executes a SPARQL update against a store in the Worlds API.
+   * updateWorld executes a SPARQL update against a world in the Worlds API.
    */
-  public async update(
-    storeId: string,
+  public async updateWorld(
+    worldId: string,
     update: string,
   ): Promise<void> {
     const response = await fetch(
-      `${this.options.baseUrl}/stores/${storeId}/sparql`,
+      `${this.options.baseUrl}/worlds/${worldId}/sparql`,
       {
         method: "POST",
         headers: {

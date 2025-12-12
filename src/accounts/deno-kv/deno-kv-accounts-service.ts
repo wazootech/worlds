@@ -48,7 +48,7 @@ export class DenoKvAccountsService implements AccountsService {
       this.usageSummaryKey(event.accountId),
     );
     const usageSummary: AccountUsageSummary = usageSummaryResult.value ??
-      { stores: {} };
+      { worlds: {} };
     updateUsageSummary(usageSummary, event);
 
     const commitResult = await this.kv.atomic()
