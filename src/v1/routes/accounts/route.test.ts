@@ -36,6 +36,7 @@ Deno.test("POST /v1/accounts creates a new account", async () => {
   assertEquals(created.id, "11111111-1111-4111-8111-111111111111");
   assertEquals(created.description, "Test account");
   assertEquals(created.plan, "free_plan");
+  assertEquals(created.apiKey.startsWith("sk_worlds_"), true);
 });
 
 Deno.test("GET /v1/accounts/:accountId retrieves an account", async () => {

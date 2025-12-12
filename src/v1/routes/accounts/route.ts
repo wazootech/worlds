@@ -4,6 +4,9 @@ import type { Account } from "#/accounts/accounts-service.ts";
 import { isAccount } from "#/accounts/accounts-service.ts";
 import { authorizeRequest } from "#/accounts/authorize.ts";
 
+// Prefix with 'sk_worlds_' for clear identification.
+export const apiKeyPrefix = "sk_worlds_";
+
 export default ({ accountsService, oxigraphService }: AppContext) => {
   return new Router()
     .get(
@@ -45,8 +48,9 @@ export default ({ accountsService, oxigraphService }: AppContext) => {
         }
 
         // Generate a cryptographically secure API key
-        // Prefix with 'sk_live_' for clear identification
-        const apiKey = `sk_live_${crypto.randomUUID().replace(/-/g, "")}`;
+        const apiKey = `${apiKeyPrefix}${
+          crypto.randomUUID().replace(/-/g, "")
+        }`;
         account.apiKey = apiKey;
 
         // Validate account
