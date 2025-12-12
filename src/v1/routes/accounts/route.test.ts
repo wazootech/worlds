@@ -8,7 +8,7 @@ import type { Account } from "#/accounts/accounts-service.ts";
 const kv = await Deno.openKv(":memory:");
 const app = await createApp(kvAppContext(kv));
 
-Deno.env.set("ADMIN_ACCOUNT_ID", "admin-secret-token");
+Deno.env.set("ADMIN_API_KEY", "admin-secret-token");
 
 const testAccount: Account = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -25,7 +25,7 @@ Deno.test("POST /v1/accounts creates a new account", async () => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+      "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
     },
     body: JSON.stringify(testAccount),
   });
@@ -46,7 +46,7 @@ Deno.test("GET /v1/accounts/:accountId retrieves an account", async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+        "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
       },
       body: JSON.stringify({
         id: "22222222-2222-4222-8222-222222222222",
@@ -63,7 +63,7 @@ Deno.test("GET /v1/accounts/:accountId retrieves an account", async () => {
     {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+        "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
       },
     },
   );
@@ -82,7 +82,7 @@ Deno.test("PUT /v1/accounts/:accountId updates an account", async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+        "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
       },
       body: JSON.stringify({
         id: "33333333-3333-4333-8333-333333333333",
@@ -108,7 +108,7 @@ Deno.test("PUT /v1/accounts/:accountId updates an account", async () => {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+        "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
       },
       body: JSON.stringify(updatedAccount),
     },
@@ -123,7 +123,7 @@ Deno.test("PUT /v1/accounts/:accountId updates an account", async () => {
       {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+          "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
         },
       },
     ),
@@ -141,7 +141,7 @@ Deno.test("DELETE /v1/accounts/:accountId removes an account", async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+        "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
       },
       body: JSON.stringify({
         id: "44444444-4444-4444-8444-444444444444",
@@ -158,7 +158,7 @@ Deno.test("DELETE /v1/accounts/:accountId removes an account", async () => {
     {
       method: "DELETE",
       headers: {
-        "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+        "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
       },
     },
   );
@@ -172,7 +172,7 @@ Deno.test("DELETE /v1/accounts/:accountId removes an account", async () => {
       {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+          "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
         },
       },
     ),
@@ -197,7 +197,7 @@ Deno.test("GET /v1/accounts/:accountId returns 404 for non-existent account", as
   const req = new Request("http://localhost/v1/accounts/non-existent", {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+      "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
     },
   });
   const res = await app.fetch(req);
@@ -209,7 +209,7 @@ Deno.test("PUT /v1/accounts/:accountId returns 400 for ID mismatch", async () =>
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+      "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
     },
     body: JSON.stringify({
       id: "account-b",
@@ -230,7 +230,7 @@ Deno.test("POST /v1/accounts returns 409 if account already exists", async () =>
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+        "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
       },
       body: JSON.stringify({
         id: accountId,
@@ -246,7 +246,7 @@ Deno.test("POST /v1/accounts returns 409 if account already exists", async () =>
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+      "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
     },
     body: JSON.stringify({
       id: accountId,
@@ -277,7 +277,7 @@ Deno.test("GET /v1/accounts/:accountId/worlds retrieves account worlds metadata"
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+        "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
       },
       body: JSON.stringify({
         id: accountId,
@@ -294,7 +294,7 @@ Deno.test("GET /v1/accounts/:accountId/worlds retrieves account worlds metadata"
     {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${Deno.env.get("ADMIN_ACCOUNT_ID")}`,
+        "Authorization": `Bearer ${Deno.env.get("ADMIN_API_KEY")}`,
       },
     },
   );

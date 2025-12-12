@@ -6,7 +6,7 @@ import type { Account } from "#/accounts/accounts-service.ts";
 const kv = await Deno.openKv(":memory:");
 const appContext = kvAppContext(kv);
 const app = await createApp(appContext);
-Deno.env.set("ADMIN_ACCOUNT_ID", "admin-secret-token");
+Deno.env.set("ADMIN_API_KEY", "admin-secret-token");
 
 Deno.test("Security: world creation automatically grants access", async () => {
   const testAccount: Account = {
@@ -192,7 +192,7 @@ Deno.test("Security: Admin can delete any world", async () => {
   assertEquals(createRes.status, 204);
 
   // Admin deletes the store
-  const adminAccountId = Deno.env.get("ADMIN_ACCOUNT_ID")!;
+  const adminAccountId = Deno.env.get("ADMIN_API_KEY")!;
   const deleteReq = new Request(`http://localhost/v1/worlds/${worldId}`, {
     method: "DELETE",
     headers: {

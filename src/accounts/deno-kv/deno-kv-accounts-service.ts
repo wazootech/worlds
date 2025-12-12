@@ -44,6 +44,7 @@ export class DenoKvAccountsService implements AccountsService {
     if (!accountIdResult.value) {
       return null;
     }
+
     return await this.get(accountIdResult.value);
   }
 

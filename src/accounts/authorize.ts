@@ -1,5 +1,8 @@
 import type { Account, AccountsService } from "./accounts-service.ts";
 
+// Prefix with 'sk_worlds_' for clear identification.
+export const apiKeyPrefix = "sk_worlds_";
+
 /**
  * AuthorizedRequest is the result of a successful authentication.
  */
@@ -32,7 +35,7 @@ export async function authorize(
   apiKey: string,
 ): Promise<AuthorizedRequest | null> {
   // Service Role / Root Key check
-  if (apiKey === Deno.env.get("ADMIN_ACCOUNT_ID")) {
+  if (apiKey === Deno.env.get("ADMIN_API_KEY")) {
     return { admin: true };
   }
 

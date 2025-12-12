@@ -2,10 +2,7 @@ import { Router } from "@fartlabs/rt";
 import type { AppContext } from "#/app-context.ts";
 import type { Account } from "#/accounts/accounts-service.ts";
 import { isAccount } from "#/accounts/accounts-service.ts";
-import { authorizeRequest } from "#/accounts/authorize.ts";
-
-// Prefix with 'sk_worlds_' for clear identification.
-export const apiKeyPrefix = "sk_worlds_";
+import { apiKeyPrefix, authorizeRequest } from "#/accounts/authorize.ts";
 
 export default ({ accountsService, oxigraphService }: AppContext) => {
   return new Router()

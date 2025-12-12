@@ -23,7 +23,7 @@ const testAccount: Account = {
 await appContext.accountsService.set(testAccount);
 
 const testApiKey = "sk_test_msg";
-Deno.env.set("ADMIN_ACCOUNT_ID", "admin-secret-token");
+Deno.env.set("ADMIN_API_KEY", "admin-secret-token");
 
 Deno.test("GET /v1/usage returns usage summary for authenticated user", async () => {
   // First, create some usage data
@@ -97,7 +97,7 @@ Deno.test("GET /v1/usage with admin account and accountId query param", async ()
   };
   await appContext.accountsService.meter(event);
 
-  const adminAccountId = Deno.env.get("ADMIN_ACCOUNT_ID") || "admin";
+  const adminAccountId = Deno.env.get("ADMIN_API_KEY") || "admin";
   const req = new Request(
     `http://localhost/v1/usage?accountId=55555555-5555-4555-8555-555555555555`,
     {
@@ -116,7 +116,7 @@ Deno.test("GET /v1/usage with admin account and accountId query param", async ()
 });
 
 Deno.test("GET /v1/usage with admin account but no accountId returns 400", async () => {
-  const adminAccountId = Deno.env.get("ADMIN_ACCOUNT_ID") || "admin";
+  const adminAccountId = Deno.env.get("ADMIN_API_KEY") || "admin";
   const req = new Request("http://localhost/v1/usage", {
     method: "GET",
     headers: {

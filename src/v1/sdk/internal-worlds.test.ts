@@ -7,12 +7,12 @@ import type { Account } from "#/accounts/accounts-service.ts";
 import { InternalWorlds } from "./internal-worlds.ts";
 
 const kv = await Deno.openKv(":memory:");
-Deno.env.set("ADMIN_ACCOUNT_ID", "admin-secret-token");
+Deno.env.set("ADMIN_API_KEY", "admin-secret-token");
 
 Deno.test("e2e InternalWorlds", async (t) => {
   const sdk = new InternalWorlds({
     baseUrl: "http://localhost/v1",
-    apiKey: Deno.env.get("ADMIN_ACCOUNT_ID")!,
+    apiKey: Deno.env.get("ADMIN_API_KEY")!,
   });
 
   globalThis.fetch = (
