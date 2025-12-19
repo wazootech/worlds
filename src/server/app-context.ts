@@ -19,10 +19,17 @@ export interface AppContext {
 export async function sqliteAppContext(dbPath: string): Promise<AppContext> {
   const db = await openDatabase(dbPath);
   await db.executeMultiple(systemSchema);
+
   return {
     oxigraphService: new SqliteOxigraphService(
       db,
-      dbPath === ":memory:" ? "memory" : "file",
+      (id: string) => {
+        if (dbPath === ":memory:") {
+          return openDatabase(":memory:");
+        }
+
+        return openDatabase(`world_${id}.db`);
+      },
     ),
     accountsService: new SqliteAccountsService(db),
     limitsService: new SqliteLimitsService(db),
