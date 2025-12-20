@@ -13,6 +13,11 @@
 
 ## Executive Summary
 
+> [!IMPORTANT]
+> **Status: Alpha.** The current implementation provides a robust "Hybrid
+> Statements Store" using SQLite and Oxigraph. Some features described below
+> (Vector Search, AISDK Tools) are currently in active development.
+
 **Worlds API™** is an edge-compatible infrastructure layer designed to provide
 AI agents with "long-term memory" and reasoning capabilities. Unlike vector-only
 RAG systems, Worlds API utilizes **RDF (Resource Description Framework)** and
@@ -32,7 +37,8 @@ brother of the person who invented X?").
   Full-Text Search (FTS) with
   [Reciprocal Rank Fusion](https://simonwillison.net/2024/Oct/4/hybrid-full-text-search-and-vector-search-with-sqlite/)
   (RRF) for comprehensive
-  [world models](https://www.nvidia.com/en-us/glossary/world-models/).
+  [world models](https://www.nvidia.com/en-us/glossary/world-models/). _(Status:
+  Hybrid Search & RRF are currently in development. V1 uses optimized SQL FTS.)_
 
 ### Scope
 
@@ -276,6 +282,22 @@ between our internal `StatementRow` and the standard `@rdfjs/types` data model.
 - **Oxigraph:** For high-performance SPARQL execution.
 - **N3.js:** For fast Turtle/N-Quads parsing and serialization.
 
+```ts
+/**
+ * fromQuad converts a Quad to a StatementRow.
+ */
+export function fromQuad(quad: Quad): StatementRow {
+  throw new Error("Not implemented");
+}
+
+/**
+ * toQuad converts a StatementRow to a Quad.
+ */
+export function toQuad(statement: StatementRow): Quad {
+  throw new Error("Not implemented");
+}
+```
+
 ## Web Application: The Dashboard
 
 This Next.js project serves as the frontend dashboard for the Worlds platform—a
@@ -346,6 +368,10 @@ their "World" using natural language tool calls.
 The tools are designed to be **model-agnostic**. They do not require the agent
 to know SPARQL.
 
+> [!NOTE]
+> **Status: Planned.** The AISDK tools (`remember`, `recall`, `forget`) are
+> defined in the design but are not yet exported in `v0.1.0`.
+
 ```ts
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
@@ -374,7 +400,7 @@ The API is a RESTful HTTP server programmed in (Deno) TypeScript.
 ### Control Plane Endpoints (Internal)
 
 These endpoints are used for account management and are typically restricted to
-admin or service-owner contexts.
+admin or service-owner contexts (via Service Role / Root Key).
 
 - `POST /v1/accounts` - Create a new account.
 - `GET /v1/accounts` - List all accounts.
@@ -396,8 +422,11 @@ admin or service-owner contexts.
   `application/ld+json`, `application/rdf+xml` as `Accept` headers.
 - `PUT /v1/worlds/:world` - Create or completely replace a World.
 - `PATCH /v1/worlds/:world` - Update World metadata.
-- `POST /v1/worlds/:world` - Ingest knowledge to a World.
+- `POST /v1/worlds/:world` - Ingest knowledge to a World. Supports **Lazy
+  Claiming**: if the world does not exist and the user has sufficient quota, it
+  is automatically created.
 - `POST /v1/worlds/:world/sparql` - SPARQL Query (Read) & Update (Write).
+  Supports **Lazy Claiming** on Update.
 - `DELETE /v1/worlds/:world` - Wipe memory.
 - `GET /v1/worlds/:world/usage` - Get usage buckets for a specific World.
 - `GET /v1/worlds/:world/statements` - Search statements via `?query=...` param.
