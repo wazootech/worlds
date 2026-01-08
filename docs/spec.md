@@ -500,7 +500,8 @@ admin or service-owner contexts (via Service Role / Root Key).
   Claiming**: if the world does not exist and the user has sufficient quota, it
   is automatically created.
 - `POST /v1/worlds/:world/sparql` - SPARQL Query (Read) & Update (Write).
-  Supports **Lazy Claiming** on Update.
+  Accepts `application/sparql-query` or `application/sparql-update`
+  Content-Type. Supports **Lazy Claiming** on Update.
 - `DELETE /v1/worlds/:world` - Wipe memory.
 - `GET /v1/worlds/:world/usage` - Get usage buckets for a specific World.
 - `GET /v1/worlds/:world/statements` - Search statements via `?query=...` param.
