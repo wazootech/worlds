@@ -4,13 +4,13 @@ import { fromTerm } from "./from-term.ts";
 
 /**
  * fromQuad converts an RDF/JS Quad to a HydratedStatement.
- * 
+ *
  * This function extracts the string values from the Quad's terms and
  * constructs a flat representation suitable for database storage.
- * 
+ *
  * @param quad - The RDF/JS Quad to convert
  * @returns A HydratedStatement with string values for all components
- * 
+ *
  * @example
  * ```ts
  * const quad = quad(
@@ -33,13 +33,17 @@ import { fromTerm } from "./from-term.ts";
  */
 export function fromQuad(quad: Quad): HydratedStatement {
   const objectTerm = fromTerm(quad.object);
-  
+
   return {
     subject: quad.subject.value,
     predicate: quad.predicate.value,
     object: objectTerm.value,
     graph: quad.graph.termType === "DefaultGraph" ? "" : quad.graph.value,
-    term_type: quad.object.termType as "NamedNode" | "BlankNode" | "Literal" | "DefaultGraph",
+    term_type: quad.object.termType as
+      | "NamedNode"
+      | "BlankNode"
+      | "Literal"
+      | "DefaultGraph",
     object_language: objectTerm.language || "",
     object_datatype: objectTerm.datatype || "",
   };

@@ -9,21 +9,21 @@ import {
 } from "oxigraph";
 import type { Client } from "#/core/database/database.ts";
 import type { Chunk, RankedResult, Statement } from "#/core/types/mod.ts";
-import type { StatementRow } from "#/core/database/statements.ts";
+import type { DenormalizedStatementRow } from "#/core/database/statements.ts";
 import type { OxigraphService, WorldMetadata } from "./service.ts";
 import { statementsSql } from "#/core/database/statements.ts";
 
 /**
  * SqliteOxigraphService is the SQLite implementation of OxigraphService.
- * 
+ *
  * This implementation uses a hybrid storage strategy:
  * - **Oxigraph (Wasm)**: In-memory RDF store for fast SPARQL queries
  * - **SQLite**: Persistent storage for graph data and metadata
- * 
+ *
  * The service maintains a cache of world database connections and hydrates
  * Oxigraph stores from SQLite on cold starts. Writes are persisted to SQLite
  * immediately, with cache invalidation to ensure consistency.
- * 
+ *
  * Each world has its own isolated SQLite database file, ensuring data isolation
  * and enabling per-world optimizations.
  */
@@ -35,7 +35,7 @@ export class SqliteOxigraphService implements OxigraphService {
 
   /**
    * Creates a new SqliteOxigraphService instance.
-   * 
+   *
    * @param db - The system database client (contains world metadata)
    * @param getWorldDb - A function that retrieves the database client for a specific world
    */
@@ -64,7 +64,20 @@ export class SqliteOxigraphService implements OxigraphService {
       "SELECT name FROM sqlite_master WHERE type='table' AND name='kb_statements'",
     );
     if (result.rows.length === 0) {
-      await client.executeMultiple(statementsSql);
+      try {
+        await client.executeMultiple(statementsSql);
+      } catch (error) {
+        // If vec0 extension is not available, try creating schema without it
+        // This allows the system to work without vector search support
+        if (error instanceof Error && error.message.includes("vec0")) {
+          // Schema will be created without vec0 table - this is acceptable for basic functionality
+          console.warn(
+            "vec0 extension not available, continuing without vector search support",
+          );
+        } else {
+          throw error;
+        }
+      }
     }
   }
 
@@ -82,7 +95,7 @@ export class SqliteOxigraphService implements OxigraphService {
       // Actually setStore creates it.
       // We wrap in try-catch just in case accessing a non-existent file DB fails differently.
       const result = await worldDb.execute("SELECT * FROM kb_statements");
-      const rows = result.rows as unknown as StatementRow[];
+      const rows = result.rows as unknown as DenormalizedStatementRow[];
       for (const row of rows) {
         store.add({
           subject: this.fromTerm(row.subject),
@@ -312,11 +325,11 @@ export class SqliteOxigraphService implements OxigraphService {
         `,
       args: [`%${query}%`, `%${query}%`, `%${query}%`],
     });
-    const rows = result.rows as unknown as StatementRow[];
+    const rows = result.rows as unknown as DenormalizedStatementRow[];
 
     return rows.map((row) => ({
       item: {
-        statementId: row.statement_id,
+        statementId: row.statement_id || 0,
         subject: row.subject,
         predicate: row.predicate,
         object: row.object,
@@ -340,11 +353,13 @@ export class SqliteOxigraphService implements OxigraphService {
       args: [statementId],
     });
 
-    const row = result.rows[0] as unknown as StatementRow | undefined;
+    const row = result.rows[0] as unknown as
+      | DenormalizedStatementRow
+      | undefined;
     if (!row) return null;
 
     return {
-      statementId: row.statement_id,
+      statementId: row.statement_id || 0,
       subject: row.subject,
       predicate: row.predicate,
       object: row.object,

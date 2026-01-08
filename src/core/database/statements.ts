@@ -57,6 +57,22 @@ export interface HydratedStatement {
   object_datatype?: string;
 }
 
+/**
+ * DenormalizedStatementRow represents a row from the denormalized kb_statements table.
+ * This table stores statements with string values directly (not normalized with IDs).
+ * Used for simplified storage and quick hydration of Oxigraph stores.
+ */
+export interface DenormalizedStatementRow {
+  statement_id?: number;
+  subject: string;
+  predicate: string;
+  object: string;
+  graph: string;
+  term_type: "NamedNode" | "BlankNode" | "Literal" | "DefaultGraph";
+  object_language?: string;
+  object_datatype?: string;
+}
+
 export interface StatementsStore {
   // GRAPHS.
 

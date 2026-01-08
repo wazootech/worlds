@@ -64,7 +64,7 @@ export default (
             return new Response("World not found", { status: 404 });
           }
 
-          const data = await encodeStore(store, encoding as EncodableEncoding);
+          const dataStream = encodeStore(store, encoding as EncodableEncoding);
           if (authorized.account) {
             const timestamp = Date.now();
             const id = ulid(timestamp);
@@ -77,7 +77,7 @@ export default (
               statusCode: 200,
             });
           }
-          return new Response(data, {
+          return new Response(dataStream, {
             headers: { "Content-Type": encoding },
           });
         } catch (_error) {

@@ -4,15 +4,15 @@ import type { HydratedStatement } from "#/core/database/statements.ts";
 
 /**
  * toTerm converts a HydratedStatement's object to an RDF/JS Term.
- * 
+ *
  * This function reconstructs the appropriate RDF Term type (NamedNode, BlankNode,
  * Literal, or DefaultGraph) from the database representation. For blank nodes,
  * it handles skolemized IRIs by converting them back to blank node identifiers.
- * 
+ *
  * @param statement - The HydratedStatement containing the object to convert
  * @param _skolemizedStatements - Additional statements for blank node reconstruction (currently unused)
  * @returns An RDF/JS Term instance
- * 
+ *
  * @example
  * ```ts
  * const statement: HydratedStatement = {

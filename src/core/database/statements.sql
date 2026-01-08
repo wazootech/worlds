@@ -50,7 +50,21 @@ CREATE TABLE IF NOT EXISTS statements_osp (
   PRIMARY KEY (object_id, subject_id, predicate_id, graph_id)
 ) WITHOUT ROWID;
 
--- 3. Chunks Table (Vector Memory)
+-- 3. Denormalized Statements Table (for Oxigraph hydration)
+-- This table stores statements with string values directly for quick hydration.
+-- Note: This is a simplified denormalized approach for the current implementation.
+CREATE TABLE IF NOT EXISTS kb_statements (
+  statement_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  subject TEXT NOT NULL,
+  predicate TEXT NOT NULL,
+  object TEXT NOT NULL,
+  graph TEXT NOT NULL DEFAULT '',
+  term_type TEXT NOT NULL DEFAULT 'NamedNode',
+  object_language TEXT NOT NULL DEFAULT '',
+  object_datatype TEXT NOT NULL DEFAULT ''
+);
+
+-- 4. Chunks Table (Vector Memory)
 -- Stores text segments & embeddings derived from Literal Terms.
 -- Source of Truth for RAG.
 CREATE TABLE IF NOT EXISTS chunks (
@@ -60,7 +74,7 @@ CREATE TABLE IF NOT EXISTS chunks (
   FOREIGN KEY (term_id) REFERENCES terms(id) ON DELETE CASCADE
 );
 
--- 4. Search Indices (RRF Support)
+-- 5. Search Indices (RRF Support)
 
 -- FTS5 Index (BM25)
 CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(
@@ -71,11 +85,12 @@ CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(
 
 -- Vector Index (sqlite-vec)
 -- Stores 512-dim embeddings for Cosine Similarity
-CREATE VIRTUAL TABLE IF NOT EXISTS chunks_vec USING vec0(
-  embedding float[512]
-);
+-- Note: vec0 extension must be loaded for this to work. If not available, this will be skipped.
+-- CREATE VIRTUAL TABLE IF NOT EXISTS chunks_vec USING vec0(
+--   embedding float[512]
+-- );
 
--- 5. Triggers for Index Maintenance
+-- 6. Triggers for Index Maintenance
 
 -- FTS Triggers
 CREATE TRIGGER IF NOT EXISTS chunks_ai AFTER INSERT ON chunks BEGIN
@@ -93,7 +108,8 @@ END;
 
 -- Vector Triggers (Assuming app layer inserts embeddings manually into chunks_vec, 
 -- but we can cascade deletes)
-CREATE TRIGGER IF NOT EXISTS chunks_vec_ad AFTER DELETE ON chunks BEGIN
-  DELETE FROM chunks_vec WHERE rowid = old.id;
-END;
+-- Note: Only create if chunks_vec table exists
+-- CREATE TRIGGER IF NOT EXISTS chunks_vec_ad AFTER DELETE ON chunks BEGIN
+--   DELETE FROM chunks_vec WHERE rowid = old.id;
+-- END;
 

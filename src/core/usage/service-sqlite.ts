@@ -5,20 +5,20 @@ import type { UsageBucketRow } from "#/core/database/system.ts";
 
 /**
  * SqliteUsageService is the SQLite implementation of UsageService.
- * 
+ *
  * This implementation stores usage events in the system database (`kb_usage` table),
  * aggregating them into time-bucketed summaries. Events are grouped by:
  * - Time bucket (currently using bucket_start_ts = 0, should be updated to use actual time buckets)
  * - Account ID
  * - Endpoint (method and pathname)
- * 
+ *
  * The service uses INSERT ... ON CONFLICT DO UPDATE to atomically increment counters,
  * ensuring thread-safe concurrent usage tracking.
  */
 export class SqliteUsageService implements UsageService {
   /**
    * Creates a new SqliteUsageService instance.
-   * 
+   *
    * @param db - The SQLite database client (system database)
    */
   constructor(private readonly db: Client) {}

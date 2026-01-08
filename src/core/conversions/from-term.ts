@@ -11,13 +11,13 @@ export interface TermValue {
 
 /**
  * fromTerm extracts the string value and metadata from an RDF/JS Term.
- * 
+ *
  * This function converts RDF Term types (NamedNode, BlankNode, Literal, DefaultGraph)
  * to their string representations for database storage.
- * 
+ *
  * @param term - The RDF/JS Term to convert
  * @returns A TermValue object containing the string value and optional metadata
- * 
+ *
  * @example
  * ```ts
  * const literalTerm = literal("Hello", "en");
@@ -52,4 +52,3 @@ export function fromTerm(term: Term): TermValue {
     }
   }
 }
-

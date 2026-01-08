@@ -5,14 +5,14 @@ import { toTerm } from "./to-term.ts";
 
 /**
  * toQuad converts a HydratedStatement to an RDF/JS Quad.
- * 
+ *
  * This function reconstructs an RDF quad from the flat database representation,
  * handling term type conversion and blank node deskolemization.
- * 
+ *
  * @param statement - The HydratedStatement to convert
  * @param skolemizedStatements - Additional statements needed for blank node reconstruction
  * @returns An RDF/JS Quad instance
- * 
+ *
  * @example
  * ```ts
  * const statement: HydratedStatement = {

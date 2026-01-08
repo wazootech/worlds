@@ -8,19 +8,19 @@ import type { AccountRow, ApiKeyRow } from "#/core/database/system.ts";
 
 /**
  * SqliteAccountsService is the SQLite implementation of AccountsService.
- * 
+ *
  * This implementation stores accounts and API keys in the system database:
  * - `kb_accounts`: Account metadata (ID, description, plan, timestamps)
  * - `kb_api_keys`: API key hashes and prefixes for authentication
  * - `kb_world_access`: Many-to-many relationship between accounts and worlds
- * 
+ *
  * API keys are stored as full hashes for security, with prefixes for quick lookup.
  * The service uses transactions to ensure atomicity of multi-table operations.
  */
 export class SqliteAccountsService implements AccountsService {
   /**
    * Creates a new SqliteAccountsService instance.
-   * 
+   *
    * @param db - The SQLite database client (system database)
    */
   constructor(private readonly db: Client) {}
