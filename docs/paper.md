@@ -254,6 +254,12 @@ A Next.js-based control plane allows humans to oversee their agents' memories.
 Users can visualize their Worlds, manage API keys, and monitor usage, ensuring
 full transparency into what the agent knows and how it reasons.
 
+A worlds grid
+([animated procedural planets](https://github.com/Deep-Fold/PixelPlanets)) where
+a user may navigate to a specific world.
+
+[![Clancy's Multiverse Simulator](https://github.com/user-attachments/assets/f12bb5e5-ac61-4b36-824d-c42a913044b2)](https://themidnightgospel.fandom.com/wiki/Multiverse_Simulator)
+
 ---
 
 ## 6. Glossary
@@ -268,14 +274,26 @@ full transparency into what the agent knows and how it reasons.
 | **SPARQL**         | The W3C standard query language for RDF graphs.                                             |
 | **Neuro-symbolic** | An AI system that combines the strengths of neural networks and structured data.            |
 
+<img width="1024" height="559" alt="Molecules are to RDF Statements as Atoms are to RDF Terms." src="https://github.com/user-attachments/assets/4371ca21-a2dc-486d-90cc-2dc386179f65" />
+
 ---
 
 ## 7. References
 
-1. **n3**: [github.com/rdfjs/N3.js](https://github.com/rdfjs/N3.js)
-2. **Willison, S.** (2024).
-   [_Hybrid full-text search and vector search with SQLite_](https://simonwillison.net/2024/Oct/4/hybrid-full-text-search-and-vector-search-with-sqlite/).
-3. **W3C**. (2013).
-   [_SPARQL 1.1 Query Language_](https://www.w3.org/TR/sparql11-query/).
-4. **Ha, D., & Schmidhuber, J.** (2018).
-   [_World Models_](https://arxiv.org/abs/1803.10122). arXiv:1803.10122.
+1. **Oxigraph**. (n.d.). Oxigraph: SPARQL graph database. GitHub.
+   https://github.com/oxigraph/oxigraph
+2. **RDF.js**. (n.d.). N3Store.js. RDF.js Documentation.
+   https://rdf.js.org/N3.js/docs/N3Store.html
+3. **Willison, S.** (2024, October 4). Hybrid full-text search and vector search
+   with SQLite. Simon Willison's Weblog.
+   https://simonwillison.net/2024/Oct/4/hybrid-full-text-search-and-vector-search-with-sqlite/
+4. **W3C**. (2013). SPARQL 1.1 Query Language. W3C Recommendation.
+   https://www.w3.org/TR/sparql11-query/
+5. **Ha, D., & Schmidhuber, J.** (2018). World Models. arXiv preprint
+   arXiv:1803.10122. https://worldmodels.github.io/
+6. **Worlds API™**. (2025). Worlds API™ Design Document. GitHub.
+   https://github.com/EthanThatOneKid/worlds-design
+7. **Arxiv**. (2024). Thinking with Knowledge Graphs.
+   https://arxiv.org/abs/2412.10654
+8. **Arxiv**. (2025). Jelly: RDF Serialization Format.
+   https://arxiv.org/abs/2506.11298
