@@ -45,7 +45,7 @@ Deno.test("Plans API routes - GET operations", async (t) => {
   });
 
   await t.step(
-    "GET /v1/plans/:plan returns 400 for invalid plan type",
+    "GET /v1/plans/:plan returns 404 for non-existent plan type",
     async () => {
       const req = new Request("http://localhost/v1/plans/nonexistent", {
         method: "GET",
@@ -54,7 +54,7 @@ Deno.test("Plans API routes - GET operations", async (t) => {
         },
       });
       const res = await app.fetch(req);
-      assertEquals(res.status, 400);
+      assertEquals(res.status, 404);
     },
   );
 

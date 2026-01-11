@@ -38,14 +38,10 @@ export function worldsKvdex(kv: Deno.Kv) {
   });
 }
 
-export type PlanType = z.infer<typeof planTypeSchema>;
-
-export const planTypeSchema = z.enum(["free", "pro"]).default("free");
-
 export type Plan = z.infer<typeof planSchema>;
 
 export const planSchema = z.object({
-  planType: planTypeSchema,
+  planType: z.string(),
   quotaRequestsPerMin: z.number().default(60),
   quotaStorageBytes: z.number().default(104857600),
 });
@@ -54,7 +50,7 @@ export type Account = z.infer<typeof accountSchema>;
 
 export const accountSchema = z.object({
   description: z.string().nullable(),
-  planType: planTypeSchema,
+  planType: z.string(),
   apiKey: z.string(),
   createdAt: z.number(),
   updatedAt: z.number(),

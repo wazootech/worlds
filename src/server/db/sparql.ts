@@ -29,6 +29,11 @@ export async function sparql(
     return new Response(null, { status: 204 });
   }
 
+  // TODO: Leverage existing, battle-tested SPARQL JSON serializer.
+  // https://comunica.dev/docs/query/advanced/result_formats/
+  // https://comunica.dev/docs/query/getting_started/query_app/#8--serializing-to-a-specific-result-format
+  //
+
   if (queryType.resultType === "bindings") {
     return await handleBindings(queryType);
   }
