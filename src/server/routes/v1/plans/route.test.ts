@@ -188,10 +188,10 @@ Deno.test("Plans API routes - PUT operations", async (t) => {
     async () => {
       // Create a non-admin account
       const createResult = await db.accounts.add({
+        id: "acc_plans_test",
         description: "Test account",
         planType: "free",
         apiKey: "test-api-key-456",
-        metadata: null,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         deletedAt: null,

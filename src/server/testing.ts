@@ -22,12 +22,13 @@ export async function createTestContext(): Promise<AppContext> {
 export async function createTestAccount(
   db: WorldsKvdex,
 ): Promise<{ id: string; apiKey: string }> {
+  const id = crypto.randomUUID();
   const apiKey = crypto.randomUUID();
   const result = await db.accounts.add({
+    id,
     description: "Test account",
     planType: "free",
     apiKey,
-    metadata: null,
     createdAt: Date.now(),
     updatedAt: Date.now(),
     deletedAt: null,

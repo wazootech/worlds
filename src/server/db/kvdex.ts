@@ -16,6 +16,7 @@ export function worldsKvdex(kv: Deno.Kv) {
     kv: kv,
     schema: {
       accounts: collection(accountSchema, {
+        idGenerator: (account) => account.id,
         indices: {
           apiKey: "secondary",
         },
@@ -49,10 +50,10 @@ export const planSchema = z.object({
 export type Account = z.infer<typeof accountSchema>;
 
 export const accountSchema = z.object({
+  id: z.string(),
   description: z.string().nullable(),
   planType: z.string(),
   apiKey: z.string(),
-  metadata: z.record(z.string(), z.string()).nullable(),
   createdAt: z.number(),
   updatedAt: z.number(),
   deletedAt: z.number().nullable(),

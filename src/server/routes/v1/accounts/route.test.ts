@@ -10,20 +10,20 @@ Deno.test("Accounts API routes", async (t) => {
     "GET /v1/accounts returns paginated list of accounts",
     async () => {
       const account1 = await testContext.db.accounts.add({
+        id: "acc_1",
         description: "Test account 1",
         planType: "free",
         apiKey: crypto.randomUUID(),
-        metadata: null,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         deletedAt: null,
       });
 
       const account2 = await testContext.db.accounts.add({
+        id: "acc_2",
         description: "Test account 2",
         planType: "pro",
         apiKey: crypto.randomUUID(),
-        metadata: null,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         deletedAt: null,
@@ -66,6 +66,7 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
         "Authorization": `Bearer ${testContext.admin!.apiKey}`,
       },
       body: JSON.stringify({
+        id: "acc_new",
         description: "Test account",
         planType: "free",
       }),
@@ -80,10 +81,10 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
   await t.step("GET /v1/accounts/:account retrieves an account", async () => {
     // Create an account directly using db
     const result = await testContext.db.accounts.add({
+      id: "acc_get",
       description: "Test account 2",
       planType: "pro",
       apiKey: crypto.randomUUID(),
-      metadata: null,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       deletedAt: null,
@@ -119,10 +120,10 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
   await t.step("PUT /v1/accounts/:account updates an account", async () => {
     // First create an account
     const createResult = await testContext.db.accounts.add({
+      id: "acc_put",
       description: "Original description",
       planType: "free",
       apiKey: crypto.randomUUID(),
-      metadata: null,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       deletedAt: null,
@@ -172,10 +173,10 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
   await t.step("DELETE /v1/accounts/:account removes an account", async () => {
     // First create an account
     const createResult = await testContext.db.accounts.add({
+      id: "acc_del",
       description: "To be deleted",
       planType: "free",
       apiKey: crypto.randomUUID(),
-      metadata: null,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       deletedAt: null,
@@ -220,10 +221,10 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
     async () => {
       // First create an account
       const createResult = await testContext.db.accounts.add({
+        id: "acc_rot",
         description: "Account to rotate",
         planType: "free",
         apiKey: crypto.randomUUID(),
-        metadata: null,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         deletedAt: null,
@@ -276,66 +277,8 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
     },
   );
 
-  await t.step("POST /v1/accounts handles metadata", async () => {
-    // Create account with metadata
-    const req = new Request("http://localhost/v1/accounts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${testContext.admin!.apiKey}`,
-      },
-      body: JSON.stringify({
-        description: "Metadata account",
-        planType: "free",
-        metadata: {
-          key: "value",
-          nested: "prop-123",
-        },
-      }),
-    });
-    const res = await app.fetch(req);
-    assertEquals(res.status, 201);
-
-    // Find the account to verify
-    const { result } = await testContext.db.accounts.getMany();
-    const account = result.find((r) =>
-      r.value.description === "Metadata account"
-    );
-    assert(account, "Account should verify");
-    assertEquals(account.value.metadata, {
-      key: "value",
-      nested: "prop-123",
-    });
-
-    // Update metadata
-    const updateReq = new Request(
-      `http://localhost/v1/accounts/${account.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${testContext.admin!.apiKey}`,
-        },
-        body: JSON.stringify({
-          description: "Updated metadata account",
-          planType: "free",
-          metadata: {
-            newKey: "newValue",
-          },
-        }),
-      },
-    );
-    const updateRes = await app.fetch(updateReq);
-    assertEquals(updateRes.status, 204);
-
-    // Verify update
-    const finalAccount = await testContext.db.accounts.find(account.id);
-    assertEquals(finalAccount?.value.metadata, {
-      key: "value",
-      nested: "prop-123",
-      newKey: "newValue",
-    });
-  });
+  // Metadata test removed
+  await Promise.resolve();
 
   testContext.kv.close();
 });
@@ -365,10 +308,10 @@ Deno.test("Accounts API routes - Error handling", async (t) => {
     async () => {
       // Create a non-admin account
       const createResult = await testContext.db.accounts.add({
+        id: "acc_no_admin",
         description: "Non-admin account",
         planType: "free",
         apiKey: "test-api-key-123",
-        metadata: null,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         deletedAt: null,
@@ -385,6 +328,7 @@ Deno.test("Accounts API routes - Error handling", async (t) => {
           "Authorization": "Bearer test-api-key-123",
         },
         body: JSON.stringify({
+          id: "acc_fail",
           description: "Test account",
           planType: "free",
         }),
@@ -427,6 +371,7 @@ Deno.test("Accounts API routes - Edge cases", async (t) => {
           "Authorization": `Bearer ${testContext.admin!.apiKey}`,
         },
         body: JSON.stringify({
+          id: "acc_dup_1",
           description: "Duplicate description test",
           planType: "free",
         }),
@@ -441,6 +386,7 @@ Deno.test("Accounts API routes - Edge cases", async (t) => {
           "Authorization": `Bearer ${testContext.admin!.apiKey}`,
         },
         body: JSON.stringify({
+          id: "acc_dup_2",
           description: "Duplicate description test",
           planType: "free",
         }),

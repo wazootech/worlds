@@ -50,10 +50,10 @@ export default (appContext: AppContext) =>
         const apiKey = crypto.randomUUID();
         const timestamp = Date.now();
         const result = await appContext.db.accounts.add({
+          id: body.id,
           description: body.description,
           planType: body.planType,
           apiKey: apiKey,
-          metadata: body.metadata ?? null,
           createdAt: timestamp,
           updatedAt: timestamp,
           deletedAt: null,
@@ -115,7 +115,6 @@ export default (appContext: AppContext) =>
         const result = await appContext.db.accounts.update(accountId, {
           description: body.description,
           planType: body.planType,
-          ...(body.metadata !== undefined ? { metadata: body.metadata } : {}),
           updatedAt: Date.now(),
         });
         if (!result.ok) {
