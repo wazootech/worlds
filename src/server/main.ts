@@ -1,31 +1,29 @@
 import { Router } from "@fartlabs/rt";
-import type { AppContext } from "./app-context.ts";
 import { createClient } from "@libsql/client";
 import { GoogleGenAI } from "@google/genai";
-import { GoogleGenAIEmbeddings } from "./embeddings/google-genai.ts";
+import type { AppContext } from "./app-context.ts";
 import { createWorldsKvdex } from "./db/kvdex.ts";
+import { GoogleGenAIEmbeddings } from "./embeddings/google-genai.ts";
 
 const kv = await Deno.openKv(Deno.env.get("DENO_KV_PATH"));
 const db = createWorldsKvdex(kv);
 
-const url = Deno.env.get("LIBSQL_URL");
-const authToken = Deno.env.get("LIBSQL_AUTH_TOKEN");
-const googleApiKey = Deno.env.get("GOOGLE_API_KEY");
+const libsqlClient = createClient({
+  url: Deno.env.get("LIBSQL_URL")!,
+  authToken: Deno.env.get("LIBSQL_AUTH_TOKEN")!,
+});
 
-const client = url
-  ? createClient({ url, authToken })
-  : createClient({ url: ":memory:" });
+const googleGenAI = new GoogleGenAI({
+  apiKey: Deno.env.get("GOOGLE_API_KEY")!,
+});
 
-const embedder = googleApiKey
-  ? new GoogleGenAIEmbeddings({
-    client: new GoogleGenAI({ apiKey: googleApiKey }),
-    model: "models/gemini-embedding-001",
-    dimensions: 768,
-  })
-  : {
-    embed: (_: string) => Promise.resolve(new Array(768).fill(0)),
-    dimensions: 768,
-  };
+const embeddings = new GoogleGenAIEmbeddings({
+  client: googleGenAI,
+  dimensions: 768,
+
+  // https://ai.google.dev/gemini-api/docs/embeddings#model-versions
+  model: "models/gemini-embedding-001",
+});
 
 const apiKey = Deno.env.get("ADMIN_API_KEY");
 if (!apiKey) {
@@ -33,11 +31,11 @@ if (!apiKey) {
 }
 
 const appContext: AppContext = {
-  db,
   kv,
+  db,
+  embeddings,
+  libsqlClient,
   admin: { apiKey },
-  libsqlClient: client,
-  embeddings: embedder,
 };
 
 const routes = [
