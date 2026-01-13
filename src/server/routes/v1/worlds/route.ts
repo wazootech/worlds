@@ -86,7 +86,19 @@ export default (appContext: AppContext) => {
           return new Response("World not found", { status: 404 });
         }
 
+        // Initialize search store to drop tables
+        const { LibsqlSearchStore } = await import("../../../search/libsql.ts");
+        const searchStore = new LibsqlSearchStore({
+          client: appContext.libsqlClient,
+          embeddings: appContext.embeddings,
+          tablePrefix: `world_${worldId.replace(/[^a-zA-Z0-9_]/g, "_")}_`,
+        });
+        await searchStore.drop();
+
+        // Delete world blob and metadata sequentially (kvdex atomic limitation with serialized collections)
+        await db.worldBlobs.delete(worldId);
         await db.worlds.delete(worldId);
+
         return new Response(null, { status: 204 });
       },
     )

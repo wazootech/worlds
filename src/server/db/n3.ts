@@ -1,17 +1,12 @@
 // @deno-types="@types/n3"
 import { Parser, Store, Writer } from "n3";
-import { getWorldAsBlob, setWorldAsBlob } from "./blob.ts";
-
 /**
- * getWorldAsN3Store gets a world as an N3 Store.
+ * generateN3StoreFromBlob gets a world as an N3 Store.
  */
-export async function getWorldAsN3Store(
-  kv: Deno.Kv,
-  worldId: string,
+export async function generateN3StoreFromBlob(
+  blob: Blob,
 ): Promise<Store> {
-  const worldBlob = await getWorldAsBlob(kv, worldId) ??
-    new Blob([], { type: "application/n-quads" });
-  const worldString = await worldBlob.text();
+  const worldString = await blob.text();
   const parser = new Parser({ format: "N-Quads" });
   const quads = parser.parse(worldString);
   const store = new Store();
@@ -20,13 +15,11 @@ export async function getWorldAsN3Store(
 }
 
 /**
- * setWorldAsN3Store sets a world as an N3 Store.
+ * generateBlobFromN3Store sets a world as an N3 Store.
  */
-export async function setWorldAsN3Store(
-  kv: Deno.Kv,
-  worldId: string,
+export async function generateBlobFromN3Store(
   store: Store,
-): Promise<void> {
+): Promise<Blob> {
   const writer = new Writer({ format: "N-Quads" });
   writer.addQuads(store.getQuads(null, null, null, null));
   const nQuadsString = await new Promise<string>((resolve, reject) => {
@@ -35,8 +28,8 @@ export async function setWorldAsN3Store(
       else resolve(result as string);
     });
   });
-  const worldBlob = new Blob([nQuadsString], {
-    type: "application/n-quads",
-  });
-  await setWorldAsBlob(kv, worldId, worldBlob);
+  return new Blob(
+    [nQuadsString],
+    { type: "application/n-quads" },
+  );
 }

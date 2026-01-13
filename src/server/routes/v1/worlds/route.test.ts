@@ -209,6 +209,8 @@ Deno.test("Worlds API routes - DELETE operations", async (t) => {
     });
     assert(result.ok);
     const worldId = result.id;
+    // Create a dummy blob to verify deletion
+    await db.worldBlobs.set(worldId, new Uint8Array([1, 2, 3]));
 
     // Delete world
     const deleteResp = await app.fetch(
@@ -219,6 +221,9 @@ Deno.test("Worlds API routes - DELETE operations", async (t) => {
         },
       }),
     );
+    if (deleteResp.status !== 204) {
+      console.log(await deleteResp.text());
+    }
     assertEquals(deleteResp.status, 204);
 
     // Verify deletion - should return 404
@@ -231,6 +236,10 @@ Deno.test("Worlds API routes - DELETE operations", async (t) => {
       }),
     );
     assertEquals(getResp.status, 404);
+
+    // Verify blob deletion
+    const blobResult = await db.worldBlobs.find(worldId);
+    assertEquals(blobResult, null);
   });
 
   await t.step(

@@ -1,5 +1,5 @@
 import { ulid } from "@std/ulid";
-import { worldsKvdex } from "./db/kvdex.ts";
+import { createWorldsKvdex } from "./db/kvdex.ts";
 import type { AppContext } from "./app-context.ts";
 import type { WorldsKvdex } from "./db/kvdex.ts";
 import { createClient } from "@libsql/client";
@@ -9,7 +9,7 @@ import { createClient } from "@libsql/client";
  */
 export async function createTestContext(): Promise<AppContext> {
   const kv = await Deno.openKv(":memory:");
-  const db = worldsKvdex(kv);
+  const db = createWorldsKvdex(kv);
   const apiKey = "admin-api-key";
 
   const client = createClient({ url: ":memory:" });

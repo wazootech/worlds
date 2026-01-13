@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
-import { worldsKvdex } from "../../../../db/kvdex.ts";
-import { setWorldAsN3Store } from "../../../../db/n3.ts";
+import { createWorldsKvdex } from "../../../../db/kvdex.ts";
+import { generateBlobFromN3Store } from "../../../../db/n3.ts";
 import { DataFactory, Store } from "n3";
 import route from "./route.ts";
 import { createClient } from "@libsql/client";
@@ -8,7 +8,7 @@ import { LibsqlSearchStore } from "../../../../search/libsql.ts";
 
 Deno.test("Search API routes", async (t) => {
   const kv = await Deno.openKv(":memory:");
-  const db = worldsKvdex(kv);
+  const db = createWorldsKvdex(kv);
 
   const client = createClient({ url: ":memory:" });
   const embedder = {
@@ -39,7 +39,10 @@ Deno.test("Search API routes", async (t) => {
     DataFactory.literal("Hello Earth"),
   );
   store.addQuad(testQuad);
-  await setWorldAsN3Store(kv, worldId, store);
+  const blob = await generateBlobFromN3Store(store);
+  await db.worldBlobs.set(worldId, new Uint8Array(await blob.arrayBuffer()), {
+    batched: true,
+  });
 
   // Sync to search store
   const searchStore = new LibsqlSearchStore({

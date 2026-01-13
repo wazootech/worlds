@@ -184,6 +184,7 @@ async function executeSparqlRequest(
   }
 
   // Execute query or update using centralized function
+  // Execute query or update using centralized function
   const { LibsqlSearchStore } = await import("../../../../search/libsql.ts");
   const searchStore = new LibsqlSearchStore({
     client: appContext.libsqlClient,
@@ -192,20 +193,36 @@ async function executeSparqlRequest(
   });
   await searchStore.createTablesIfNotExists();
 
-  const response = await sparql(
-    appContext.kv,
-    worldId,
+  const db = appContext.db;
+  const worldBlobEntry = await db.worldBlobs.find(worldId);
+  const blob = worldBlobEntry?.value
+    ? new Blob([worldBlobEntry.value])
+    : new Blob([], { type: "application/n-quads" });
+
+  const { blob: newBlob, result } = await sparql(
+    blob,
     query,
     searchStore,
   );
 
   // For updates, return 204 instead of the stream response
   if (isUpdate) {
+    // Persist new blob
+    const newData = new Uint8Array(await newBlob.arrayBuffer());
+
+    if (worldBlobEntry) {
+      await db.worldBlobs.update(worldId, newData);
+    } else {
+      await db.worldBlobs.set(worldId, newData);
+    }
+
     return new Response(null, { status: 204 });
   }
 
   // For queries, return the stream response
-  return response;
+  return new Response(JSON.stringify(result), {
+    headers: { "Content-Type": "application/sparql-results+json" },
+  });
 }
 
 export default (appContext: AppContext) => {

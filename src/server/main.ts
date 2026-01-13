@@ -3,10 +3,10 @@ import type { AppContext } from "./app-context.ts";
 import { createClient } from "@libsql/client";
 import { GoogleGenAI } from "@google/genai";
 import { GoogleGenAIEmbeddings } from "./embeddings/google-genai.ts";
-import { worldsKvdex } from "./db/kvdex.ts";
+import { createWorldsKvdex } from "./db/kvdex.ts";
 
 const kv = await Deno.openKv(Deno.env.get("DENO_KV_PATH"));
-const db = worldsKvdex(kv);
+const db = createWorldsKvdex(kv);
 
 const url = Deno.env.get("LIBSQL_URL");
 const authToken = Deno.env.get("LIBSQL_AUTH_TOKEN");

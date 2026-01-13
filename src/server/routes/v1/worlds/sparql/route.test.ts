@@ -1,7 +1,8 @@
 import { assert, assertEquals } from "@std/assert";
 import { Parser, Store } from "n3";
 import { createTestAccount, createTestContext } from "#/server/testing.ts";
-import { setWorldAsN3Store } from "#/server/db/n3.ts";
+import { generateBlobFromN3Store } from "#/server/db/n3.ts";
+import { createWorldsKvdex } from "#/server/db/kvdex.ts";
 import createRoute from "./route.ts";
 
 /**
@@ -14,7 +15,11 @@ async function setWorldData(kv: Deno.Kv, worldId: string, ttl: string) {
   const quads = parser.parse(ttl);
   const store = new Store();
   store.addQuads(quads);
-  await setWorldAsN3Store(kv, worldId, store);
+  const blob = await generateBlobFromN3Store(store);
+  const db = createWorldsKvdex(kv);
+  await db.worldBlobs.set(worldId, new Uint8Array(await blob.arrayBuffer()), {
+    batched: true,
+  });
 }
 
 Deno.test("SPARQL API routes - GET operations", async (t) => {
@@ -217,7 +222,7 @@ Deno.test("SPARQL API routes - POST operations (Update)", async (t) => {
       assertEquals(res.status, 204);
 
       // Verify update by querying - need to wait a bit for the update to persist
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const verifyQuery = encodeURIComponent("SELECT ?s WHERE { ?s ?p ?o }");
       const verifyReq = new Request(

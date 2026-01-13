@@ -108,6 +108,13 @@ export class LibsqlSearchStore implements SearchStore<SearchResultItem> {
     ], "write");
   }
 
+  public async drop() {
+    await this.options.client.batch([
+      { sql: `DROP TABLE IF EXISTS ${this.options.tablePrefix}search_fts` },
+      { sql: `DROP TABLE IF EXISTS ${this.options.tablePrefix}documents` },
+    ], "write");
+  }
+
   public async patch(patches: Patch[]): Promise<void> {
     for (const { insertions, deletions } of patches) {
       if (deletions.length > 0) {

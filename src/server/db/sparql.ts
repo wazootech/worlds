@@ -1,7 +1,7 @@
 import { QueryEngine } from "@comunica/query-sparql-rdfjs-lite";
 import type { PatchHandler } from "@fartlabs/search-store";
 import { connectSearchStoreToN3Store } from "@fartlabs/search-store/n3";
-import { getWorldAsN3Store, setWorldAsN3Store } from "./n3.ts";
+import { generateBlobFromN3Store, generateN3StoreFromBlob } from "./n3.ts";
 
 /**
  * DatasetParams are the parameters for a SPARQL query.
@@ -12,15 +12,22 @@ export interface DatasetParams {
 }
 
 /**
+ * SparqlResult represents the result of a SPARQL query.
+ *
+ * It is a JSON object conforming to the SPARQL 1.1 Query Results JSON Format.
+ */
+// deno-lint-ignore no-explicit-any
+export type SparqlResult = any;
+
+/**
  * sparql executes a SPARQL query and returns the result.
  */
 export async function sparql(
-  kv: Deno.Kv,
-  worldId: string,
+  blob: Blob,
   query: string,
   searchStore: PatchHandler = { patch: async () => {} },
-): Promise<Response> {
-  const store = await getWorldAsN3Store(kv, worldId);
+): Promise<{ blob: Blob; result: SparqlResult }> {
+  const store = await generateN3StoreFromBlob(blob);
   const { store: proxiedStore, sync } = connectSearchStoreToN3Store(
     searchStore,
     store,
@@ -29,33 +36,30 @@ export async function sparql(
   const queryEngine = new QueryEngine();
   const queryType = await queryEngine.query(query, { sources: [proxiedStore] });
 
-  // TODO: Leverage existing, battle-tested SPARQL JSON serializer.
-  // https://comunica.dev/docs/query/advanced/result_formats/
-  // https://comunica.dev/docs/query/getting_started/query_app/#8--serializing-to-a-specific-result-format
-  //
-
   // If the query is an update, we need to execute it and then sync the search store.
   if (queryType.resultType === "void") {
     await queryType.execute();
     await sync();
-    await setWorldAsN3Store(kv, worldId, store);
-    return new Response(null, { status: 204 });
+    const newBlob = await generateBlobFromN3Store(store);
+    return { blob: newBlob, result: null };
   }
 
   if (queryType.resultType === "bindings") {
-    return await handleBindings(queryType);
+    const result = await handleBindings(queryType);
+    return { blob, result };
   }
 
   // Boolean result
   if (queryType.resultType === "boolean") {
-    return await handleBoolean(queryType);
+    const result = await handleBoolean(queryType);
+    return { blob, result };
   }
 
   throw new Error("Unsupported query type");
 }
 
 // deno-lint-ignore no-explicit-any
-async function handleBindings(queryType: any): Promise<Response> {
+async function handleBindings(queryType: any): Promise<SparqlResult> {
   const bindingsStream = await queryType.execute();
   // deno-lint-ignore no-explicit-any
   const vars = (await queryType.metadata()).variables.map((v: any) => v.value);
@@ -104,24 +108,17 @@ async function handleBindings(queryType: any): Promise<Response> {
     },
   );
 
-  const result = {
+  return {
     head: { vars },
     results: { bindings },
   };
-
-  return new Response(JSON.stringify(result), {
-    headers: { "Content-Type": "application/sparql-results+json" },
-  });
 }
 
 // deno-lint-ignore no-explicit-any
-async function handleBoolean(queryType: any): Promise<Response> {
+async function handleBoolean(queryType: any): Promise<SparqlResult> {
   const booleanResult = await queryType.execute();
-  const result = {
+  return {
     head: {},
     boolean: booleanResult,
   };
-  return new Response(JSON.stringify(result), {
-    headers: { "Content-Type": "application/sparql-results+json" },
-  });
 }

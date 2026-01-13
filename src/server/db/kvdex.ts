@@ -1,17 +1,18 @@
 import { collection, kvdex } from "@olli/kvdex";
+import { jsonEncoder } from "@olli/kvdex/encoding/json";
 import { z } from "zod";
 
 /**
  * WorldsKvdex is the type of the kvdex for the Worlds API.
  */
-export type WorldsKvdex = ReturnType<typeof worldsKvdex>;
+export type WorldsKvdex = ReturnType<typeof createWorldsKvdex>;
 
 /**
- * worldsKvdex returns the kvdex instance for the Worlds API.
+ * createWorldsKvdex returns the kvdex instance for the Worlds API.
  *
  * @see https://github.com/oliver-oloughlin/kvdex
  */
-export function worldsKvdex(kv: Deno.Kv) {
+export function createWorldsKvdex(kv: Deno.Kv) {
   return kvdex({
     kv: kv,
     schema: {
@@ -34,6 +35,9 @@ export function worldsKvdex(kv: Deno.Kv) {
         indices: {
           accountId: "secondary",
         },
+      }),
+      worldBlobs: collection(worldBlobSchema, {
+        encoder: jsonEncoder(),
       }),
     },
   });
@@ -79,3 +83,7 @@ export const usageBucketSchema = z.object({
   bucketStartTs: z.number(),
   requestCount: z.number().default(0),
 });
+
+export type WorldBlob = z.infer<typeof worldBlobSchema>;
+
+export const worldBlobSchema = z.instanceof(Uint8Array);
