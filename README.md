@@ -93,10 +93,8 @@ deno task precommit
 
 ## Etymology
 
-We named the **Worlds API™** after the management of coexisting world models as
-a service, a nod to the
-[**Many Worlds**](https://en.wikipedia.org/wiki/Many-worlds_interpretation)
-interpretation.
+We named the **Worlds API™** after "World Models as a Service" as a nod to the
+[Many-worlds interpretation](https://en.wikipedia.org/wiki/Many-worlds_interpretation).
 
 ## Research
 
