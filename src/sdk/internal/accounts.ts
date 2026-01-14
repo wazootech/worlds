@@ -16,7 +16,7 @@ export class Accounts {
     page = 1,
     pageSize = 20,
   ): Promise<AccountRecord[]> {
-    const url = new URL(`${this.options.baseUrl}/v1/accounts`);
+    const url = new URL(`${this.options.baseUrl}/accounts`);
     url.searchParams.set("page", page.toString());
     url.searchParams.set("pageSize", pageSize.toString());
     const response = await fetch(url, {
@@ -25,7 +25,9 @@ export class Accounts {
       },
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to list accounts: ${response.status} ${response.statusText}`,
+      );
     }
 
     return await response.json();
@@ -35,7 +37,7 @@ export class Accounts {
    * create creates an account in the Worlds API.
    */
   public async create(data: CreateAccountParams): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/v1/accounts`);
+    const url = new URL(`${this.options.baseUrl}/accounts`);
     const response = await fetch(
       url,
       {
@@ -48,7 +50,9 @@ export class Accounts {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to create account: ${response.status} ${response.statusText}`,
+      );
     }
   }
 
@@ -58,7 +62,7 @@ export class Accounts {
   public async get(
     accountId: string,
   ): Promise<AccountRecord | null> {
-    const url = new URL(`${this.options.baseUrl}/v1/accounts/${accountId}`);
+    const url = new URL(`${this.options.baseUrl}/accounts/${accountId}`);
     const response = await fetch(
       url,
       {
@@ -72,7 +76,9 @@ export class Accounts {
     }
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to get account: ${response.status} ${response.statusText}`,
+      );
     }
 
     return await response.json();
@@ -85,7 +91,7 @@ export class Accounts {
     accountId: string,
     data: Partial<AccountRecord>,
   ): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/v1/accounts/${accountId}`);
+    const url = new URL(`${this.options.baseUrl}/accounts/${accountId}`);
     const response = await fetch(
       url,
       {
@@ -98,7 +104,9 @@ export class Accounts {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to update account: ${response.status} ${response.statusText}`,
+      );
     }
   }
 
@@ -106,7 +114,7 @@ export class Accounts {
    * delete deletes an account from the Worlds API.
    */
   public async delete(accountId: string): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/v1/accounts/${accountId}`);
+    const url = new URL(`${this.options.baseUrl}/accounts/${accountId}`);
     const response = await fetch(
       url,
       {
@@ -117,7 +125,9 @@ export class Accounts {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to delete account: ${response.status} ${response.statusText}`,
+      );
     }
   }
 
@@ -126,7 +136,7 @@ export class Accounts {
    */
   public async rotate(accountId: string): Promise<void> {
     const url = new URL(
-      `${this.options.baseUrl}/v1/accounts/${accountId}/rotate`,
+      `${this.options.baseUrl}/accounts/${accountId}/rotate`,
     );
     const response = await fetch(
       url,
@@ -138,7 +148,9 @@ export class Accounts {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to rotate account key: ${response.status} ${response.statusText}`,
+      );
     }
   }
 }

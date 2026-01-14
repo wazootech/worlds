@@ -13,14 +13,16 @@ export class Plans {
    * list lists all plans from the Worlds API.
    */
   public async list(): Promise<PlanRecord[]> {
-    const url = new URL(`${this.options.baseUrl}/v1/plans`);
+    const url = new URL(`${this.options.baseUrl}/plans`);
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${this.options.apiKey}`,
       },
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to list plans: ${response.status} ${response.statusText}`,
+      );
     }
 
     return await response.json();
@@ -32,7 +34,7 @@ export class Plans {
   public async create(
     data: PlanRecord,
   ): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/v1/plans`);
+    const url = new URL(`${this.options.baseUrl}/plans`);
     const response = await fetch(
       url,
       {
@@ -45,7 +47,9 @@ export class Plans {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to create plan: ${response.status} ${response.statusText}`,
+      );
     }
   }
 
@@ -58,7 +62,7 @@ export class Plans {
     if (!planType) {
       return null;
     }
-    const url = new URL(`${this.options.baseUrl}/v1/plans/${planType}`);
+    const url = new URL(`${this.options.baseUrl}/plans/${planType}`);
     const response = await fetch(
       url,
       {
@@ -72,7 +76,9 @@ export class Plans {
     }
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to get plan: ${response.status} ${response.statusText}`,
+      );
     }
 
     return await response.json();
@@ -85,7 +91,7 @@ export class Plans {
     planType: string,
     data: PlanRecord,
   ): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/v1/plans/${planType}`);
+    const url = new URL(`${this.options.baseUrl}/plans/${planType}`);
     const response = await fetch(
       url,
       {
@@ -98,7 +104,9 @@ export class Plans {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to update plan: ${response.status} ${response.statusText}`,
+      );
     }
   }
 
@@ -106,7 +114,7 @@ export class Plans {
    * delete deletes a plan from the Worlds API.
    */
   public async delete(planType: string): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/v1/plans/${planType}`);
+    const url = new URL(`${this.options.baseUrl}/plans/${planType}`);
     const response = await fetch(
       url,
       {
@@ -117,7 +125,9 @@ export class Plans {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to delete plan: ${response.status} ${response.statusText}`,
+      );
     }
   }
 }

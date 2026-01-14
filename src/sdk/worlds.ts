@@ -26,7 +26,9 @@ export class Worlds {
       },
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to list worlds: ${response.status} ${response.statusText}`,
+      );
     }
 
     return await response.json();
@@ -50,7 +52,9 @@ export class Worlds {
     }
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to get world: ${response.status} ${response.statusText}`,
+      );
     }
 
     return await response.json();
@@ -73,7 +77,9 @@ export class Worlds {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to create world: ${response.status} ${response.statusText}`,
+      );
     }
   }
 
@@ -94,7 +100,9 @@ export class Worlds {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to update world: ${response.status} ${response.statusText}`,
+      );
     }
   }
 
@@ -113,7 +121,9 @@ export class Worlds {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to remove world: ${response.status} ${response.statusText}`,
+      );
     }
   }
 
@@ -143,7 +153,9 @@ export class Worlds {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to execute SPARQL query: ${response.status} ${response.statusText}`,
+      );
     }
 
     const json = await response.json();
@@ -175,7 +187,9 @@ export class Worlds {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to execute SPARQL update: ${response.status} ${response.statusText}`,
+      );
     }
   }
 
@@ -195,7 +209,9 @@ export class Worlds {
       },
     );
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to get usage: ${response.status} ${response.statusText}`,
+      );
     }
     return await response.json();
   }
@@ -227,7 +243,9 @@ export class Worlds {
       },
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        `Failed to search world: ${response.status} ${response.statusText}`,
+      );
     }
 
     return await response.json();
