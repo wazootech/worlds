@@ -3,7 +3,6 @@ import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
 
 export default (appContext: AppContext) => {
-  const { db } = appContext;
   return new Router()
     .get(
       "/v1/worlds/:world",
@@ -18,7 +17,7 @@ export default (appContext: AppContext) => {
           return new Response("Unauthorized", { status: 401 });
         }
 
-        const result = await db.worlds.find(worldId);
+        const result = await appContext.db.worlds.find(worldId);
         if (
           !result || result.value.deletedAt !== null ||
           (result.value.accountId !== authorized.account?.id &&
@@ -27,7 +26,7 @@ export default (appContext: AppContext) => {
           return new Response("World not found", { status: 404 });
         }
 
-        // TODO: Respond with different formats based on the Accept header.
+        // TODO: Respond with different formats based on the relevant HTTP header.
 
         return Response.json(result.value);
       },
@@ -41,7 +40,7 @@ export default (appContext: AppContext) => {
         }
 
         const authorized = await authorizeRequest(appContext, ctx.request);
-        const worldResult = await db.worlds.find(worldId);
+        const worldResult = await appContext.db.worlds.find(worldId);
         if (
           !worldResult || worldResult.value.deletedAt !== null ||
           (worldResult.value.accountId !== authorized.account?.id &&
@@ -58,7 +57,10 @@ export default (appContext: AppContext) => {
         }
 
         const updatedAt = Date.now();
-        const result = await db.worlds.update(worldId, { ...body, updatedAt });
+        const result = await appContext.db.worlds.update(worldId, {
+          ...body,
+          updatedAt,
+        });
         if (!result.ok) {
           return Response.json({ error: "Failed to update world" }, {
             status: 500,
@@ -77,7 +79,7 @@ export default (appContext: AppContext) => {
         }
 
         const authorized = await authorizeRequest(appContext, ctx.request);
-        const worldResult = await db.worlds.find(worldId);
+        const worldResult = await appContext.db.worlds.find(worldId);
         if (
           !worldResult || worldResult.value.deletedAt !== null ||
           (worldResult.value.accountId !== authorized.account?.id &&
@@ -96,8 +98,8 @@ export default (appContext: AppContext) => {
         await searchStore.drop();
 
         // Delete world blob and metadata sequentially (kvdex atomic limitation with serialized collections)
-        await db.worldBlobs.delete(worldId);
-        await db.worlds.delete(worldId);
+        await appContext.db.worldBlobs.delete(worldId);
+        await appContext.db.worlds.delete(worldId);
 
         return new Response(null, { status: 204 });
       },
@@ -116,7 +118,7 @@ export default (appContext: AppContext) => {
         const page = parseInt(pageString);
         const pageSize = parseInt(pageSizeString);
         const offset = (page - 1) * pageSize;
-        const { result } = await db.worlds.findBySecondaryIndex(
+        const { result } = await appContext.db.worlds.findBySecondaryIndex(
           "accountId",
           authorized.account.id,
           {
@@ -144,7 +146,7 @@ export default (appContext: AppContext) => {
         }
 
         const now = Date.now();
-        const result = await db.worlds.add({
+        const result = await appContext.db.worlds.add({
           accountId: authorized.account.id,
           name: body.name,
           description: body.description,

@@ -2,9 +2,9 @@ import type { GoogleGenAI } from "@google/genai";
 import type { Embeddings } from "#/server/embeddings/embeddings.ts";
 
 /**
- * GoogleGenAIEmbeddingsOptions are options for the GoogleGenAIEmbeddings.
+ * GeminiEmbeddingsOptions are options for the GeminiEmbeddings.
  */
-export interface GoogleGenAIEmbeddingsOptions {
+export interface GeminiEmbeddingsOptions {
   /**
    * client is the GoogleGenAI client.
    */
@@ -22,10 +22,10 @@ export interface GoogleGenAIEmbeddingsOptions {
 }
 
 /**
- * GoogleGenAIEmbeddings generates vector embeddings using Google GenAI.
+ * GeminiEmbeddings generates vector embeddings using Google GenAI.
  */
-export class GoogleGenAIEmbeddings implements Embeddings {
-  public constructor(private readonly options: GoogleGenAIEmbeddingsOptions) {}
+export class GeminiEmbeddings implements Embeddings {
+  public constructor(private readonly options: GeminiEmbeddingsOptions) {}
 
   /**
    * dimensions is the dimensionality of the vector embeddings.

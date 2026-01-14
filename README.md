@@ -5,8 +5,9 @@
 [![GitHub Actions](https://github.com/EthanThatOneKid/worlds-api/actions/workflows/check.yaml/badge.svg)](https://github.com/EthanThatOneKid/worlds-api/actions/workflows/check.yaml)
 
 **Worlds API™** is a REST API designed to manage, query, update, and reason over
-[SPARQL 1.1](https://www.w3.org/TR/sparql11-overview/)-compatible stores at the
-edge. It places malleable knowledge within arm's reach of your AI agent.
+[SPARQL 1.1](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge
+bases at the edge. It places malleable knowledge within arm's reach of your AI
+agent.
 
 ## Design
 
@@ -25,7 +26,7 @@ import { World } from "@fartlabs/worlds";
 
 // Initialize the client for a specific world.
 const world = new World({
-  baseUrl: "http://localhost:8000",
+  baseUrl: "http://localhost:8000/v1",
   apiKey: "your-api-key",
   worldId: "my-knowledge-base",
 });
@@ -40,7 +41,18 @@ await world.sparqlUpdate(`
 
 // Search your world to find the named node for Gregory.
 const searchResult = await world.search("Gregory");
+
 console.log(searchResult);
+// [
+//   {
+//     score: 0.9,
+//     value: {
+//       subject: "http://example.com/gregory",
+//       predicate: "http://schema.org/givenName",
+//       object: "Gregory"
+//     }
+//   }
+// ]
 
 // Reason over your world using SPARQL.
 const result = await world.sparqlQuery(`
@@ -81,20 +93,18 @@ deno task precommit
 
 ## Etymology
 
-We named the **Worlds API™** after the management of multiple, coexisting
-**Worlds**:
-
-- **Triple:** The atomic unit of knowledge.
-- **Graph:** A collection of triples (knowledge base).
-- **World:** A source of truth for a knowledge base.
+We named the **Worlds API™** after the management of coexisting world models as
+a service, a nod to the
+[**Many Worlds**](https://en.wikipedia.org/wiki/Many-worlds_interpretation)
+interpretation.
 
 ## Research
 
-This work is inspired by the intersection of Neuro-symbolic AI and Knowledge
-Graphs:
+This work is inspired by the intersection of neuro-symbolic AI and knowledge
+graphs:
 
 - [Thinking with Knowledge Graphs (Arxiv)](https://arxiv.org/abs/2412.10654)
-- [Jelly: RDF Serialization Format (Arxiv)](https://arxiv.org/abs/2506.11298)
+- [World Models (Ha & Schmidhuber)](https://worldmodels.github.io/)
 - [MemGPT: Towards LLMs as Operating Systems (Arxiv)](https://arxiv.org/abs/2310.08560)
 
 For further information, please refer to our [whitepaper](docs/paper.md).

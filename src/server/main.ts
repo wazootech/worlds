@@ -3,7 +3,7 @@ import { createClient } from "@libsql/client";
 import { GoogleGenAI } from "@google/genai";
 import type { AppContext } from "./app-context.ts";
 import { createWorldsKvdex } from "./db/kvdex.ts";
-import { GoogleGenAIEmbeddings } from "./embeddings/google-genai.ts";
+import { GeminiEmbeddings } from "./embeddings/gemini.ts";
 
 const kv = await Deno.openKv(Deno.env.get("DENO_KV_PATH"));
 const db = createWorldsKvdex(kv);
@@ -17,7 +17,7 @@ const googleGenAI = new GoogleGenAI({
   apiKey: Deno.env.get("GOOGLE_API_KEY")!,
 });
 
-const embeddings = new GoogleGenAIEmbeddings({
+const embeddings = new GeminiEmbeddings({
   client: googleGenAI,
   dimensions: 768,
 

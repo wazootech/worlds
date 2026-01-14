@@ -3,7 +3,6 @@ import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
 
 export default (appContext: AppContext) => {
-  const { db } = appContext;
   return new Router()
     .get(
       "/v1/worlds/:world/usage",
@@ -18,7 +17,7 @@ export default (appContext: AppContext) => {
           return new Response("Unauthorized", { status: 401 });
         }
 
-        const worldResult = await db.worlds.find(worldId);
+        const worldResult = await appContext.db.worlds.find(worldId);
         if (
           !worldResult || worldResult.value.deletedAt !== null ||
           (worldResult.value.accountId !== authorized.account?.id &&
@@ -33,14 +32,15 @@ export default (appContext: AppContext) => {
         const page = parseInt(pageString);
         const pageSize = parseInt(pageSizeString);
         const offset = (page - 1) * pageSize;
-        const { result } = await db.usageBuckets.findBySecondaryIndex(
-          "worldId",
-          worldId,
-          {
-            limit: pageSize,
-            offset: offset,
-          },
-        );
+        const { result } = await appContext.db.usageBuckets
+          .findBySecondaryIndex(
+            "worldId",
+            worldId,
+            {
+              limit: pageSize,
+              offset: offset,
+            },
+          );
 
         return Response.json(result.map(({ value }) => value));
       },

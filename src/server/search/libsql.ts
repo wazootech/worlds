@@ -41,8 +41,6 @@ export interface LibsqlSearchStoreOptions {
    */
   tablePrefix: string;
 
-  // TODO: Update embeddings to embed multiple texts at once.
-
   /**
    * embeddings are options for generating vector embeddings.
    */

@@ -193,8 +193,7 @@ async function executeSparqlRequest(
   });
   await searchStore.createTablesIfNotExists();
 
-  const db = appContext.db;
-  const worldBlobEntry = await db.worldBlobs.find(worldId);
+  const worldBlobEntry = await appContext.db.worldBlobs.find(worldId);
   const blob = worldBlobEntry?.value
     ? new Blob([worldBlobEntry.value])
     : new Blob([], { type: "application/n-quads" });
@@ -207,13 +206,12 @@ async function executeSparqlRequest(
 
   // For updates, return 204 instead of the stream response
   if (isUpdate) {
-    // Persist new blob
+    // Persist new blob. If the world doesn't exist, create it.
     const newData = new Uint8Array(await newBlob.arrayBuffer());
-
     if (worldBlobEntry) {
-      await db.worldBlobs.update(worldId, newData);
+      await appContext.db.worldBlobs.update(worldId, newData);
     } else {
-      await db.worldBlobs.set(worldId, newData);
+      await appContext.db.worldBlobs.set(worldId, newData);
     }
 
     return new Response(null, { status: 204 });
@@ -226,7 +224,6 @@ async function executeSparqlRequest(
 }
 
 export default (appContext: AppContext) => {
-  const { db } = appContext;
   return new Router()
     .get(
       "/v1/worlds/:world/sparql",
@@ -241,7 +238,7 @@ export default (appContext: AppContext) => {
           return new Response("World not found", { status: 404 });
         }
 
-        const worldResult = await db.worlds.find(worldId);
+        const worldResult = await appContext.db.worlds.find(worldId);
         if (
           !worldResult || worldResult.value.deletedAt !== null ||
           (worldResult.value.accountId !== authorized.account?.id &&
@@ -276,7 +273,7 @@ export default (appContext: AppContext) => {
           return new Response("World not found", { status: 404 });
         }
 
-        const worldResult = await db.worlds.find(worldId);
+        const worldResult = await appContext.db.worlds.find(worldId);
         if (
           !worldResult || worldResult.value.deletedAt !== null ||
           (worldResult.value.accountId !== authorized.account?.id &&
