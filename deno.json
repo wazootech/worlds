@@ -10,7 +10,7 @@
     "@comunica/query-sparql-rdfjs-lite": "npm:@comunica/query-sparql-rdfjs-lite@^5.0.5",
     "@fartlabs/rt": "jsr:@fartlabs/rt@^0.0.11",
     "@fartlabs/search-store": "jsr:@fartlabs/search-store@^0.0.2",
-    "@google/genai": "npm:@google/genai@^1.35.0",
+    "@google/genai": "npm:@google/genai@^1.37.0",
     "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox@^0.30.0",
     "@libsql/client": "npm:@libsql/client@^0.17.0",
     "@olli/kvdex": "jsr:@olli/kvdex@^3.4.2",
