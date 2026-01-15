@@ -16,7 +16,7 @@ export interface AccountRecord {
  */
 export type CreateAccountParams = Omit<
   AccountRecord,
-  "id" | "apiKey" | "createdAt" | "updatedAt" | "deletedAt"
+  "apiKey" | "createdAt" | "updatedAt" | "deletedAt"
 >;
 
 /**

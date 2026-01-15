@@ -54,9 +54,8 @@ export default (appContext: AppContext) =>
         const timestamp = Date.now();
         const account = {
           id: body.id,
-          description: body.description,
-
-          plan: body.plan,
+          description: body.description ?? null,
+          plan: body.plan ?? null,
           apiKey: apiKey,
           createdAt: timestamp,
           updatedAt: timestamp,
@@ -127,8 +126,8 @@ export default (appContext: AppContext) =>
 
         const body = await ctx.request.json();
         const result = await appContext.db.accounts.update(accountId, {
-          description: body.description,
-          plan: body.plan,
+          description: body.description ?? null,
+          plan: body.plan ?? null,
           updatedAt: Date.now(),
         });
         if (!result.ok) {

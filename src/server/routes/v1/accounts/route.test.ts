@@ -81,6 +81,31 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
     assertEquals(body.plan, "free");
   });
 
+  await t.step(
+    "POST /v1/accounts handles missing optional fields",
+    async () => {
+      const req = new Request("http://localhost/v1/accounts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${testContext.admin!.apiKey}`,
+        },
+        body: JSON.stringify({
+          id: "acc_partial",
+          // description missing
+          // plan missing
+        }),
+      });
+      const res = await app.fetch(req);
+      assertEquals(res.status, 201);
+
+      const body = await res.json();
+      assertEquals(body.id, "acc_partial");
+      assertEquals(body.description, null);
+      assertEquals(body.plan, null);
+    },
+  );
+
   await t.step("GET /v1/accounts/:account retrieves an account", async () => {
     // Create an account directly using db
     const result = await testContext.db.accounts.add({

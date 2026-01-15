@@ -8,6 +8,8 @@ export interface WorldsOptions {
   apiKey: string;
 }
 
+// TODO: Update SearchResultItem type for consistency with RDF/JS term types.
+
 /**
  * SearchResult represents a search result.
  */
