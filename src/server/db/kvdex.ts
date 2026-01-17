@@ -2,6 +2,8 @@ import { z } from "zod";
 import { collection, kvdex } from "@olli/kvdex";
 import { jsonEncoder } from "@olli/kvdex/encoding/json";
 
+// TODO: Migrate kvdex collextions to sqlite tables.
+
 /**
  * WorldsKvdex is the type of the kvdex for the Worlds API.
  */
