@@ -77,6 +77,9 @@ export const accountSchema = z.object({
 
 export type World = z.infer<typeof worldSchema>;
 
+// TODO: Make accountId on worldSchema nullable to support admin-created
+// (non-account scoped) worlds.
+
 /**
  * worldSchema is the schema for a world.
  *

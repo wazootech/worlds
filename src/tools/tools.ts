@@ -23,16 +23,6 @@ export interface CreateToolsOptions {
   world: World;
 
   /**
-   * userIri is the IRI of the user.
-   */
-  userIri?: string;
-
-  /**
-   * assistantIri is the IRI of the assistant.
-   */
-  assistantIri?: string;
-
-  /**
    * generateIri is a function that generates an IRI for new entities.
    */
   generateIri?: () => string;
@@ -59,9 +49,29 @@ export function createTools(options: CreateToolsOptions): {
  * FormatPromptOptions are the options for formatting a prompt.
  */
 export interface FormatPromptOptions {
+  /**
+   * world is the world for which the prompt is being formatted.
+   */
+  world: World;
+
+  /**
+   * content is the content of the prompt.
+   */
   content: string;
+
+  /**
+   * date is the date of the prompt.
+   */
   date?: Date;
+
+  /**
+   * userIri is the IRI of the user.
+   */
   userIri?: string;
+
+  /**
+   * assistantIri is the IRI of the assistant.
+   */
   assistantIri?: string;
 }
 
