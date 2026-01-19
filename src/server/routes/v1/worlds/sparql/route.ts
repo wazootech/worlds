@@ -5,6 +5,7 @@ import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
 import type { DatasetParams } from "#/server/db/sparql.ts";
 import { sparql } from "#/server/db/sparql.ts";
+import { isUpdateQuery } from "#/server/sparql/tree-sitter.ts";
 import { LibsqlSearchStore } from "#/server/search/libsql.ts";
 import { incrementRequestCount } from "#/server/usage.ts";
 
@@ -88,18 +89,6 @@ async function parseQuery(
  * Helper function to check if query is an update
  * Needed to enforce POST-only for updates and return 204 status
  */
-function isUpdateQuery(query: string): boolean {
-  const upperQuery = query.trim().toUpperCase();
-  return upperQuery.startsWith("INSERT") ||
-    upperQuery.startsWith("DELETE") ||
-    upperQuery.startsWith("LOAD") ||
-    upperQuery.startsWith("CLEAR") ||
-    upperQuery.startsWith("CREATE") ||
-    upperQuery.startsWith("DROP") ||
-    upperQuery.startsWith("COPY") ||
-    upperQuery.startsWith("MOVE") ||
-    upperQuery.startsWith("ADD");
-}
 
 /**
  * Generates SPARQL Service Description in RDF format
@@ -179,7 +168,7 @@ async function executeSparqlRequest(
   }
 
   // Check if this is an update query
-  const isUpdate = isUpdateQuery(query);
+  const isUpdate = await isUpdateQuery(query);
 
   // Updates are only allowed via POST
   if (isUpdate && request.method !== "POST") {

@@ -243,6 +243,69 @@ Deno.test("SPARQL API routes - POST operations (Update)", async (t) => {
     },
   );
 
+  await t.step(
+    "POST /v1/worlds/:world/sparql executes SPARQL Update with PREFIX",
+    async () => {
+      const { id: accountId, apiKey } = await createTestAccount(db);
+      const result = await db.worlds.add({
+        accountId,
+        name: "Test World With Prefix",
+        description: "Test Description",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        deletedAt: null,
+      });
+      assert(result.ok);
+      const worldId = result.id;
+
+      // Execute update with PREFIX
+      const updateQuery = `
+        PREFIX ex: <http://example.org/>
+        INSERT DATA { ex:alice a ex:Person ; ex:name "Alice" . }
+      `;
+      const req = new Request(
+        `http://localhost/v1/worlds/${worldId}/sparql`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/sparql-update",
+            "Authorization": `Bearer ${apiKey}`,
+          },
+          body: updateQuery,
+        },
+      );
+
+      const res = await app.fetch(req);
+      assertEquals(res.status, 204);
+
+      // Verify update by querying - need to wait a bit for the update to persist
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const verifyQuery = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?name WHERE { ?s ex:name ?name }
+      `;
+      const verifyReq = new Request(
+        `http://localhost/v1/worlds/${worldId}/sparql?query=${
+          encodeURIComponent(verifyQuery)
+        }`,
+        {
+          method: "POST",
+          headers: {
+            "Accept": "application/sparql-results+json",
+            "Authorization": `Bearer ${apiKey}`,
+          },
+        },
+      );
+
+      const verifyRes = await app.fetch(verifyReq);
+      assertEquals(verifyRes.status, 200);
+      const json = await verifyRes.json();
+      assert(json.results.bindings.length >= 1);
+      assertEquals(json.results.bindings[0].name.value, "Alice");
+    },
+  );
+
   testContext.kv.close();
 });
 

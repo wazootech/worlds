@@ -1,10 +1,10 @@
 import { assertEquals } from "@std/assert";
-import { createWorldsKvdex } from "../../../../db/kvdex.ts";
-import { generateBlobFromN3Store } from "../../../../db/n3.ts";
+import { createWorldsKvdex } from "#/server/db/kvdex.ts";
+import { generateBlobFromN3Store } from "#/server/db/n3.ts";
 import { DataFactory, Store } from "n3";
 import route from "./route.ts";
 import { createClient } from "@libsql/client";
-import { LibsqlSearchStore } from "../../../../search/libsql.ts";
+import { LibsqlSearchStore } from "#/server/search/libsql.ts";
 
 Deno.test("Search API routes", async (t) => {
   const kv = await Deno.openKv(":memory:");

@@ -1,6 +1,7 @@
 import type { Client } from "@libsql/client";
 import type { Patch, SearchResult, SearchStore } from "@fartlabs/search-store";
 import { skolemizeQuad } from "@fartlabs/search-store";
+import type { Embeddings } from "#/server/embeddings/embeddings.ts";
 
 // TODO: Include an rdfjs.Quad in the search result item
 // TODO: Implement overlapping chunks for better context
@@ -28,8 +29,6 @@ export interface SearchResultItem {
 /**
  * LibsqlSearchStoreOptions are options for the LibsqlSearchStore.
  */
-import type { Embeddings } from "../embeddings/embeddings.ts";
-
 export interface LibsqlSearchStoreOptions {
   /**
    * client is the Libsql client to use for database operations.
