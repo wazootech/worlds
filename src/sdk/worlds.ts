@@ -1,6 +1,7 @@
 import type {
   CreateWorldParams,
   SearchResult,
+  SparqlResults,
   UpdateWorldParams,
   UsageBucketRecord,
   WorldRecord,
@@ -182,7 +183,7 @@ export class Worlds {
     worldId: string,
     query: string,
     options?: { accountId?: string },
-  ): Promise<unknown> {
+  ): Promise<SparqlResults | null> {
     const url = new URL(
       `${this.options.baseUrl}/worlds/${worldId}/sparql`,
     );
@@ -328,7 +329,7 @@ export class World {
   public sparql(
     query: string,
     options?: { accountId?: string },
-  ): Promise<unknown> {
+  ): Promise<SparqlResults | null> {
     return this.worlds.sparql(this.options.worldId, query, options);
   }
 

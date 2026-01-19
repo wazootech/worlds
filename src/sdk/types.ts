@@ -63,3 +63,43 @@ export interface UsageBucketRecord {
   bucketStartTs: number;
   requestCount: number;
 }
+
+/**
+ * SparqlValue represents a value in a SPARQL result.
+ */
+export interface SparqlValue {
+  type: "uri" | "literal" | "bnode";
+  value: string;
+  "xml:lang"?: string;
+  datatype?: string;
+}
+
+/**
+ * SparqlResults represents the results of a SPARQL query.
+ */
+export type SparqlResults = SparqlSelectResults | SparqlAskResults;
+
+/**
+ * SparqlSelectResults represents the results of a SPARQL SELECT query.
+ */
+export interface SparqlSelectResults {
+  head: {
+    vars: string[];
+    link?: string[];
+  };
+  results: {
+    bindings: Record<string, SparqlValue>[];
+  };
+  boolean?: undefined;
+}
+
+/**
+ * SparqlAskResults represents the results of a SPARQL ASK query.
+ */
+export interface SparqlAskResults {
+  head: {
+    link?: string[];
+  };
+  boolean: boolean;
+  results?: undefined;
+}
