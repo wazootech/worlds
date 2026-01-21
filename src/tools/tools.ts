@@ -8,11 +8,9 @@ import { createGenerateIriTool } from "./generate-iri/tool.ts";
  * generateIri generates a random IRI using the ulid library
  * and a default prefix.
  */
-export function generateIri(): string {
-  return `https://wazoo.tech/.well-known/genid/${ulid()}`;
+export function generateIri(generateId: () => string = ulid): string {
+  return `https://wazoo.tech/.well-known/genid/${generateId()}`;
 }
-
-// TODO: Improve accuracy of ReturnType<typeof createTools>.
 
 /**
  * createTools creates a set of tools for a world.
