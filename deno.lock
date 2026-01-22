@@ -12,6 +12,7 @@
     "jsr:@std/bytes@^1.0.3": "1.0.6",
     "jsr:@std/bytes@^1.0.4": "1.0.6",
     "jsr:@std/cli@1.0.12": "1.0.12",
+    "jsr:@std/cli@^1.0.26": "1.0.26",
     "jsr:@std/collections@^1.0.9": "1.1.3",
     "jsr:@std/crypto@1": "1.0.5",
     "jsr:@std/encoding@1": "1.0.10",
@@ -21,6 +22,7 @@
     "jsr:@std/internal@^1.0.12": "1.0.12",
     "jsr:@std/media-types@1": "1.1.0",
     "jsr:@std/ulid@1": "1.0.0",
+    "npm:@ai-sdk/anthropic@^3.0.18": "3.0.18_zod@3.25.76",
     "npm:@ai-sdk/google@^3.0.10": "3.0.10_zod@3.25.76",
     "npm:@comunica/query-sparql-rdfjs-lite@^5.1.0": "5.1.0",
     "npm:@google/genai@^1.38.0": "1.38.0",
@@ -79,7 +81,7 @@
       "integrity": "ab830819efc3a6e7024f865e0743f381dc8b57f63f0a3e590fe1e24ef17847a7",
       "dependencies": [
         "jsr:@std/bytes@^1.0.4",
-        "jsr:@std/cli",
+        "jsr:@std/cli@1.0.12",
         "jsr:@std/collections",
         "jsr:@std/ulid",
         "npm:zod@^3.24.0"
@@ -96,6 +98,12 @@
     },
     "@std/cli@1.0.12": {
       "integrity": "e5cfb7814d189da174ecd7a34fbbd63f3513e24a1b307feb2fcd5da47a070d90"
+    },
+    "@std/cli@1.0.26": {
+      "integrity": "53679a2b041406f15c3ff193986852595f3d11ba7b9d4b0c71a42589662e8fb5",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
     },
     "@std/collections@1.1.3": {
       "integrity": "bf8b0818886df6a32b64c7d3b037a425111f28278d69fd0995aeb62777c986b0"
@@ -120,6 +128,14 @@
     }
   },
   "npm": {
+    "@ai-sdk/anthropic@3.0.18_zod@3.25.76": {
+      "integrity": "sha512-eusJVRK3gtXa7ENen9Im5bxwE6tNCPDF/poXyK45u7eLNx1I7aPbfseLqznyh+tjhx6AOK7FTUBV1d36MERPrA==",
+      "dependencies": [
+        "@ai-sdk/provider",
+        "@ai-sdk/provider-utils",
+        "zod@3.25.76"
+      ]
+    },
     "@ai-sdk/gateway@3.0.19_zod@3.25.76": {
       "integrity": "sha512-WOHGHclkcDN3VYJ3xBafa38uhmW+xRV8Hbe9LtEJKej3+qU3Hy1SUcptxsqfVACo1H1Nt5xRX7rEvoCHlwC8tw==",
       "dependencies": [
@@ -4490,7 +4506,9 @@
       "jsr:@kitsonk/kv-toolbox@0.30",
       "jsr:@olli/kvdex@^3.4.2",
       "jsr:@std/assert@^1.0.17",
+      "jsr:@std/cli@^1.0.26",
       "jsr:@std/ulid@1",
+      "npm:@ai-sdk/anthropic@^3.0.18",
       "npm:@ai-sdk/google@^3.0.10",
       "npm:@comunica/query-sparql-rdfjs-lite@^5.1.0",
       "npm:@google/genai@^1.38.0",

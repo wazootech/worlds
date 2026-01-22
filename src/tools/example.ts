@@ -1,6 +1,8 @@
 import { render } from "cfonts";
-import type { ModelMessage } from "ai";
-import { generateText, stepCountIs } from "ai";
+import { Spinner } from "@std/cli/unstable-spinner";
+import type { LanguageModel, ModelMessage } from "ai";
+import { stepCountIs, streamText } from "ai";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createClient } from "@libsql/client";
 import { createServer } from "#/server/server.ts";
@@ -59,9 +61,30 @@ if (import.meta.main) {
 
   // Set up AI.
   const messages: ModelMessage[] = [];
-  const google = createGoogleGenerativeAI({
-    apiKey: Deno.env.get("GOOGLE_API_KEY")!,
-  });
+
+  const googleKey = Deno.env.get("GOOGLE_API_KEY");
+  const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
+
+  let model: LanguageModel | undefined;
+  if (googleKey) {
+    const google = createGoogleGenerativeAI({
+      apiKey: googleKey,
+    });
+    model = google("gemini-2.5-flash");
+  }
+
+  if (anthropicKey) {
+    const anthropic = createAnthropic({
+      apiKey: anthropicKey,
+    });
+    model = anthropic("claude-haiku-4-5");
+  }
+
+  if (!model) {
+    throw new Error(
+      "Neither GOOGLE_API_KEY nor ANTHROPIC_API_KEY is set.",
+    );
+  }
 
   const renderResult = render("Worlds CLI", {
     font: "block",
@@ -81,7 +104,7 @@ if (import.meta.main) {
   console.log(banner);
   console.log(
     "%cWelcome to Worlds CLI.%c Type 'exit' to quit.",
-    "color: #78350f; font-weight: bold",
+    "color: #10b981; font-weight: bold",
     "color: #6b7280",
   );
 
@@ -108,103 +131,95 @@ if (import.meta.main) {
       }],
     });
 
-    // Pretrained to create sparql queries
-    // Latent demand channel?
-    const result = await generateText({
-      model: google("gemini-2.5-flash-lite"),
+    // Stream response.
+    const result = streamText({
+      model,
       tools,
       system: systemPrompt,
       stopWhen: stepCountIs(100),
       messages,
     });
 
-    for (const step of result.steps) {
-      for (const call of step.toolCalls) {
-        const toolResult = step.toolResults
-          .find((r) => r.toolCallId === call.toolCallId);
+    // Track state for logging tool calls.
+    // deno-lint-ignore no-explicit-any
+    const toolCalls = new Map<string, any>();
 
-        switch (call.toolName) {
-          case "generateIri": {
-            const styles = [
-              "color: #94a3b8",
-              "color: #cbd5e1",
-              "color: #94a3b8",
-            ];
-            if (toolResult?.output) {
-              styles.push("color: #10b981");
-            }
+    console.log("\n%c✦ Assistant", "color: #10b981; font-weight: bold");
 
-            console.log(
-              `%cgenerateIri(%c${
-                (call.input as { entityText?: string | undefined }).entityText
-              }%c)${
-                (toolResult?.output as { iri?: string | undefined }).iri
-                  ? ` => %c${
-                    (toolResult?.output as { iri?: string | undefined }).iri
-                  }`
-                  : ""
-              }`,
-              ...styles,
+    const spinner = new Spinner({ message: "Thinking...", color: "yellow" });
+    spinner.start();
+
+    for await (const part of result.fullStream) {
+      switch (part.type) {
+        case "text-delta": {
+          spinner.stop();
+          if (part.text) {
+            await Deno.stdout.write(
+              new TextEncoder().encode(
+                `\x1b[38;2;16;185;129m${part.text}\x1b[0m`,
+              ),
             );
-            break;
           }
-
-          case "executeSparql": {
-            const styles = [
-              "color: #94a3b8",
-              "color: #cbd5e1",
-              "color: #94a3b8",
-            ];
-            if (toolResult?.output) {
-              styles.push("color: #10b981");
-            }
-
-            console.log(
-              `%cexecuteSparql(%c${
-                (call.input as { sparql: string }).sparql.trim()
-              }%c)${
-                toolResult?.output
-                  ? ` => %c${JSON.stringify(toolResult?.output)}`
-                  : ""
-              }`,
-              ...styles,
-            );
-            break;
-          }
-
-          case "searchFacts": {
-            const styles = [
-              "color: #94a3b8",
-              "color: #cbd5e1",
-              "color: #94a3b8",
-            ];
-            if (toolResult?.output) {
-              styles.push("color: #10b981");
-            }
-
-            console.log(
-              `%csearchFacts(%c${(call.input as { query: string }).query}%c)${
-                toolResult?.output
-                  ? ` => %c${JSON.stringify(toolResult?.output)}`
-                  : ""
-              }`,
-              ...styles,
-            );
-            break;
-          }
+          break;
         }
+
+        case "tool-call": {
+          spinner.stop();
+          toolCalls.set(part.toolCallId, part);
+          break;
+        }
+
+        case "tool-result": {
+          spinner.stop();
+          const call = toolCalls.get(part.toolCallId);
+          if (!call) break;
+
+          const styles = [
+            "color: #64748b", // gear icon
+            "color: #94a3b8", // name
+            "color: #cbd5e1", // input
+            "color: #94a3b8", // name end
+            "color: #d97706", // arrow
+            "color: #d97706", // output
+          ];
+
+          let callDetail = "";
+          switch (call.toolName) {
+            case "generateIri": {
+              callDetail = `generateIri(%c${call.input.entityText}%c)`;
+              break;
+            }
+            case "executeSparql": {
+              callDetail = `executeSparql(%c${call.input.sparql.trim()}%c)`;
+              break;
+            }
+            case "searchFacts": {
+              callDetail = `searchFacts(%c${call.input.query}%c)`;
+              break;
+            }
+            default: {
+              callDetail = `${call.toolName}(%c${
+                JSON.stringify(call.input)
+              }%c)`;
+            }
+          }
+
+          console.log(
+            `\n%c⚙ %c${callDetail}%c => %c${JSON.stringify(part.output)}`,
+            ...styles,
+          );
+          break;
+        }
+      }
+      if (part.type === "tool-call" || part.type === "tool-result") {
+        spinner.start();
       }
     }
 
-    messages.push({
-      role: "assistant",
-      content: result.text,
-    });
+    spinner.stop();
+    console.log("");
 
-    console.log(`\n%c${result.text}`, "color: #10b981");
-
-    messages.push(
-      { role: "assistant", content: result.content } as ModelMessage,
-    );
+    const response = await result.response;
+    messages.push(...response.messages as ModelMessage[]);
   }
 }
