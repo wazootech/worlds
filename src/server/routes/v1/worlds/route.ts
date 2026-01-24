@@ -6,6 +6,7 @@ import {
   createWorldParamsSchema,
   updateWorldParamsSchema,
 } from "#/server/schemas.ts";
+import { getPlanPolicy } from "#/server/rate-limit/policies.ts";
 
 export default (appContext: AppContext) => {
   return new Router()
@@ -165,6 +166,16 @@ export default (appContext: AppContext) => {
           return Response.json(parseResult.error, { status: 400 });
         }
         const data = parseResult.data;
+        const planPolicy = getPlanPolicy(authorized.account.value.plan ?? null);
+        const { result: worlds } = await appContext.db.worlds
+          .findBySecondaryIndex(
+            "accountId",
+            authorized.account.id,
+          );
+        const activeWorlds = worlds.filter((w) => w.value.deletedAt == null);
+        if (activeWorlds.length >= planPolicy.worldLimits.maxWorlds) {
+          return new Response("World limit reached", { status: 403 });
+        }
 
         const now = Date.now();
         const world = {

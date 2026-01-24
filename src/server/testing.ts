@@ -1,7 +1,7 @@
 import { ulid } from "@std/ulid";
 import { createWorldsKvdex } from "./db/kvdex.ts";
 import type { AppContext } from "./app-context.ts";
-import type { WorldsKvdex } from "./db/kvdex.ts";
+import type { Account, WorldsKvdex } from "./db/kvdex.ts";
 import { createClient } from "@libsql/client";
 
 /**
@@ -32,10 +32,11 @@ export async function createTestContext(): Promise<AppContext> {
  */
 export async function createTestAccount(
   db: WorldsKvdex,
+  account?: Partial<Account>,
 ): Promise<{ id: string; apiKey: string }> {
   const timestamp = Date.now();
-  const id = ulid(timestamp);
-  const apiKey = ulid(timestamp);
+  const id = account?.id ?? ulid(timestamp);
+  const apiKey = account?.apiKey ?? ulid(timestamp);
   const result = await db.accounts.add({
     id,
     description: "Test account",
@@ -43,6 +44,7 @@ export async function createTestAccount(
     apiKey,
     createdAt: Date.now(),
     updatedAt: Date.now(),
+    ...account,
   });
   if (!result.ok) {
     throw new Error("Failed to create test account");

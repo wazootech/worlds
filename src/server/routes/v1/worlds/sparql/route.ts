@@ -11,6 +11,8 @@ import {
   LibsqlSearchStoreManager,
 } from "#/server/search/libsql.ts";
 import { checkRateLimit } from "#/server/middleware/rate-limit.ts";
+import type { Patch, PatchHandler } from "@fartlabs/search-store";
+import { getPlanPolicy } from "#/server/rate-limit/policies.ts";
 
 const { namedNode, quad } = DataFactory;
 
@@ -138,6 +140,25 @@ function generateServiceDescription(endpointUrl: string): Promise<string> {
 }
 
 /**
+ * BufferedPatchHandler buffers patches and only applies them when commit is called.
+ */
+class BufferedPatchHandler implements PatchHandler {
+  private patches: Patch[] = [];
+
+  constructor(private readonly handler: PatchHandler) {}
+
+  public async patch(patches: Patch[]): Promise<void> {
+    this.patches.push(...patches);
+  }
+
+  public async commit(): Promise<void> {
+    if (this.patches.length > 0) {
+      await this.handler.patch(this.patches);
+    }
+  }
+}
+
+/**
  * Shared handler for executing SPARQL queries and updates
  */
 async function executeSparqlRequest(
@@ -196,21 +217,23 @@ async function executeSparqlRequest(
     searchAccountId = world?.value.accountId;
   }
 
-  const patchHandler = searchAccountId
-    ? (() => {
-      const searchStore = new LibsqlSearchStoreManager({
-        client: appContext.libsqlClient,
-        embeddings: appContext.embeddings,
-      });
-      // Create tables asynchronously - don't block on it
-      searchStore.createTablesIfNotExists();
-      return new LibsqlPatchHandler({
-        manager: searchStore,
-        accountId: searchAccountId!,
-        worldId,
-      });
-    })()
-    : { patch: async () => {} };
+  const patchHandler = new BufferedPatchHandler(
+    searchAccountId
+      ? (() => {
+        const searchStore = new LibsqlSearchStoreManager({
+          client: appContext.libsqlClient,
+          embeddings: appContext.embeddings,
+        });
+        // Create tables asynchronously - don't block on it
+        searchStore.createTablesIfNotExists();
+        return new LibsqlPatchHandler({
+          manager: searchStore,
+          accountId: searchAccountId!,
+          worldId,
+        });
+      })()
+      : { patch: async () => {} },
+  );
 
   const worldBlobEntry = await appContext.db.worldBlobs.find(worldId);
   const blob = worldBlobEntry?.value
@@ -225,8 +248,21 @@ async function executeSparqlRequest(
 
   // For updates, return 204 instead of the stream response
   if (isUpdate) {
-    // Persist new blob. If the world doesn't exist, create it.
+    // Check world size limits
+    const account = accountId
+      ? await appContext.db.accounts.find(accountId)
+      : null;
+    const planPolicy = getPlanPolicy(account?.value.plan ?? null);
+
     const newData = new Uint8Array(await newBlob.arrayBuffer());
+    if (newData.length > planPolicy.worldLimits.maxWorldSize) {
+      return new Response("World size limit exceeded", { status: 413 });
+    }
+
+    // Commit patches to search index
+    await patchHandler.commit();
+
+    // Persist new blob. If the world doesn't exist, create it.
     if (worldBlobEntry) {
       await appContext.db.worldBlobs.update(worldId, newData);
     } else {
