@@ -15,70 +15,23 @@ export function generateIri(generateId: () => string = ulid): string {
 export function createTools(options: CreateToolsOptions): {
   executeSparql: ReturnType<typeof createExecuteSparqlTool>;
   searchFacts: ReturnType<typeof createSearchFactsTool>;
-  generateIri: ReturnType<typeof createGenerateIriTool>;
+  generateIri?: ReturnType<typeof createGenerateIriTool>;
 } {
-  return {
+  const tools: {
+    executeSparql: ReturnType<typeof createExecuteSparqlTool>;
+    searchFacts: ReturnType<typeof createSearchFactsTool>;
+    generateIri?: ReturnType<typeof createGenerateIriTool>;
+  } = {
     executeSparql: createExecuteSparqlTool(options),
     searchFacts: createSearchFactsTool(options),
-    generateIri: createGenerateIriTool(options.generateIri ?? generateIri),
   };
-}
 
-/**
- * FormatPromptOptions are the options for formatting a prompt.
- */
-export interface FormatPromptOptions {
-  /**
-   * content is the content of the prompt.
-   */
-  content: string;
-
-  /**
-   * date is the date of the prompt.
-   */
-  date?: Date;
-
-  /**
-   * userIri is the IRI of the user.
-   */
-  userIri?: string;
-
-  /**
-   * assistantIri is the IRI of the assistant.
-   */
-  assistantIri?: string;
-}
-
-/**
- * formatPrompt formats a prompt for a world.
- */
-export function formatPrompt(options: FormatPromptOptions): string {
-  const parts: string[] = [];
-
-  // Giving the user an IRI helps the assistant reason about the user.
-  if (options.userIri) {
-    parts.push(
-      `The user's IRI is <${options.userIri}>. When the prompt references the user (explicitly or implicitly through first-person pronouns such as "me", "I", "we", etc.), use this IRI.`,
+  if (options.write) {
+    tools.generateIri = createGenerateIriTool(
+      options.generateIri ?? generateIri,
+      options,
     );
   }
 
-  // Giving the assistant an IRI helps the assistant reason about itself.
-  if (options.assistantIri) {
-    parts.push(
-      `The assistant's IRI is <${options.assistantIri}>. When the prompt references the assistant (explicitly or implicitly through second-person pronouns), use this IRI.`,
-    );
-  }
-
-  // Giving the assistant a clock helps the assistant reason about time.
-  if (options.date) {
-    parts.push(
-      `The time of writing is ${options.date}.`,
-    );
-  }
-
-  // Append the content of the prompt at the end.
-  parts.push(options.content);
-
-  // Join all formatted parts with a newline.
-  return parts.join("\n\n");
+  return tools;
 }

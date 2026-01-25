@@ -4,6 +4,12 @@ import { z } from "zod";
 import type { SparqlResult } from "#/sdk/types.ts";
 import { Worlds } from "#/sdk/worlds.ts";
 import type { CreateToolsOptions } from "#/tools/types.ts";
+import {
+  getDefaultSource,
+  getSourceByWorldId,
+  isUpdateQuery,
+} from "#/tools/utils.ts";
+import { formatExecuteSparqlDescription } from "#/tools/format.ts";
 
 /**
  * createExecuteSparqlTool creates a tool that executes SPARQL queries and updates.
@@ -12,29 +18,56 @@ export function createExecuteSparqlTool(
   options: CreateToolsOptions,
 ): Tool<{
   sparql: string;
-  worldId: string;
+  worldId?: string;
 }, SparqlResult | null> {
   const worlds = new Worlds(options);
+
   return tool({
-    description:
-      `Execute SPARQL queries and updates against a specific world knowledge base. This tool provides direct access to RDF data for reading, writing, and modifying facts.
-
-Capabilities:
-- Query data: SELECT, ASK, CONSTRUCT, DESCRIBE to explore existing facts and schema
-- Insert facts: INSERT DATA, INSERT {} to add new information
-- Delete facts: DELETE DATA, DELETE {} to remove obsolete information
-- Update data: Combine INSERT and DELETE for modifications
-- Supports: SELECT, ASK, CONSTRUCT, DESCRIBE, INSERT, DELETE, LOAD, CLEAR
-
-You MUST provide the worldId parameter specifying which world to query. If you don't know which worldId contains the data you need, first use searchFacts to find relevant facts. The search results include 'worldId' fields that identify which worlds contain matching data—use those worldIds here to execute your SPARQL operations.`,
+    description: formatExecuteSparqlDescription(options),
     inputSchema: z.object({
-      sparql: z.string().describe("The SPARQL query or update to execute."),
-      worldId: z.string().describe(
-        "The ID of the world to execute the query against.",
+      sparql: z.string().describe(
+        options.write
+          ? "The SPARQL query or update to execute. Supports both read operations (SELECT, ASK, CONSTRUCT, DESCRIBE) and write operations (INSERT, DELETE, UPDATE, etc.)."
+          : "The SPARQL query to execute (read-only: SELECT, ASK, CONSTRUCT, DESCRIBE).",
+      ),
+      worldId: z.string().optional().describe(
+        "The ID of the world to execute the query against. If omitted, uses the default source.",
       ),
     }),
     execute: async ({ sparql, worldId }) => {
-      return await worlds.sparql(worldId, sparql);
+      // Determine which source to use
+      let source;
+      let resolvedWorldId: string;
+
+      if (worldId) {
+        source = getSourceByWorldId(options, worldId);
+        if (!source) {
+          throw new Error(
+            `World ${worldId} is not configured in sources. Available worlds: ${
+              options.sources?.map((s) => s.worldId).join(", ") ?? "none"
+            }`,
+          );
+        }
+        resolvedWorldId = worldId;
+      } else {
+        source = getDefaultSource(options.sources);
+        if (!source) {
+          throw new Error(
+            "No default source configured and worldId was not provided. Please provide a worldId or configure a default source.",
+          );
+        }
+        resolvedWorldId = source.worldId;
+      }
+
+      // Validate write permissions for update queries
+      if (isUpdateQuery(sparql) && !options.write) {
+        throw new Error(
+          "Write operations are disabled. This tool is configured as read-only. " +
+            "Only SELECT, ASK, CONSTRUCT, and DESCRIBE queries are allowed.",
+        );
+      }
+
+      return await worlds.sparql(resolvedWorldId, sparql);
     },
   });
 }
