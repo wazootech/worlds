@@ -28,7 +28,7 @@ export class Invites {
     page = 1,
     pageSize = 20,
   ): Promise<InviteRecord[]> {
-    const url = new URL(`${this.options.baseUrl}/invites`);
+    const url = new URL(`${this.options.baseUrl}/v1/invites`);
     url.searchParams.set("page", page.toString());
     url.searchParams.set("pageSize", pageSize.toString());
     const response = await this.fetch(url, {
@@ -49,7 +49,7 @@ export class Invites {
    * create creates an invite in the Worlds API.
    */
   public async create(data?: CreateInviteParams): Promise<InviteRecord> {
-    const url = new URL(`${this.options.baseUrl}/invites`);
+    const url = new URL(`${this.options.baseUrl}/v1/invites`);
     const response = await this.fetch(
       url,
       {
@@ -76,7 +76,7 @@ export class Invites {
   public async get(
     code: string,
   ): Promise<InviteRecord | null> {
-    const url = new URL(`${this.options.baseUrl}/invites/${code}`);
+    const url = new URL(`${this.options.baseUrl}/v1/invites/${code}`);
     const response = await this.fetch(
       url,
       {
@@ -102,7 +102,7 @@ export class Invites {
    * delete deletes an invite from the Worlds API.
    */
   public async delete(code: string): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/invites/${code}`);
+    const url = new URL(`${this.options.baseUrl}/v1/invites/${code}`);
     const response = await this.fetch(
       url,
       {
@@ -126,7 +126,7 @@ export class Invites {
     code: string,
     accountId: string,
   ): Promise<RedeemInviteResult> {
-    const url = new URL(`${this.options.baseUrl}/invites/${code}/redeem`);
+    const url = new URL(`${this.options.baseUrl}/v1/invites/${code}/redeem`);
     url.searchParams.set("account", accountId);
     const response = await this.fetch(
       url,

@@ -28,7 +28,7 @@ export class Worlds {
     pageSize = 20,
     options?: { accountId?: string },
   ): Promise<WorldRecord[]> {
-    const url = new URL(`${this.options.baseUrl}/worlds`);
+    const url = new URL(`${this.options.baseUrl}/v1/worlds`);
     if (options?.accountId) {
       url.searchParams.set("account", options.accountId);
     }
@@ -56,7 +56,7 @@ export class Worlds {
     worldId: string,
     options?: { accountId?: string },
   ): Promise<WorldRecord | null> {
-    const url = new URL(`${this.options.baseUrl}/worlds/${worldId}`);
+    const url = new URL(`${this.options.baseUrl}/v1/worlds/${worldId}`);
     if (options?.accountId) {
       url.searchParams.set("account", options.accountId);
     }
@@ -89,7 +89,7 @@ export class Worlds {
     data: CreateWorldParams,
     options?: { accountId?: string },
   ): Promise<WorldRecord> {
-    const url = new URL(`${this.options.baseUrl}/worlds`);
+    const url = new URL(`${this.options.baseUrl}/v1/worlds`);
     if (options?.accountId) {
       url.searchParams.set("account", options.accountId);
     }
@@ -122,7 +122,7 @@ export class Worlds {
     data: UpdateWorldParams,
     options?: { accountId?: string },
   ): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/worlds/${worldId}`);
+    const url = new URL(`${this.options.baseUrl}/v1/worlds/${worldId}`);
     if (options?.accountId) {
       url.searchParams.set("account", options.accountId);
     }
@@ -152,7 +152,7 @@ export class Worlds {
     worldId: string,
     options?: { accountId?: string },
   ): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/worlds/${worldId}`);
+    const url = new URL(`${this.options.baseUrl}/v1/worlds/${worldId}`);
     if (options?.accountId) {
       url.searchParams.set("account", options.accountId);
     }
@@ -185,7 +185,7 @@ export class Worlds {
     options?: { accountId?: string },
   ): Promise<SparqlResult | null> {
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${worldId}/sparql`,
+      `${this.options.baseUrl}/v1/worlds/${worldId}/sparql`,
     );
     if (options?.accountId) {
       url.searchParams.set("account", options.accountId);
@@ -247,7 +247,7 @@ export class Worlds {
       accountId?: string;
     },
   ): Promise<WorldsSearchResult[]> {
-    const url = new URL(`${this.options.baseUrl}/search`);
+    const url = new URL(`${this.options.baseUrl}/v1/search`);
     if (options?.accountId) {
       url.searchParams.set("account", options.accountId);
     }
@@ -289,7 +289,7 @@ export class Worlds {
     options?: { format?: RdfFormat; accountId?: string },
   ): Promise<ArrayBuffer> {
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${worldId}/download`,
+      `${this.options.baseUrl}/v1/worlds/${worldId}/download`,
     );
     if (options?.accountId) {
       url.searchParams.set("account", options.accountId);

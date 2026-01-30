@@ -8,7 +8,7 @@ Deno.test("InternalWorldsSdk - Accounts", async (t) => {
   const appContext = await createTestContext();
   const server = await createServer(appContext);
   const sdk = new InternalWorldsSdk({
-    baseUrl: "http://localhost/v1",
+    baseUrl: "http://localhost",
     apiKey: appContext.admin!.apiKey, // Use admin API key for SDK
     fetch: (url, init) => server.fetch(new Request(url, init)),
   });
@@ -94,7 +94,7 @@ Deno.test("InternalWorldsSdk - Worlds", async (t) => {
 
   // Use the account's API key for world operations
   const sdk = new InternalWorldsSdk({
-    baseUrl: "http://localhost/v1",
+    baseUrl: "http://localhost",
     apiKey: apiKey,
     fetch: (url, init) => server.fetch(new Request(url, init)),
   });
@@ -215,7 +215,7 @@ Deno.test("InternalWorldsSdk - Admin Account Override", async (t) => {
 
   // Create SDK with admin API key
   const adminSdk = new InternalWorldsSdk({
-    baseUrl: "http://localhost/v1",
+    baseUrl: "http://localhost",
     apiKey: appContext.admin!.apiKey,
     fetch: (url, init) => server.fetch(new Request(url, init)),
   });
@@ -413,7 +413,7 @@ Deno.test("InternalWorldsSdk - Invites", async (t) => {
   const appContext = await createTestContext();
   const server = await createServer(appContext);
   const sdk = new InternalWorldsSdk({
-    baseUrl: "http://localhost/v1",
+    baseUrl: "http://localhost",
     apiKey: appContext.admin!.apiKey, // Use admin API key for SDK
     fetch: (url, init) => server.fetch(new Request(url, init)),
   });
@@ -473,7 +473,7 @@ Deno.test("InternalWorldsSdk - Invites", async (t) => {
 
     // Create user SDK with account's API key
     const userSdk = new InternalWorldsSdk({
-      baseUrl: "http://localhost/v1",
+      baseUrl: "http://localhost",
       apiKey: account.apiKey,
       fetch: (url, init) => server.fetch(new Request(url, init)),
     });

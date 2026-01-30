@@ -24,7 +24,7 @@ export class Accounts {
     page = 1,
     pageSize = 20,
   ): Promise<AccountRecord[]> {
-    const url = new URL(`${this.options.baseUrl}/accounts`);
+    const url = new URL(`${this.options.baseUrl}/v1/accounts`);
     url.searchParams.set("page", page.toString());
     url.searchParams.set("pageSize", pageSize.toString());
     const response = await this.fetch(url, {
@@ -45,7 +45,7 @@ export class Accounts {
    * create creates an account in the Worlds API.
    */
   public async create(data: CreateAccountParams): Promise<AccountRecord> {
-    const url = new URL(`${this.options.baseUrl}/accounts`);
+    const url = new URL(`${this.options.baseUrl}/v1/accounts`);
     const response = await this.fetch(
       url,
       {
@@ -72,7 +72,7 @@ export class Accounts {
   public async get(
     accountId: string,
   ): Promise<AccountRecord | null> {
-    const url = new URL(`${this.options.baseUrl}/accounts/${accountId}`);
+    const url = new URL(`${this.options.baseUrl}/v1/accounts/${accountId}`);
     const response = await this.fetch(
       url,
       {
@@ -101,7 +101,7 @@ export class Accounts {
     accountId: string,
     data: UpdateAccountParams,
   ): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/accounts/${accountId}`);
+    const url = new URL(`${this.options.baseUrl}/v1/accounts/${accountId}`);
     const response = await this.fetch(
       url,
       {
@@ -124,7 +124,7 @@ export class Accounts {
    * delete deletes an account from the Worlds API.
    */
   public async delete(accountId: string): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/accounts/${accountId}`);
+    const url = new URL(`${this.options.baseUrl}/v1/accounts/${accountId}`);
     const response = await this.fetch(
       url,
       {
@@ -146,7 +146,7 @@ export class Accounts {
    */
   public async rotate(accountId: string): Promise<void> {
     const url = new URL(
-      `${this.options.baseUrl}/accounts/${accountId}/rotate`,
+      `${this.options.baseUrl}/v1/accounts/${accountId}/rotate`,
     );
     const response = await this.fetch(
       url,

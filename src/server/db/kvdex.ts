@@ -45,6 +45,8 @@ export function createWorldsKvdex(kv: Deno.Kv) {
 
 export type Account = z.infer<typeof accountSchema>;
 
+// TODO: Rename "Account" to "Tenant" to better reflect that it represents an organization/environment rather than a user.
+
 /**
  * accountSchema is the schema for an account.
  *
