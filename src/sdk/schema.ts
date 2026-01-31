@@ -111,8 +111,8 @@ export const updateWorldParamsSchema: z.ZodType<UpdateWorldParams> = z.object({
 export interface SparqlValue {
   type: "uri" | "literal" | "bnode";
   value: string;
-  "xml:lang": string | null;
-  datatype: string | null;
+  "xml:lang"?: string | null;
+  datatype?: string | null;
 }
 
 /**
@@ -121,8 +121,8 @@ export interface SparqlValue {
 export const sparqlValueSchema: z.ZodType<SparqlValue> = z.object({
   type: z.enum(["uri", "literal", "bnode"]),
   value: z.string(),
-  "xml:lang": z.string().nullable(),
-  datatype: z.string().nullable(),
+  "xml:lang": z.string().nullable().optional(),
+  datatype: z.string().nullable().optional(),
 });
 
 /**

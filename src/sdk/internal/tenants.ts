@@ -4,6 +4,7 @@ import type {
   TenantRecord,
   UpdateTenantParams,
 } from "#/sdk/internal/schema.ts";
+import { parseError } from "#/sdk/error-utils.ts";
 
 /**
  * Tenants is a TypeScript SDK for the Tenants API.
@@ -33,9 +34,8 @@ export class Tenants {
       },
     });
     if (!response.ok) {
-      throw new Error(
-        `Failed to list tenants: ${response.status} ${response.statusText}`,
-      );
+      const errorMessage = await parseError(response);
+      throw new Error(`Failed to list tenants: ${errorMessage}`);
     }
 
     return await response.json();
@@ -58,9 +58,8 @@ export class Tenants {
       },
     );
     if (!response.ok) {
-      throw new Error(
-        `Failed to create tenant: ${response.status} ${response.statusText}`,
-      );
+      const errorMessage = await parseError(response);
+      throw new Error(`Failed to create tenant: ${errorMessage}`);
     }
 
     return await response.json();
@@ -86,9 +85,8 @@ export class Tenants {
     }
 
     if (!response.ok) {
-      throw new Error(
-        `Failed to get tenant: ${response.status} ${response.statusText}`,
-      );
+      const errorMessage = await parseError(response);
+      throw new Error(`Failed to get tenant: ${errorMessage}`);
     }
 
     return await response.json();
@@ -114,9 +112,8 @@ export class Tenants {
       },
     );
     if (!response.ok) {
-      throw new Error(
-        `Failed to update tenant: ${response.status} ${response.statusText}`,
-      );
+      const errorMessage = await parseError(response);
+      throw new Error(`Failed to update tenant: ${errorMessage}`);
     }
   }
 
@@ -135,9 +132,8 @@ export class Tenants {
       },
     );
     if (!response.ok) {
-      throw new Error(
-        `Failed to delete tenant: ${response.status} ${response.statusText}`,
-      );
+      const errorMessage = await parseError(response);
+      throw new Error(`Failed to delete tenant: ${errorMessage}`);
     }
   }
 
@@ -158,9 +154,8 @@ export class Tenants {
       },
     );
     if (!response.ok) {
-      throw new Error(
-        `Failed to rotate tenant key: ${response.status} ${response.statusText}`,
-      );
+      const errorMessage = await parseError(response);
+      throw new Error(`Failed to rotate tenant key: ${errorMessage}`);
     }
   }
 }
