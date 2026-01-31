@@ -108,22 +108,44 @@ export const updateWorldParamsSchema: z.ZodType<UpdateWorldParams> = z.object({
 /**
  * SparqlValue represents a value in a SPARQL result.
  */
-export interface SparqlValue {
-  type: "uri" | "literal" | "bnode";
-  value: string;
-  "xml:lang"?: string | null;
-  datatype?: string | null;
-}
+export type SparqlValue =
+  | {
+    type: "uri";
+    value: string;
+  }
+  | {
+    type: "bnode";
+    value: string;
+  }
+  | {
+    type: "literal";
+    value: string;
+    "xml:lang"?: string;
+    datatype?: string;
+  };
 
 /**
  * sparqlValueSchema is the Zod schema for SparqlValue.
  */
-export const sparqlValueSchema: z.ZodType<SparqlValue> = z.object({
-  type: z.enum(["uri", "literal", "bnode"]),
-  value: z.string(),
-  "xml:lang": z.string().nullable().optional(),
-  datatype: z.string().nullable().optional(),
-});
+export const sparqlValueSchema: z.ZodType<SparqlValue> = z.discriminatedUnion(
+  "type",
+  [
+    z.object({
+      type: z.literal("uri"),
+      value: z.string(),
+    }),
+    z.object({
+      type: z.literal("bnode"),
+      value: z.string(),
+    }),
+    z.object({
+      type: z.literal("literal"),
+      value: z.string(),
+      "xml:lang": z.string().optional(),
+      datatype: z.string().optional(),
+    }),
+  ],
+);
 
 /**
  * SparqlBinding represents a single result binding.
@@ -229,6 +251,15 @@ export const sparqlQuadSchema: z.ZodType<SparqlQuad> = z.object({
 
 /**
  * SparqlQuadsResults represents the results of a SPARQL CONSTRUCT/DESCRIBE query.
+ *
+ * @remarks
+ * This is a non-standard extension to the SPARQL 1.1 Query Results JSON Format.
+ * Standard SPARQL 1.1 JSON results only cover SELECT (bindings) and ASK (boolean) queries.
+ *
+ * This type is used by the Worlds API/SDK to provide a consistent JSON representation
+ * for graph queries (CONSTRUCT/DESCRIBE), returning "quads" in a structure similar
+ * to "bindings". This avoids the need for clients to parse raw RDF serializations
+ * (like Turtle or RDF/XML) when working with JSON-based API workflows.
  */
 export interface SparqlQuadsResults {
   head: {

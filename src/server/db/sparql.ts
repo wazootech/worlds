@@ -2,7 +2,12 @@ import { QueryEngine } from "@comunica/query-sparql-rdfjs-lite";
 import type { PatchHandler } from "@fartlabs/search-store";
 import { connectSearchStoreToN3Store } from "@fartlabs/search-store/n3";
 import { generateBlobFromN3Store, generateN3StoreFromBlob } from "./n3.ts";
-import type { SparqlBinding, SparqlQuad, SparqlResult } from "#/sdk/schema.ts";
+import type {
+  SparqlBinding,
+  SparqlQuad,
+  SparqlResult,
+  SparqlValue,
+} from "#/sdk/schema.ts";
 
 /**
  * DatasetParams are the parameters for a SPARQL query.
@@ -78,29 +83,7 @@ async function handleBindings(queryType: any): Promise<SparqlResult> {
         for (const v of vars) {
           const term = binding.get(v);
           if (term) {
-            let type = "literal";
-            if (term.termType === "NamedNode") type = "uri";
-            else if (term.termType === "BlankNode") type = "bnode";
-
-            bindingObj[v] = {
-              type: type as "uri" | "literal" | "bnode",
-              value: term.value,
-              "xml:lang": null,
-              datatype: null,
-            };
-
-            if (term.termType === "Literal") {
-              if (term.language) {
-                bindingObj[v]["xml:lang"] = term.language;
-              }
-              if (
-                term.datatype &&
-                term.datatype.value !==
-                  "http://www.w3.org/2001/XMLSchema#string"
-              ) {
-                bindingObj[v].datatype = term.datatype.value;
-              }
-            }
+            bindingObj[v] = toSparqlValue(term);
           }
         }
         b.push(bindingObj);
@@ -141,20 +124,7 @@ async function handleQuads(queryType: any): Promise<SparqlResult> {
           type: "uri",
           value: quad.predicate.value,
         },
-        object: {
-          type: quad.object.termType === "NamedNode"
-            ? "uri"
-            : quad.object.termType === "BlankNode"
-            ? "bnode"
-            : "literal",
-          value: quad.object.value,
-          "xml:lang": quad.object.language || null,
-          datatype: (quad.object.datatype &&
-              quad.object.datatype.value !==
-                "http://www.w3.org/2001/XMLSchema#string")
-            ? quad.object.datatype.value
-            : null,
-        },
+        object: toSparqlValue(quad.object),
         graph: {
           type: quad.graph.termType === "DefaultGraph" ? "default" : "uri",
           value: quad.graph.value,
@@ -169,4 +139,29 @@ async function handleQuads(queryType: any): Promise<SparqlResult> {
     head: { link: null },
     results: { quads },
   };
+}
+
+// deno-lint-ignore no-explicit-any
+function toSparqlValue(term: any): SparqlValue {
+  if (term.termType === "NamedNode") {
+    return { type: "uri", value: term.value };
+  } else if (term.termType === "BlankNode") {
+    return { type: "bnode", value: term.value };
+  } else {
+    // Literal
+    const val: SparqlValue = {
+      type: "literal",
+      value: term.value,
+    };
+    if (term.language) {
+      val["xml:lang"] = term.language;
+    }
+    if (
+      term.datatype &&
+      term.datatype.value !== "http://www.w3.org/2001/XMLSchema#string"
+    ) {
+      val.datatype = term.datatype.value;
+    }
+    return val;
+  }
 }
