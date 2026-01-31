@@ -7,6 +7,14 @@ import {
   updateAccountParamsSchema,
 } from "#/server/schemas.ts";
 import { LibsqlSearchStoreManager } from "#/server/search/libsql.ts";
+import {
+  accountsAdd,
+  accountsDelete,
+  accountsFind,
+  accountsGetMany,
+  accountsRotateApiKey,
+  accountsUpdate,
+} from "#/server/db/queries/accounts.sql.ts";
 
 export default (appContext: AppContext) =>
   new Router()
@@ -30,13 +38,22 @@ export default (appContext: AppContext) =>
         const page = parseInt(pageString);
         const pageSize = parseInt(pageSizeString);
         const offset = (page - 1) * pageSize;
-        const { result } = await appContext.db.accounts.getMany({
-          limit: pageSize,
-          offset: offset,
+
+        const result = await appContext.libsqlClient.execute({
+          sql: accountsGetMany,
+          args: [pageSize, offset],
         });
 
         return Response.json(
-          result.map(({ value, id }) => ({ ...value, id })),
+          result.rows.map((row) => ({
+            id: row.id,
+            description: row.description,
+            plan: row.plan,
+            apiKey: row.api_key,
+            createdAt: row.created_at,
+            updatedAt: row.updated_at,
+            deletedAt: row.deleted_at,
+          })),
         );
       },
     )
@@ -78,14 +95,22 @@ export default (appContext: AppContext) =>
           createdAt: now,
           updatedAt: now,
         };
+
         try {
-          const result = await appContext.db.accounts.add(account);
-          if (!result.ok) {
-            console.error("KV Add failed:", result);
-            return new Response("Failed to create account", { status: 500 });
-          }
+          await appContext.libsqlClient.execute({
+            sql: accountsAdd,
+            args: [
+              id,
+              data.description ?? null,
+              data.plan ?? null,
+              apiKey,
+              now,
+              now,
+              null,
+            ],
+          });
         } catch (e: unknown) {
-          console.error("KV Add threw:", e);
+          console.error("SQL Insert failed:", e);
           const message = e instanceof Error ? e.message : "Unknown error";
           return new Response("Failed to create account: " + message, {
             status: 500,
@@ -114,12 +139,25 @@ export default (appContext: AppContext) =>
           return new Response("Account ID required", { status: 400 });
         }
 
-        const result = await appContext.db.accounts.find(accountId);
-        if (!result) {
+        const result = await appContext.libsqlClient.execute({
+          sql: accountsFind,
+          args: [accountId],
+        });
+
+        const row = result.rows[0];
+        if (!row) {
           return new Response("Account not found", { status: 404 });
         }
 
-        return Response.json({ ...result.value, id: accountId });
+        return Response.json({
+          id: row.id,
+          description: row.description,
+          plan: row.plan,
+          apiKey: row.api_key,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          deletedAt: row.deleted_at,
+        });
       },
     )
     .put(
@@ -154,14 +192,15 @@ export default (appContext: AppContext) =>
         }
         const data = parseResult.data;
 
-        const result = await appContext.db.accounts.update(accountId, {
-          description: data.description,
-          plan: data.plan,
-          updatedAt: Date.now(),
+        await appContext.libsqlClient.execute({
+          sql: accountsUpdate,
+          args: [
+            data.description ?? null,
+            data.plan ?? null,
+            Date.now(),
+            accountId,
+          ],
         });
-        if (!result.ok) {
-          return new Response("Failed to update account", { status: 500 });
-        }
 
         return new Response(null, { status: 204 });
       },
@@ -193,7 +232,11 @@ export default (appContext: AppContext) =>
         await searchStore.createTablesIfNotExists();
         await searchStore.deleteAccount(accountId);
 
-        await appContext.db.accounts.delete(accountId);
+        await appContext.libsqlClient.execute({
+          sql: accountsDelete,
+          args: [accountId],
+        });
+
         return new Response(null, { status: 204 });
       },
     )
@@ -216,13 +259,10 @@ export default (appContext: AppContext) =>
         }
 
         const apiKey = ulid();
-        const result = await appContext.db.accounts.update(accountId, {
-          apiKey,
-          updatedAt: Date.now(),
+        await appContext.libsqlClient.execute({
+          sql: accountsRotateApiKey,
+          args: [apiKey, Date.now(), accountId],
         });
-        if (!result.ok) {
-          return new Response("Failed to rotate account key", { status: 500 });
-        }
 
         return new Response(null, { status: 204 });
       },

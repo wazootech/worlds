@@ -1,20 +1,23 @@
 import { assertEquals } from "@std/assert";
 import { TokenBucketRateLimiter } from "./rate-limiter.ts";
 import type { RateLimitPolicy } from "./interfaces.ts";
-import { createWorldsKvdex } from "#/server/db/kvdex.ts";
+import { createClient } from "@libsql/client";
+import { initializeDatabase } from "#/server/db/init.ts";
+import { createTestAccount } from "#/server/testing.ts";
 
 /**
- * Creates an in-memory KV for testing.
+ * Creates an in-memory LibSQL client for testing.
  */
-async function createTestDb() {
-  const kv = await Deno.openKv(":memory:");
-  const db = createWorldsKvdex(kv);
-  return { kv, db };
+async function createTestClient() {
+  const client = createClient({ url: ":memory:" });
+  await initializeDatabase(client);
+  return client;
 }
 
 Deno.test("TokenBucketRateLimiter - allows requests within capacity", async () => {
-  const { kv } = await createTestDb();
-  const limiter = new TokenBucketRateLimiter(kv);
+  const client = await createTestClient();
+  const limiter = new TokenBucketRateLimiter(client);
+  const { id: accountId } = await createTestAccount(client);
 
   const policy: RateLimitPolicy = {
     interval: 60000, // 1 minute
@@ -22,22 +25,23 @@ Deno.test("TokenBucketRateLimiter - allows requests within capacity", async () =
     refillRate: 10,
   };
 
+  const key = `${accountId}:world1:sparql_query`;
+
   // First request should succeed
-  const result1 = await limiter.consume("test:world1:sparql_query", 1, policy);
+  const result1 = await limiter.consume(key, 1, policy);
   assertEquals(result1.allowed, true);
   assertEquals(result1.remaining, 9);
 
   // Second request should succeed
-  const result2 = await limiter.consume("test:world1:sparql_query", 1, policy);
+  const result2 = await limiter.consume(key, 1, policy);
   assertEquals(result2.allowed, true);
   assertEquals(result2.remaining, 8);
-
-  await kv.close();
 });
 
 Deno.test("TokenBucketRateLimiter - rejects requests exceeding capacity", async () => {
-  const { kv } = await createTestDb();
-  const limiter = new TokenBucketRateLimiter(kv);
+  const client = await createTestClient();
+  const limiter = new TokenBucketRateLimiter(client);
+  const { id: accountId } = await createTestAccount(client);
 
   // Very low limit for testing
   const policy: RateLimitPolicy = {
@@ -46,7 +50,7 @@ Deno.test("TokenBucketRateLimiter - rejects requests exceeding capacity", async 
     refillRate: 3,
   };
 
-  const key = "test:world2:sparql_query";
+  const key = `${accountId}:world2:sparql_query`;
 
   // Consume all tokens
   await limiter.consume(key, 1, policy);
@@ -57,13 +61,12 @@ Deno.test("TokenBucketRateLimiter - rejects requests exceeding capacity", async 
   const result = await limiter.consume(key, 1, policy);
   assertEquals(result.allowed, false);
   assertEquals(result.remaining, 0);
-
-  await kv.close();
 });
 
 Deno.test("TokenBucketRateLimiter - refills tokens over time", async () => {
-  const { kv } = await createTestDb();
-  const limiter = new TokenBucketRateLimiter(kv);
+  const client = await createTestClient();
+  const limiter = new TokenBucketRateLimiter(client);
+  const { id: accountId } = await createTestAccount(client);
 
   // Short interval for testing
   const policy: RateLimitPolicy = {
@@ -72,7 +75,7 @@ Deno.test("TokenBucketRateLimiter - refills tokens over time", async () => {
     refillRate: 5,
   };
 
-  const key = "test:world3:sparql_query";
+  const key = `${accountId}:world3:sparql_query`;
 
   // Consume all tokens
   await limiter.consume(key, 5, policy);
@@ -88,13 +91,12 @@ Deno.test("TokenBucketRateLimiter - refills tokens over time", async () => {
   const result2 = await limiter.consume(key, 1, policy);
   assertEquals(result2.allowed, true);
   assertEquals(result2.remaining, 4);
-
-  await kv.close();
 });
 
 Deno.test("TokenBucketRateLimiter - doesn't exceed capacity on refill", async () => {
-  const { kv } = await createTestDb();
-  const limiter = new TokenBucketRateLimiter(kv);
+  const client = await createTestClient();
+  const limiter = new TokenBucketRateLimiter(client);
+  const { id: accountId } = await createTestAccount(client);
 
   const policy: RateLimitPolicy = {
     interval: 100,
@@ -102,7 +104,7 @@ Deno.test("TokenBucketRateLimiter - doesn't exceed capacity on refill", async ()
     refillRate: 5,
   };
 
-  const key = "test:world4:sparql_query";
+  const key = `${accountId}:world4:sparql_query`;
 
   // Consume 2 tokens
   await limiter.consume(key, 2, policy);
@@ -114,13 +116,12 @@ Deno.test("TokenBucketRateLimiter - doesn't exceed capacity on refill", async ()
   const result = await limiter.consume(key, 5, policy);
   assertEquals(result.allowed, true);
   assertEquals(result.remaining, 0);
-
-  await kv.close();
 });
 
 Deno.test("TokenBucketRateLimiter - handles different resource types independently", async () => {
-  const { kv } = await createTestDb();
-  const limiter = new TokenBucketRateLimiter(kv);
+  const client = await createTestClient();
+  const limiter = new TokenBucketRateLimiter(client);
+  const { id: accountId } = await createTestAccount(client);
 
   const policy: RateLimitPolicy = {
     interval: 60000,
@@ -128,8 +129,8 @@ Deno.test("TokenBucketRateLimiter - handles different resource types independent
     refillRate: 5,
   };
 
-  const queryKey = "test:world5:sparql_query";
-  const updateKey = "test:world5:sparql_update";
+  const queryKey = `${accountId}:world5:sparql_query`;
+  const updateKey = `${accountId}:world5:sparql_update`;
 
   // Consume all query tokens
   await limiter.consume(queryKey, 5, policy);
@@ -140,13 +141,12 @@ Deno.test("TokenBucketRateLimiter - handles different resource types independent
   const updateResult = await limiter.consume(updateKey, 1, policy);
   assertEquals(updateResult.allowed, true);
   assertEquals(updateResult.remaining, 4);
-
-  await kv.close();
 });
 
 Deno.test("TokenBucketRateLimiter - handles cost greater than 1", async () => {
-  const { kv } = await createTestDb();
-  const limiter = new TokenBucketRateLimiter(kv);
+  const client = await createTestClient();
+  const limiter = new TokenBucketRateLimiter(client);
+  const { id: accountId } = await createTestAccount(client);
 
   const policy: RateLimitPolicy = {
     interval: 60000,
@@ -154,7 +154,7 @@ Deno.test("TokenBucketRateLimiter - handles cost greater than 1", async () => {
     refillRate: 10,
   };
 
-  const key = "test:world6:sparql_query";
+  const key = `${accountId}:world6:sparql_query`;
 
   // Consume 5 tokens at once
   const result1 = await limiter.consume(key, 5, policy);
@@ -165,6 +165,4 @@ Deno.test("TokenBucketRateLimiter - handles cost greater than 1", async () => {
   const result2 = await limiter.consume(key, 6, policy);
   assertEquals(result2.allowed, false);
   assertEquals(result2.remaining, 5);
-
-  await kv.close();
 });

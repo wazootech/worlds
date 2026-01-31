@@ -3,6 +3,14 @@ import { ulid } from "@std/ulid";
 import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
 import { createInviteParamsSchema } from "#/server/schemas.ts";
+import {
+  invitesAdd,
+  invitesDelete,
+  invitesFind,
+  invitesGetMany,
+  invitesUpdate,
+} from "#/server/db/queries/invites.sql.ts";
+import { accountsUpdate } from "#/server/db/queries/accounts.sql.ts";
 
 export default (appContext: AppContext) =>
   new Router()
@@ -26,13 +34,19 @@ export default (appContext: AppContext) =>
         const page = parseInt(pageString);
         const pageSize = parseInt(pageSizeString);
         const offset = (page - 1) * pageSize;
-        const { result } = await appContext.db.invites.getMany({
-          limit: pageSize,
-          offset: offset,
+
+        const result = await appContext.libsqlClient.execute({
+          sql: invitesGetMany,
+          args: [pageSize, offset],
         });
 
         return Response.json(
-          result.map(({ value, id }) => ({ ...value, code: id })),
+          result.rows.map((row) => ({
+            code: row.code,
+            createdAt: row.created_at,
+            redeemedBy: row.redeemed_by,
+            redeemedAt: row.redeemed_at,
+          })),
         );
       },
     )
@@ -72,13 +86,12 @@ export default (appContext: AppContext) =>
         };
 
         try {
-          const result = await appContext.db.invites.add(invite);
-          if (!result.ok) {
-            console.error("KV Add failed:", result);
-            return new Response("Failed to create invite", { status: 500 });
-          }
+          await appContext.libsqlClient.execute({
+            sql: invitesAdd,
+            args: [code, now, null, null],
+          });
         } catch (e: unknown) {
-          console.error("KV Add threw:", e);
+          console.error("SQL Insert failed:", e);
           const message = e instanceof Error ? e.message : "Unknown error";
           return new Response("Failed to create invite: " + message, {
             status: 500,
@@ -107,12 +120,22 @@ export default (appContext: AppContext) =>
           return new Response("Invite code required", { status: 400 });
         }
 
-        const result = await appContext.db.invites.find(code);
-        if (!result) {
+        const result = await appContext.libsqlClient.execute({
+          sql: invitesFind,
+          args: [code],
+        });
+
+        const row = result.rows[0];
+        if (!row) {
           return new Response("Invite not found", { status: 404 });
         }
 
-        return Response.json({ ...result.value, code: code });
+        return Response.json({
+          code: row.code,
+          createdAt: row.created_at,
+          redeemedBy: row.redeemed_by,
+          redeemedAt: row.redeemed_at,
+        });
       },
     )
     .delete(
@@ -134,7 +157,11 @@ export default (appContext: AppContext) =>
           return new Response("Invite code required", { status: 400 });
         }
 
-        await appContext.db.invites.delete(code);
+        await appContext.libsqlClient.execute({
+          sql: invitesDelete,
+          args: [code],
+        });
+
         return new Response(null, { status: 204 });
       },
     )
@@ -159,13 +186,18 @@ export default (appContext: AppContext) =>
         }
 
         // Find the invite
-        const inviteResult = await appContext.db.invites.find(code);
-        if (!inviteResult) {
+        const inviteResult = await appContext.libsqlClient.execute({
+          sql: invitesFind,
+          args: [code],
+        });
+
+        const invite = inviteResult.rows[0];
+        if (!invite) {
           return new Response("Invite not found", { status: 404 });
         }
 
         // Check if already redeemed
-        if (inviteResult.value.redeemedBy) {
+        if (invite.redeemed_by) {
           return new Response("Invite already redeemed", { status: 410 });
         }
 
@@ -178,25 +210,21 @@ export default (appContext: AppContext) =>
         const now = Date.now();
 
         // Update the invite
-        const inviteUpdateResult = await appContext.db.invites.update(code, {
-          redeemedBy: authorized.account.id,
-          redeemedAt: now,
+        await appContext.libsqlClient.execute({
+          sql: invitesUpdate,
+          args: [authorized.account.id, now, code],
         });
-        if (!inviteUpdateResult.ok) {
-          return new Response("Failed to redeem invite", { status: 500 });
-        }
 
         // Update the account's plan to "free"
-        const accountUpdateResult = await appContext.db.accounts.update(
-          authorized.account.id,
-          {
-            plan: "free",
-            updatedAt: now,
-          },
-        );
-        if (!accountUpdateResult.ok) {
-          return new Response("Failed to update account plan", { status: 500 });
-        }
+        await appContext.libsqlClient.execute({
+          sql: accountsUpdate,
+          args: [
+            account.description ?? null,
+            "free",
+            now,
+            authorized.account.id,
+          ],
+        });
 
         return Response.json({
           message: "Invite redeemed successfully",

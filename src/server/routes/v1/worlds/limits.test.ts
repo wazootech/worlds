@@ -5,14 +5,16 @@ import createSparqlRoute from "./sparql/route.ts";
 
 Deno.test("World Limits - World Count", async (t) => {
   const testContext = await createTestContext();
-  const { db } = testContext;
   const worldsApp = createWorldsRoute(testContext);
 
   await t.step("rejects world creation when limit is reached", async () => {
     // Create account with 'test' plan (limit: 2 worlds)
-    const { id: _accountId, apiKey } = await createTestAccount(db, {
-      plan: "test",
-    });
+    const { id: _accountId, apiKey } = await createTestAccount(
+      testContext.libsqlClient,
+      {
+        plan: "test",
+      },
+    );
 
     // Create 1st world
     let resp = await worldsApp.fetch(
@@ -59,9 +61,12 @@ Deno.test("World Limits - World Count", async (t) => {
     "rejects world creation when plan is null (shadow)",
     async () => {
       // Create account with 'null' plan (should default to shadow: 0 worlds)
-      const { id: _accountId, apiKey } = await createTestAccount(db, {
-        plan: null,
-      });
+      const { id: _accountId, apiKey } = await createTestAccount(
+        testContext.libsqlClient,
+        {
+          plan: null,
+        },
+      );
 
       const resp = await worldsApp.fetch(
         new Request("http://localhost/v1/worlds", {
@@ -77,13 +82,10 @@ Deno.test("World Limits - World Count", async (t) => {
       assertEquals(await resp.text(), "World limit reached");
     },
   );
-
-  testContext.kv.close();
 });
 
 Deno.test("World Limits - World Size", async (t) => {
   const testContext = await createTestContext();
-  const { db } = testContext;
   const sparqlApp = createSparqlRoute(testContext);
   const worldsApp = createWorldsRoute(testContext);
 
@@ -91,9 +93,12 @@ Deno.test("World Limits - World Size", async (t) => {
     "rejects sparql update when blob size exceeds limit",
     async () => {
       // Create account with 'test' plan (limit: 100 bytes)
-      const { id: _accountId, apiKey } = await createTestAccount(db, {
-        plan: "test",
-      });
+      const { id: _accountId, apiKey } = await createTestAccount(
+        testContext.libsqlClient,
+        {
+          plan: "test",
+        },
+      );
 
       // Create a world
       const createResp = await worldsApp.fetch(
@@ -142,22 +147,22 @@ Deno.test("World Limits - World Size", async (t) => {
       assertEquals(await resp.text(), "World size limit exceeded");
     },
   );
-
-  testContext.kv.close();
 });
 
 Deno.test("World Limits - Rate Limiting", async (t) => {
   const testContext = await createTestContext();
-  const { db } = testContext;
   const sparqlApp = createSparqlRoute(testContext);
 
   await t.step("returns 429 when rate limit is exceeded", async () => {
     // Create account with 'test' plan
     // In policies.ts, test plan has capacity 100 for sparql_query.
     // We'll use a dummy account to avoid hitting other limits.
-    const { apiKey } = await createTestAccount(db, {
-      plan: "test",
-    });
+    const { apiKey } = await createTestAccount(
+      testContext.libsqlClient,
+      {
+        plan: "test",
+      },
+    );
 
     // Create a world
     const worldsApp = createWorldsRoute(testContext);
@@ -200,6 +205,4 @@ Deno.test("World Limits - Rate Limiting", async (t) => {
     assertEquals(resp.headers.get("X-RateLimit-Remaining"), "99");
     assert(resp.headers.get("X-RateLimit-Reset"));
   });
-
-  testContext.kv.close();
 });

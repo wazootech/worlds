@@ -2,23 +2,39 @@ import { assert, assertEquals } from "@std/assert";
 import { createTestAccount, createTestContext } from "#/server/testing.ts";
 import createRoute from "./route.ts";
 import { createServer } from "#/server/server.ts";
+import {
+  worldsAdd,
+  worldsFind,
+  worldsGetBlob, // Changed from worldBlobsFind
+  worldsSetBlob, // Changed from worldBlobsSet
+  worldsUpdate,
+} from "#/server/db/queries/worlds.sql.ts";
+// Removed worldBlobsFind, worldBlobsSet from here
 
 Deno.test("Worlds API routes - GET operations", async (t) => {
   const testContext = await createTestContext();
-  const { db } = testContext;
   const app = createRoute(testContext);
 
   await t.step("GET /v1/worlds/:world returns world metadata", async () => {
-    const { id: accountId, apiKey } = await createTestAccount(db);
-    const result = await db.worlds.add({
-      accountId,
-      label: "Test World",
-      description: "Test Description",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+    const { id: accountId, apiKey } = await createTestAccount(
+      testContext.libsqlClient,
+    );
+    const worldId = crypto.randomUUID();
+    const now = Date.now();
+    await testContext.libsqlClient.execute({
+      sql: worldsAdd,
+      args: [
+        worldId,
+        accountId,
+        "Test World",
+        "Test Description",
+        null, // blob
+        now,
+        now,
+        null,
+        0,
+      ],
     });
-    assert(result.ok);
-    const worldId = result.id;
 
     const resp = await app.fetch(
       new Request(`http://localhost/v1/worlds/${worldId}`, {
@@ -44,7 +60,7 @@ Deno.test("Worlds API routes - GET operations", async (t) => {
   await t.step(
     "GET /v1/worlds/:world returns 404 for non-existent world",
     async () => {
-      const { apiKey } = await createTestAccount(db);
+      const { apiKey } = await createTestAccount(testContext.libsqlClient);
 
       const resp = await app.fetch(
         new Request("http://localhost/v1/worlds/non-existent-world", {
@@ -62,19 +78,36 @@ Deno.test("Worlds API routes - GET operations", async (t) => {
   await t.step(
     "GET /v1/worlds/:world returns 404 for deleted world",
     async () => {
-      const { id: accountId, apiKey } = await createTestAccount(db);
-      const result = await db.worlds.add({
-        accountId,
-        label: "Test World",
-        description: "Test Description",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+      const { id: accountId, apiKey } = await createTestAccount(
+        testContext.libsqlClient,
+      );
+      const worldId = crypto.randomUUID();
+      const now = Date.now();
+      await testContext.libsqlClient.execute({
+        sql: worldsAdd,
+        args: [
+          worldId,
+          accountId,
+          "Test World",
+          "Test Description",
+          null, // blob
+          now,
+          now,
+          null,
+          0,
+        ],
       });
-      assert(result.ok);
-      const worldId = result.id;
 
       // Mark world as deleted
-      await db.worlds.update(worldId, { deletedAt: Date.now() });
+      await testContext.libsqlClient.execute({
+        sql: worldsUpdate,
+        args: ["Test World", "Test Description", 0, Date.now(), worldId],
+      });
+      // Actually delete it
+      await testContext.libsqlClient.execute({
+        sql: "UPDATE worlds SET deleted_at = ? WHERE id = ?",
+        args: [Date.now(), worldId],
+      });
 
       const resp = await app.fetch(
         new Request(`http://localhost/v1/worlds/${worldId}`, {
@@ -92,21 +125,33 @@ Deno.test("Worlds API routes - GET operations", async (t) => {
   await t.step(
     "GET /v1/worlds/:world/download returns world data",
     async () => {
-      const { id: accountId, apiKey } = await createTestAccount(db);
-      const result = await db.worlds.add({
-        accountId,
-        label: "Test World",
-        description: "Test Description",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+      const { id: accountId, apiKey } = await createTestAccount(
+        testContext.libsqlClient,
+      );
+      const worldId = crypto.randomUUID();
+      const now = Date.now();
+      await testContext.libsqlClient.execute({
+        sql: worldsAdd,
+        args: [
+          worldId,
+          accountId,
+          "Test World",
+          "Test Description",
+          null, // Initial blob is null
+          now,
+          now,
+          null,
+          0,
+        ],
       });
-      assert(result.ok);
-      const worldId = result.id;
 
       // Add dummy N-Quads data
       const quads =
         "<http://example.org/s> <http://example.org/p> <http://example.org/o> <http://example.org/g> .";
-      await db.worldBlobs.set(worldId, new TextEncoder().encode(quads));
+      await testContext.libsqlClient.execute({
+        sql: worldsSetBlob, // Changed from worldBlobsSet
+        args: [new TextEncoder().encode(quads), now, worldId],
+      });
 
       // Test default (N-Quads)
       const resp = await app.fetch(
@@ -149,15 +194,15 @@ Deno.test("Worlds API routes - GET operations", async (t) => {
   await t.step(
     "GET /v1/worlds/:world/download returns 401 for unauthorized",
     async () => {
-      const { id: accountId } = await createTestAccount(db);
-      const result = await db.worlds.add({
-        accountId,
-        label: "Test World",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+      const { id: accountId } = await createTestAccount(
+        testContext.libsqlClient,
+      );
+      const worldId = crypto.randomUUID();
+      const now = Date.now();
+      await testContext.libsqlClient.execute({
+        sql: worldsAdd,
+        args: [worldId, accountId, "Test World", null, null, now, now, null, 0],
       });
-      assert(result.ok);
-      const worldId = result.id;
 
       const resp = await app.fetch(
         new Request(`http://localhost/v1/worlds/${worldId}/download`, {
@@ -168,17 +213,14 @@ Deno.test("Worlds API routes - GET operations", async (t) => {
       assertEquals(resp.status, 401);
     },
   );
-
-  testContext.kv.close();
 });
 
 Deno.test("Worlds API routes - POST operations", async (t) => {
   const testContext = await createTestContext();
-  const { db } = testContext;
   const app = createRoute(testContext);
 
   await t.step("POST /v1/worlds creates a new world", async () => {
-    const { apiKey } = await createTestAccount(db);
+    const { apiKey } = await createTestAccount(testContext.libsqlClient);
 
     const req = new Request("http://localhost/v1/worlds", {
       method: "POST",
@@ -204,28 +246,34 @@ Deno.test("Worlds API routes - POST operations", async (t) => {
     assert(typeof world.updatedAt === "number");
     assertEquals(world.deletedAt, undefined);
   });
-
-  testContext.kv.close();
 });
 
 Deno.test("Worlds API routes - PUT operations", async (t) => {
   const testContext = await createTestContext();
-  const { db } = testContext;
   const app = createRoute(testContext);
 
   await t.step(
     "PUT /v1/worlds/:world updates world description",
     async () => {
-      const { id: accountId, apiKey } = await createTestAccount(db);
-      const result = await db.worlds.add({
-        accountId,
-        label: "Test World",
-        description: "Test Description",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+      const { id: accountId, apiKey } = await createTestAccount(
+        testContext.libsqlClient,
+      );
+      const worldId = crypto.randomUUID();
+      const now = Date.now();
+      await testContext.libsqlClient.execute({
+        sql: worldsAdd,
+        args: [
+          worldId,
+          accountId,
+          "Test World",
+          "Test Description",
+          null, // blob
+          now,
+          now,
+          null,
+          0,
+        ],
       });
-      assert(result.ok);
-      const worldId = result.id;
 
       // Update description
       const updateResp = await app.fetch(
@@ -258,16 +306,25 @@ Deno.test("Worlds API routes - PUT operations", async (t) => {
   await t.step(
     "PUT /v1/worlds/:world returns 400 for invalid JSON",
     async () => {
-      const { id: accountId, apiKey } = await createTestAccount(db);
-      const result = await db.worlds.add({
-        accountId,
-        label: "Test World",
-        description: "Test Description",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+      const { id: accountId, apiKey } = await createTestAccount(
+        testContext.libsqlClient,
+      );
+      const worldId = crypto.randomUUID();
+      const now = Date.now();
+      await testContext.libsqlClient.execute({
+        sql: worldsAdd,
+        args: [
+          worldId,
+          accountId,
+          "Test World",
+          "Test Description",
+          null, // blob
+          now,
+          now,
+          null,
+          0,
+        ],
       });
-      assert(result.ok);
-      const worldId = result.id;
 
       const invalidJsonResp = await app.fetch(
         new Request(`http://localhost/v1/worlds/${worldId}`, {
@@ -286,7 +343,7 @@ Deno.test("Worlds API routes - PUT operations", async (t) => {
   await t.step(
     "PUT /v1/worlds/:world returns 404 for non-existent world",
     async () => {
-      const { apiKey } = await createTestAccount(db);
+      const { apiKey } = await createTestAccount(testContext.libsqlClient);
 
       const updateResp = await app.fetch(
         new Request("http://localhost/v1/worlds/non-existent-world", {
@@ -301,28 +358,37 @@ Deno.test("Worlds API routes - PUT operations", async (t) => {
       assertEquals(updateResp.status, 404);
     },
   );
-
-  testContext.kv.close();
 });
 
 Deno.test("Worlds API routes - DELETE operations", async (t) => {
   const testContext = await createTestContext();
-  const { db } = testContext;
   const app = createRoute(testContext);
 
   await t.step("DELETE /v1/worlds/:world deletes a world", async () => {
-    const { id: accountId, apiKey } = await createTestAccount(db);
-    const result = await db.worlds.add({
-      accountId,
-      label: "Test World",
-      description: "Test Description",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+    const { id: accountId, apiKey } = await createTestAccount(
+      testContext.libsqlClient,
+    );
+    const worldId = crypto.randomUUID();
+    const now = Date.now();
+    await testContext.libsqlClient.execute({
+      sql: worldsAdd,
+      args: [
+        worldId,
+        accountId,
+        "Test World",
+        "Test Description",
+        null, // blob
+        now,
+        now,
+        null,
+        0,
+      ],
     });
-    assert(result.ok);
-    const worldId = result.id;
     // Create a dummy blob to verify deletion
-    await db.worldBlobs.set(worldId, new Uint8Array([1, 2, 3]));
+    await testContext.libsqlClient.execute({
+      sql: worldsSetBlob, // Changed from worldBlobsSet
+      args: [new Uint8Array([1, 2, 3]), now, worldId],
+    });
 
     // Delete world
     const deleteResp = await app.fetch(
@@ -346,15 +412,19 @@ Deno.test("Worlds API routes - DELETE operations", async (t) => {
     );
     assertEquals(getResp.status, 404);
 
-    // Verify blob deletion
-    const blobResult = await db.worldBlobs.find(worldId);
-    assertEquals(blobResult, null);
+    // Verify blob deletion (should be null in the worlds table since we don't delete the row, but wait...)
+    // Actually, DELETE /v1/worlds/:world DELETES the whole row.
+    const blobResult = await testContext.libsqlClient.execute({
+      sql: worldsGetBlob, // Changed from worldsGetBlob
+      args: [worldId],
+    });
+    assertEquals(blobResult.rows.length, 0);
   });
 
   await t.step(
     "DELETE /v1/worlds/:world returns 404 for non-existent world",
     async () => {
-      const { apiKey } = await createTestAccount(db);
+      const { apiKey } = await createTestAccount(testContext.libsqlClient);
 
       const deleteResp = await app.fetch(
         new Request("http://localhost/v1/worlds/non-existent-world", {
@@ -367,37 +437,52 @@ Deno.test("Worlds API routes - DELETE operations", async (t) => {
       assertEquals(deleteResp.status, 404);
     },
   );
-
-  testContext.kv.close();
 });
 
 Deno.test("Worlds API routes - List operations", async (t) => {
   const testContext = await createTestContext();
-  const { db } = testContext;
   const app = createRoute(testContext);
 
   await t.step(
     "GET /v1/worlds returns paginated list of worlds for account",
     async () => {
-      const { id: accountId, apiKey } = await createTestAccount(db);
+      const { id: accountId, apiKey } = await createTestAccount(
+        testContext.libsqlClient,
+      );
 
-      const result1 = await db.worlds.add({
-        accountId,
-        label: "Test World 1",
-        description: "Test Description 1",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+      const now1 = Date.now();
+      const worldId1 = crypto.randomUUID();
+      await testContext.libsqlClient.execute({
+        sql: worldsAdd,
+        args: [
+          worldId1,
+          accountId,
+          "Test World 1",
+          "Test Description 1",
+          null, // blob
+          now1,
+          now1,
+          null,
+          0,
+        ],
       });
-      assert(result1.ok);
 
-      const result2 = await db.worlds.add({
-        accountId,
-        label: "Test World 2",
-        description: "Test Description 2",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+      const now2 = Date.now();
+      const worldId2 = crypto.randomUUID();
+      await testContext.libsqlClient.execute({
+        sql: worldsAdd,
+        args: [
+          worldId2,
+          accountId,
+          "Test World 2",
+          "Test Description 2",
+          null, // blob
+          now2,
+          now2,
+          null,
+          0,
+        ],
       });
-      assert(result2.ok);
 
       const resp = await app.fetch(
         new Request("http://localhost/v1/worlds?page=1&pageSize=20", {
@@ -434,40 +519,52 @@ Deno.test("Worlds API routes - List operations", async (t) => {
       assertEquals(resp.status, 401);
     },
   );
-
-  testContext.kv.close();
 });
 
 Deno.test("Admin Account Override", async (t) => {
   const testContext = await createTestContext();
-  const { db, admin } = testContext;
+  const { admin } = testContext;
   const app = await createServer(testContext);
   const adminApiKey = admin!.apiKey;
 
   await t.step("Admin can list worlds for a specific account", async () => {
-    const accountA = await createTestAccount(db);
-    const accountB = await createTestAccount(db);
+    const accountA = await createTestAccount(testContext.libsqlClient);
+    const accountB = await createTestAccount(testContext.libsqlClient);
 
     // Create world for Account A
-    await db.worlds.add({
-      accountId: accountA.id,
-      label: "World A",
-      description: "Description A",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+    const now1 = Date.now();
+    const worldIdA = crypto.randomUUID();
+    await testContext.libsqlClient.execute({
+      sql: worldsAdd,
+      args: [
+        worldIdA,
+        accountA.id,
+        "World A",
+        "Description A",
+        null, // blob
+        now1,
+        now1,
+        null,
+        0,
+      ],
     });
 
     // Create world for Account B
-    await db.worlds.add({
-      accountId: accountB.id,
-      label: "World B",
-      description: "Description B",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+    const now2 = Date.now();
+    const worldIdB = crypto.randomUUID();
+    await testContext.libsqlClient.execute({
+      sql: worldsAdd,
+      args: [
+        worldIdB,
+        accountB.id,
+        "World B",
+        "Description B",
+        null, // blob
+        now2,
+        now2,
+        null,
+        0,
+      ],
     });
 
     // Admin list for Account A
@@ -500,7 +597,7 @@ Deno.test("Admin Account Override", async (t) => {
   });
 
   await t.step("Admin can create world for a specific account", async () => {
-    const accountC = await createTestAccount(db);
+    const accountC = await createTestAccount(testContext.libsqlClient);
 
     const resp = await app.fetch(
       new Request(`http://localhost/v1/worlds?account=${accountC.id}`, {
@@ -521,24 +618,32 @@ Deno.test("Admin Account Override", async (t) => {
     assertEquals(world.label, "World C");
 
     // Verify in DB
-    const dbWorld = await db.worlds.find(world.id);
-    assert(dbWorld);
-    assertEquals(dbWorld.value.accountId, accountC.id);
+    const dbWorldResult = await testContext.libsqlClient.execute({
+      sql: worldsFind,
+      args: [world.id],
+    });
+    assert(dbWorldResult.rows.length > 0);
+    assertEquals(dbWorldResult.rows[0].account_id, accountC.id);
   });
 
   await t.step("Admin can delete world for a specific account", async () => {
-    const accountD = await createTestAccount(db);
-    const result = await db.worlds.add({
-      accountId: accountD.id,
-      label: "World D",
-      description: "to be deleted",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+    const accountD = await createTestAccount(testContext.libsqlClient);
+    const worldId = crypto.randomUUID();
+    const now = Date.now();
+    await testContext.libsqlClient.execute({
+      sql: worldsAdd,
+      args: [
+        worldId,
+        accountD.id,
+        "World D",
+        "to be deleted",
+        null, // blob
+        now,
+        now,
+        null,
+        0,
+      ],
     });
-    assert(result.ok);
-    const worldId = result.id;
 
     const resp = await app.fetch(
       new Request(
@@ -553,25 +658,33 @@ Deno.test("Admin Account Override", async (t) => {
     );
     assertEquals(resp.status, 204);
 
-    const dbWorld = await db.worlds.find(worldId);
-    assertEquals(dbWorld, null);
+    const dbWorldResult = await testContext.libsqlClient.execute({
+      sql: worldsFind,
+      args: [worldId],
+    });
+    assertEquals(dbWorldResult.rows.length, 0);
   });
 
   await t.step(
     "Admin SPARQL query claims usage for specific account",
     async () => {
-      const accountE = await createTestAccount(db);
-      const result = await db.worlds.add({
-        accountId: accountE.id,
-        label: "World E",
-        description: "Sparql usage test",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-
-        isPublic: false,
+      const accountE = await createTestAccount(testContext.libsqlClient);
+      const worldId = crypto.randomUUID();
+      const now = Date.now();
+      await testContext.libsqlClient.execute({
+        sql: worldsAdd,
+        args: [
+          worldId,
+          accountE.id,
+          "World E",
+          "Sparql usage test",
+          null, // blob
+          now,
+          now,
+          null,
+          0,
+        ],
       });
-      assert(result.ok);
-      const worldId = result.id;
 
       // Perform SPARQL query as admin impersonating accountE
       const query = "SELECT * WHERE { ?s ?p ?o } LIMIT 1";
@@ -595,7 +708,4 @@ Deno.test("Admin Account Override", async (t) => {
       // Historical usage buckets are deprecated
     },
   );
-
-  // Cleanup
-  testContext.kv.close();
 });

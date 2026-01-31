@@ -80,8 +80,6 @@ Deno.test("InternalWorldsSdk - Accounts", async (t) => {
     const account = await sdk.accounts.get("acc_sdk_test");
     assertEquals(account, null);
   });
-
-  appContext.kv.close();
 });
 
 Deno.test("InternalWorldsSdk - Worlds", async (t) => {
@@ -90,7 +88,7 @@ Deno.test("InternalWorldsSdk - Worlds", async (t) => {
 
   // We need a test account to create worlds
   // We need a test account to create worlds
-  const { apiKey } = await createTestAccount(appContext.db);
+  const { apiKey } = await createTestAccount(appContext.libsqlClient);
 
   // Use the account's API key for world operations
   const sdk = new InternalWorldsSdk({
@@ -205,8 +203,6 @@ Deno.test("InternalWorldsSdk - Worlds", async (t) => {
     const world = await sdk.worlds.get(worldId);
     assertEquals(world, null);
   });
-
-  appContext.kv.close();
 });
 
 Deno.test("InternalWorldsSdk - Admin Account Override", async (t) => {
@@ -221,29 +217,43 @@ Deno.test("InternalWorldsSdk - Admin Account Override", async (t) => {
   });
 
   // Create two test accounts
-  const accountA = await createTestAccount(appContext.db);
-  const accountB = await createTestAccount(appContext.db);
+  const accountA = await createTestAccount(appContext.libsqlClient);
+  const accountB = await createTestAccount(appContext.libsqlClient);
 
   await t.step("admin can list worlds for specific account", async () => {
     // Create worlds for both accounts directly in DB
-    await appContext.db.worlds.add({
-      accountId: accountA.id,
-      label: "Account A World",
-      description: "Test",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+    const worldId1 = crypto.randomUUID();
+    const now1 = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, account_id, label, description, created_at, updated_at, deleted_at, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        worldId1,
+        accountA.id,
+        "Account A World",
+        "Test",
+        now1,
+        now1,
+        null,
+        0,
+      ],
     });
 
-    await appContext.db.worlds.add({
-      accountId: accountB.id,
-      label: "Account B World",
-      description: "Test",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+    const worldId2 = crypto.randomUUID();
+    const now2 = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, account_id, label, description, created_at, updated_at, deleted_at, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        worldId2,
+        accountB.id,
+        "Account B World",
+        "Test",
+        now2,
+        now2,
+        null,
+        0,
+      ],
     });
 
     // List worlds for Account A using admin override
@@ -274,26 +284,27 @@ Deno.test("InternalWorldsSdk - Admin Account Override", async (t) => {
     assertEquals(world.label, "Admin Created World");
 
     // Verify in database
-    const dbWorld = await appContext.db.worlds.find(world.id);
+    const dbWorldResult = await appContext.libsqlClient.execute({
+      sql: "SELECT * FROM worlds WHERE id = ?",
+      args: [world.id],
+    });
+    const dbWorld = dbWorldResult.rows[0];
     assert(dbWorld);
-    assertEquals(dbWorld.value.accountId, accountB.id);
+    assertEquals(dbWorld.account_id, accountB.id);
   });
 
   await t.step("admin can get world for specific account", async () => {
     // Create a world for Account A
-    const result = await appContext.db.worlds.add({
-      accountId: accountA.id,
-      label: "Test World",
-      description: "Test",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+    const worldId = crypto.randomUUID();
+    const now = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, account_id, label, description, created_at, updated_at, deleted_at, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [worldId, accountA.id, "Test World", "Test", now, now, null, 0],
     });
-    assert(result.ok);
 
     // Get world using admin override
-    const world = await adminSdk.worlds.get(result.id, {
+    const world = await adminSdk.worlds.get(worldId, {
       accountId: accountA.id,
     });
     assert(world !== null);
@@ -302,24 +313,30 @@ Deno.test("InternalWorldsSdk - Admin Account Override", async (t) => {
 
   await t.step("admin can update world for specific account", async () => {
     // Create a world for Account A
-    const result = await appContext.db.worlds.add({
-      accountId: accountA.id,
-      label: "Original Name",
-      description: "Original",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+    const worldId2 = crypto.randomUUID();
+    const now3 = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, account_id, label, description, created_at, updated_at, deleted_at, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        worldId2,
+        accountA.id,
+        "Original Name",
+        "Original",
+        now3,
+        now3,
+        null,
+        0,
+      ],
     });
-    assert(result.ok);
 
     // Update using admin override
-    await adminSdk.worlds.update(result.id, {
+    await adminSdk.worlds.update(worldId2, {
       description: "Updated via admin",
     }, { accountId: accountA.id });
 
     // Verify update
-    const world = await adminSdk.worlds.get(result.id, {
+    const world = await adminSdk.worlds.get(worldId2, {
       accountId: accountA.id,
     });
     assert(world !== null);
@@ -328,40 +345,46 @@ Deno.test("InternalWorldsSdk - Admin Account Override", async (t) => {
 
   await t.step("admin can delete world for specific account", async () => {
     // Create a world for Account B
-    const result = await appContext.db.worlds.add({
-      accountId: accountB.id,
-      label: "To Delete",
-      description: "Test",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+    const worldId3 = crypto.randomUUID();
+    const now4 = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, account_id, label, description, created_at, updated_at, deleted_at, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [worldId3, accountB.id, "To Delete", "Test", now4, now4, null, 0],
     });
-    assert(result.ok);
 
     // Delete using admin override
-    await adminSdk.worlds.delete(result.id, { accountId: accountB.id });
+    await adminSdk.worlds.delete(worldId3, { accountId: accountB.id });
 
     // Verify deletion
-    const world = await appContext.db.worlds.find(result.id);
-    assertEquals(world, null);
+    const worldResult = await appContext.libsqlClient.execute({
+      sql: "SELECT * FROM worlds WHERE id = ?",
+      args: [worldId3],
+    });
+    assertEquals(worldResult.rows.length, 0);
   });
 
   await t.step(
     "admin SPARQL operations claim usage for specific account",
     async () => {
       // Create a world for Account A
-      const result = await appContext.db.worlds.add({
-        accountId: accountA.id,
-        label: "SPARQL Test World",
-        description: "Test",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-
-        isPublic: false,
+      const worldId4 = crypto.randomUUID();
+      const now5 = Date.now();
+      await appContext.libsqlClient.execute({
+        sql:
+          "INSERT INTO worlds (id, account_id, label, description, created_at, updated_at, deleted_at, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        args: [
+          worldId4,
+          accountA.id,
+          "SPARQL Test World",
+          "Test",
+          now5,
+          now5,
+          null,
+          0,
+        ],
       });
-      assert(result.ok);
-      const worldId = result.id;
+      const worldId = worldId4;
 
       // Perform SPARQL update using admin override
       await adminSdk.worlds.sparql(
@@ -387,26 +410,30 @@ Deno.test("InternalWorldsSdk - Admin Account Override", async (t) => {
 
   await t.step("admin can search world for specific account", async () => {
     // Create a world for Account A
-    const result = await appContext.db.worlds.add({
-      accountId: accountA.id,
-      label: "Search Test World",
-      description: "Test",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+    const worldId5 = crypto.randomUUID();
+    const now6 = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, account_id, label, description, created_at, updated_at, deleted_at, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        worldId5,
+        accountA.id,
+        "Search Test World",
+        "Test",
+        now6,
+        now6,
+        null,
+        0,
+      ],
     });
-    assert(result.ok);
 
     // Search using admin override (won't return meaningful results without embeddings, but verifies no crash)
     const searchResults = await adminSdk.worlds.search("test query", {
-      worldIds: [result.id],
+      worldIds: [worldId5],
       accountId: accountA.id,
     });
     assert(Array.isArray(searchResults));
   });
-
-  appContext.kv.close();
 });
 
 Deno.test("InternalWorldsSdk - Invites", async (t) => {
@@ -506,6 +533,4 @@ Deno.test("InternalWorldsSdk - Invites", async (t) => {
     const invite = await sdk.invites.get("sdk_invite_test");
     assertEquals(invite, null);
   });
-
-  appContext.kv.close();
 });

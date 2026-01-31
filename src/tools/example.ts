@@ -10,7 +10,8 @@ import { createTestAccount } from "#/server/testing.ts";
 import type { WorldsOptions } from "#/sdk/types.ts";
 import { InternalWorldsSdk } from "#/sdk/internal/sdk.ts";
 import { UniversalSentenceEncoderEmbeddings } from "#/server/embeddings/use.ts";
-import { createWorldsKvdex } from "#/server/db/kvdex.ts";
+import { initializeDatabase } from "#/server/db/init.ts";
+import { accountsFind } from "#/server/db/queries/accounts.sql.ts";
 import type { AppContext } from "#/server/app-context.ts";
 import { createTools } from "./tools.ts";
 import { formatPrompt } from "./format.ts";
@@ -20,12 +21,13 @@ import systemPrompt from "./prompt.md" with { type: "text" };
  * createExampleContext creates a custom app context for the example CLI.
  */
 async function createExampleContext(): Promise<AppContext> {
-  const kv = await Deno.openKv(":memory:");
-  const db = createWorldsKvdex(kv);
   const apiKey = "admin-api-key";
 
   const libsqlClient = createClient({ url: ":memory:" });
   const embeddings = new UniversalSentenceEncoderEmbeddings();
+
+  // Initialize database tables
+  await initializeDatabase(libsqlClient);
 
   // Preload embeddings model to avoid first-request delay
   console.log(
@@ -47,8 +49,6 @@ async function createExampleContext(): Promise<AppContext> {
   );
 
   return {
-    db,
-    kv,
     libsqlClient,
     embeddings,
     admin: { apiKey },
@@ -60,7 +60,7 @@ if (import.meta.main) {
   const appContext = await createExampleContext();
   const server = await createServer(appContext);
   const worldsOptions: WorldsOptions = {
-    baseUrl: "http://localhost/v1",
+    baseUrl: "http://localhost",
     apiKey: appContext.admin!.apiKey!,
     fetch: (url, init) => server.fetch(new Request(url, init)),
   };
@@ -68,15 +68,19 @@ if (import.meta.main) {
   const sdk = new InternalWorldsSdk(worldsOptions);
 
   // Create test account with explicit free plan.
-  const testAccount = await createTestAccount(appContext.db, {
+  const testAccount = await createTestAccount(appContext.libsqlClient, {
     plan: "free",
   });
 
   // Verify account plan.
-  const account = await appContext.db.accounts.find(testAccount.id);
-  if (account?.value.plan !== "free") {
+  const accountResult = await appContext.libsqlClient.execute({
+    sql: accountsFind,
+    args: [testAccount.id],
+  });
+  const account = accountResult.rows[0];
+  if (!account || account.plan !== "free") {
     throw new Error(
-      `Account created with plan "${account?.value.plan}" instead of "free"`,
+      `Account created with plan "${account?.plan}" instead of "free"`,
     );
   }
 
@@ -85,7 +89,7 @@ if (import.meta.main) {
     "color: #6366f1; font-weight: bold",
     "color: #64748b",
     "color: #10b981; font-weight: bold",
-    account.value.plan,
+    account.plan,
   );
 
   const worldRecord = await sdk.worlds.create({

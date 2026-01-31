@@ -1,44 +1,38 @@
 import { assertEquals } from "@std/assert";
-import { createWorldsKvdex } from "#/server/db/kvdex.ts";
 import { DataFactory } from "n3";
 import route from "./route.ts";
 import { createClient } from "@libsql/client";
 import { LibsqlSearchStoreManager } from "#/server/search/libsql.ts";
+import { initializeDatabase } from "#/server/db/init.ts";
+import { worldsAdd } from "#/server/db/queries/worlds.sql.ts";
+import { createTestAccount } from "#/server/testing.ts";
 
 Deno.test("Search API - Top-Level Route", async (t) => {
-  const kv = await Deno.openKv(":memory:");
-  const db = createWorldsKvdex(kv);
-
   const client = createClient({ url: ":memory:" });
+  await initializeDatabase(client);
+
   const embedder = {
     embed: (_: string) => Promise.resolve(new Array(768).fill(0)),
     dimensions: 768,
   };
-  const appContext = { db, kv, libsqlClient: client, embeddings: embedder };
+  const appContext = { libsqlClient: client, embeddings: embedder };
   const adminHandler = route({ ...appContext, admin: { apiKey: "admin-key" } });
 
-  const accountId = "test-account";
+  const { id: accountId } = await createTestAccount(client);
 
   // Create two worlds
-  const world1Result = await db.worlds.add({
-    accountId,
-    label: "World 1",
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  });
-  const world2Result = await db.worlds.add({
-    accountId,
-    label: "World 2",
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  });
+  const worldId1 = crypto.randomUUID();
+  const worldId2 = crypto.randomUUID();
+  const now = Date.now();
 
-  if (!world1Result.ok || !world2Result.ok) {
-    throw new Error("Failed to add worlds");
-  }
-
-  const worldId1 = world1Result.id;
-  const worldId2 = world2Result.id;
+  await client.execute({
+    sql: worldsAdd,
+    args: [worldId1, accountId, "World 1", null, null, now, now, null, 0],
+  });
+  await client.execute({
+    sql: worldsAdd,
+    args: [worldId2, accountId, "World 2", null, null, now, now, null, 0],
+  });
 
   // Sync to search store using LibsqlSearchStore
   const searchStore = new LibsqlSearchStoreManager({
@@ -114,6 +108,4 @@ Deno.test("Search API - Top-Level Route", async (t) => {
     );
     assertEquals(resp.status, 404); // "No valid worlds found"
   });
-
-  kv.close();
 });

@@ -3,6 +3,7 @@ import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
 import { LibsqlSearchStoreManager } from "#/server/search/libsql.ts";
 import { checkRateLimit } from "#/server/middleware/rate-limit.ts";
+import { worldsFind } from "#/server/db/queries/worlds.sql.ts";
 
 export default (appContext: AppContext) => {
   return new Router().get(
@@ -26,17 +27,22 @@ export default (appContext: AppContext) => {
 
       if (worldIds) {
         for (const worldId of worldIds) {
-          const worldResult = await appContext.db.worlds.find(worldId);
+          const worldResult = await appContext.libsqlClient.execute({
+            sql: worldsFind,
+            args: [worldId],
+          });
+          const world = worldResult.rows[0];
+
           if (
-            !worldResult || worldResult.value.deletedAt != null ||
-            (worldResult.value.accountId !== authorized.account?.id &&
+            !world || world.deleted_at != null ||
+            (world.account_id !== authorized.account?.id &&
               !authorized.admin)
           ) {
             continue;
           }
           validWorldIds.push(worldId);
           if (!accountId) {
-            accountId = worldResult.value.accountId;
+            accountId = world.account_id as string;
           }
         }
       }
