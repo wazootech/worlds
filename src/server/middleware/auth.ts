@@ -3,24 +3,17 @@ import {
   tenantsFind,
   tenantsFindByApiKey,
 } from "#/server/db/resources/tenants/queries.sql.ts";
+import {
+  type TenantRow,
+  tenantRowSchema,
+} from "#/server/db/resources/tenants/schema.ts";
 
 /**
  * AuthorizedRequest is the result of a successful authentication.
  */
 export interface AuthorizedRequest {
   admin: boolean;
-  tenant: {
-    id: string;
-    value: {
-      id: string;
-      description?: string;
-      plan?: string;
-      apiKey: string;
-      createdAt: number;
-      updatedAt: number;
-      deletedAt?: number;
-    };
-  } | null;
+  tenant: TenantRow | null;
 }
 
 /**
@@ -60,20 +53,20 @@ export async function authorizeRequest(
     return authorized;
   }
 
+  const value = tenantRowSchema.parse({
+    id: row.id,
+    label: row.label,
+    description: row.description,
+    plan: row.plan,
+    api_key: row.api_key,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    deleted_at: row.deleted_at,
+  });
+
   return {
     admin: true,
-    tenant: {
-      id: tenantId,
-      value: {
-        id: row.id as string,
-        description: row.description as string | undefined,
-        plan: row.plan as string | undefined,
-        apiKey: row.api_key as string,
-        createdAt: row.created_at as number,
-        updatedAt: row.updated_at as number,
-        deletedAt: (row.deleted_at as number | null) ?? undefined,
-      },
-    },
+    tenant: value,
   };
 }
 
@@ -98,19 +91,19 @@ export async function authorize(
     return { admin: false, tenant: null };
   }
 
+  const value = tenantRowSchema.parse({
+    id: row.id,
+    label: row.label,
+    description: row.description,
+    plan: row.plan,
+    api_key: row.api_key,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    deleted_at: row.deleted_at,
+  });
+
   return {
     admin: false,
-    tenant: {
-      id: row.id as string,
-      value: {
-        id: row.id as string,
-        description: row.description as string | undefined,
-        plan: row.plan as string | undefined,
-        apiKey: row.api_key as string,
-        createdAt: row.created_at as number,
-        updatedAt: row.updated_at as number,
-        deletedAt: row.deleted_at as number | undefined,
-      },
-    },
+    tenant: value,
   };
 }

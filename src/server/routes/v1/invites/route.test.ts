@@ -155,8 +155,9 @@ Deno.test("Invites API routes - Redemption", async (t) => {
       sql: tenantsAdd,
       args: [
         "ten_no_plan",
+        null, // label
         "Tenant without plan",
-        null,
+        null, // plan
         userApiKey,
         Date.now(),
         Date.now(),

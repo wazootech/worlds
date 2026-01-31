@@ -87,6 +87,12 @@ console.log(result);
 
 Contributions are welcome! Please open an issue or submit a pull request.
 
+**Generate code:**
+
+```sh
+deno task generate
+```
+
 **Start the development server:**
 
 ```sh

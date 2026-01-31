@@ -2,6 +2,7 @@
 -- zero or more worlds.
 CREATE TABLE IF NOT EXISTS tenants (
   id TEXT PRIMARY KEY NOT NULL,
+  label TEXT,
   description TEXT,
   plan TEXT,
   api_key TEXT NOT NULL,
@@ -31,6 +32,7 @@ LIMIT
 INSERT INTO
   tenants (
     id,
+    label,
     description,
     plan,
     api_key,
@@ -39,7 +41,7 @@ INSERT INTO
     deleted_at
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?);
+  (?, ?, ?, ?, ?, ?, ?, ?);
 
 -- tenantsFind is a query that finds a tenant by ID
 -- (used in GET /v1/tenants/:tenant and auth middleware).
@@ -66,6 +68,7 @@ WHERE
 UPDATE
   tenants
 SET
+  label = ?,
   description = ?,
   plan = ?,
   updated_at = ?

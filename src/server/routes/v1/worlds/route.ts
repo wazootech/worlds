@@ -131,7 +131,7 @@ export default (appContext: AppContext) => {
         });
 
         // Apply rate limit
-        const plan = authorized.tenant?.value.plan ?? "free";
+        const plan = authorized.tenant?.plan ?? "free";
         const policy = getPolicy(plan, "world_download");
         const rateLimiter = new TokenBucketRateLimiter(appContext.libsqlClient);
         const rateLimitResult = await rateLimiter.consume(
@@ -417,7 +417,7 @@ export default (appContext: AppContext) => {
           );
         }
         const data = parseResult.data;
-        const planPolicy = getPlanPolicy(authorized.tenant.value.plan ?? null);
+        const planPolicy = getPlanPolicy(authorized.tenant.plan ?? null);
 
         // Check world limit
         const worldsResult = await appContext.libsqlClient.execute({

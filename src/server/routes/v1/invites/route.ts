@@ -263,13 +263,14 @@ export default (appContext: AppContext) =>
 
         // Validate tenant data before business logic checks
         const tenant = tenantTableSchema.parse({
-          id: authorized.tenant.value.id,
-          description: authorized.tenant.value.description,
-          plan: authorized.tenant.value.plan,
-          api_key: authorized.tenant.value.apiKey,
-          created_at: authorized.tenant.value.createdAt,
-          updated_at: authorized.tenant.value.updatedAt,
-          deleted_at: authorized.tenant.value.deletedAt ?? null,
+          id: authorized.tenant.id,
+          label: authorized.tenant.label,
+          description: authorized.tenant.description,
+          plan: authorized.tenant.plan,
+          api_key: authorized.tenant.api_key,
+          created_at: authorized.tenant.created_at,
+          updated_at: authorized.tenant.updated_at,
+          deleted_at: authorized.tenant.deleted_at,
         });
 
         if (tenant.plan && tenant.plan !== "shadow") {
@@ -294,7 +295,9 @@ export default (appContext: AppContext) =>
           });
 
           // Update the tenant's plan to "free"
+          // Update the tenant's plan to "free"
           const tenantUpdate = tenantTableUpdateSchema.parse({
+            label: tenant.label ?? null,
             description: tenant.description ?? null,
             plan: "free",
             updated_at: now,
@@ -302,6 +305,7 @@ export default (appContext: AppContext) =>
           await appContext.libsqlClient.execute({
             sql: tenantsUpdate,
             args: [
+              tenantUpdate.label ?? null,
               tenantUpdate.description ?? null,
               tenantUpdate.plan ?? null,
               tenantUpdate.updated_at ?? now,

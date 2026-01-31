@@ -5,7 +5,7 @@
  * zero or more worlds.
  */
 export const tenantsTable =
-  "CREATE TABLE IF NOT EXISTS tenants (\n  id TEXT PRIMARY KEY NOT NULL,\n  description TEXT,\n  plan TEXT,\n  api_key TEXT NOT NULL,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  deleted_at INTEGER\n);";
+  "CREATE TABLE IF NOT EXISTS tenants (\n  id TEXT PRIMARY KEY NOT NULL,\n  label TEXT,\n  description TEXT,\n  plan TEXT,\n  api_key TEXT NOT NULL,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  deleted_at INTEGER\n);";
 
 /**
  * tenantsApiKeyIndex is an index on api_key for secondary lookups.
@@ -25,7 +25,7 @@ export const tenantsGetMany =
  * (used in POST /v1/tenants).
  */
 export const tenantsAdd =
-  "INSERT INTO\n  tenants (\n    id,\n    description,\n    plan,\n    api_key,\n    created_at,\n    updated_at,\n    deleted_at\n  )\nVALUES\n  (?, ?, ?, ?, ?, ?, ?);";
+  "INSERT INTO\n  tenants (\n    id,\n    label,\n    description,\n    plan,\n    api_key,\n    created_at,\n    updated_at,\n    deleted_at\n  )\nVALUES\n  (?, ?, ?, ?, ?, ?, ?, ?);";
 
 /**
  * tenantsFind is a query that finds a tenant by ID
@@ -46,7 +46,7 @@ export const tenantsFindByApiKey =
  * (used in PUT /v1/tenants/:tenant).
  */
 export const tenantsUpdate =
-  "UPDATE\n  tenants\nSET\n  description = ?,\n  plan = ?,\n  updated_at = ?\nWHERE\n  id = ?;";
+  "UPDATE\n  tenants\nSET\n  label = ?,\n  description = ?,\n  plan = ?,\n  updated_at = ?\nWHERE\n  id = ?;";
 
 /**
  * tenantsRotateApiKey is a query that rotates a tenant API key

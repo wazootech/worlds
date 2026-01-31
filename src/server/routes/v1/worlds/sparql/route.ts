@@ -314,6 +314,7 @@ async function executeSparqlRequest(
         if (rawTenant) {
           const tenant = tenantTableSchema.parse({
             id: rawTenant.id,
+            label: rawTenant.label,
             description: rawTenant.description,
             plan: rawTenant.plan,
             api_key: rawTenant.api_key,

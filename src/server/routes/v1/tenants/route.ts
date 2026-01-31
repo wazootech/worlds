@@ -67,6 +67,7 @@ export default (appContext: AppContext) =>
         const validatedRows = result.rows.map((row) => {
           const validated = tenantTableSchema.parse({
             id: row.id,
+            label: row.label,
             description: row.description,
             plan: row.plan,
             api_key: row.api_key,
@@ -77,6 +78,7 @@ export default (appContext: AppContext) =>
 
           return tenantRecordSchema.parse({
             id: validated.id,
+            label: validated.label,
             description: validated.description,
             plan: validated.plan,
             apiKey: validated.api_key,
@@ -122,6 +124,7 @@ export default (appContext: AppContext) =>
         const now = Date.now();
         const tenant = tenantTableInsertSchema.parse({
           id,
+          label: data.label ?? null,
           description: data.description ?? null,
           plan: data.plan ?? null,
           api_key: apiKey,
@@ -135,6 +138,7 @@ export default (appContext: AppContext) =>
             sql: tenantsAdd,
             args: [
               tenant.id,
+              tenant.label ?? null,
               tenant.description ?? null,
               tenant.plan ?? null,
               tenant.api_key,
@@ -153,6 +157,7 @@ export default (appContext: AppContext) =>
 
         const record = tenantRecordSchema.parse({
           id: tenant.id,
+          label: tenant.label,
           description: tenant.description,
           plan: tenant.plan,
           apiKey: tenant.api_key,
@@ -194,6 +199,7 @@ export default (appContext: AppContext) =>
         // Validate SQL result
         const validated = tenantTableSchema.parse({
           id: row.id,
+          label: row.label,
           description: row.description,
           plan: row.plan,
           api_key: row.api_key,
@@ -204,6 +210,7 @@ export default (appContext: AppContext) =>
 
         const record = tenantRecordSchema.parse({
           id: validated.id,
+          label: validated.label,
           description: validated.description,
           plan: validated.plan,
           apiKey: validated.api_key,
@@ -250,6 +257,7 @@ export default (appContext: AppContext) =>
 
         const updateNow = Date.now();
         const tenantUpdate = tenantTableUpdateSchema.parse({
+          label: data.label ?? undefined,
           description: data.description ?? undefined,
           plan: data.plan ?? undefined,
           updated_at: updateNow,
@@ -258,6 +266,7 @@ export default (appContext: AppContext) =>
         await appContext.libsqlClient.execute({
           sql: tenantsUpdate,
           args: [
+            tenantUpdate.label ?? null,
             tenantUpdate.description ?? null,
             tenantUpdate.plan ?? null,
             tenantUpdate.updated_at ?? updateNow,

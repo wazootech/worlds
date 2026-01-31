@@ -6,6 +6,7 @@ import { z } from "zod";
  */
 export const tenantTableSchema = z.object({
   id: z.string(),
+  label: z.string().nullable(),
   description: z.string().nullable(),
   plan: z.string().nullable(),
   api_key: z.string(),
@@ -33,10 +34,20 @@ export type TenantTableInsert = z.infer<typeof tenantTableInsertSchema>;
  * tenantTableUpdateSchema is the Zod schema for updating a tenant.
  */
 export const tenantTableUpdateSchema = tenantTableSchema
-  .pick({ description: true, plan: true, updated_at: true })
+  .pick({ label: true, description: true, plan: true, updated_at: true })
   .partial();
 
 /**
  * TenantTableUpdate represents the data needed to update a tenant.
  */
 export type TenantTableUpdate = z.infer<typeof tenantTableUpdateSchema>;
+
+/**
+ * tenantRowSchema is the Zod schema for a tenant record as returned by the SELECT queries.
+ */
+export const tenantRowSchema = tenantTableSchema;
+
+/**
+ * TenantRow represents a tenant record.
+ */
+export type TenantRow = z.infer<typeof tenantRowSchema>;

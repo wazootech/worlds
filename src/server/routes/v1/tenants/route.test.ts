@@ -18,14 +18,32 @@ Deno.test("Tenants API routes", async (t) => {
       const now1 = Date.now();
       await testContext.libsqlClient.execute({
         sql: tenantsAdd,
-        args: ["tenant_1", "Test tenant 1", "free", apiKey1, now1, now1, null],
+        args: [
+          "tenant_1",
+          null,
+          "Test tenant 1",
+          "free",
+          apiKey1,
+          now1,
+          now1,
+          null,
+        ],
       });
 
       const apiKey2 = ulid();
       const now2 = Date.now();
       await testContext.libsqlClient.execute({
         sql: tenantsAdd,
-        args: ["tenant_2", "Test tenant 2", "pro", apiKey2, now2, now2, null],
+        args: [
+          "tenant_2",
+          null,
+          "Test tenant 2",
+          "pro",
+          apiKey2,
+          now2,
+          now2,
+          null,
+        ],
       });
 
       const req = new Request(
@@ -78,7 +96,16 @@ Deno.test("Tenants API routes - CRUD operations", async (t) => {
     const now = Date.now();
     await testContext.libsqlClient.execute({
       sql: tenantsAdd,
-      args: ["tenant_get", "Test tenant 2", "pro", apiKey, now, now, null],
+      args: [
+        "tenant_get",
+        null,
+        "Test tenant 2",
+        "pro",
+        apiKey,
+        now,
+        now,
+        null,
+      ],
     });
     const tenantId = "tenant_get";
 
@@ -106,6 +133,13 @@ Deno.test("Tenants API routes - CRUD operations", async (t) => {
       sql: tenantsAdd,
       args: [
         "tenant_put",
+        "Original description",
+        "free",
+        apiKey,
+        now,
+        now,
+        "tenant_put",
+        null,
         "Original description",
         "free",
         apiKey,
@@ -153,7 +187,16 @@ Deno.test("Tenants API routes - CRUD operations", async (t) => {
     const now = Date.now();
     await testContext.libsqlClient.execute({
       sql: tenantsAdd,
-      args: ["tenant_del", "To be deleted", "free", apiKey, now, now, null],
+      args: [
+        "tenant_del",
+        null,
+        "To be deleted",
+        "free",
+        apiKey,
+        now,
+        now,
+        null,
+      ],
     });
     const tenantId = "tenant_del";
 
@@ -192,6 +235,13 @@ Deno.test("Tenants API routes - CRUD operations", async (t) => {
         sql: tenantsAdd,
         args: [
           "tenant_rot",
+          "Tenant to rotate",
+          "free",
+          apiKey,
+          now,
+          now,
+          "tenant_rot",
+          null,
           "Tenant to rotate",
           "free",
           apiKey,

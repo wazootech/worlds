@@ -35,6 +35,7 @@ export async function createTestTenant(
   client: Client,
   tenant?: {
     id?: string;
+    label?: string | null;
     description?: string;
     plan?: string | null;
     apiKey?: string;
@@ -51,6 +52,7 @@ export async function createTestTenant(
     sql: tenantsAdd,
     args: [
       id,
+      tenant?.label ?? null,
       tenant?.description ?? "Test tenant",
       tenant?.plan === undefined ? "free" : tenant.plan,
       apiKey,

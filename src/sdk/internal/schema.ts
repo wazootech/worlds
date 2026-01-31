@@ -5,6 +5,7 @@ import { z } from "zod";
  */
 export interface TenantRecord {
   id: string;
+  label: string | null;
   description: string | null;
   plan: string | null;
   apiKey: string;
@@ -18,6 +19,7 @@ export interface TenantRecord {
  */
 export const tenantRecordSchema: z.ZodType<TenantRecord> = z.object({
   id: z.string(),
+  label: z.string().nullable(),
   description: z.string().nullable(),
   plan: z.string().nullable(),
   apiKey: z.string(),
@@ -31,6 +33,7 @@ export const tenantRecordSchema: z.ZodType<TenantRecord> = z.object({
  */
 export interface CreateTenantParams {
   id: string;
+  label?: string | null;
   description?: string | null;
   plan?: string | null;
 }
@@ -41,6 +44,7 @@ export interface CreateTenantParams {
 export const createTenantParamsSchema: z.ZodType<CreateTenantParams> = z.object(
   {
     id: z.string(),
+    label: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     plan: z.string().nullable().optional(),
   },
@@ -50,6 +54,7 @@ export const createTenantParamsSchema: z.ZodType<CreateTenantParams> = z.object(
  * UpdateTenantParams represents the parameters for updating a tenant.
  */
 export interface UpdateTenantParams {
+  label?: string | null;
   description?: string | null;
   plan?: string | null;
 }
@@ -59,6 +64,7 @@ export interface UpdateTenantParams {
  */
 export const updateTenantParamsSchema: z.ZodType<UpdateTenantParams> = z.object(
   {
+    label: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
     plan: z.string().nullable().optional(),
   },
