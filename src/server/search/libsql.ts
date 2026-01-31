@@ -11,11 +11,14 @@ export type LibsqlSearchResult = SearchResult<LibsqlSearchResultItem>;
 /**
  * LibsqlSearchResultItem is a result from a search query.
  */
+/**
+ * LibsqlSearchResultItem is a result from a search query.
+ */
 export interface LibsqlSearchResultItem {
   /**
-   * accountId is the account identifier for this result.
+   * tenantId is the tenant identifier for this result.
    */
-  accountId: string;
+  tenantId: string;
 
   /**
    * worldId is the world identifier for this result.
@@ -54,11 +57,11 @@ export interface LibsqlSearchStoreManagerOptions {
 }
 
 /**
- * LibsqlSearchStoreManager implements search across all accounts and worlds using a single Libsql table.
- * Logic isolation is enforced via accountId and worldId columns.
+ * LibsqlSearchStoreManager implements search across all tenants and worlds using a single Libsql table.
+ * Logic isolation is enforced via tenantId and worldId columns.
  *
  * TODO: Consider hash-based siloing (e.g. search_documents_silo_N) if the global table
- * grows too large, to keep index sizes manageable while avoiding per-account table limits.
+ * grows too large, to keep index sizes manageable while avoiding per-tenant table limits.
  */
 export class LibsqlSearchStoreManager {
   public constructor(
@@ -74,22 +77,22 @@ export class LibsqlSearchStoreManager {
       {
         sql: `CREATE TABLE IF NOT EXISTS search_documents (
           id TEXT PRIMARY KEY,
-          accountId TEXT NOT NULL,
+          tenantId TEXT NOT NULL,
           worldId TEXT NOT NULL,
           subject TEXT NOT NULL,
           predicate TEXT NOT NULL,
           object TEXT NOT NULL,
           embedding F32_BLOB(${this.options.embeddings.dimensions}),
-          UNIQUE(accountId, worldId, subject, predicate, object)
+          UNIQUE(tenantId, worldId, subject, predicate, object)
         )`,
       },
       // TODO: Monitor for native metadata filtering support in Libsql/Turso (sqlite-vec).
-      // Once available, use PARTITION KEY on accountId to replace internal recall buffer hacks.
+      // Once available, use PARTITION KEY on tenantId to replace internal recall buffer hacks.
 
-      // Index on accountId and worldId for efficient lookups/filtering.
+      // Index on tenantId and worldId for efficient lookups/filtering.
       {
         sql: `CREATE INDEX IF NOT EXISTS search_documents_access_idx 
-              ON search_documents(accountId, worldId)`,
+              ON search_documents(tenantId, worldId)`,
       },
 
       // Vector index.
@@ -133,22 +136,22 @@ export class LibsqlSearchStoreManager {
   }
 
   /**
-   * deleteAccount deletes all documents for a specific account.
+   * deleteTenant deletes all documents for a specific tenant.
    */
-  public async deleteAccount(accountId: string): Promise<void> {
+  public async deleteTenant(tenantId: string): Promise<void> {
     await this.options.client.execute({
-      sql: `DELETE FROM search_documents WHERE accountId = ?`,
-      args: [accountId],
+      sql: `DELETE FROM search_documents WHERE tenantId = ?`,
+      args: [tenantId],
     });
   }
 
   /**
-   * deleteWorld deletes all documents for a specific world within an account.
+   * deleteWorld deletes all documents for a specific world within a tenant.
    */
-  public async deleteWorld(accountId: string, worldId: string): Promise<void> {
+  public async deleteWorld(tenantId: string, worldId: string): Promise<void> {
     await this.options.client.execute({
-      sql: `DELETE FROM search_documents WHERE accountId = ? AND worldId = ?`,
-      args: [accountId, worldId],
+      sql: `DELETE FROM search_documents WHERE tenantId = ? AND worldId = ?`,
+      args: [tenantId, worldId],
     });
   }
 
@@ -156,7 +159,7 @@ export class LibsqlSearchStoreManager {
    * patch patches documents for a specific world.
    */
   public async patch(
-    accountId: string,
+    tenantId: string,
     worldId: string,
     patches: Patch[],
   ): Promise<void> {
@@ -165,8 +168,8 @@ export class LibsqlSearchStoreManager {
         const deleteStmts = await Promise.all(
           deletions.map(async (quad) => ({
             sql:
-              `DELETE FROM search_documents WHERE id = ? AND accountId = ? AND worldId = ?`,
-            args: [await skolemizeQuad(quad), accountId, worldId],
+              `DELETE FROM search_documents WHERE id = ? AND tenantId = ? AND worldId = ?`,
+            args: [await skolemizeQuad(quad), tenantId, worldId],
           })),
         );
         await this.options.client.batch(deleteStmts, "write");
@@ -176,11 +179,11 @@ export class LibsqlSearchStoreManager {
         const insertStmts = await Promise.all(
           insertions.map(async (quad) => ({
             sql: `INSERT OR REPLACE INTO search_documents 
-                  (id, accountId, worldId, subject, predicate, object, embedding) 
+                  (id, tenantId, worldId, subject, predicate, object, embedding) 
                   VALUES (?, ?, ?, ?, ?, ?, vector32(?))`,
             args: [
               await skolemizeQuad(quad),
-              accountId,
+              tenantId,
               worldId,
               quad.subject.value,
               quad.predicate.value,
@@ -197,10 +200,10 @@ export class LibsqlSearchStoreManager {
   }
 
   /**
-   * search searches documents across specified worlds of an account.
+   * search searches documents across specified worlds of a tenant.
    *
    * @param query - The search query text
-   * @param options.accountId - Required account ID for isolation
+   * @param options.tenantId - Required tenant ID for isolation
    * @param options.worldIds - Optional array of world IDs to filter results
    * @param options.limit - Maximum number of results (default: 10)
    * @param options.weightFts - Weight for FTS results in RRF (default: 1.0)
@@ -211,7 +214,7 @@ export class LibsqlSearchStoreManager {
   public async search(
     query: string,
     options: {
-      accountId: string;
+      tenantId: string;
       worldIds?: string[];
       limit?: number;
       weightFts?: number;
@@ -221,7 +224,7 @@ export class LibsqlSearchStoreManager {
     },
   ): Promise<LibsqlSearchResult[]> {
     const {
-      accountId,
+      tenantId,
       worldIds,
       limit = 10,
       weightFts = 1.0,
@@ -234,18 +237,18 @@ export class LibsqlSearchStoreManager {
 
     // Use a larger internal limit for vector search to improve recall
     // This helps ensure tenant-specific results aren't filtered out by global ranking
-    // TODO: Implement tiered recall buffer multiplier based on total document count per account
+    // TODO: Implement tiered recall buffer multiplier based on total document count per tenant
     // or global skew to maintain high recall for smaller tenants.
     const internalVectorLimit = limit * recallBuffer;
 
-    // Build base WHERE clause for account isolation.
-    let accessFilter = "WHERE search_documents.accountId = ?";
+    // Build base WHERE clause for tenant isolation.
+    let accessFilter = "WHERE search_documents.tenantId = ?";
     const args: (string | number)[] = [
       vectorString,
       internalVectorLimit,
       query,
       limit,
-      accountId,
+      tenantId,
     ];
 
     if (worldIds && worldIds.length > 0) {
@@ -274,7 +277,7 @@ export class LibsqlSearchStoreManager {
       ),
       final AS (
         SELECT
-          search_documents.accountId,
+          search_documents.tenantId,
           search_documents.worldId,
           search_documents.subject,
           search_documents.predicate,
@@ -300,7 +303,7 @@ export class LibsqlSearchStoreManager {
     return result.rows.map((row) => {
       if (
         typeof row.combined_rank !== "number" ||
-        typeof row.accountId !== "string" ||
+        typeof row.tenantId !== "string" ||
         typeof row.worldId !== "string" ||
         typeof row.subject !== "string" ||
         typeof row.predicate !== "string" ||
@@ -312,7 +315,7 @@ export class LibsqlSearchStoreManager {
       return {
         score: row.combined_rank,
         value: {
-          accountId: row.accountId,
+          tenantId: row.tenantId,
           worldId: row.worldId,
           subject: row.subject,
           predicate: row.predicate,
@@ -330,14 +333,14 @@ export class LibsqlPatchHandler implements PatchHandler {
   public constructor(
     private readonly options: {
       manager: LibsqlSearchStoreManager;
-      accountId: string;
+      tenantId: string;
       worldId: string;
     },
   ) {}
 
   public async patch(patches: Patch[]): Promise<void> {
     await this.options.manager.patch(
-      this.options.accountId,
+      this.options.tenantId,
       this.options.worldId,
       patches,
     );

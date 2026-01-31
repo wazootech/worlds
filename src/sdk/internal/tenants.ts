@@ -1,14 +1,14 @@
 import type { WorldsOptions } from "#/sdk/types.ts";
 import type {
-  AccountRecord,
-  CreateAccountParams,
-  UpdateAccountParams,
+  CreateTenantParams,
+  TenantRecord,
+  UpdateTenantParams,
 } from "#/sdk/internal/types.ts";
 
 /**
- * Accounts is a TypeScript SDK for the Accounts API.
+ * Tenants is a TypeScript SDK for the Tenants API.
  */
-export class Accounts {
+export class Tenants {
   private readonly fetch: typeof fetch;
 
   public constructor(
@@ -18,13 +18,13 @@ export class Accounts {
   }
 
   /**
-   * list paginates accounts from the Worlds API.
+   * list paginates tenants from the Worlds API.
    */
   public async list(
     page = 1,
     pageSize = 20,
-  ): Promise<AccountRecord[]> {
-    const url = new URL(`${this.options.baseUrl}/v1/accounts`);
+  ): Promise<TenantRecord[]> {
+    const url = new URL(`${this.options.baseUrl}/v1/tenants`);
     url.searchParams.set("page", page.toString());
     url.searchParams.set("pageSize", pageSize.toString());
     const response = await this.fetch(url, {
@@ -34,7 +34,7 @@ export class Accounts {
     });
     if (!response.ok) {
       throw new Error(
-        `Failed to list accounts: ${response.status} ${response.statusText}`,
+        `Failed to list tenants: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -42,10 +42,10 @@ export class Accounts {
   }
 
   /**
-   * create creates an account in the Worlds API.
+   * create creates a tenant in the Worlds API.
    */
-  public async create(data: CreateAccountParams): Promise<AccountRecord> {
-    const url = new URL(`${this.options.baseUrl}/v1/accounts`);
+  public async create(data: CreateTenantParams): Promise<TenantRecord> {
+    const url = new URL(`${this.options.baseUrl}/v1/tenants`);
     const response = await this.fetch(
       url,
       {
@@ -59,7 +59,7 @@ export class Accounts {
     );
     if (!response.ok) {
       throw new Error(
-        `Failed to create account: ${response.status} ${response.statusText}`,
+        `Failed to create tenant: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -67,12 +67,12 @@ export class Accounts {
   }
 
   /**
-   * get retrieves an account from the Worlds API.
+   * get retrieves a tenant from the Worlds API.
    */
   public async get(
-    accountId: string,
-  ): Promise<AccountRecord | null> {
-    const url = new URL(`${this.options.baseUrl}/v1/accounts/${accountId}`);
+    tenantId: string,
+  ): Promise<TenantRecord | null> {
+    const url = new URL(`${this.options.baseUrl}/v1/tenants/${tenantId}`);
     const response = await this.fetch(
       url,
       {
@@ -87,7 +87,7 @@ export class Accounts {
 
     if (!response.ok) {
       throw new Error(
-        `Failed to get account: ${response.status} ${response.statusText}`,
+        `Failed to get tenant: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -95,13 +95,13 @@ export class Accounts {
   }
 
   /**
-   * update updates an account in the Worlds API.
+   * update updates a tenant in the Worlds API.
    */
   public async update(
-    accountId: string,
-    data: UpdateAccountParams,
+    tenantId: string,
+    data: UpdateTenantParams,
   ): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/v1/accounts/${accountId}`);
+    const url = new URL(`${this.options.baseUrl}/v1/tenants/${tenantId}`);
     const response = await this.fetch(
       url,
       {
@@ -115,16 +115,16 @@ export class Accounts {
     );
     if (!response.ok) {
       throw new Error(
-        `Failed to update account: ${response.status} ${response.statusText}`,
+        `Failed to update tenant: ${response.status} ${response.statusText}`,
       );
     }
   }
 
   /**
-   * delete deletes an account from the Worlds API.
+   * delete deletes a tenant from the Worlds API.
    */
-  public async delete(accountId: string): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/v1/accounts/${accountId}`);
+  public async delete(tenantId: string): Promise<void> {
+    const url = new URL(`${this.options.baseUrl}/v1/tenants/${tenantId}`);
     const response = await this.fetch(
       url,
       {
@@ -136,17 +136,17 @@ export class Accounts {
     );
     if (!response.ok) {
       throw new Error(
-        `Failed to delete account: ${response.status} ${response.statusText}`,
+        `Failed to delete tenant: ${response.status} ${response.statusText}`,
       );
     }
   }
 
   /**
-   * rotate rotates the API key of an account.
+   * rotate rotates the API key of a tenant.
    */
-  public async rotate(accountId: string): Promise<void> {
+  public async rotate(tenantId: string): Promise<void> {
     const url = new URL(
-      `${this.options.baseUrl}/v1/accounts/${accountId}/rotate`,
+      `${this.options.baseUrl}/v1/tenants/${tenantId}/rotate`,
     );
     const response = await this.fetch(
       url,
@@ -159,7 +159,7 @@ export class Accounts {
     );
     if (!response.ok) {
       throw new Error(
-        `Failed to rotate account key: ${response.status} ${response.statusText}`,
+        `Failed to rotate tenant key: ${response.status} ${response.statusText}`,
       );
     }
   }

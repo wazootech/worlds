@@ -3,7 +3,7 @@ import { TokenBucketRateLimiter } from "./rate-limiter.ts";
 import type { RateLimitPolicy } from "./interfaces.ts";
 import { createClient } from "@libsql/client";
 import { initializeDatabase } from "#/server/db/init.ts";
-import { createTestAccount } from "#/server/testing.ts";
+import { createTestTenant } from "#/server/testing.ts";
 
 /**
  * Creates an in-memory LibSQL client for testing.
@@ -17,7 +17,7 @@ async function createTestClient() {
 Deno.test("TokenBucketRateLimiter - allows requests within capacity", async () => {
   const client = await createTestClient();
   const limiter = new TokenBucketRateLimiter(client);
-  const { id: accountId } = await createTestAccount(client);
+  const { id: accountId } = await createTestTenant(client);
 
   const policy: RateLimitPolicy = {
     interval: 60000, // 1 minute
@@ -41,7 +41,7 @@ Deno.test("TokenBucketRateLimiter - allows requests within capacity", async () =
 Deno.test("TokenBucketRateLimiter - rejects requests exceeding capacity", async () => {
   const client = await createTestClient();
   const limiter = new TokenBucketRateLimiter(client);
-  const { id: accountId } = await createTestAccount(client);
+  const { id: accountId } = await createTestTenant(client);
 
   // Very low limit for testing
   const policy: RateLimitPolicy = {
@@ -66,7 +66,7 @@ Deno.test("TokenBucketRateLimiter - rejects requests exceeding capacity", async 
 Deno.test("TokenBucketRateLimiter - refills tokens over time", async () => {
   const client = await createTestClient();
   const limiter = new TokenBucketRateLimiter(client);
-  const { id: accountId } = await createTestAccount(client);
+  const { id: accountId } = await createTestTenant(client);
 
   // Short interval for testing
   const policy: RateLimitPolicy = {
@@ -96,7 +96,7 @@ Deno.test("TokenBucketRateLimiter - refills tokens over time", async () => {
 Deno.test("TokenBucketRateLimiter - doesn't exceed capacity on refill", async () => {
   const client = await createTestClient();
   const limiter = new TokenBucketRateLimiter(client);
-  const { id: accountId } = await createTestAccount(client);
+  const { id: accountId } = await createTestTenant(client);
 
   const policy: RateLimitPolicy = {
     interval: 100,
@@ -121,7 +121,7 @@ Deno.test("TokenBucketRateLimiter - doesn't exceed capacity on refill", async ()
 Deno.test("TokenBucketRateLimiter - handles different resource types independently", async () => {
   const client = await createTestClient();
   const limiter = new TokenBucketRateLimiter(client);
-  const { id: accountId } = await createTestAccount(client);
+  const { id: accountId } = await createTestTenant(client);
 
   const policy: RateLimitPolicy = {
     interval: 60000,
@@ -146,7 +146,7 @@ Deno.test("TokenBucketRateLimiter - handles different resource types independent
 Deno.test("TokenBucketRateLimiter - handles cost greater than 1", async () => {
   const client = await createTestClient();
   const limiter = new TokenBucketRateLimiter(client);
-  const { id: accountId } = await createTestAccount(client);
+  const { id: accountId } = await createTestTenant(client);
 
   const policy: RateLimitPolicy = {
     interval: 60000,

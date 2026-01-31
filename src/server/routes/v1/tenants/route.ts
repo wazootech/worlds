@@ -3,6 +3,11 @@ import { ulid } from "@std/ulid";
 import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
 import {
+  createTenantParamsSchema,
+  updateTenantParamsSchema,
+} from "#/server/schemas.ts";
+import { LibsqlSearchStoreManager } from "#/server/search/libsql.ts";
+import {
   tenantsAdd,
   tenantsDelete,
   tenantsFind,
@@ -11,17 +16,10 @@ import {
   tenantsUpdate,
 } from "#/server/db/queries/tenants.sql.ts";
 
-const DEPRECATION_HEADERS = {
-  "Warning":
-    '299 - "The /v1/accounts API is deprecated and will be removed in a future version. Please use /v1/tenants instead."',
-  "Deprecation": "true",
-  "Link": '</v1/tenants>; rel="alternate"',
-};
-
 export default (appContext: AppContext) =>
   new Router()
     .get(
-      "/v1/accounts",
+      "/v1/tenants",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
         if (!authorized.tenant && !authorized.admin) {
@@ -56,147 +54,11 @@ export default (appContext: AppContext) =>
             updatedAt: row.updated_at,
             deletedAt: row.deleted_at,
           })),
-          { headers: DEPRECATION_HEADERS },
         );
       },
     )
-    .get(
-      "/v1/accounts/:account",
-      async (ctx) => {
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.tenant && !authorized.admin) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-
-        if (!authorized.admin) {
-          return new Response("Forbidden: Admin access required", {
-            status: 403,
-          });
-        }
-
-        const tenantId = ctx.params?.pathname.groups.account;
-        if (!tenantId) {
-          return new Response("Account ID required", { status: 400 });
-        }
-
-        const result = await appContext.libsqlClient.execute({
-          sql: tenantsFind,
-          args: [tenantId],
-        });
-
-        const row = result.rows[0];
-        if (!row) {
-          return new Response("Account not found", { status: 404 });
-        }
-
-        return Response.json({
-          id: row.id,
-          description: row.description,
-          plan: row.plan,
-          apiKey: row.api_key,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-          deletedAt: row.deleted_at,
-        }, { headers: DEPRECATION_HEADERS });
-      },
-    )
-    .put(
-      "/v1/accounts/:account",
-      async (ctx) => {
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.tenant && !authorized.admin) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-
-        if (!authorized.admin) {
-          return new Response("Forbidden: Admin access required", {
-            status: 403,
-          });
-        }
-
-        const tenantId = ctx.params?.pathname.groups.account;
-        if (!tenantId) {
-          return new Response("Account ID required", { status: 400 });
-        }
-
-        const body = await ctx.request.json().catch(() => ({}));
-        await appContext.libsqlClient.execute({
-          sql: tenantsUpdate,
-          args: [
-            body.description ?? null,
-            body.plan ?? null,
-            Date.now(),
-            tenantId,
-          ],
-        });
-
-        return new Response(null, {
-          status: 204,
-          headers: DEPRECATION_HEADERS,
-        });
-      },
-    )
-    .delete(
-      "/v1/accounts/:account",
-      async (ctx) => {
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.tenant && !authorized.admin) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-
-        if (!authorized.admin) {
-          return new Response("Forbidden: Admin access required", {
-            status: 403,
-          });
-        }
-
-        const tenantId = ctx.params?.pathname.groups.account;
-        if (!tenantId) {
-          return new Response("Account ID required", { status: 400 });
-        }
-
-        await appContext.libsqlClient.execute({
-          sql: tenantsDelete,
-          args: [tenantId],
-        });
-
-        return new Response(null, {
-          status: 204,
-          headers: DEPRECATION_HEADERS,
-        });
-      },
-    )
     .post(
-      "/v1/accounts/:account/rotate",
-      async (ctx) => {
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.tenant && !authorized.admin) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-
-        const tenantId = ctx.params?.pathname.groups.account;
-        if (!tenantId) {
-          return new Response("Account ID required", { status: 400 });
-        }
-
-        if (!authorized.admin && authorized.tenant?.id !== tenantId) {
-          return new Response("Forbidden: Permission denied", { status: 403 });
-        }
-
-        const apiKey = ulid();
-        await appContext.libsqlClient.execute({
-          sql: tenantsRotateApiKey,
-          args: [apiKey, Date.now(), tenantId],
-        });
-
-        return new Response(null, {
-          status: 204,
-          headers: DEPRECATION_HEADERS,
-        });
-      },
-    )
-    .post(
-      "/v1/accounts",
+      "/v1/tenants",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
         if (!authorized.tenant && !authorized.admin) {
@@ -216,33 +78,192 @@ export default (appContext: AppContext) =>
           return new Response("Invalid JSON", { status: 400 });
         }
 
-        const id = body.id ?? ulid();
+        const parseResult = createTenantParamsSchema.safeParse(body);
+        if (!parseResult.success) {
+          return Response.json(parseResult.error, { status: 400 });
+        }
+        const { id, ...data } = parseResult.data;
+
         const apiKey = ulid();
+
         const now = Date.now();
+        const tenant = {
+          id: id,
+          description: data.description,
+          plan: data.plan,
+          apiKey: apiKey,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        try {
+          await appContext.libsqlClient.execute({
+            sql: tenantsAdd,
+            args: [
+              id,
+              data.description ?? null,
+              data.plan ?? null,
+              apiKey,
+              now,
+              now,
+              null,
+            ],
+          });
+        } catch (e: unknown) {
+          console.error("SQL Insert failed:", e);
+          const message = e instanceof Error ? e.message : "Unknown error";
+          return new Response("Failed to create tenant: " + message, {
+            status: 500,
+          });
+        }
+
+        return Response.json(tenant, { status: 201 });
+      },
+    )
+    .get(
+      "/v1/tenants/:tenant",
+      async (ctx) => {
+        const authorized = await authorizeRequest(appContext, ctx.request);
+        if (!authorized.tenant && !authorized.admin) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+
+        if (!authorized.admin) {
+          return new Response("Forbidden: Admin access required", {
+            status: 403,
+          });
+        }
+
+        const tenantId = ctx.params?.pathname.groups.tenant;
+        if (!tenantId) {
+          return new Response("Tenant ID required", { status: 400 });
+        }
+
+        const result = await appContext.libsqlClient.execute({
+          sql: tenantsFind,
+          args: [tenantId],
+        });
+
+        const row = result.rows[0];
+        if (!row) {
+          return new Response("Tenant not found", { status: 404 });
+        }
+
+        return Response.json({
+          id: row.id,
+          description: row.description,
+          plan: row.plan,
+          apiKey: row.api_key,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          deletedAt: row.deleted_at,
+        });
+      },
+    )
+    .put(
+      "/v1/tenants/:tenant",
+      async (ctx) => {
+        const authorized = await authorizeRequest(appContext, ctx.request);
+        if (!authorized.tenant && !authorized.admin) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+
+        if (!authorized.admin) {
+          return new Response("Forbidden: Admin access required", {
+            status: 403,
+          });
+        }
+
+        const tenantId = ctx.params?.pathname.groups.tenant;
+        if (!tenantId) {
+          return new Response("Tenant ID required", { status: 400 });
+        }
+
+        let body;
+        try {
+          body = await ctx.request.json();
+        } catch {
+          return new Response("Invalid JSON", { status: 400 });
+        }
+
+        const parseResult = updateTenantParamsSchema.safeParse(body);
+        if (!parseResult.success) {
+          return Response.json(parseResult.error, { status: 400 });
+        }
+        const data = parseResult.data;
 
         await appContext.libsqlClient.execute({
-          sql: tenantsAdd,
+          sql: tenantsUpdate,
           args: [
-            id,
-            body.description ?? null,
-            body.plan ?? null,
-            apiKey,
-            now,
-            now,
-            null,
+            data.description ?? null,
+            data.plan ?? null,
+            Date.now(),
+            tenantId,
           ],
         });
 
-        return Response.json({
-          id,
-          description: body.description,
-          plan: body.plan,
-          apiKey,
-          createdAt: now,
-          updatedAt: now,
-        }, {
-          status: 201,
-          headers: DEPRECATION_HEADERS,
+        return new Response(null, { status: 204 });
+      },
+    )
+    .delete(
+      "/v1/tenants/:tenant",
+      async (ctx) => {
+        const authorized = await authorizeRequest(appContext, ctx.request);
+        if (!authorized.tenant && !authorized.admin) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+
+        if (!authorized.admin) {
+          return new Response("Forbidden: Admin access required", {
+            status: 403,
+          });
+        }
+
+        const tenantId = ctx.params?.pathname.groups.tenant;
+        if (!tenantId) {
+          return new Response("Tenant ID required", { status: 400 });
+        }
+
+        // Cleanup search data
+        const searchStore = new LibsqlSearchStoreManager({
+          client: appContext.libsqlClient,
+          embeddings: appContext.embeddings,
         });
+        await searchStore.createTablesIfNotExists();
+        await searchStore.deleteTenant(tenantId);
+
+        await appContext.libsqlClient.execute({
+          sql: tenantsDelete,
+          args: [tenantId],
+        });
+
+        return new Response(null, { status: 204 });
+      },
+    )
+    .post(
+      "/v1/tenants/:tenant/rotate",
+      async (ctx) => {
+        const authorized = await authorizeRequest(appContext, ctx.request);
+        if (!authorized.tenant && !authorized.admin) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+
+        const tenantId = ctx.params?.pathname.groups.tenant;
+        if (!tenantId) {
+          return new Response("Tenant ID required", { status: 400 });
+        }
+
+        // Security Check: Only admins or the tenant owner can rotate the key.
+        if (!authorized.admin && authorized.tenant?.id !== tenantId) {
+          return new Response("Forbidden: Permission denied", { status: 403 });
+        }
+
+        const apiKey = ulid();
+        await appContext.libsqlClient.execute({
+          sql: tenantsRotateApiKey,
+          args: [apiKey, Date.now(), tenantId],
+        });
+
+        return new Response(null, { status: 204 });
       },
     );

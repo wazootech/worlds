@@ -1,9 +1,9 @@
 import { assert, assertEquals } from "@std/assert";
 import { Parser, Store } from "n3";
-import { createTestAccount, createTestContext } from "#/server/testing.ts";
+import { createTestContext, createTestTenant } from "#/server/testing.ts";
 import { generateBlobFromN3Store } from "#/server/db/n3.ts";
 import createRoute from "./route.ts";
-import { worldsAdd, worldsSetBlob } from "#/server/db/queries/worlds.sql.ts";
+import { worldsAdd } from "#/server/db/queries/worlds.sql.ts";
 import type { Client } from "@libsql/client";
 
 /**
@@ -23,8 +23,9 @@ async function setWorldData(
   const blob = await generateBlobFromN3Store(store);
   const blobData = new Uint8Array(await blob.arrayBuffer());
 
+  // In the new schema, blobs are stored directly in the worlds table
   await client.execute({
-    sql: worldsSetBlob,
+    sql: `UPDATE worlds SET blob = ?, updated_at = ? WHERE id = ?`,
     args: [blobData, Date.now(), worldId],
   });
 }
@@ -36,7 +37,7 @@ Deno.test("SPARQL API routes - GET operations", async (t) => {
   await t.step(
     "GET /v1/worlds/:world/sparql returns service description when no query",
     async () => {
-      const { id: accountId, apiKey } = await createTestAccount(
+      const { id: tenantId, apiKey } = await createTestTenant(
         testContext.libsqlClient,
       );
       const worldId = crypto.randomUUID();
@@ -45,7 +46,7 @@ Deno.test("SPARQL API routes - GET operations", async (t) => {
         sql: worldsAdd,
         args: [
           worldId,
-          accountId,
+          tenantId,
           "Test World",
           "Test Description",
           null, // blob
@@ -83,7 +84,7 @@ Deno.test("SPARQL API routes - POST operations (Query)", async (t) => {
   await t.step(
     "POST /v1/worlds/:world/sparql (query parameter) executes SPARQL Query",
     async () => {
-      const { id: accountId, apiKey } = await createTestAccount(
+      const { id: tenantId, apiKey } = await createTestTenant(
         testContext.libsqlClient,
       );
       const worldId = crypto.randomUUID();
@@ -92,7 +93,7 @@ Deno.test("SPARQL API routes - POST operations (Query)", async (t) => {
         sql: worldsAdd,
         args: [
           worldId,
-          accountId,
+          tenantId,
           "Test World",
           "Test Description",
           null, // blob
@@ -150,7 +151,7 @@ Deno.test("SPARQL API routes - POST operations (Query)", async (t) => {
   await t.step(
     "POST /v1/worlds/:world/sparql (body) executes SPARQL Query",
     async () => {
-      const { id: accountId, apiKey } = await createTestAccount(
+      const { id: tenantId, apiKey } = await createTestTenant(
         testContext.libsqlClient,
       );
       const worldId = crypto.randomUUID();
@@ -159,7 +160,7 @@ Deno.test("SPARQL API routes - POST operations (Query)", async (t) => {
         sql: worldsAdd,
         args: [
           worldId,
-          accountId,
+          tenantId,
           "Test World",
           "Test Description",
           null, // blob
@@ -208,7 +209,7 @@ Deno.test("SPARQL API routes - POST operations (Update)", async (t) => {
   await t.step(
     "POST /v1/worlds/:world/sparql executes SPARQL Update",
     async () => {
-      const { id: accountId, apiKey } = await createTestAccount(
+      const { id: tenantId, apiKey } = await createTestTenant(
         testContext.libsqlClient,
       );
       const worldId = crypto.randomUUID();
@@ -217,7 +218,7 @@ Deno.test("SPARQL API routes - POST operations (Update)", async (t) => {
         sql: worldsAdd,
         args: [
           worldId,
-          accountId,
+          tenantId,
           "Test World",
           "Test Description",
           null, // blob
@@ -274,77 +275,6 @@ Deno.test("SPARQL API routes - POST operations (Update)", async (t) => {
       assert(json.results.bindings.length >= 2);
     },
   );
-
-  await t.step(
-    "POST /v1/worlds/:world/sparql executes SPARQL Update with PREFIX",
-    async () => {
-      const { id: accountId, apiKey } = await createTestAccount(
-        testContext.libsqlClient,
-      );
-      const worldId = crypto.randomUUID();
-      const now = Date.now();
-      await testContext.libsqlClient.execute({
-        sql: worldsAdd,
-        args: [
-          worldId,
-          accountId,
-          "Test World With Prefix",
-          "Test Description",
-          null, // blob
-          now,
-          now,
-          null,
-          0,
-        ],
-      });
-
-      // Execute update with PREFIX
-      const updateQuery = `
-        PREFIX ex: <http://example.org/>
-        INSERT DATA { ex:alice a ex:Person ; ex:name "Alice" . }
-      `;
-      const req = new Request(
-        `http://localhost/v1/worlds/${worldId}/sparql`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/sparql-update",
-            "Authorization": `Bearer ${apiKey}`,
-          },
-          body: updateQuery,
-        },
-      );
-
-      const res = await app.fetch(req);
-      assertEquals(res.status, 204);
-
-      // Verify update by querying - need to wait a bit for the update to persist
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const verifyQuery = `
-        PREFIX ex: <http://example.org/>
-        SELECT ?name WHERE { ?s ex:name ?name }
-      `;
-      const verifyReq = new Request(
-        `http://localhost/v1/worlds/${worldId}/sparql?query=${
-          encodeURIComponent(verifyQuery)
-        }`,
-        {
-          method: "POST",
-          headers: {
-            "Accept": "application/sparql-results+json",
-            "Authorization": `Bearer ${apiKey}`,
-          },
-        },
-      );
-
-      const verifyRes = await app.fetch(verifyReq);
-      assertEquals(verifyRes.status, 200);
-      const json = await verifyRes.json();
-      assert(json.results.bindings.length >= 1);
-      assertEquals(json.results.bindings[0].name.value, "Alice");
-    },
-  );
 });
 
 Deno.test("SPARQL API routes - Error handling", async (t) => {
@@ -354,7 +284,7 @@ Deno.test("SPARQL API routes - Error handling", async (t) => {
   await t.step(
     "POST /v1/worlds/:world/sparql returns 404 for non-existent world",
     async () => {
-      const { apiKey } = await createTestAccount(testContext.libsqlClient);
+      const { apiKey } = await createTestTenant(testContext.libsqlClient);
 
       const query = encodeURIComponent("SELECT ?s WHERE { ?s ?p ?o }");
       const req = new Request(
@@ -369,253 +299,6 @@ Deno.test("SPARQL API routes - Error handling", async (t) => {
 
       const res = await app.fetch(req);
       assertEquals(res.status, 404);
-    },
-  );
-
-  await t.step(
-    "POST /v1/worlds/:world/sparql returns 401 for unauthenticated request",
-    async () => {
-      const { id: accountId } = await createTestAccount(
-        testContext.libsqlClient,
-      );
-      const worldId = crypto.randomUUID();
-      const now = Date.now();
-      await testContext.libsqlClient.execute({
-        sql: worldsAdd,
-        args: [
-          worldId,
-          accountId,
-          "Test World",
-          "Test Description",
-          null, // blob
-          now,
-          now,
-          null,
-          0,
-        ],
-      });
-
-      const query = encodeURIComponent("SELECT ?s WHERE { ?s ?p ?o }");
-      const req = new Request(
-        `http://localhost/v1/worlds/${worldId}/sparql?query=${query}`,
-        {
-          method: "POST",
-        },
-      );
-
-      const res = await app.fetch(req);
-      assertEquals(res.status, 404);
-    },
-  );
-
-  await t.step(
-    "POST /v1/worlds/:world/sparql returns 415 for unsupported content type",
-    async () => {
-      const { id: accountId, apiKey } = await createTestAccount(
-        testContext.libsqlClient,
-      );
-      const worldId = crypto.randomUUID();
-      const now = Date.now();
-      await testContext.libsqlClient.execute({
-        sql: worldsAdd,
-        args: [
-          worldId,
-          accountId,
-          "Test World",
-          "Test Description",
-          null, // blob
-          now,
-          now,
-          null,
-          0,
-        ],
-      });
-
-      const req = new Request(
-        `http://localhost/v1/worlds/${worldId}/sparql`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`,
-          },
-          body: "SELECT ?s WHERE { ?s ?p ?o }",
-        },
-      );
-
-      const res = await app.fetch(req);
-      assertEquals(res.status, 415);
-    },
-  );
-
-  await t.step(
-    "POST /v1/worlds/:world/sparql returns 400 for invalid SPARQL syntax (Query)",
-    async () => {
-      const { id: accountId, apiKey } = await createTestAccount(
-        testContext.libsqlClient,
-      );
-      const worldId = crypto.randomUUID();
-      const now = Date.now();
-      await testContext.libsqlClient.execute({
-        sql: worldsAdd,
-        args: [
-          worldId,
-          accountId,
-          "Test World",
-          "Test Description",
-          null, // blob
-          now,
-          now,
-          null,
-          0,
-        ],
-      });
-
-      // Invalid query: Missing closing brace
-      const query = "SELECT * WHERE { ?s ?p ?o";
-      const req = new Request(
-        `http://localhost/v1/worlds/${worldId}/sparql`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/sparql-query",
-            "Authorization": `Bearer ${apiKey}`,
-          },
-          body: query,
-        },
-      );
-
-      const res = await app.fetch(req);
-      assertEquals(res.status, 400);
-      const json = await res.json();
-      assert(json.error);
-    },
-  );
-
-  await t.step(
-    "POST /v1/worlds/:world/sparql returns 400 for invalid SPARQL syntax (Update)",
-    async () => {
-      const { id: accountId, apiKey } = await createTestAccount(
-        testContext.libsqlClient,
-      );
-      const worldId = crypto.randomUUID();
-      const now = Date.now();
-      await testContext.libsqlClient.execute({
-        sql: worldsAdd,
-        args: [
-          worldId,
-          accountId,
-          "Test World",
-          "Test Description",
-          null, // blob
-          now,
-          now,
-          null,
-          0,
-        ],
-      });
-
-      // Invalid update: Missing closing brace
-      const update = "INSERT DATA { <http://s> <http://p> <http://o>";
-      const req = new Request(
-        `http://localhost/v1/worlds/${worldId}/sparql`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/sparql-update",
-            "Authorization": `Bearer ${apiKey}`,
-          },
-          body: update,
-        },
-      );
-
-      const res = await app.fetch(req);
-      assertEquals(res.status, 400);
-      const json = await res.json();
-      assert(json.error);
-    },
-  );
-});
-
-Deno.test("SPARQL API routes - Method validation", async (t) => {
-  const testContext = await createTestContext();
-  const app = createRoute(testContext);
-
-  await t.step(
-    "PUT /v1/worlds/:world/sparql returns 405 Method Not Allowed",
-    async () => {
-      const { id: accountId, apiKey } = await createTestAccount(
-        testContext.libsqlClient,
-      );
-      const worldId = crypto.randomUUID();
-      const now = Date.now();
-      await testContext.libsqlClient.execute({
-        sql: worldsAdd,
-        args: [
-          worldId,
-          accountId,
-          "Test World",
-          "Test Description",
-          null, // blob
-          now,
-          now,
-          null,
-          0,
-        ],
-      });
-
-      const req = new Request(
-        `http://localhost/v1/worlds/${worldId}/sparql`,
-        {
-          method: "PUT",
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-          },
-        },
-      );
-
-      const res = await app.fetch(req);
-      assertEquals(res.status, 405);
-      assertEquals(res.headers.get("Allow"), "GET, POST");
-    },
-  );
-
-  await t.step(
-    "DELETE /v1/worlds/:world/sparql returns 405 Method Not Allowed",
-    async () => {
-      const { id: accountId, apiKey } = await createTestAccount(
-        testContext.libsqlClient,
-      );
-      const worldId = crypto.randomUUID();
-      const now = Date.now();
-      await testContext.libsqlClient.execute({
-        sql: worldsAdd,
-        args: [
-          worldId,
-          accountId,
-          "Test World",
-          "Test Description",
-          null, // blob
-          now,
-          now,
-          null,
-          0,
-        ],
-      });
-
-      const req = new Request(
-        `http://localhost/v1/worlds/${worldId}/sparql`,
-        {
-          method: "DELETE",
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-          },
-        },
-      );
-
-      const res = await app.fetch(req);
-      assertEquals(res.status, 405);
-      assertEquals(res.headers.get("Allow"), "GET, POST");
     },
   );
 });

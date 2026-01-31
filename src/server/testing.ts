@@ -1,10 +1,9 @@
 import { ulid } from "@std/ulid";
 import type { Client } from "@libsql/client";
 import type { AppContext } from "./app-context.ts";
-import type { Account } from "./db/kvdex.ts";
 import { createClient } from "@libsql/client";
 import { initializeDatabase } from "./db/init.ts";
-import { accountsAdd } from "./db/queries/accounts.sql.ts";
+import { tenantsAdd } from "./db/queries/tenants.sql.ts";
 
 /**
  * createTestContext creates a test context for the application.
@@ -30,26 +29,34 @@ export async function createTestContext(): Promise<AppContext> {
 }
 
 /**
- * createTestAccount creates a test account and returns its ID and API key.
+ * createTestTenant creates a test tenant and returns its ID and API key.
  */
-export async function createTestAccount(
+export async function createTestTenant(
   client: Client,
-  account?: Partial<Account>,
+  tenant?: {
+    id?: string;
+    description?: string;
+    plan?: string | null;
+    apiKey?: string;
+    createdAt?: number;
+    updatedAt?: number;
+    deletedAt?: number | null;
+  },
 ): Promise<{ id: string; apiKey: string }> {
   const timestamp = Date.now();
-  const id = account?.id ?? ulid(timestamp);
-  const apiKey = account?.apiKey ?? ulid(timestamp);
+  const id = tenant?.id ?? ulid(timestamp);
+  const apiKey = tenant?.apiKey ?? ulid(timestamp);
 
   await client.execute({
-    sql: accountsAdd,
+    sql: tenantsAdd,
     args: [
       id,
-      account?.description ?? "Test account",
-      account?.plan !== undefined ? account.plan : "free",
+      tenant?.description ?? "Test tenant",
+      tenant?.plan === undefined ? "free" : tenant.plan,
       apiKey,
-      account?.createdAt ?? Date.now(),
-      account?.updatedAt ?? Date.now(),
-      account?.deletedAt ?? null,
+      tenant?.createdAt ?? Date.now(),
+      tenant?.updatedAt ?? Date.now(),
+      tenant?.deletedAt ?? null,
     ],
   });
 

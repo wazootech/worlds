@@ -1,5 +1,5 @@
 import { assert, assertEquals } from "@std/assert";
-import { createTestAccount, createTestContext } from "#/server/testing.ts";
+import { createTestContext, createTestTenant } from "#/server/testing.ts";
 import createWorldsRoute from "./route.ts";
 import createSparqlRoute from "./sparql/route.ts";
 
@@ -9,7 +9,7 @@ Deno.test("World Limits - World Count", async (t) => {
 
   await t.step("rejects world creation when limit is reached", async () => {
     // Create account with 'test' plan (limit: 2 worlds)
-    const { id: _accountId, apiKey } = await createTestAccount(
+    const { id: _accountId, apiKey } = await createTestTenant(
       testContext.libsqlClient,
       {
         plan: "test",
@@ -61,10 +61,10 @@ Deno.test("World Limits - World Count", async (t) => {
     "rejects world creation when plan is null (shadow)",
     async () => {
       // Create account with 'null' plan (should default to shadow: 0 worlds)
-      const { id: _accountId, apiKey } = await createTestAccount(
+      const { id: _accountId, apiKey } = await createTestTenant(
         testContext.libsqlClient,
         {
-          plan: null,
+          plan: "shadow",
         },
       );
 
@@ -93,7 +93,7 @@ Deno.test("World Limits - World Size", async (t) => {
     "rejects sparql update when blob size exceeds limit",
     async () => {
       // Create account with 'test' plan (limit: 100 bytes)
-      const { id: _accountId, apiKey } = await createTestAccount(
+      const { id: _accountId, apiKey } = await createTestTenant(
         testContext.libsqlClient,
         {
           plan: "test",
@@ -157,7 +157,7 @@ Deno.test("World Limits - Rate Limiting", async (t) => {
     // Create account with 'test' plan
     // In policies.ts, test plan has capacity 100 for sparql_query.
     // We'll use a dummy account to avoid hitting other limits.
-    const { apiKey } = await createTestAccount(
+    const { apiKey } = await createTestTenant(
       testContext.libsqlClient,
       {
         plan: "test",

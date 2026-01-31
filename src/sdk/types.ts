@@ -26,7 +26,7 @@ export type WorldsSearchResult = SearchResult<WorldsSearchResultItem>;
  * WorldsSearchResultItem represents a search result item.
  */
 export interface WorldsSearchResultItem {
-  accountId: string;
+  tenantId: string;
   worldId: string;
   subject: string;
   predicate: string;
@@ -38,7 +38,7 @@ export interface WorldsSearchResultItem {
  */
 export type CreateWorldParams = Omit<
   WorldRecord,
-  "id" | "accountId" | "createdAt" | "updatedAt" | "deletedAt"
+  "id" | "tenantId" | "createdAt" | "updatedAt" | "deletedAt"
 >;
 
 /**
@@ -51,7 +51,7 @@ export type UpdateWorldParams = Partial<CreateWorldParams>;
  */
 export interface WorldRecord {
   id: string;
-  accountId: string;
+  tenantId: string;
   label: string;
   description?: string;
   createdAt: number;

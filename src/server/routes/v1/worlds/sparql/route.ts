@@ -13,12 +13,8 @@ import {
 import { checkRateLimit } from "#/server/middleware/rate-limit.ts";
 import type { Patch, PatchHandler } from "@fartlabs/search-store";
 import { getPlanPolicy } from "#/server/rate-limit/policies.ts";
-import {
-  worldsFind,
-  worldsGetBlob,
-  worldsSetBlob,
-} from "#/server/db/queries/worlds.sql.ts";
-import { accountsFind } from "#/server/db/queries/accounts.sql.ts";
+import { worldsFind, worldsUpdate } from "#/server/db/queries/worlds.sql.ts";
+import { tenantsFind } from "#/server/db/queries/tenants.sql.ts";
 
 const { namedNode, quad } = DataFactory;
 
@@ -172,7 +168,7 @@ async function executeSparqlRequest(
   appContext: AppContext,
   request: Request,
   worldId: string,
-  accountId?: string,
+  tenantId?: string,
   isAdmin?: boolean,
 ): Promise<Response> {
   const { query } = await parseQuery(request);
@@ -210,30 +206,30 @@ async function executeSparqlRequest(
     return new Response("Method Not Allowed", { status: 405 });
   }
 
-  // Apply rate limiting if accountId is present
-  if (accountId) {
-    rateLimitHeaders = await checkRateLimit(appContext, accountId, worldId, {
+  // Apply rate limiting if tenantId is present
+  if (tenantId) {
+    rateLimitHeaders = await checkRateLimit(appContext, tenantId, worldId, {
       resourceType: isUpdate ? "sparql_update" : "sparql_query",
     });
   }
 
   // Execute query or update using centralized function
-  // Resolve accountId for the search store (always use the world's owner)
-  // Also get the world to use its accountId for plan policy checks
+  // Resolve tenantId for the search store (always use the world's owner)
+  // Also get the world to use its tenantId for plan policy checks
   const worldResult = await appContext.libsqlClient.execute({
     sql: worldsFind,
     args: [worldId],
   });
   const world = worldResult.rows[0];
 
-  let searchAccountId = accountId;
-  if (!searchAccountId) {
-    searchAccountId = world?.account_id as string | undefined;
+  let searchTenantId = tenantId;
+  if (!searchTenantId) {
+    searchTenantId = world?.tenant_id as string | undefined;
   }
 
   const patchHandlerStart = performance.now();
   const patchHandler = new BufferedPatchHandler(
-    searchAccountId
+    searchTenantId
       ? (() => {
         const searchStore = new LibsqlSearchStoreManager({
           client: appContext.libsqlClient,
@@ -243,7 +239,7 @@ async function executeSparqlRequest(
         searchStore.createTablesIfNotExists();
         return new LibsqlPatchHandler({
           manager: searchStore,
-          accountId: searchAccountId!,
+          tenantId: searchTenantId!,
           worldId,
         });
       })()
@@ -256,20 +252,10 @@ async function executeSparqlRequest(
     );
   }
 
-  const blobStart = performance.now();
-  const worldBlobResult = await appContext.libsqlClient.execute({
-    sql: worldsGetBlob,
-    args: [worldId],
-  });
-  const worldBlobEntry = worldBlobResult.rows[0];
-
-  const blob = worldBlobEntry?.blob
-    ? new Blob([new Uint8Array(worldBlobEntry.blob as ArrayBuffer)])
+  // Use world.blob directly from worldsResult
+  const blob = world?.blob
+    ? new Blob([new Uint8Array(world.blob as ArrayBuffer)])
     : new Blob([], { type: "application/n-quads" });
-  const blobTime = performance.now() - blobStart;
-  if (blobTime > 100) {
-    console.log(`[PERF] Blob retrieval: ${blobTime.toFixed(2)}ms`);
-  }
 
   const sparqlStart = performance.now();
   const { blob: newBlob, result } = await sparql(
@@ -288,21 +274,21 @@ async function executeSparqlRequest(
 
     // Check world size limits (bypass for admin API keys)
     if (!isAdmin) {
-      // If accountId is not provided (e.g., using admin API), use the world's owner
-      const effectiveAccountId = accountId ??
-        world?.account_id as string | undefined;
+      // If tenantId is not provided (e.g., using admin API), use the world's owner
+      const effectiveTenantId = tenantId ??
+        world?.tenant_id as string | undefined;
 
-      let accountPlan: string | null = null;
-      if (effectiveAccountId) {
-        const accountResult = await appContext.libsqlClient.execute({
-          sql: accountsFind,
-          args: [effectiveAccountId],
+      let tenantPlan: string | null = null;
+      if (effectiveTenantId) {
+        const tenantResult = await appContext.libsqlClient.execute({
+          sql: tenantsFind,
+          args: [effectiveTenantId],
         });
-        const account = accountResult.rows[0];
-        accountPlan = account?.plan as string | null ?? null;
+        const tenant = tenantResult.rows[0];
+        tenantPlan = tenant?.plan as string | null ?? null;
       }
 
-      const planPolicy = getPlanPolicy(accountPlan);
+      const planPolicy = getPlanPolicy(tenantPlan);
       if (newData.length > planPolicy.worldLimits.maxWorldSize) {
         return new Response("World size limit exceeded", { status: 413 });
       }
@@ -319,8 +305,15 @@ async function executeSparqlRequest(
     // Persist new blob. Since the world metadata row exists, we just update it.
     const persistStart = performance.now();
     await appContext.libsqlClient.execute({
-      sql: worldsSetBlob,
-      args: [newData, Date.now(), worldId],
+      sql: worldsUpdate,
+      args: [
+        world?.label,
+        world?.description,
+        world?.is_public,
+        Date.now(),
+        newData,
+        worldId,
+      ],
     });
     const persistTime = performance.now() - persistStart;
     if (persistTime > 100) {
@@ -353,7 +346,7 @@ export default (appContext: AppContext) => {
         }
 
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("World not found", { status: 404 });
         }
 
@@ -365,7 +358,7 @@ export default (appContext: AppContext) => {
 
         if (
           !world || world.deleted_at != null ||
-          (world.account_id !== authorized.account?.id &&
+          (world.tenant_id !== authorized.tenant?.id &&
             !authorized.admin)
         ) {
           return new Response("World not found", { status: 404 });
@@ -376,7 +369,7 @@ export default (appContext: AppContext) => {
             appContext,
             ctx.request,
             worldId,
-            authorized.account?.id,
+            authorized.tenant?.id,
             authorized.admin,
           );
         } catch (error) {
@@ -399,7 +392,7 @@ export default (appContext: AppContext) => {
         }
 
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("World not found", { status: 404 });
         }
 
@@ -411,7 +404,7 @@ export default (appContext: AppContext) => {
 
         if (
           !world || world.deleted_at != null ||
-          (world.account_id !== authorized.account?.id &&
+          (world.tenant_id !== authorized.tenant?.id &&
             !authorized.admin)
         ) {
           return new Response("World not found", { status: 404 });
@@ -434,7 +427,7 @@ export default (appContext: AppContext) => {
             appContext,
             ctx.request,
             worldId,
-            authorized.account?.id,
+            authorized.tenant?.id,
             authorized.admin,
           );
         } catch (error) {

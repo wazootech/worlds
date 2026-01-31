@@ -10,7 +10,7 @@ import {
   invitesGetMany,
   invitesUpdate,
 } from "#/server/db/queries/invites.sql.ts";
-import { accountsUpdate } from "#/server/db/queries/accounts.sql.ts";
+import { tenantsUpdate } from "#/server/db/queries/tenants.sql.ts";
 
 export default (appContext: AppContext) =>
   new Router()
@@ -18,7 +18,7 @@ export default (appContext: AppContext) =>
       "/v1/invites",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -54,7 +54,7 @@ export default (appContext: AppContext) =>
       "/v1/invites",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -105,7 +105,7 @@ export default (appContext: AppContext) =>
       "/v1/invites/:code",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -142,7 +142,7 @@ export default (appContext: AppContext) =>
       "/v1/invites/:code",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -169,13 +169,13 @@ export default (appContext: AppContext) =>
       "/v1/invites/:code/redeem",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
-        // For redemption, we need an actual account (not just admin)
-        if (!authorized.account) {
-          return new Response("Account required for redemption", {
+        // For redemption, we need an actual tenant (not just admin)
+        if (!authorized.tenant) {
+          return new Response("Tenant required for redemption", {
             status: 400,
           });
         }
@@ -202,9 +202,9 @@ export default (appContext: AppContext) =>
         }
 
         // Check if user already has a plan
-        const account = authorized.account.value;
-        if (account.plan && account.plan !== "shadow") {
-          return new Response("Account already has a plan", { status: 409 });
+        const tenant = authorized.tenant.value;
+        if (tenant.plan && tenant.plan !== "shadow") {
+          return new Response("Tenant already has a plan", { status: 409 });
         }
 
         const now = Date.now();
@@ -212,17 +212,17 @@ export default (appContext: AppContext) =>
         // Update the invite
         await appContext.libsqlClient.execute({
           sql: invitesUpdate,
-          args: [authorized.account.id, now, code],
+          args: [authorized.tenant.id, now, code],
         });
 
-        // Update the account's plan to "free"
+        // Update the tenant's plan to "free"
         await appContext.libsqlClient.execute({
-          sql: accountsUpdate,
+          sql: tenantsUpdate,
           args: [
-            account.description ?? null,
+            tenant.description ?? null,
             "free",
             now,
-            authorized.account.id,
+            authorized.tenant.id,
           ],
         });
 

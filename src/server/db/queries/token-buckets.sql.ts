@@ -6,38 +6,38 @@
  * Reference: https://en.wikipedia.org/wiki/Token_bucket
  */
 export const tokenBucketsTable =
-  "CREATE TABLE IF NOT EXISTS token_buckets (\r\n    id TEXT PRIMARY KEY NOT NULL,\r\n    account_id TEXT NOT NULL,\r\n    key TEXT NOT NULL, -- Composite key: worldId:resourceType\r\n    tokens REAL NOT NULL,\r\n    last_refill_at INTEGER NOT NULL,\r\n    FOREIGN KEY (account_id) REFERENCES accounts(id)\r\n)";
+  "CREATE TABLE IF NOT EXISTS token_buckets (\r\n    id TEXT PRIMARY KEY NOT NULL,\r\n    tenant_id TEXT NOT NULL,\r\n    key TEXT NOT NULL, -- Composite key: worldId:resourceType\r\n    tokens REAL NOT NULL,\r\n    last_refill_at INTEGER NOT NULL,\r\n    FOREIGN KEY (tenant_id) REFERENCES tenants(id)\r\n);";
 
 /**
- * tokenBucketsAccountIdIndex
- * Index on account_id for efficient lookups by account
+ * tokenBucketsTenantIdIndex
+ * Index on tenant_id for efficient lookups by tenant
  */
-export const tokenBucketsAccountIdIndex =
-  "CREATE INDEX IF NOT EXISTS idx_token_buckets_account_id ON token_buckets(account_id)";
+export const tokenBucketsTenantIdIndex =
+  "CREATE INDEX IF NOT EXISTS idx_token_buckets_tenant_id ON token_buckets(tenant_id);";
 
 /**
  * tokenBucketsFind
  * Find token bucket by key (used in rate limiter consume operation)
  */
-export const tokenBucketsFind = "SELECT * FROM token_buckets\r\nWHERE key = ?";
+export const tokenBucketsFind = "SELECT * FROM token_buckets\r\nWHERE key = ?;";
 
 /**
  * tokenBucketsUpsert
  * Insert or update token bucket (used in rate limiter atomic operations)
  */
 export const tokenBucketsUpsert =
-  "INSERT OR REPLACE INTO token_buckets (id, account_id, key, tokens, last_refill_at)\r\nVALUES (?, ?, ?, ?, ?)";
+  "INSERT OR REPLACE INTO token_buckets (id, tenant_id, key, tokens, last_refill_at)\r\nVALUES (?, ?, ?, ?, ?);";
 
 /**
- * tokenBucketsDeleteByAccount
- * Delete all token buckets for an account (cleanup when account is deleted)
+ * tokenBucketsDeleteByTenant
+ * Delete all token buckets for a tenant (cleanup when tenant is deleted)
  */
-export const tokenBucketsDeleteByAccount =
-  "DELETE FROM token_buckets\r\nWHERE account_id = ?";
+export const tokenBucketsDeleteByTenant =
+  "DELETE FROM token_buckets\r\nWHERE tenant_id = ?;";
 
 /**
  * tokenBucketsCleanupOld
  * Delete token buckets that haven't been used in a while (maintenance query)
  */
 export const tokenBucketsCleanupOld =
-  "DELETE FROM token_buckets\r\nWHERE last_refill_at";
+  "DELETE FROM token_buckets\r\nWHERE last_refill_at < ?;";

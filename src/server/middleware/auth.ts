@@ -1,24 +1,31 @@
-import type { Account } from "#/server/db/kvdex.ts";
 import type { AppContext } from "#/server/app-context.ts";
 import {
-  accountsFind,
-  accountsFindByApiKey,
-} from "#/server/db/queries/accounts.sql.ts";
+  tenantsFind,
+  tenantsFindByApiKey,
+} from "#/server/db/queries/tenants.sql.ts";
 
 /**
  * AuthorizedRequest is the result of a successful authentication.
  */
 export interface AuthorizedRequest {
   admin: boolean;
-  account: {
+  tenant: {
     id: string;
-    value: Account;
+    value: {
+      id: string;
+      description?: string;
+      plan?: string;
+      apiKey: string;
+      createdAt: number;
+      updatedAt: number;
+      deletedAt?: number;
+    };
   } | null;
 }
 
 /**
  * authorizeRequest authorizes a request using Bearer token and associates
- * an account with the request.
+ * a tenant with the request.
  */
 export async function authorizeRequest(
   appContext: AppContext,
@@ -26,7 +33,7 @@ export async function authorizeRequest(
 ): Promise<AuthorizedRequest> {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
-    return { admin: false, account: null };
+    return { admin: false, tenant: null };
   }
 
   const apiKey = authHeader.slice("Bearer ".length).trim();
@@ -35,17 +42,17 @@ export async function authorizeRequest(
     return authorized;
   }
 
-  // Get the account desired by the admin.
+  // Get the tenant desired by the admin.
   const url = new URL(request.url);
-  const accountId = url.searchParams.get("account");
+  const tenantId = url.searchParams.get("tenant");
 
-  if (!accountId) {
+  if (!tenantId) {
     return authorized;
   }
 
   const result = await appContext.libsqlClient.execute({
-    sql: accountsFind,
-    args: [accountId],
+    sql: tenantsFind,
+    args: [tenantId],
   });
 
   const row = result.rows[0];
@@ -55,8 +62,8 @@ export async function authorizeRequest(
 
   return {
     admin: true,
-    account: {
-      id: accountId,
+    tenant: {
+      id: tenantId,
       value: {
         id: row.id as string,
         description: row.description as string | undefined,
@@ -78,22 +85,22 @@ export async function authorize(
   apiKey: string,
 ): Promise<AuthorizedRequest> {
   if (apiKey === admin?.apiKey) {
-    return { admin: true, account: null };
+    return { admin: true, tenant: null };
   }
 
   const result = await libsqlClient.execute({
-    sql: accountsFindByApiKey,
+    sql: tenantsFindByApiKey,
     args: [apiKey],
   });
 
   const row = result.rows[0];
   if (!row) {
-    return { admin: false, account: null };
+    return { admin: false, tenant: null };
   }
 
   return {
     admin: false,
-    account: {
+    tenant: {
       id: row.id as string,
       value: {
         id: row.id as string,

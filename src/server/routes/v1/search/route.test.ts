@@ -5,7 +5,7 @@ import { createClient } from "@libsql/client";
 import { LibsqlSearchStoreManager } from "#/server/search/libsql.ts";
 import { initializeDatabase } from "#/server/db/init.ts";
 import { worldsAdd } from "#/server/db/queries/worlds.sql.ts";
-import { createTestAccount } from "#/server/testing.ts";
+import { createTestTenant } from "#/server/testing.ts";
 
 Deno.test("Search API - Top-Level Route", async (t) => {
   const client = createClient({ url: ":memory:" });
@@ -18,7 +18,7 @@ Deno.test("Search API - Top-Level Route", async (t) => {
   const appContext = { libsqlClient: client, embeddings: embedder };
   const adminHandler = route({ ...appContext, admin: { apiKey: "admin-key" } });
 
-  const { id: accountId } = await createTestAccount(client);
+  const { id: tenantId } = await createTestTenant(client);
 
   // Create two worlds
   const worldId1 = crypto.randomUUID();
@@ -27,11 +27,11 @@ Deno.test("Search API - Top-Level Route", async (t) => {
 
   await client.execute({
     sql: worldsAdd,
-    args: [worldId1, accountId, "World 1", null, null, now, now, null, 0],
+    args: [worldId1, tenantId, "World 1", null, null, now, now, null, 0],
   });
   await client.execute({
     sql: worldsAdd,
-    args: [worldId2, accountId, "World 2", null, null, now, now, null, 0],
+    args: [worldId2, tenantId, "World 2", null, null, now, now, null, 0],
   });
 
   // Sync to search store using LibsqlSearchStore
@@ -52,11 +52,11 @@ Deno.test("Search API - Top-Level Route", async (t) => {
     DataFactory.literal("Hello Mars"),
   );
 
-  await searchStore.patch(accountId, worldId1, [{
+  await searchStore.patch(tenantId, worldId1, [{
     deletions: [],
     insertions: [testQuad1],
   }]);
-  await searchStore.patch(accountId, worldId2, [{
+  await searchStore.patch(tenantId, worldId2, [{
     deletions: [],
     insertions: [testQuad2],
   }]);
@@ -72,7 +72,7 @@ Deno.test("Search API - Top-Level Route", async (t) => {
 
   await t.step("GET /v1/search across all worlds of account", async () => {
     const resp = await adminHandler.fetch(
-      new Request(`http://localhost/v1/search?q=Hello&account=${accountId}`, {
+      new Request(`http://localhost/v1/search?q=Hello&tenant=${tenantId}`, {
         headers: { "Authorization": "Bearer admin-key" },
       }),
     );
@@ -85,7 +85,7 @@ Deno.test("Search API - Top-Level Route", async (t) => {
   await t.step("GET /v1/search filtered by specific worlds", async () => {
     const resp = await adminHandler.fetch(
       new Request(
-        `http://localhost/v1/search?q=Hello&worlds=${worldId1}&account=${accountId}`,
+        `http://localhost/v1/search?q=Hello&worlds=${worldId1}&tenant=${tenantId}`,
         {
           headers: { "Authorization": "Bearer admin-key" },
         },
@@ -100,7 +100,7 @@ Deno.test("Search API - Top-Level Route", async (t) => {
   await t.step("GET /v1/search validates world access", async () => {
     const resp = await adminHandler.fetch(
       new Request(
-        `http://localhost/v1/search?q=Hello&worlds=other-world&account=${accountId}`,
+        `http://localhost/v1/search?q=Hello&worlds=other-world&tenant=${tenantId}`,
         {
           headers: { "Authorization": "Bearer admin-key" },
         },

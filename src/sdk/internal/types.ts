@@ -1,7 +1,7 @@
 /**
- * AccountRecord represents an account in the Worlds API.
+ * TenantRecord represents a tenant in the Worlds API.
  */
-export interface AccountRecord {
+export interface TenantRecord {
   id: string;
   description?: string;
   plan?: string;
@@ -12,17 +12,17 @@ export interface AccountRecord {
 }
 
 /**
- * CreateAccountParams represents the parameters for creating an account.
+ * CreateTenantParams represents the parameters for creating a tenant.
  */
-export type CreateAccountParams = Omit<
-  AccountRecord,
+export type CreateTenantParams = Omit<
+  TenantRecord,
   "apiKey" | "createdAt" | "updatedAt" | "deletedAt"
 >;
 
 /**
- * UpdateAccountParams represents the parameters for updating an account.
+ * UpdateTenantParams represents the parameters for updating a tenant.
  */
-export type UpdateAccountParams = Partial<CreateAccountParams>;
+export type UpdateTenantParams = Partial<CreateTenantParams>;
 
 /**
  * InviteRecord represents an invite in the Worlds API.

@@ -13,8 +13,7 @@ import {
   worldsAdd,
   worldsDelete,
   worldsFind,
-  worldsFindByAccountId,
-  worldsGetBlob,
+  worldsFindByTenantId,
   worldsUpdate,
 } from "#/server/db/queries/worlds.sql.ts";
 
@@ -39,7 +38,7 @@ export default (appContext: AppContext) => {
         }
 
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -51,7 +50,7 @@ export default (appContext: AppContext) => {
 
         if (
           !world || world.deleted_at != null ||
-          (world.account_id !== authorized.account?.id &&
+          (world.tenant_id !== authorized.tenant?.id &&
             !authorized.admin)
         ) {
           return new Response("World not found", { status: 404 });
@@ -61,7 +60,7 @@ export default (appContext: AppContext) => {
 
         return Response.json({
           id: world.id,
-          accountId: world.account_id,
+          tenantId: world.tenant_id,
           label: world.label,
           description: world.description,
           createdAt: world.created_at,
@@ -80,7 +79,7 @@ export default (appContext: AppContext) => {
         }
 
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -92,18 +91,18 @@ export default (appContext: AppContext) => {
 
         if (
           !world || world.deleted_at != null ||
-          (world.account_id !== authorized.account?.id &&
+          (world.tenant_id !== authorized.tenant?.id &&
             !authorized.admin)
         ) {
           return new Response("World not found", { status: 404 });
         }
 
         // Apply rate limit
-        const plan = authorized.account?.value.plan ?? "free";
+        const plan = authorized.tenant?.value.plan ?? "free";
         const policy = getPolicy(plan, "world_download");
         const rateLimiter = new TokenBucketRateLimiter(appContext.libsqlClient);
         const rateLimitResult = await rateLimiter.consume(
-          `${authorized.account?.id || "admin"}:world_download`,
+          `${authorized.tenant?.id || "admin"}:world_download`,
           1,
           policy,
         );
@@ -135,18 +134,13 @@ export default (appContext: AppContext) => {
           }
         }
 
-        const worldBlobResult = await appContext.libsqlClient.execute({
-          sql: worldsGetBlob,
-          args: [worldId],
-        });
-        const worldBlob = worldBlobResult.rows[0];
-
-        if (!worldBlob || !worldBlob.blob) {
+        // worldResult.rows[0] is used to get the world record
+        if (!world || !world.blob) {
           return new Response("World data not found", { status: 404 });
         }
 
-        // worldBlob.blob is an ArrayBuffer from LibSQL
-        const blobData = worldBlob.blob as ArrayBuffer;
+        // world.blob is an ArrayBuffer from LibSQL
+        const blobData = world.blob as ArrayBuffer;
         const worldString = new TextDecoder().decode(new Uint8Array(blobData));
 
         // If requested format is already N-Quads (our internal storage format), return as is
@@ -200,7 +194,7 @@ export default (appContext: AppContext) => {
 
         if (
           !world || world.deleted_at != null ||
-          (world.account_id !== authorized.account?.id &&
+          (world.tenant_id !== authorized.tenant?.id &&
             !authorized.admin)
         ) {
           return new Response("World not found", { status: 404 });
@@ -227,6 +221,7 @@ export default (appContext: AppContext) => {
             data.description ?? world.description,
             data.isPublic ?? world.is_public,
             updatedAt,
+            world.blob,
             worldId,
           ],
         });
@@ -251,7 +246,7 @@ export default (appContext: AppContext) => {
 
         if (
           !world || world.deleted_at != null ||
-          (world.account_id !== authorized.account?.id &&
+          (world.tenant_id !== authorized.tenant?.id &&
             !authorized.admin)
         ) {
           return new Response("World not found", { status: 404 });
@@ -263,10 +258,10 @@ export default (appContext: AppContext) => {
           embeddings: appContext.embeddings,
         });
         await searchStore.createTablesIfNotExists();
-        await searchStore.deleteWorld(world.account_id as string, worldId);
+        await searchStore.deleteWorld(world.tenant_id as string, worldId);
 
         try {
-          // Delete world (world_blobs will be deleted automatically via ON DELETE CASCADE)
+          // Delete world
           await appContext.libsqlClient.execute({
             sql: worldsDelete,
             args: [worldId],
@@ -282,7 +277,7 @@ export default (appContext: AppContext) => {
       "/v1/worlds",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account) {
+        if (!authorized.tenant) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -294,14 +289,14 @@ export default (appContext: AppContext) => {
         const offset = (page - 1) * pageSize;
 
         const result = await appContext.libsqlClient.execute({
-          sql: worldsFindByAccountId,
-          args: [authorized.account.id, pageSize, offset],
+          sql: worldsFindByTenantId,
+          args: [authorized.tenant.id, pageSize, offset],
         });
 
         return Response.json(
           result.rows.map((row) => ({
             id: row.id,
-            accountId: row.account_id,
+            tenantId: row.tenant_id,
             label: row.label,
             description: row.description,
             createdAt: row.created_at,
@@ -316,7 +311,7 @@ export default (appContext: AppContext) => {
       "/v1/worlds",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account) {
+        if (!authorized.tenant) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -332,12 +327,12 @@ export default (appContext: AppContext) => {
           return Response.json(parseResult.error, { status: 400 });
         }
         const data = parseResult.data;
-        const planPolicy = getPlanPolicy(authorized.account.value.plan ?? null);
+        const planPolicy = getPlanPolicy(authorized.tenant.value.plan ?? null);
 
         // Check world limit
         const worldsResult = await appContext.libsqlClient.execute({
-          sql: worldsFindByAccountId,
-          args: [authorized.account.id, 1000, 0], // Get all worlds to count
+          sql: worldsFindByTenantId,
+          args: [authorized.tenant.id, 1000, 0], // Get all worlds to count
         });
         const activeWorlds = worldsResult.rows.filter((w) =>
           w.deleted_at == null
@@ -354,10 +349,10 @@ export default (appContext: AppContext) => {
           sql: worldsAdd,
           args: [
             worldId,
-            authorized.account!.id,
+            authorized.tenant!.id,
             data.label,
             data.description ?? null,
-            null, // Initial blob is null
+            null, // blob
             now,
             now,
             null,
@@ -367,7 +362,7 @@ export default (appContext: AppContext) => {
 
         return Response.json({
           id: worldId,
-          accountId: authorized.account!.id,
+          tenantId: authorized.tenant!.id,
           label: data.label,
           description: data.description,
           createdAt: now,

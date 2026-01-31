@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 /**
- * accountRecordSchema is the Zod schema for AccountRecord.
+ * tenantRecordSchema is the Zod schema for TenantRecord.
  */
-export const accountRecordSchema = z.object({
+export const tenantRecordSchema = z.object({
   id: z.string(),
   description: z.string().optional(),
   plan: z.string().optional(),
@@ -14,9 +14,9 @@ export const accountRecordSchema = z.object({
 });
 
 /**
- * createAccountParamsSchema is the Zod schema for CreateAccountParams.
+ * createTenantParamsSchema is the Zod schema for CreateTenantParams.
  */
-export const createAccountParamsSchema = accountRecordSchema.omit({
+export const createTenantParamsSchema = tenantRecordSchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
@@ -24,9 +24,9 @@ export const createAccountParamsSchema = accountRecordSchema.omit({
 });
 
 /**
- * updateAccountParamsSchema is the Zod schema for UpdateAccountParams.
+ * updateTenantParamsSchema is the Zod schema for UpdateTenantParams.
  */
-export const updateAccountParamsSchema = createAccountParamsSchema
+export const updateTenantParamsSchema = createTenantParamsSchema
   .partial()
   .omit({ id: true });
 
@@ -52,7 +52,7 @@ export const createInviteParamsSchema = z.object({
  */
 export const worldRecordSchema = z.object({
   id: z.string(),
-  accountId: z.string(),
+  tenantId: z.string(),
   label: z.string(),
   description: z.string().optional(),
   createdAt: z.number(),
@@ -66,7 +66,7 @@ export const worldRecordSchema = z.object({
  */
 export const createWorldParamsSchema = worldRecordSchema.omit({
   id: true,
-  accountId: true,
+  tenantId: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,

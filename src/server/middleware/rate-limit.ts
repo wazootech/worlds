@@ -2,7 +2,7 @@ import type { AppContext } from "#/server/app-context.ts";
 import type { ResourceType } from "#/server/rate-limit/policies.ts";
 import { getPolicy } from "#/server/rate-limit/policies.ts";
 import { TokenBucketRateLimiter } from "#/server/rate-limit/rate-limiter.ts";
-import { accountsFind } from "#/server/db/queries/accounts.sql.ts";
+import { tenantsFind } from "#/server/db/queries/tenants.sql.ts";
 
 /**
  * RateLimitOptions configures the rate limit middleware.
@@ -18,19 +18,19 @@ export interface RateLimitOptions {
  */
 export async function checkRateLimit(
   appContext: AppContext,
-  accountId: string,
+  tenantId: string,
   worldId: string,
   options: RateLimitOptions,
 ): Promise<Record<string, string>> {
   const cost = options.cost ?? 1;
 
-  // Get the account's plan
+  // Get the tenant's plan
   const result = await appContext.libsqlClient.execute({
-    sql: accountsFind,
-    args: [accountId],
+    sql: tenantsFind,
+    args: [tenantId],
   });
-  const account = result.rows[0];
-  const planName = account?.plan as string | null || null;
+  const tenant = result.rows[0];
+  const planName = tenant?.plan as string | null || null;
 
   // Get the policy for this resource
   const policy = getPolicy(planName, options.resourceType);
@@ -38,8 +38,8 @@ export async function checkRateLimit(
   // Create rate limiter
   const rateLimiter = new TokenBucketRateLimiter(appContext.libsqlClient);
 
-  // Create bucket key: accountId:worldId:resourceType
-  const key = `${accountId}:${worldId}:${options.resourceType}`;
+  // Create bucket key: tenantId:worldId:resourceType
+  const key = `${tenantId}:${worldId}:${options.resourceType}`;
 
   // Attempt to consume tokens
   const rateLimitResult = await rateLimiter.consume(key, cost, policy);

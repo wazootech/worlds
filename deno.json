@@ -38,7 +38,6 @@
     "fmt": "deno fmt",
     "lint": "deno lint --unstable-kv --unstable-raw-imports",
     "check": "deno check --unstable-kv --unstable-raw-imports",
-    "generate": "deno -A jsr:@fartlabs/sql-embedder src",
     "precommit": {
       "description": "Runs fmt, lint, and test",
       "dependencies": [
@@ -48,6 +47,7 @@
         "fmt"
       ]
     },
-    "example": "deno -A --env --unstable-kv --unstable-raw-imports src/tools/example.ts"
+    "example": "deno -A --env --unstable-kv --unstable-raw-imports src/tools/example.ts",
+    "generate": "deno -A jsr:@fartlabs/sql-embedder@0.0.4 src"
   }
 }

@@ -8,8 +8,8 @@ import { solarSystem } from "./solar-system.ts";
 
 Deno.test("LibsqlSearchStoreManager e2e", async (t) => {
   const client = createClient({ url: ":memory:" });
-  const accountId1 = "account-1";
-  const accountId2 = "account-2";
+  const tenantId1 = "tenant-1";
+  const tenantId2 = "tenant-2";
   const worldId1 = "world-1";
   const worldId2 = "world-2";
 
@@ -22,8 +22,8 @@ Deno.test("LibsqlSearchStoreManager e2e", async (t) => {
     await searchStore.createTablesIfNotExists();
   });
 
-  await t.step("Insert documents for account-1/world-1", async () => {
-    await searchStore.patch(accountId1, worldId1, [
+  await t.step("Insert documents for tenant-1/world-1", async () => {
+    await searchStore.patch(tenantId1, worldId1, [
       {
         insertions: solarSystem.slice(0, 4).map((content, index) =>
           df.quad(
@@ -37,8 +37,8 @@ Deno.test("LibsqlSearchStoreManager e2e", async (t) => {
     ]);
   });
 
-  await t.step("Insert documents for account-1/world-2", async () => {
-    await searchStore.patch(accountId1, worldId2, [
+  await t.step("Insert documents for tenant-1/world-2", async () => {
+    await searchStore.patch(tenantId1, worldId2, [
       {
         insertions: solarSystem.slice(4).map((content, index) =>
           df.quad(
@@ -52,14 +52,14 @@ Deno.test("LibsqlSearchStoreManager e2e", async (t) => {
     ]);
   });
 
-  await t.step("Insert documents for account-2 (isolation check)", async () => {
-    await searchStore.patch(accountId2, worldId1, [
+  await t.step("Insert documents for tenant-2 (isolation check)", async () => {
+    await searchStore.patch(tenantId2, worldId1, [
       {
         insertions: [
           df.quad(
             df.namedNode("https://wazoo.worlds.tech/other"),
             df.namedNode("https://schema.org/description"),
-            df.literal("Secret data for account 2"),
+            df.literal("Secret data for tenant 2"),
           ),
         ],
         deletions: [],
@@ -67,53 +67,53 @@ Deno.test("LibsqlSearchStoreManager e2e", async (t) => {
     ]);
   });
 
-  await t.step("Search single world of account-1", async () => {
+  await t.step("Search single world of tenant-1", async () => {
     const results = await searchStore.search("Earth", {
-      accountId: accountId1,
+      tenantId: tenantId1,
       worldIds: [worldId1],
     });
     assert(results.length > 0, "Should have results");
     for (const result of results) {
-      assertEquals(result.value.accountId, accountId1);
+      assertEquals(result.value.tenantId, tenantId1);
       assertEquals(result.value.worldId, worldId1);
     }
   });
 
-  await t.step("Search all worlds of account-1", async () => {
+  await t.step("Search all worlds of tenant-1", async () => {
     const results = await searchStore.search("planet", {
-      accountId: accountId1,
+      tenantId: tenantId1,
     });
     assert(results.length > 0, "Should have results");
     for (const result of results) {
-      assertEquals(result.value.accountId, accountId1);
-      // Results can be from any world of accountId1
+      assertEquals(result.value.tenantId, tenantId1);
+      // Results can be from any world of tenantId1
     }
-    // isolation check: should NOT contain account-2 data
-    const hasAccount2 = results.some((r) => r.value.accountId === accountId2);
-    assertEquals(hasAccount2, false);
+    // isolation check: should NOT contain tenant-2 data
+    const hasTenant2 = results.some((r) => r.value.tenantId === tenantId2);
+    assertEquals(hasTenant2, false);
   });
 
-  await t.step("Delete world from account-1", async () => {
-    await searchStore.deleteWorld(accountId1, worldId1);
+  await t.step("Delete world from tenant-1", async () => {
+    await searchStore.deleteWorld(tenantId1, worldId1);
     const results = await searchStore.search("Earth", {
-      accountId: accountId1,
+      tenantId: tenantId1,
       worldIds: [worldId1],
     });
     assertEquals(results.length, 0);
   });
 
-  await t.step("Account-2 data still exists", async () => {
+  await t.step("Tenant-2 data still exists", async () => {
     const results = await searchStore.search("Secret", {
-      accountId: accountId2,
+      tenantId: tenantId2,
     });
     assertEquals(results.length, 1);
-    assertEquals(results[0].value.accountId, accountId2);
+    assertEquals(results[0].value.tenantId, tenantId2);
   });
 
   await t.step("forWorld adapter works", async () => {
     const worldHandler = new LibsqlPatchHandler({
       manager: searchStore,
-      accountId: accountId1,
+      tenantId: tenantId1,
       worldId: "world-3",
     });
     await worldHandler.patch([
@@ -130,11 +130,11 @@ Deno.test("LibsqlSearchStoreManager e2e", async (t) => {
     ]);
 
     const results = await searchStore.search("Test", {
-      accountId: accountId1,
+      tenantId: tenantId1,
       worldIds: ["world-3"],
     });
     assertEquals(results.length, 1);
     assertEquals(results[0].value.worldId, "world-3");
-    assertEquals(results[0].value.accountId, accountId1);
+    assertEquals(results[0].value.tenantId, tenantId1);
   });
 });
