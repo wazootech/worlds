@@ -13,12 +13,21 @@ export interface DatasetParams {
 }
 
 /**
+ * NoopPatchHandler is a PatchHandler that does nothing.
+ */
+export class NoopPatchHandler implements PatchHandler {
+  patch() {
+    return Promise.resolve();
+  }
+}
+
+/**
  * sparql executes a SPARQL query and returns the result.
  */
 export async function sparql(
   blob: Blob,
   query: string,
-  searchStore: PatchHandler = { patch: async () => {} },
+  searchStore: PatchHandler = new NoopPatchHandler(),
 ): Promise<{ blob: Blob; result: SparqlResult | null }> {
   const store = await generateN3StoreFromBlob(blob);
   const { store: proxiedStore, sync } = connectSearchStoreToN3Store(

@@ -1,96 +1,121 @@
-import type { TokenBucket } from "#/server/db/kvdex.ts";
+import type { Client } from "@libsql/client";
 import type {
   RateLimiter,
   RateLimitPolicy,
   RateLimitResult,
 } from "./interfaces.ts";
+import {
+  tokenBucketsFind,
+  tokenBucketsUpsert,
+} from "#/server/db/resources/token-buckets/queries.sql.ts";
+import { ulid } from "@std/ulid";
 
 /**
  * TokenBucketRateLimiter implements the Token Bucket algorithm for rate limiting.
  */
 export class TokenBucketRateLimiter implements RateLimiter {
-  constructor(private kv: Deno.Kv) {}
+  constructor(private client: Client) {}
 
   /**
    * consume attempts to consume tokens from a bucket.
-   * Implements the Token Bucket algorithm with atomic operations.
+   * Implements the Token Bucket algorithm with atomic operations using LibSQL transactions.
    */
   async consume(
     key: string,
     cost: number,
     policy: RateLimitPolicy,
   ): Promise<RateLimitResult> {
-    const kvKey = ["tokenBuckets", key];
-
-    // Retry loop for atomic operations
+    // Retry loop for transaction conflicts
     const maxRetries = 10;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
-      const now = Date.now();
+      try {
+        const now = Date.now();
 
-      // Try to get existing bucket
-      const entry = await this.kv.get<TokenBucket>(kvKey);
-      const existing = entry.value;
+        // Start a transaction for atomicity
+        await this.client.execute("BEGIN IMMEDIATE TRANSACTION");
 
-      let tokens: number;
-      let lastRefillAt: number;
+        try {
+          // Try to get existing bucket
+          const result = await this.client.execute({
+            sql: tokenBucketsFind,
+            args: [key],
+          });
+          const existing = result.rows[0];
 
-      if (existing) {
-        // Calculate tokens to add based on time elapsed
-        const timeSinceRefill = now - existing.lastRefillAt;
-        const intervalsElapsed = Math.floor(timeSinceRefill / policy.interval);
-        const tokensToAdd = intervalsElapsed * policy.refillRate;
+          let tokens: number;
+          let lastRefillAt: number;
 
-        // Refill tokens, but don't exceed capacity
-        tokens = Math.min(existing.tokens + tokensToAdd, policy.capacity);
-        lastRefillAt = existing.lastRefillAt +
-          (intervalsElapsed * policy.interval);
-      } else {
-        // New bucket starts at full capacity
-        tokens = policy.capacity;
-        lastRefillAt = now;
-      }
+          if (existing) {
+            // Calculate tokens to add based on time elapsed
+            const timeSinceRefill = now - (existing.last_refill_at as number);
+            const intervalsElapsed = Math.floor(
+              timeSinceRefill / policy.interval,
+            );
+            const tokensToAdd = intervalsElapsed * policy.refillRate;
 
-      // Check if we have enough tokens
-      const allowed = tokens >= cost;
+            // Refill tokens, but don't exceed capacity
+            tokens = Math.min(
+              (existing.tokens as number) + tokensToAdd,
+              policy.capacity,
+            );
+            lastRefillAt = (existing.last_refill_at as number) +
+              (intervalsElapsed * policy.interval);
+          } else {
+            // New bucket starts at full capacity
+            tokens = policy.capacity;
+            lastRefillAt = now;
+          }
 
-      // Calculate reset time (when next token will be available)
-      let reset: number;
-      if (allowed) {
-        tokens -= cost;
-        reset = lastRefillAt + policy.interval;
-      } else {
-        const tokensNeeded = cost - tokens;
-        const intervalsNeeded = Math.ceil(tokensNeeded / policy.refillRate);
-        reset = lastRefillAt + (intervalsNeeded * policy.interval);
-      }
+          // Check if we have enough tokens
+          const allowed = tokens >= cost;
 
-      // Only update bucket if request is allowed
-      if (allowed) {
-        const nextValue: TokenBucket = {
-          accountId: key.split(":")[0], // Extract accountId from key
-          key,
-          tokens,
-          lastRefillAt,
-        };
+          // Calculate reset time (when next token will be available)
+          let reset: number;
+          if (allowed) {
+            tokens -= cost;
+            reset = lastRefillAt + policy.interval;
+          } else {
+            const tokensNeeded = cost - tokens;
+            const intervalsNeeded = Math.ceil(tokensNeeded / policy.refillRate);
+            reset = lastRefillAt + (intervalsNeeded * policy.interval);
+          }
 
-        const atomicOperation = this.kv.atomic().check(entry).set(
-          kvKey,
-          nextValue,
-        );
+          // Only update bucket if request is allowed
+          if (allowed) {
+            const accountId = key.split(":")[0]; // Extract accountId from key
+            const id = existing?.id as string ?? ulid();
 
-        const result = await atomicOperation.commit();
+            await this.client.execute({
+              sql: tokenBucketsUpsert,
+              args: [id, accountId, key, tokens, lastRefillAt],
+            });
+          }
 
-        // If atomic operation failed, retry
-        if (!result.ok) {
+          // Commit the transaction
+          await this.client.execute("COMMIT");
+
+          return {
+            allowed,
+            remaining: Math.floor(tokens),
+            reset,
+          };
+        } catch (error) {
+          // Rollback on error
+          await this.client.execute("ROLLBACK");
+          throw error;
+        }
+      } catch (error) {
+        // Check if it's a transaction conflict (SQLITE_BUSY)
+        const errorMessage = error instanceof Error
+          ? error.message
+          : String(error);
+        if (errorMessage.includes("BUSY") || errorMessage.includes("LOCKED")) {
+          // Retry on transaction conflict
           continue;
         }
+        // Re-throw other errors
+        throw error;
       }
-
-      return {
-        allowed,
-        remaining: Math.floor(tokens),
-        reset,
-      };
     }
 
     // If we exhausted retries, throw an error

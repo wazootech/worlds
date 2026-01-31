@@ -35,7 +35,7 @@
     "start": "deno serve -A --unstable-kv --env --unstable-raw-imports src/server/main.ts",
     "test": "deno test -A --unstable-kv --unstable-raw-imports",
     "publish:dry": "deno publish --dry-run --allow-dirty",
-    "fmt": "deno fmt",
+    "fmt": "deno fmt --unstable-sql",
     "lint": "deno lint --unstable-kv --unstable-raw-imports",
     "check": "deno check --unstable-kv --unstable-raw-imports",
     "precommit": {
@@ -47,6 +47,7 @@
         "fmt"
       ]
     },
-    "example": "deno -A --env --unstable-kv --unstable-raw-imports src/tools/example.ts"
+    "example": "deno -A --env --unstable-kv --unstable-raw-imports src/tools/example.ts",
+    "generate": "deno -A jsr:@fartlabs/sql-embedder@0.0.5 src"
   }
 }

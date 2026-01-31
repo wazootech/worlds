@@ -3,13 +3,14 @@ import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
 import { LibsqlSearchStoreManager } from "#/server/search/libsql.ts";
 import { checkRateLimit } from "#/server/middleware/rate-limit.ts";
+import { selectWorldById } from "#/server/db/resources/worlds/queries.sql.ts";
 
 export default (appContext: AppContext) => {
   return new Router().get(
     "/v1/search",
     async (ctx) => {
       const authorized = await authorizeRequest(appContext, ctx.request);
-      if (!authorized.account && !authorized.admin) {
+      if (!authorized.tenant && !authorized.admin) {
         return new Response("Unauthorized", { status: 401 });
       }
 
@@ -22,21 +23,26 @@ export default (appContext: AppContext) => {
       const worldIdsParam = url.searchParams.get("worlds");
       const worldIds = worldIdsParam ? worldIdsParam.split(",") : undefined;
       const validWorldIds: string[] = [];
-      let accountId: string | undefined;
+      let tenantId: string | undefined;
 
       if (worldIds) {
         for (const worldId of worldIds) {
-          const worldResult = await appContext.db.worlds.find(worldId);
+          const worldResult = await appContext.libsqlClient.execute({
+            sql: selectWorldById,
+            args: [worldId],
+          });
+          const world = worldResult.rows[0];
+
           if (
-            !worldResult || worldResult.value.deletedAt != null ||
-            (worldResult.value.accountId !== authorized.account?.id &&
+            !world || world.deleted_at != null ||
+            (world.tenant_id !== authorized.tenant?.id &&
               !authorized.admin)
           ) {
             continue;
           }
           validWorldIds.push(worldId);
-          if (!accountId) {
-            accountId = worldResult.value.accountId;
+          if (!tenantId) {
+            tenantId = world.tenant_id as string;
           }
         }
       }
@@ -45,28 +51,27 @@ export default (appContext: AppContext) => {
         return new Response("No valid worlds found", { status: 404 });
       }
 
-      if (!accountId) {
-        if (authorized.account) {
-          accountId = authorized.account.id;
+      if (!tenantId) {
+        if (authorized.tenant) {
+          tenantId = authorized.tenant.id;
         } else if (authorized.admin) {
-          const accountParam = url.searchParams.get("account");
-          if (accountParam) {
-            accountId = accountParam;
-          } else {
-            return new Response("Account ID required for admin search", {
+          tenantId = url.searchParams.get("tenant") || undefined;
+
+          if (!tenantId) {
+            return new Response("Tenant ID required for admin search", {
               status: 400,
             });
           }
         }
       }
 
-      // Apply rate limiting if account is present
+      // Apply rate limiting if tenant is present
       let rateLimitHeaders: Record<string, string> = {};
-      if (authorized.account) {
+      if (authorized.tenant) {
         try {
           rateLimitHeaders = await checkRateLimit(
             appContext,
-            authorized.account.id,
+            authorized.tenant.id,
             validWorldIds[0] ?? "global",
             { resourceType: "search" },
           );
@@ -85,7 +90,7 @@ export default (appContext: AppContext) => {
       const limit = url.searchParams.get("limit");
       try {
         const results = await store.search(query, {
-          accountId: accountId!,
+          tenantId: tenantId!,
           worldIds: validWorldIds.length > 0 ? validWorldIds : undefined,
           limit: limit ? parseInt(limit, 10) : undefined,
         });

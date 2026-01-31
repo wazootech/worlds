@@ -16,7 +16,7 @@ export interface PlanPolicy {
   rateLimits: Record<ResourceType, RateLimitPolicy>;
   worldLimits: {
     /**
-     * maxWorlds is the maximum number of worlds an account can have.
+     * maxWorlds is the maximum number of worlds a tenant can have.
      */
     maxWorlds: number;
     /**

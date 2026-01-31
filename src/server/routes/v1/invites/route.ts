@@ -3,6 +3,19 @@ import { ulid } from "@std/ulid";
 import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
 import { createInviteParamsSchema } from "#/server/schemas.ts";
+import {
+  invitesAdd,
+  invitesDelete,
+  invitesFind,
+  invitesGetMany,
+  invitesUpdate,
+} from "#/server/db/resources/invites/queries.sql.ts";
+import { tenantsUpdate } from "#/server/db/resources/tenants/queries.sql.ts";
+import {
+  inviteTableInsertSchema,
+  inviteTableUpdateSchema,
+} from "#/server/db/resources/invites/schema.ts";
+import { tenantTableUpdateSchema } from "#/server/db/resources/tenants/schema.ts";
 
 export default (appContext: AppContext) =>
   new Router()
@@ -10,7 +23,7 @@ export default (appContext: AppContext) =>
       "/v1/invites",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -26,13 +39,19 @@ export default (appContext: AppContext) =>
         const page = parseInt(pageString);
         const pageSize = parseInt(pageSizeString);
         const offset = (page - 1) * pageSize;
-        const { result } = await appContext.db.invites.getMany({
-          limit: pageSize,
-          offset: offset,
+
+        const result = await appContext.libsqlClient.execute({
+          sql: invitesGetMany,
+          args: [pageSize, offset],
         });
 
         return Response.json(
-          result.map(({ value, id }) => ({ ...value, code: id })),
+          result.rows.map((row) => ({
+            code: row.code,
+            createdAt: row.created_at,
+            redeemedBy: row.redeemed_by,
+            redeemedAt: row.redeemed_at,
+          })),
         );
       },
     )
@@ -40,7 +59,7 @@ export default (appContext: AppContext) =>
       "/v1/invites",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -64,35 +83,44 @@ export default (appContext: AppContext) =>
 
         const code = parseResult.data.code ?? ulid();
         const now = Date.now();
-        const invite = {
+        const invite = inviteTableInsertSchema.parse({
           code: code,
-          createdAt: now,
-          redeemedBy: null,
-          redeemedAt: null,
-        };
+          created_at: now,
+          redeemed_by: null,
+          redeemed_at: null,
+        });
 
         try {
-          const result = await appContext.db.invites.add(invite);
-          if (!result.ok) {
-            console.error("KV Add failed:", result);
-            return new Response("Failed to create invite", { status: 500 });
-          }
+          await appContext.libsqlClient.execute({
+            sql: invitesAdd,
+            args: [
+              invite.code,
+              invite.created_at,
+              invite.redeemed_by ?? null,
+              invite.redeemed_at ?? null,
+            ],
+          });
         } catch (e: unknown) {
-          console.error("KV Add threw:", e);
+          console.error("SQL Insert failed:", e);
           const message = e instanceof Error ? e.message : "Unknown error";
           return new Response("Failed to create invite: " + message, {
             status: 500,
           });
         }
 
-        return Response.json(invite, { status: 201 });
+        return Response.json({
+          code: invite.code,
+          createdAt: invite.created_at,
+          redeemedBy: invite.redeemed_by,
+          redeemedAt: invite.redeemed_at,
+        }, { status: 201 });
       },
     )
     .get(
       "/v1/invites/:code",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -107,19 +135,29 @@ export default (appContext: AppContext) =>
           return new Response("Invite code required", { status: 400 });
         }
 
-        const result = await appContext.db.invites.find(code);
-        if (!result) {
+        const result = await appContext.libsqlClient.execute({
+          sql: invitesFind,
+          args: [code],
+        });
+
+        const row = result.rows[0];
+        if (!row) {
           return new Response("Invite not found", { status: 404 });
         }
 
-        return Response.json({ ...result.value, code: code });
+        return Response.json({
+          code: row.code,
+          createdAt: row.created_at,
+          redeemedBy: row.redeemed_by,
+          redeemedAt: row.redeemed_at,
+        });
       },
     )
     .delete(
       "/v1/invites/:code",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -134,7 +172,11 @@ export default (appContext: AppContext) =>
           return new Response("Invite code required", { status: 400 });
         }
 
-        await appContext.db.invites.delete(code);
+        await appContext.libsqlClient.execute({
+          sql: invitesDelete,
+          args: [code],
+        });
+
         return new Response(null, { status: 204 });
       },
     )
@@ -142,13 +184,13 @@ export default (appContext: AppContext) =>
       "/v1/invites/:code/redeem",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.account && !authorized.admin) {
+        if (!authorized.tenant && !authorized.admin) {
           return new Response("Unauthorized", { status: 401 });
         }
 
-        // For redemption, we need an actual account (not just admin)
-        if (!authorized.account) {
-          return new Response("Account required for redemption", {
+        // For redemption, we need an actual tenant (not just admin)
+        if (!authorized.tenant) {
+          return new Response("Tenant required for redemption", {
             status: 400,
           });
         }
@@ -159,43 +201,65 @@ export default (appContext: AppContext) =>
         }
 
         // Find the invite
-        const inviteResult = await appContext.db.invites.find(code);
-        if (!inviteResult) {
+        const inviteResult = await appContext.libsqlClient.execute({
+          sql: invitesFind,
+          args: [code],
+        });
+
+        const invite = inviteResult.rows[0];
+        if (!invite) {
           return new Response("Invite not found", { status: 404 });
         }
 
         // Check if already redeemed
-        if (inviteResult.value.redeemedBy) {
+        if (invite.redeemed_by) {
           return new Response("Invite already redeemed", { status: 410 });
         }
 
         // Check if user already has a plan
-        const account = authorized.account.value;
-        if (account.plan && account.plan !== "shadow") {
-          return new Response("Account already has a plan", { status: 409 });
+        const tenant = authorized.tenant.value;
+        if (tenant.plan && tenant.plan !== "shadow") {
+          return new Response("Tenant already has a plan", { status: 409 });
         }
 
         const now = Date.now();
 
-        // Update the invite
-        const inviteUpdateResult = await appContext.db.invites.update(code, {
-          redeemedBy: authorized.account.id,
-          redeemedAt: now,
-        });
-        if (!inviteUpdateResult.ok) {
-          return new Response("Failed to redeem invite", { status: 500 });
-        }
+        try {
+          // Update the invite
+          const inviteUpdate = inviteTableUpdateSchema.parse({
+            redeemed_by: authorized.tenant.id,
+            redeemed_at: now,
+          });
+          await appContext.libsqlClient.execute({
+            sql: invitesUpdate,
+            args: [
+              inviteUpdate.redeemed_by ?? null,
+              inviteUpdate.redeemed_at ?? null,
+              code,
+            ],
+          });
 
-        // Update the account's plan to "free"
-        const accountUpdateResult = await appContext.db.accounts.update(
-          authorized.account.id,
-          {
+          // Update the tenant's plan to "free"
+          const tenantUpdate = tenantTableUpdateSchema.parse({
+            description: tenant.description ?? null,
             plan: "free",
-            updatedAt: now,
-          },
-        );
-        if (!accountUpdateResult.ok) {
-          return new Response("Failed to update account plan", { status: 500 });
+            updated_at: now,
+          });
+          await appContext.libsqlClient.execute({
+            sql: tenantsUpdate,
+            args: [
+              tenantUpdate.description ?? null,
+              tenantUpdate.plan ?? null,
+              tenantUpdate.updated_at ?? now,
+              authorized.tenant.id,
+            ],
+          });
+        } catch (e: unknown) {
+          console.error("Redemption failed:", e);
+          const message = e instanceof Error ? e.message : "Unknown error";
+          return new Response("Failed to redeem invite: " + message, {
+            status: 500,
+          });
         }
 
         return Response.json({

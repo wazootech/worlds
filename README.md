@@ -7,8 +7,8 @@
 
 **Worlds API™** is a REST API designed to manage, query, update, and reason over
 [SPARQL 1.1](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge
-bases at the edge. It places malleable knowledge within arm's reach of your AI
-agent.
+bases at the edge. It places a malleable **context graph** within arm's reach of
+your AI agent.
 
 ## Design
 

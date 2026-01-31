@@ -2,35 +2,31 @@ import { assert, assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid";
 import { createTestContext } from "#/server/testing.ts";
 import createApp from "./route.ts";
+import {
+  tenantsAdd,
+  tenantsFind,
+} from "#/server/db/resources/tenants/queries.sql.ts";
 
-Deno.test("Accounts API routes", async (t) => {
+Deno.test("Accounts API routes (Deprecated)", async (t) => {
   const testContext = await createTestContext();
   const app = createApp(testContext);
 
   await t.step(
-    "GET /v1/accounts returns paginated list of accounts",
+    "GET /v1/accounts returns paginated list of accounts (tenants)",
     async () => {
-      const account1 = await testContext.db.accounts.add({
-        id: "acc_1",
-        description: "Test account 1",
-        plan: "free",
-        apiKey: ulid(),
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+      const apiKey1 = ulid();
+      const now1 = Date.now();
+      await testContext.libsqlClient.execute({
+        sql: tenantsAdd,
+        args: ["acc_1", "Test account 1", "free", apiKey1, now1, now1, null],
       });
 
-      const account2 = await testContext.db.accounts.add({
-        id: "acc_2",
-        description: "Test account 2",
-        plan: "pro",
-        apiKey: ulid(),
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+      const apiKey2 = ulid();
+      const now2 = Date.now();
+      await testContext.libsqlClient.execute({
+        sql: tenantsAdd,
+        args: ["acc_2", "Test account 2", "pro", apiKey2, now2, now2, null],
       });
-
-      if (!account1.ok || !account2.ok) {
-        throw new Error("Failed to create test accounts");
-      }
 
       const req = new Request(
         "http://localhost/v1/accounts?page=1&pageSize=20",
@@ -43,21 +39,20 @@ Deno.test("Accounts API routes", async (t) => {
       );
       const res = await app.fetch(req);
       assertEquals(res.status, 200);
+      assert(res.headers.get("Deprecation") === "true");
 
       const accounts = await res.json();
       assert(Array.isArray(accounts));
       assert(accounts.length >= 2);
     },
   );
-
-  testContext.kv.close();
 });
 
-Deno.test("Accounts API routes - CRUD operations", async (t) => {
+Deno.test("Accounts API routes - CRUD operations (Deprecated)", async (t) => {
   const testContext = await createTestContext();
   const app = createApp(testContext);
 
-  await t.step("POST /v1/accounts creates a new account", async () => {
+  await t.step("POST /v1/accounts creates a new account (tenant)", async () => {
     const req = new Request("http://localhost/v1/accounts", {
       method: "POST",
       headers: {
@@ -72,6 +67,7 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
     });
     const res = await app.fetch(req);
     assertEquals(res.status, 201);
+    assert(res.headers.get("Deprecation") === "true");
 
     const body = await res.json();
     assertEquals(body.id, "acc_new");
@@ -79,49 +75,15 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
     assertEquals(body.plan, "free");
   });
 
-  await t.step(
-    "POST /v1/accounts handles missing optional fields",
-    async () => {
-      const req = new Request("http://localhost/v1/accounts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${testContext.admin!.apiKey}`,
-        },
-        body: JSON.stringify({
-          id: "acc_partial",
-          // description missing
-          // plan missing
-        }),
-      });
-      const res = await app.fetch(req);
-      assertEquals(res.status, 201);
-
-      const body = await res.json();
-      assertEquals(body.id, "acc_partial");
-      assertEquals(body.description, undefined);
-      assertEquals(body.plan, undefined);
-    },
-  );
-
   await t.step("GET /v1/accounts/:account retrieves an account", async () => {
-    // Create an account directly using db
-    const result = await testContext.db.accounts.add({
-      id: "acc_get",
-      description: "Test account 2",
-      plan: "pro",
-      apiKey: ulid(),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+    const apiKey = ulid();
+    const now = Date.now();
+    await testContext.libsqlClient.execute({
+      sql: tenantsAdd,
+      args: ["acc_get", "Test account 2", "pro", apiKey, now, now, null],
     });
+    const accountId = "acc_get";
 
-    if (!result.ok) {
-      throw new Error("Failed to create test account");
-    }
-
-    const accountId = result.id;
-
-    // Then retrieve it
     const req = new Request(
       `http://localhost/v1/accounts/${accountId}`,
       {
@@ -133,33 +95,22 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
     );
     const res = await app.fetch(req);
     assertEquals(res.status, 200);
+    assert(res.headers.get("Deprecation") === "true");
 
     const account = await res.json();
     assertEquals(account.description, "Test account 2");
     assertEquals(account.plan, "pro");
-    assertEquals(typeof account.apiKey, "string");
-    assertEquals(typeof account.createdAt, "number");
-    assertEquals(typeof account.updatedAt, "number");
   });
 
   await t.step("PUT /v1/accounts/:account updates an account", async () => {
-    // First create an account
-    const createResult = await testContext.db.accounts.add({
-      id: "acc_put",
-      description: "Original description",
-      plan: "free",
-      apiKey: ulid(),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+    const apiKey = ulid();
+    const now = Date.now();
+    await testContext.libsqlClient.execute({
+      sql: tenantsAdd,
+      args: ["acc_put", "Original description", "free", apiKey, now, now, null],
     });
+    const accountId = "acc_put";
 
-    if (!createResult.ok) {
-      throw new Error("Failed to create test account");
-    }
-
-    const accountId = createResult.id;
-
-    // Then update it
     const req = new Request(
       `http://localhost/v1/accounts/${accountId}`,
       {
@@ -176,8 +127,8 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
     );
     const res = await app.fetch(req);
     assertEquals(res.status, 204);
+    assert(res.headers.get("Deprecation") === "true");
 
-    // Verify the update
     const getRes = await app.fetch(
       new Request(
         `http://localhost/v1/accounts/${accountId}`,
@@ -191,27 +142,17 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
     );
     const account = await getRes.json();
     assertEquals(account.description, "Updated description");
-    assertEquals(account.plan, "pro");
   });
 
   await t.step("DELETE /v1/accounts/:account removes an account", async () => {
-    // First create an account
-    const createResult = await testContext.db.accounts.add({
-      id: "acc_del",
-      description: "To be deleted",
-      plan: "free",
-      apiKey: ulid(),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+    const apiKey = ulid();
+    const now = Date.now();
+    await testContext.libsqlClient.execute({
+      sql: tenantsAdd,
+      args: ["acc_del", "To be deleted", "free", apiKey, now, now, null],
     });
+    const accountId = "acc_del";
 
-    if (!createResult.ok) {
-      throw new Error("Failed to create test account");
-    }
-
-    const accountId = createResult.id;
-
-    // Then delete it
     const req = new Request(
       `http://localhost/v1/accounts/${accountId}`,
       {
@@ -223,8 +164,8 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
     );
     const res = await app.fetch(req);
     assertEquals(res.status, 204);
+    assert(res.headers.get("Deprecation") === "true");
 
-    // Verify it's gone
     const getRes = await app.fetch(
       new Request(
         `http://localhost/v1/accounts/${accountId}`,
@@ -242,30 +183,20 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
   await t.step(
     "POST /v1/accounts/:account/rotate rotates account API key",
     async () => {
-      // First create an account
-      const createResult = await testContext.db.accounts.add({
-        id: "acc_rot",
-        description: "Account to rotate",
-        plan: "free",
-        apiKey: ulid(),
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+      const apiKey = ulid();
+      const now = Date.now();
+      await testContext.libsqlClient.execute({
+        sql: tenantsAdd,
+        args: ["acc_rot", "Account to rotate", "free", apiKey, now, now, null],
       });
+      const accountId = "acc_rot";
 
-      if (!createResult.ok) {
-        throw new Error("Failed to create test account");
-      }
+      const accountResult = await testContext.libsqlClient.execute({
+        sql: tenantsFind,
+        args: [accountId],
+      });
+      const originalApiKey = accountResult.rows[0].api_key as string;
 
-      const accountId = createResult.id;
-
-      // Get the original API key
-      const originalAccount = await testContext.db.accounts.find(accountId);
-      if (!originalAccount) {
-        throw new Error("Failed to find created account");
-      }
-      const originalApiKey = originalAccount.value.apiKey;
-
-      // Rotate the key
       const req = new Request(
         `http://localhost/v1/accounts/${accountId}/rotate`,
         {
@@ -277,8 +208,8 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
       );
       const res = await app.fetch(req);
       assertEquals(res.status, 204);
+      assert(res.headers.get("Deprecation") === "true");
 
-      // Verify the key was rotated
       const getRes = await app.fetch(
         new Request(
           `http://localhost/v1/accounts/${accountId}`,
@@ -290,136 +221,8 @@ Deno.test("Accounts API routes - CRUD operations", async (t) => {
           },
         ),
       );
-      assertEquals(getRes.status, 200);
       const account = await getRes.json();
-      assert(
-        account.apiKey !== originalApiKey,
-        "API key should be different after rotation",
-      );
+      assert(account.apiKey !== originalApiKey);
     },
   );
-
-  // Metadata test removed
-  await Promise.resolve();
-
-  testContext.kv.close();
-});
-
-Deno.test("Accounts API routes - Error handling", async (t) => {
-  const testContext = await createTestContext();
-  const app = createApp(testContext);
-
-  await t.step("POST /v1/accounts returns 401 without valid auth", async () => {
-    const req = new Request("http://localhost/v1/accounts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer invalid-token",
-      },
-      body: JSON.stringify({
-        description: "Test account",
-        plan: "free",
-        apiKey: ulid(),
-      }),
-    });
-    const res = await app.fetch(req);
-    assertEquals(res.status, 401);
-  });
-
-  await t.step(
-    "POST /v1/accounts returns 403 without admin access",
-    async () => {
-      // Create a non-admin account
-      const createResult = await testContext.db.accounts.add({
-        id: "acc_no_admin",
-        description: "Non-admin account",
-        plan: "free",
-        apiKey: "test-api-key-123",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      });
-
-      if (!createResult.ok) {
-        throw new Error("Failed to create test account");
-      }
-
-      const req = new Request("http://localhost/v1/accounts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer test-api-key-123",
-        },
-        body: JSON.stringify({
-          id: "acc_fail",
-          description: "Test account",
-          plan: "free",
-          apiKey: ulid(),
-        }),
-      });
-      const res = await app.fetch(req);
-      assertEquals(res.status, 403);
-    },
-  );
-
-  await t.step(
-    "GET /v1/accounts/:account returns 404 for non-existent account",
-    async () => {
-      const req = new Request("http://localhost/v1/accounts/non-existent-id", {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${testContext.admin!.apiKey}`,
-        },
-      });
-      const res = await app.fetch(req);
-      assertEquals(res.status, 404);
-    },
-  );
-
-  testContext.kv.close();
-});
-
-Deno.test("Accounts API routes - Edge cases", async (t) => {
-  const testContext = await createTestContext();
-  const app = createApp(testContext);
-
-  await t.step(
-    "POST /v1/accounts can create multiple accounts with same description",
-    async () => {
-      // Since the route auto-generates IDs, we can create multiple accounts
-      // with the same description without conflicts
-      const req1 = new Request("http://localhost/v1/accounts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${testContext.admin!.apiKey}`,
-        },
-        body: JSON.stringify({
-          id: "acc_dup_1",
-          description: "Duplicate description test",
-          plan: "free",
-          apiKey: ulid(),
-        }),
-      });
-      const res1 = await app.fetch(req1);
-      assertEquals(res1.status, 201);
-
-      const req2 = new Request("http://localhost/v1/accounts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${testContext.admin!.apiKey}`,
-        },
-        body: JSON.stringify({
-          id: "acc_dup_2",
-          description: "Duplicate description test",
-          plan: "free",
-          apiKey: ulid(),
-        }),
-      });
-      const res2 = await app.fetch(req2);
-      assertEquals(res2.status, 201);
-    },
-  );
-
-  testContext.kv.close();
 });

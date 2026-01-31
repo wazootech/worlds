@@ -26,11 +26,12 @@ export class Worlds {
   public async list(
     page = 1,
     pageSize = 20,
-    options?: { accountId?: string },
+    options?: { tenantId?: string },
   ): Promise<WorldRecord[]> {
     const url = new URL(`${this.options.baseUrl}/v1/worlds`);
-    if (options?.accountId) {
-      url.searchParams.set("account", options.accountId);
+    const tenantId = options?.tenantId;
+    if (tenantId) {
+      url.searchParams.set("tenant", tenantId);
     }
 
     url.searchParams.set("page", page.toString());
@@ -54,11 +55,12 @@ export class Worlds {
    */
   public async get(
     worldId: string,
-    options?: { accountId?: string },
+    options?: { tenantId?: string },
   ): Promise<WorldRecord | null> {
     const url = new URL(`${this.options.baseUrl}/v1/worlds/${worldId}`);
-    if (options?.accountId) {
-      url.searchParams.set("account", options.accountId);
+    const tenantId = options?.tenantId;
+    if (tenantId) {
+      url.searchParams.set("tenant", tenantId);
     }
 
     const response = await this.fetch(
@@ -87,11 +89,12 @@ export class Worlds {
    */
   public async create(
     data: CreateWorldParams,
-    options?: { accountId?: string },
+    options?: { tenantId?: string },
   ): Promise<WorldRecord> {
     const url = new URL(`${this.options.baseUrl}/v1/worlds`);
-    if (options?.accountId) {
-      url.searchParams.set("account", options.accountId);
+    const tenantId = options?.tenantId;
+    if (tenantId) {
+      url.searchParams.set("tenant", tenantId);
     }
 
     const response = await this.fetch(
@@ -120,11 +123,12 @@ export class Worlds {
   public async update(
     worldId: string,
     data: UpdateWorldParams,
-    options?: { accountId?: string },
+    options?: { tenantId?: string },
   ): Promise<void> {
     const url = new URL(`${this.options.baseUrl}/v1/worlds/${worldId}`);
-    if (options?.accountId) {
-      url.searchParams.set("account", options.accountId);
+    const tenantId = options?.tenantId;
+    if (tenantId) {
+      url.searchParams.set("tenant", tenantId);
     }
 
     const response = await this.fetch(
@@ -150,11 +154,12 @@ export class Worlds {
    */
   public async delete(
     worldId: string,
-    options?: { accountId?: string },
+    options?: { tenantId?: string },
   ): Promise<void> {
     const url = new URL(`${this.options.baseUrl}/v1/worlds/${worldId}`);
-    if (options?.accountId) {
-      url.searchParams.set("account", options.accountId);
+    const tenantId = options?.tenantId;
+    if (tenantId) {
+      url.searchParams.set("tenant", tenantId);
     }
 
     const response = await this.fetch(
@@ -182,13 +187,14 @@ export class Worlds {
   public async sparql(
     worldId: string,
     query: string,
-    options?: { accountId?: string },
+    options?: { tenantId?: string },
   ): Promise<SparqlResult | null> {
     const url = new URL(
       `${this.options.baseUrl}/v1/worlds/${worldId}/sparql`,
     );
-    if (options?.accountId) {
-      url.searchParams.set("account", options.accountId);
+    const tenantId = options?.tenantId;
+    if (tenantId) {
+      url.searchParams.set("tenant", tenantId);
     }
 
     const response = await this.fetch(
@@ -244,12 +250,13 @@ export class Worlds {
     options?: {
       worldIds?: string[];
       limit?: number;
-      accountId?: string;
+      tenantId?: string;
     },
   ): Promise<WorldsSearchResult[]> {
     const url = new URL(`${this.options.baseUrl}/v1/search`);
-    if (options?.accountId) {
-      url.searchParams.set("account", options.accountId);
+    const tenantId = options?.tenantId;
+    if (tenantId) {
+      url.searchParams.set("tenant", tenantId);
     }
 
     url.searchParams.set("q", query);
@@ -286,13 +293,14 @@ export class Worlds {
    */
   public async download(
     worldId: string,
-    options?: { format?: RdfFormat; accountId?: string },
+    options?: { format?: RdfFormat; tenantId?: string },
   ): Promise<ArrayBuffer> {
     const url = new URL(
       `${this.options.baseUrl}/v1/worlds/${worldId}/download`,
     );
-    if (options?.accountId) {
-      url.searchParams.set("account", options.accountId);
+    const tenantId = options?.tenantId;
+    if (tenantId) {
+      url.searchParams.set("tenant", tenantId);
     }
     if (options?.format) {
       url.searchParams.set("format", options.format);

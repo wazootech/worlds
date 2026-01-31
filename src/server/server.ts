@@ -2,11 +2,11 @@ import { Router } from "@fartlabs/rt";
 import { createClient } from "@libsql/client";
 import { GoogleGenAI } from "@google/genai";
 import type { AppContext } from "./app-context.ts";
-import { createWorldsKvdex } from "./db/kvdex.ts";
 import { GeminiEmbeddings } from "./embeddings/gemini.ts";
+import { initializeDatabase } from "./db/init.ts";
 
 const routes = [
-  "routes/v1/accounts/route.ts",
+  "routes/v1/tenants/route.ts",
   "routes/v1/invites/route.ts",
   "routes/v1/worlds/route.ts",
   "routes/v1/worlds/sparql/route.ts",
@@ -30,7 +30,6 @@ export async function createServer(appContext: AppContext): Promise<Router> {
  * AppContextConfig is the configuration for an app context.
  */
 export interface AppContextConfig {
-  DENO_KV_PATH?: string;
   LIBSQL_URL?: string;
   LIBSQL_AUTH_TOKEN?: string;
   GOOGLE_API_KEY?: string;
@@ -44,8 +43,6 @@ export interface AppContextConfig {
 export async function createAppContext(
   config: AppContextConfig,
 ): Promise<AppContext> {
-  const kv = await Deno.openKv(config.DENO_KV_PATH);
-  const db = createWorldsKvdex(kv);
   if (!config.LIBSQL_URL) {
     console.warn("LIBSQL_URL is not set, using in-memory database");
   }
@@ -54,6 +51,9 @@ export async function createAppContext(
     url: config.LIBSQL_URL ?? ":memory:",
     authToken: config.LIBSQL_AUTH_TOKEN,
   });
+
+  // Initialize database tables
+  await initializeDatabase(libsqlClient);
 
   // TODO: Implement different embedding models.
 
@@ -70,8 +70,6 @@ export async function createAppContext(
   });
 
   return {
-    kv,
-    db,
     embeddings,
     libsqlClient,
     admin: {

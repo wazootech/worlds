@@ -1,44 +1,38 @@
 import { assertEquals } from "@std/assert";
-import { createWorldsKvdex } from "#/server/db/kvdex.ts";
 import { DataFactory } from "n3";
 import route from "./route.ts";
 import { createClient } from "@libsql/client";
 import { LibsqlSearchStoreManager } from "#/server/search/libsql.ts";
+import { initializeDatabase } from "#/server/db/init.ts";
+import { insertWorld } from "#/server/db/resources/worlds/queries.sql.ts";
+import { createTestTenant } from "#/server/testing.ts";
 
 Deno.test("Search API - Top-Level Route", async (t) => {
-  const kv = await Deno.openKv(":memory:");
-  const db = createWorldsKvdex(kv);
-
   const client = createClient({ url: ":memory:" });
+  await initializeDatabase(client);
+
   const embedder = {
-    embed: (_: string) => Promise.resolve(new Array(768).fill(0)),
-    dimensions: 768,
+    embed: (_: string) => Promise.resolve(new Array(1536).fill(0)),
+    dimensions: 1536,
   };
-  const appContext = { db, kv, libsqlClient: client, embeddings: embedder };
+  const appContext = { libsqlClient: client, embeddings: embedder };
   const adminHandler = route({ ...appContext, admin: { apiKey: "admin-key" } });
 
-  const accountId = "test-account";
+  const { id: tenantId } = await createTestTenant(client);
 
   // Create two worlds
-  const world1Result = await db.worlds.add({
-    accountId,
-    label: "World 1",
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  });
-  const world2Result = await db.worlds.add({
-    accountId,
-    label: "World 2",
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  });
+  const worldId1 = crypto.randomUUID();
+  const worldId2 = crypto.randomUUID();
+  const now = Date.now();
 
-  if (!world1Result.ok || !world2Result.ok) {
-    throw new Error("Failed to add worlds");
-  }
-
-  const worldId1 = world1Result.id;
-  const worldId2 = world2Result.id;
+  await client.execute({
+    sql: insertWorld,
+    args: [worldId1, tenantId, "World 1", null, null, now, now, null, 0],
+  });
+  await client.execute({
+    sql: insertWorld,
+    args: [worldId2, tenantId, "World 2", null, null, now, now, null, 0],
+  });
 
   // Sync to search store using LibsqlSearchStore
   const searchStore = new LibsqlSearchStoreManager({
@@ -58,11 +52,11 @@ Deno.test("Search API - Top-Level Route", async (t) => {
     DataFactory.literal("Hello Mars"),
   );
 
-  await searchStore.patch(accountId, worldId1, [{
+  await searchStore.patch(tenantId, worldId1, [{
     deletions: [],
     insertions: [testQuad1],
   }]);
-  await searchStore.patch(accountId, worldId2, [{
+  await searchStore.patch(tenantId, worldId2, [{
     deletions: [],
     insertions: [testQuad2],
   }]);
@@ -78,7 +72,7 @@ Deno.test("Search API - Top-Level Route", async (t) => {
 
   await t.step("GET /v1/search across all worlds of account", async () => {
     const resp = await adminHandler.fetch(
-      new Request(`http://localhost/v1/search?q=Hello&account=${accountId}`, {
+      new Request(`http://localhost/v1/search?q=Hello&tenant=${tenantId}`, {
         headers: { "Authorization": "Bearer admin-key" },
       }),
     );
@@ -91,7 +85,7 @@ Deno.test("Search API - Top-Level Route", async (t) => {
   await t.step("GET /v1/search filtered by specific worlds", async () => {
     const resp = await adminHandler.fetch(
       new Request(
-        `http://localhost/v1/search?q=Hello&worlds=${worldId1}&account=${accountId}`,
+        `http://localhost/v1/search?q=Hello&worlds=${worldId1}&tenant=${tenantId}`,
         {
           headers: { "Authorization": "Bearer admin-key" },
         },
@@ -106,7 +100,7 @@ Deno.test("Search API - Top-Level Route", async (t) => {
   await t.step("GET /v1/search validates world access", async () => {
     const resp = await adminHandler.fetch(
       new Request(
-        `http://localhost/v1/search?q=Hello&worlds=other-world&account=${accountId}`,
+        `http://localhost/v1/search?q=Hello&worlds=other-world&tenant=${tenantId}`,
         {
           headers: { "Authorization": "Bearer admin-key" },
         },
@@ -114,6 +108,4 @@ Deno.test("Search API - Top-Level Route", async (t) => {
     );
     assertEquals(resp.status, 404); // "No valid worlds found"
   });
-
-  kv.close();
 });

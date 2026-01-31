@@ -1,10 +1,10 @@
 import { assert, assertEquals } from "@std/assert";
 import { createServer } from "#/server/server.ts";
-import { createTestAccount, createTestContext } from "#/server/testing.ts";
+import { createTestContext, createTestTenant } from "#/server/testing.ts";
 import type { SparqlSelectResults } from "#/sdk/types.ts";
 import { InternalWorldsSdk } from "./sdk.ts";
 
-Deno.test("InternalWorldsSdk - Accounts", async (t) => {
+Deno.test("InternalWorldsSdk - Tenants", async (t) => {
   const appContext = await createTestContext();
   const server = await createServer(appContext);
   const sdk = new InternalWorldsSdk({
@@ -13,86 +13,83 @@ Deno.test("InternalWorldsSdk - Accounts", async (t) => {
     fetch: (url, init) => server.fetch(new Request(url, init)),
   });
 
-  await t.step("create account", async () => {
-    const account = await sdk.accounts.create({
-      id: "acc_sdk_test",
-      description: "SDK Test Account",
+  await t.step("create tenant", async () => {
+    const tenant = await sdk.tenants.create({
+      id: "ten_sdk_test",
+      description: "SDK Test Tenant",
       plan: "free",
     });
-    assertEquals(account.id, "acc_sdk_test");
-    assertEquals(account.description, "SDK Test Account");
-    assertEquals(account.plan, "free");
+    assertEquals(tenant.id, "ten_sdk_test");
+    assertEquals(tenant.description, "SDK Test Tenant");
+    assertEquals(tenant.plan, "free");
   });
 
-  await t.step("get account", async () => {
-    const account = await sdk.accounts.get("acc_sdk_test");
-    assert(account !== null);
-    assertEquals(account.id, "acc_sdk_test");
-    assertEquals(account.description, "SDK Test Account");
+  await t.step("get tenant", async () => {
+    const tenant = await sdk.tenants.get("ten_sdk_test");
+    assert(tenant !== null);
+    assertEquals(tenant.id, "ten_sdk_test");
+    assertEquals(tenant.description, "SDK Test Tenant");
 
-    const nonExistent = await sdk.accounts.get("non_existent");
+    const nonExistent = await sdk.tenants.get("non_existent");
     assertEquals(nonExistent, null);
   });
 
-  await t.step("list accounts pagination", async () => {
-    // Create more accounts for pagination
-    await sdk.accounts.create({ id: "acc_page_1" });
-    await sdk.accounts.create({ id: "acc_page_2" });
+  await t.step("list tenants pagination", async () => {
+    // Create more tenants for pagination
+    await sdk.tenants.create({ id: "ten_page_1" });
+    await sdk.tenants.create({ id: "ten_page_2" });
 
-    const page1 = await sdk.accounts.list(1, 1);
+    const page1 = await sdk.tenants.list(1, 1);
     assertEquals(page1.length, 1);
 
-    const page2 = await sdk.accounts.list(2, 1);
+    const page2 = await sdk.tenants.list(2, 1);
     assertEquals(page2.length, 1);
     assert(page1[0].id !== page2[0].id);
 
     // Clean up
-    await sdk.accounts.delete("acc_page_1");
-    await sdk.accounts.delete("acc_page_2");
+    await sdk.tenants.delete("ten_page_1");
+    await sdk.tenants.delete("ten_page_2");
   });
 
-  await t.step("list accounts", async () => {
-    const accounts = await sdk.accounts.list();
-    assert(accounts.length >= 1);
-    const found = accounts.find((a) => a.id === "acc_sdk_test");
+  await t.step("list tenants", async () => {
+    const tenants = await sdk.tenants.list();
+    assert(tenants.length >= 1);
+    const found = tenants.find((a) => a.id === "ten_sdk_test");
     assert(found !== undefined);
   });
 
-  await t.step("update account", async () => {
-    await sdk.accounts.update("acc_sdk_test", {
-      description: "Updated SDK Account",
+  await t.step("update tenant", async () => {
+    await sdk.tenants.update("ten_sdk_test", {
+      description: "Updated SDK Tenant",
     });
-    const account = await sdk.accounts.get("acc_sdk_test");
-    assert(account !== null);
-    assertEquals(account.description, "Updated SDK Account");
+    const tenant = await sdk.tenants.get("ten_sdk_test");
+    assert(tenant !== null);
+    assertEquals(tenant.description, "Updated SDK Tenant");
   });
 
-  await t.step("rotate account key", async () => {
-    const original = await sdk.accounts.get("acc_sdk_test");
-    await sdk.accounts.rotate("acc_sdk_test");
-    const rotated = await sdk.accounts.get("acc_sdk_test");
+  await t.step("rotate tenant key", async () => {
+    const original = await sdk.tenants.get("ten_sdk_test");
+    await sdk.tenants.rotate("ten_sdk_test");
+    const rotated = await sdk.tenants.get("ten_sdk_test");
     assert(original && rotated);
     assert(original.apiKey !== rotated.apiKey);
   });
 
-  await t.step("delete account", async () => {
-    await sdk.accounts.delete("acc_sdk_test");
-    const account = await sdk.accounts.get("acc_sdk_test");
-    assertEquals(account, null);
+  await t.step("delete tenant", async () => {
+    await sdk.tenants.delete("ten_sdk_test");
+    const tenant = await sdk.tenants.get("ten_sdk_test");
+    assertEquals(tenant, null);
   });
-
-  appContext.kv.close();
 });
 
 Deno.test("InternalWorldsSdk - Worlds", async (t) => {
   const appContext = await createTestContext();
   const server = await createServer(appContext);
 
-  // We need a test account to create worlds
-  // We need a test account to create worlds
-  const { apiKey } = await createTestAccount(appContext.db);
+  // We need a test tenant to create worlds
+  const { apiKey } = await createTestTenant(appContext.libsqlClient);
 
-  // Use the account's API key for world operations
+  // Use the tenant's API key for world operations
   const sdk = new InternalWorldsSdk({
     baseUrl: "http://localhost",
     apiKey: apiKey,
@@ -105,7 +102,6 @@ Deno.test("InternalWorldsSdk - Worlds", async (t) => {
     const world = await sdk.worlds.create({
       label: "SDK World",
       description: "Test World",
-      isPublic: false,
     });
     assert(world.id !== undefined);
     assertEquals(world.label, "SDK World");
@@ -205,11 +201,9 @@ Deno.test("InternalWorldsSdk - Worlds", async (t) => {
     const world = await sdk.worlds.get(worldId);
     assertEquals(world, null);
   });
-
-  appContext.kv.close();
 });
 
-Deno.test("InternalWorldsSdk - Admin Account Override", async (t) => {
+Deno.test("InternalWorldsSdk - Admin Tenant Override", async (t) => {
   const appContext = await createTestContext();
   const server = await createServer(appContext);
 
@@ -220,193 +214,218 @@ Deno.test("InternalWorldsSdk - Admin Account Override", async (t) => {
     fetch: (url, init) => server.fetch(new Request(url, init)),
   });
 
-  // Create two test accounts
-  const accountA = await createTestAccount(appContext.db);
-  const accountB = await createTestAccount(appContext.db);
+  // Create two test tenants
+  const tenantA = await createTestTenant(appContext.libsqlClient);
+  const tenantB = await createTestTenant(appContext.libsqlClient);
 
-  await t.step("admin can list worlds for specific account", async () => {
-    // Create worlds for both accounts directly in DB
-    await appContext.db.worlds.add({
-      accountId: accountA.id,
-      label: "Account A World",
-      description: "Test",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+  await t.step("admin can list worlds for specific tenant", async () => {
+    // Create worlds for both tenants directly in DB
+    const worldId1 = crypto.randomUUID();
+    const now1 = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, tenant_id, label, description, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        worldId1,
+        tenantA.id,
+        "Tenant A World",
+        "Test",
+        now1,
+        now1,
+        null,
+      ],
     });
 
-    await appContext.db.worlds.add({
-      accountId: accountB.id,
-      label: "Account B World",
-      description: "Test",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+    const worldId2 = crypto.randomUUID();
+    const now2 = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, tenant_id, label, description, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        worldId2,
+        tenantB.id,
+        "Tenant B World",
+        "Test",
+        now2,
+        now2,
+        null,
+      ],
     });
 
-    // List worlds for Account A using admin override
+    // List worlds for Tenant A using admin override
     const worldsA = await adminSdk.worlds.list(1, 20, {
-      accountId: accountA.id,
+      tenantId: tenantA.id,
     });
     assertEquals(worldsA.length, 1);
-    assertEquals(worldsA[0].label, "Account A World");
-    assertEquals(worldsA[0].accountId, accountA.id);
+    assertEquals(worldsA[0].label, "Tenant A World");
+    assertEquals(worldsA[0].tenantId, tenantA.id);
 
-    // List worlds for Account B using admin override
+    // List worlds for Tenant B using admin override
     const worldsB = await adminSdk.worlds.list(1, 20, {
-      accountId: accountB.id,
+      tenantId: tenantB.id,
     });
     assertEquals(worldsB.length, 1);
-    assertEquals(worldsB[0].label, "Account B World");
-    assertEquals(worldsB[0].accountId, accountB.id);
+    assertEquals(worldsB[0].label, "Tenant B World");
+    assertEquals(worldsB[0].tenantId, tenantB.id);
   });
 
-  await t.step("admin can create world for specific account", async () => {
+  await t.step("admin can create world for specific tenant", async () => {
     const world = await adminSdk.worlds.create({
       label: "Admin Created World",
       description: "Created via admin override",
-      isPublic: false,
-    }, { accountId: accountB.id }); // This accountId takes precedence
+    }, { tenantId: tenantB.id }); // This tenantId takes precedence
 
-    assertEquals(world.accountId, accountB.id);
+    assertEquals(world.tenantId, tenantB.id);
     assertEquals(world.label, "Admin Created World");
 
     // Verify in database
-    const dbWorld = await appContext.db.worlds.find(world.id);
+    const dbWorldResult = await appContext.libsqlClient.execute({
+      sql: "SELECT * FROM worlds WHERE id = ?",
+      args: [world.id],
+    });
+    const dbWorld = dbWorldResult.rows[0];
     assert(dbWorld);
-    assertEquals(dbWorld.value.accountId, accountB.id);
+    assertEquals(dbWorld.tenant_id, tenantB.id);
   });
 
-  await t.step("admin can get world for specific account", async () => {
-    // Create a world for Account A
-    const result = await appContext.db.worlds.add({
-      accountId: accountA.id,
-      label: "Test World",
-      description: "Test",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+  await t.step("admin can get world for specific tenant", async () => {
+    // Create a world for Tenant A
+    const worldId = crypto.randomUUID();
+    const now = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, tenant_id, label, description, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [worldId, tenantA.id, "Test World", "Test", now, now, null],
     });
-    assert(result.ok);
 
     // Get world using admin override
-    const world = await adminSdk.worlds.get(result.id, {
-      accountId: accountA.id,
+    const world = await adminSdk.worlds.get(worldId, {
+      tenantId: tenantA.id,
     });
     assert(world !== null);
-    assertEquals(world.accountId, accountA.id);
+    assertEquals(world.tenantId, tenantA.id);
   });
 
-  await t.step("admin can update world for specific account", async () => {
-    // Create a world for Account A
-    const result = await appContext.db.worlds.add({
-      accountId: accountA.id,
-      label: "Original Name",
-      description: "Original",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+  await t.step("admin can update world for specific tenant", async () => {
+    // Create a world for Tenant A
+    const worldId2 = crypto.randomUUID();
+    const now3 = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, tenant_id, label, description, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        worldId2,
+        tenantA.id,
+        "Original Name",
+        "Original",
+        now3,
+        now3,
+        null,
+      ],
     });
-    assert(result.ok);
 
     // Update using admin override
-    await adminSdk.worlds.update(result.id, {
+    await adminSdk.worlds.update(worldId2, {
       description: "Updated via admin",
-    }, { accountId: accountA.id });
+    }, { tenantId: tenantA.id });
 
     // Verify update
-    const world = await adminSdk.worlds.get(result.id, {
-      accountId: accountA.id,
+    const world = await adminSdk.worlds.get(worldId2, {
+      tenantId: tenantA.id,
     });
     assert(world !== null);
     assertEquals(world.description, "Updated via admin");
   });
 
-  await t.step("admin can delete world for specific account", async () => {
-    // Create a world for Account B
-    const result = await appContext.db.worlds.add({
-      accountId: accountB.id,
-      label: "To Delete",
-      description: "Test",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+  await t.step("admin can delete world for specific tenant", async () => {
+    // Create a world for Tenant B
+    const worldId3 = crypto.randomUUID();
+    const now4 = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, tenant_id, label, description, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [worldId3, tenantB.id, "To Delete", "Test", now4, now4, null],
     });
-    assert(result.ok);
 
     // Delete using admin override
-    await adminSdk.worlds.delete(result.id, { accountId: accountB.id });
+    await adminSdk.worlds.delete(worldId3, { tenantId: tenantB.id });
 
     // Verify deletion
-    const world = await appContext.db.worlds.find(result.id);
-    assertEquals(world, null);
+    const worldResult = await appContext.libsqlClient.execute({
+      sql: "SELECT * FROM worlds WHERE id = ?",
+      args: [worldId3],
+    });
+    assertEquals(worldResult.rows.length, 0);
   });
 
   await t.step(
-    "admin SPARQL operations claim usage for specific account",
+    "admin SPARQL operations claim usage for specific tenant",
     async () => {
-      // Create a world for Account A
-      const result = await appContext.db.worlds.add({
-        accountId: accountA.id,
-        label: "SPARQL Test World",
-        description: "Test",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-
-        isPublic: false,
+      // Create a world for Tenant A
+      const worldId4 = crypto.randomUUID();
+      const now5 = Date.now();
+      await appContext.libsqlClient.execute({
+        sql:
+          "INSERT INTO worlds (id, tenant_id, label, description, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        args: [
+          worldId4,
+          tenantA.id,
+          "SPARQL Test World",
+          "Test",
+          now5,
+          now5,
+          null,
+        ],
       });
-      assert(result.ok);
-      const worldId = result.id;
+      const worldId = worldId4;
 
       // Perform SPARQL update using admin override
       await adminSdk.worlds.sparql(
         worldId,
         'INSERT DATA { <http://example.org/s> <http://example.org/p> "Admin Object" . }',
-        { accountId: accountA.id },
+        { tenantId: tenantA.id },
       );
 
       // Perform SPARQL query using admin override
       const queryResult = await adminSdk.worlds.sparql(
         worldId,
         "SELECT * WHERE { ?s ?p ?o }",
-        { accountId: accountA.id },
+        { tenantId: tenantA.id },
       ) as SparqlSelectResults;
 
       assert(queryResult.results.bindings.length > 0);
 
-      // Verify usage is attributed to Account A
+      // Verify usage is attributed to Tenant A
       // Note: Only SPARQL queries track usage, not updates
       // Usage verification removed as historical usage buckets are deprecated
     },
   );
 
-  await t.step("admin can search world for specific account", async () => {
-    // Create a world for Account A
-    const result = await appContext.db.worlds.add({
-      accountId: accountA.id,
-      label: "Search Test World",
-      description: "Test",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-
-      isPublic: false,
+  await t.step("admin can search world for specific tenant", async () => {
+    // Create a world for Tenant A
+    const worldId5 = crypto.randomUUID();
+    const now6 = Date.now();
+    await appContext.libsqlClient.execute({
+      sql:
+        "INSERT INTO worlds (id, tenant_id, label, description, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        worldId5,
+        tenantA.id,
+        "Search Test World",
+        "Test",
+        now6,
+        now6,
+        null,
+      ],
     });
-    assert(result.ok);
 
     // Search using admin override (won't return meaningful results without embeddings, but verifies no crash)
     const searchResults = await adminSdk.worlds.search("test query", {
-      worldIds: [result.id],
-      accountId: accountA.id,
+      worldIds: [worldId5],
+      tenantId: tenantA.id,
     });
     assert(Array.isArray(searchResults));
   });
-
-  appContext.kv.close();
 });
 
 Deno.test("InternalWorldsSdk - Invites", async (t) => {
@@ -464,17 +483,17 @@ Deno.test("InternalWorldsSdk - Invites", async (t) => {
   });
 
   await t.step("redeem invite", async () => {
-    // Create an account without a plan
-    const account = await sdk.accounts.create({
-      id: "acc_sdk_no_plan",
-      description: "Account without plan",
+    // Create a tenant without a plan
+    const tenant = await sdk.tenants.create({
+      id: "ten_sdk_no_plan",
+      description: "Tenant without plan",
     });
-    assertEquals(account.plan, undefined);
+    assertEquals(tenant.plan ?? undefined, undefined);
 
-    // Create user SDK with account's API key
+    // Create user SDK with tenant's API key
     const userSdk = new InternalWorldsSdk({
       baseUrl: "http://localhost",
-      apiKey: account.apiKey,
+      apiKey: tenant.apiKey,
       fetch: (url, init) => server.fetch(new Request(url, init)),
     });
 
@@ -485,19 +504,19 @@ Deno.test("InternalWorldsSdk - Invites", async (t) => {
     // Redeem the invite (user must pass their own ID even with their API key)
     const result = await userSdk.invites.redeem(
       "redeem_sdk_test",
-      "acc_sdk_no_plan",
+      "ten_sdk_no_plan",
     );
     assertEquals(result.plan, "free");
 
-    // Verify account now has a plan
-    const updatedAccount = await sdk.accounts.get("acc_sdk_no_plan");
-    assert(updatedAccount !== null);
-    assertEquals(updatedAccount.plan, "free");
+    // Verify tenant now has a plan
+    const updatedTenant = await sdk.tenants.get("ten_sdk_no_plan");
+    assert(updatedTenant !== null);
+    assertEquals(updatedTenant.plan, "free");
 
     // Verify invite is marked as redeemed
     const redeemedInvite = await sdk.invites.get("redeem_sdk_test");
     assert(redeemedInvite !== null);
-    assertEquals(redeemedInvite.redeemedBy, "acc_sdk_no_plan");
+    assertEquals(redeemedInvite.redeemedBy, "ten_sdk_no_plan");
     assert(redeemedInvite.redeemedAt !== null);
   });
 
@@ -506,6 +525,4 @@ Deno.test("InternalWorldsSdk - Invites", async (t) => {
     const invite = await sdk.invites.get("sdk_invite_test");
     assertEquals(invite, null);
   });
-
-  appContext.kv.close();
 });
