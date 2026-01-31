@@ -1,13 +1,14 @@
+import type { WorldsOptions } from "#/sdk/interfaces.ts";
 import type {
   CreateWorldParams,
   RdfFormat,
+  SearchResult,
+  SearchResultItem,
   SparqlResult,
   UpdateWorldParams,
   WorldRecord,
-  WorldsOptions,
-  WorldsSearchResult,
 } from "./schema.ts";
-import { parseError } from "./error-utils.ts";
+import { parseError } from "#/sdk/parse-error.ts";
 
 /**
  * Worlds is a TypeScript SDK for the Worlds API.
@@ -227,7 +228,7 @@ export class Worlds {
       limit?: number;
       tenantId?: string;
     },
-  ): Promise<WorldsSearchResult[]> {
+  ): Promise<SearchResult<SearchResultItem>[]> {
     const url = new URL(`${this.options.baseUrl}/v1/search`);
     const tenantId = options?.tenantId;
     if (tenantId) {

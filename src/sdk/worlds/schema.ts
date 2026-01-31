@@ -1,28 +1,9 @@
 import { z } from "zod";
-import type { SearchResult } from "@fartlabs/search-store";
-
-// Re-exporting from @fartlabs/search-store for convenience
-export type { SearchResult };
 
 /**
- * WorldsOptions are the options for the Worlds API SDK.
+ * SearchResultItem represents a search result item.
  */
-export interface WorldsOptions {
-  baseUrl: string;
-  apiKey: string;
-
-  /**
-   * fetch fetches a resource from the network. It returns a `Promise` that
-   * resolves to the `Response` to that `Request`, whether it is successful
-   * or not.
-   */
-  fetch?: typeof globalThis.fetch;
-}
-
-/**
- * WorldsSearchResultItem represents a search result item.
- */
-export interface WorldsSearchResultItem {
+export interface SearchResultItem {
   tenantId: string;
   worldId: string;
   subject: string;
@@ -31,9 +12,9 @@ export interface WorldsSearchResultItem {
 }
 
 /**
- * worldsSearchResultItemSchema is the Zod schema for WorldsSearchResultItem.
+ * searchResultItemSchema is the Zod schema for SearchResultItem.
  */
-export const worldsSearchResultItemSchema: z.ZodType<WorldsSearchResultItem> = z
+export const searchResultItemSchema: z.ZodType<SearchResultItem> = z
   .object({
     tenantId: z.string(),
     worldId: z.string(),
@@ -43,9 +24,28 @@ export const worldsSearchResultItemSchema: z.ZodType<WorldsSearchResultItem> = z
   });
 
 /**
- * WorldsSearchResult represents a search result.
+ * SearchResult is a result with a score.
  */
-export type WorldsSearchResult = SearchResult<WorldsSearchResultItem>;
+export interface SearchResult<T> {
+  /**
+   * score is the score of the result.
+   */
+  score: number;
+
+  /**
+   * value is the result value.
+   */
+  value: T;
+}
+
+/**
+ * searchResultSchema is the Zod schema for SearchResult.
+ */
+export const searchResultSchema: z.ZodType<SearchResult<SearchResultItem>> = z
+  .object({
+    score: z.number(),
+    value: searchResultItemSchema,
+  });
 
 /**
  * WorldRecord represents a world in the Worlds API.
@@ -316,29 +316,6 @@ export const rdfFormatSchema: z.ZodType<RdfFormat> = z.enum([
   "n-triples",
   "n3",
 ]);
-
-/**
- * PaginationParams represents validated pagination parameters.
- */
-export interface PaginationParams {
-  page: number;
-  pageSize: number;
-}
-
-/**
- * paginationParamsSchema is the Zod schema for PaginationParams.
- */
-export const paginationParamsSchema: z.ZodType<PaginationParams> = z.object({
-  page: z.number().int().positive().max(10000).default(1),
-  pageSize: z.number().int().positive().max(100).default(20),
-});
-
-/**
- * limitParamSchema validates limit query parameters.
- * Ensures limit is within reasonable bounds (max 100).
- */
-export const limitParamSchema: z.ZodType<number> = z.number().int().positive()
-  .max(100);
 
 /**
  * worldIdsParamSchema validates comma-separated world IDs.

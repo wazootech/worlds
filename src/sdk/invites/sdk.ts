@@ -1,8 +1,5 @@
-import type { WorldsOptions } from "#/sdk/schema.ts";
-import type {
-  CreateInviteParams,
-  InviteRecord,
-} from "#/sdk/internal/schema.ts";
+import type { WorldsOptions } from "#/sdk/interfaces.ts";
+import type { CreateInviteParams, InviteRecord } from "./schema.ts";
 
 /**
  * RedeemInviteResult represents the result of redeeming an invite.

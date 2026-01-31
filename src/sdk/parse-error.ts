@@ -6,6 +6,9 @@ const errorSchema = z.object({
   }),
 }).transform((data) => data.error.message);
 
+/**
+ * parseError parses an error response from the API.
+ */
 export async function parseError(response: Response): Promise<string> {
   let errorMessage = `${response.status} ${response.statusText}`;
   try {

@@ -2,11 +2,11 @@ import { Router } from "@fartlabs/rt";
 import { ulid } from "@std/ulid";
 import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
-import { paginationParamsSchema } from "#/sdk/schema.ts";
+import { paginationParamsSchema } from "#/sdk/pagination.ts";
 import {
   createInviteParamsSchema,
   inviteRecordSchema,
-} from "#/sdk/internal/schema.ts";
+} from "#/sdk/invites/schema.ts";
 import {
   invitesAdd,
   invitesDelete,
@@ -53,7 +53,9 @@ export default (appContext: AppContext) =>
         if (!paginationResult.success) {
           return ErrorResponse.BadRequest(
             "Invalid pagination parameters: " +
-              paginationResult.error.issues.map((e) => e.message).join(", "),
+              paginationResult.error.issues.map((e: { message: string }) =>
+                e.message
+              ).join(", "),
           );
         }
 
@@ -108,7 +110,9 @@ export default (appContext: AppContext) =>
         if (!parseResult.success) {
           return ErrorResponse.BadRequest(
             "Invalid parameters: " +
-              parseResult.error.issues.map((e) => e.message).join(", "),
+              parseResult.error.issues.map((e: { message: string }) =>
+                e.message
+              ).join(", "),
           );
         }
 

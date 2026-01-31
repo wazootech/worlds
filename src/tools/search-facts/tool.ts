@@ -1,8 +1,8 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
-import type { WorldsSearchResult } from "#/sdk/schema.ts";
-import { Worlds } from "#/sdk/worlds.ts";
+import type { SearchResult, SearchResultItem } from "#/sdk/worlds/schema.ts";
+import { Worlds } from "#/sdk/worlds/sdk.ts";
 import type { CreateToolsOptions } from "#/tools/types.ts";
 import { formatSearchFactsDescription } from "#/tools/format.ts";
 import { normalizeSources } from "#/tools/utils.ts";
@@ -15,7 +15,7 @@ export function createSearchFactsTool(options: CreateToolsOptions): Tool<
     query: string;
     limit?: number | undefined;
   },
-  WorldsSearchResult[]
+  SearchResult<SearchResultItem>[]
 > {
   const worlds = new Worlds(options);
   return tool({

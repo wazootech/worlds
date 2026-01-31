@@ -4,10 +4,10 @@ import type { AppContext } from "#/server/app-context.ts";
 import { LibsqlSearchStoreManager } from "#/server/search/libsql.ts";
 import {
   createWorldParamsSchema,
-  paginationParamsSchema,
   updateWorldParamsSchema,
   worldRecordSchema,
-} from "#/sdk/schema.ts";
+} from "#/sdk/worlds/schema.ts";
+import { paginationParamsSchema } from "#/sdk/pagination.ts";
 import { getPlanPolicy, getPolicy } from "#/server/rate-limit/policies.ts";
 import { Parser, Store, Writer } from "n3";
 import { TokenBucketRateLimiter } from "#/server/rate-limit/rate-limiter.ts";
@@ -253,7 +253,9 @@ export default (appContext: AppContext) => {
         if (!parseResult.success) {
           return ErrorResponse.BadRequest(
             "Invalid parameters: " +
-              parseResult.error.issues.map((e) => e.message).join(", "),
+              parseResult.error.issues.map((e: { message: string }) =>
+                e.message
+              ).join(", "),
           );
         }
         const data = parseResult.data;
@@ -356,7 +358,9 @@ export default (appContext: AppContext) => {
         if (!paginationResult.success) {
           return ErrorResponse.BadRequest(
             "Invalid pagination parameters: " +
-              paginationResult.error.issues.map((e) => e.message).join(", "),
+              paginationResult.error.issues.map((e: { message: string }) =>
+                e.message
+              ).join(", "),
           );
         }
 
@@ -413,7 +417,9 @@ export default (appContext: AppContext) => {
         if (!parseResult.success) {
           return ErrorResponse.BadRequest(
             "Invalid parameters: " +
-              parseResult.error.issues.map((e) => e.message).join(", "),
+              parseResult.error.issues.map((e: { message: string }) =>
+                e.message
+              ).join(", "),
           );
         }
         const data = parseResult.data;

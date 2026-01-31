@@ -4,7 +4,8 @@ import type { AppContext } from "#/server/app-context.ts";
 import { LibsqlSearchStoreManager } from "#/server/search/libsql.ts";
 import { checkRateLimit } from "#/server/middleware/rate-limit.ts";
 import { selectWorldById } from "#/server/db/resources/worlds/queries.sql.ts";
-import { limitParamSchema, worldIdsParamSchema } from "#/sdk/schema.ts";
+import { limitParamSchema } from "#/sdk/pagination.ts";
+import { worldIdsParamSchema } from "#/sdk/worlds/schema.ts";
 import { worldRowSchema } from "#/server/db/resources/worlds/schema.ts";
 import { ErrorResponse } from "#/server/errors.ts";
 

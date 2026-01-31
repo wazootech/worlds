@@ -2,12 +2,12 @@ import { Router } from "@fartlabs/rt";
 import { ulid } from "@std/ulid";
 import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
-import { paginationParamsSchema } from "#/sdk/schema.ts";
+import { paginationParamsSchema } from "#/sdk/pagination.ts";
 import {
   createTenantParamsSchema,
   tenantRecordSchema,
   updateTenantParamsSchema,
-} from "#/sdk/internal/schema.ts";
+} from "#/sdk/tenants/schema.ts";
 import { LibsqlSearchStoreManager } from "#/server/search/libsql.ts";
 import {
   tenantsAdd,
@@ -21,7 +21,7 @@ import {
   tenantTableInsertSchema,
   tenantTableSchema,
   tenantTableUpdateSchema,
-} from "../../../db/resources/tenants/schema.ts";
+} from "#/server/db/resources/tenants/schema.ts";
 import { ErrorResponse } from "#/server/errors.ts";
 
 export default (appContext: AppContext) =>
@@ -51,7 +51,9 @@ export default (appContext: AppContext) =>
         if (!paginationResult.success) {
           return ErrorResponse.BadRequest(
             "Invalid pagination parameters: " +
-              paginationResult.error.issues.map((e) => e.message).join(", "),
+              paginationResult.error.issues.map((e: { message: string }) =>
+                e.message
+              ).join(", "),
           );
         }
 
@@ -114,7 +116,9 @@ export default (appContext: AppContext) =>
         if (!parseResult.success) {
           return ErrorResponse.BadRequest(
             "Invalid parameters: " +
-              parseResult.error.issues.map((e) => e.message).join(", "),
+              parseResult.error.issues.map((e: { message: string }) =>
+                e.message
+              ).join(", "),
           );
         }
         const { id, ...data } = parseResult.data;
@@ -250,7 +254,9 @@ export default (appContext: AppContext) =>
         if (!parseResult.success) {
           return ErrorResponse.BadRequest(
             "Invalid parameters: " +
-              parseResult.error.issues.map((e) => e.message).join(", "),
+              parseResult.error.issues.map((e: { message: string }) =>
+                e.message
+              ).join(", "),
           );
         }
         const data = parseResult.data;

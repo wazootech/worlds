@@ -7,8 +7,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createClient } from "@libsql/client";
 import { createServer } from "#/server/server.ts";
 import { createTestTenant } from "#/server/testing.ts";
-import type { WorldsOptions } from "#/sdk/schema.ts";
-import { InternalWorldsSdk } from "#/sdk/internal/sdk.ts";
+import type { WorldsOptions } from "#/sdk/interfaces.ts";
+import { WorldsSdk } from "#/sdk/sdk.ts";
 import { UniversalSentenceEncoderEmbeddings } from "#/server/embeddings/use.ts";
 import { initializeDatabase } from "#/server/db/init.ts";
 import { tenantsFind } from "#/server/db/resources/tenants/queries.sql.ts";
@@ -65,7 +65,7 @@ if (import.meta.main) {
     fetch: (url, init) => server.fetch(new Request(url, init)),
   };
 
-  const sdk = new InternalWorldsSdk(worldsOptions);
+  const sdk = new WorldsSdk(worldsOptions);
 
   // Create test tenant with explicit free plan.
   const testTenant = await createTestTenant(appContext.libsqlClient, {

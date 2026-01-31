@@ -3,7 +3,6 @@
   "version": "0.0.37",
   "exports": {
     ".": "./src/sdk/mod.ts",
-    "./internal": "./src/sdk/internal/mod.ts",
     "./tools": "./src/tools/mod.ts"
   },
   "imports": {

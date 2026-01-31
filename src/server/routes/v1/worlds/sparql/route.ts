@@ -13,7 +13,7 @@ import {
 import { checkRateLimit } from "#/server/middleware/rate-limit.ts";
 import type { Patch, PatchHandler } from "@fartlabs/search-store";
 import { getPlanPolicy } from "#/server/rate-limit/policies.ts";
-import { sparqlResultSchema } from "#/sdk/schema.ts";
+import { sparqlResultSchema } from "#/sdk/worlds/schema.ts";
 import {
   selectWorldByIdWithBlob,
   updateWorld,

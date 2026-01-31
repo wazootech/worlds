@@ -92,6 +92,8 @@ export function getSourceByWorldId(
   return normalized.find((source) => source.worldId === worldId);
 }
 
+// TODO: Consolidate isUpdateQuery implementations, removing tree-sitter implementation in favor of this string-manipulation solution.
+
 /**
  * isUpdateQuery checks if a SPARQL query is an update operation.
  * This is a simple regex-based check for SDK-level tools.

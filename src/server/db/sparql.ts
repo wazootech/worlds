@@ -7,7 +7,7 @@ import type {
   SparqlQuad,
   SparqlResult,
   SparqlValue,
-} from "#/sdk/schema.ts";
+} from "#/sdk/worlds/schema.ts";
 
 /**
  * DatasetParams are the parameters for a SPARQL query.
