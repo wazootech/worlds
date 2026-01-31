@@ -5,7 +5,7 @@ import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
 import type { DatasetParams } from "#/server/db/sparql.ts";
 import { sparql } from "#/server/db/sparql.ts";
-import { isUpdateQuery } from "#/server/sparql/tree-sitter.ts";
+import { isSparqlUpdate } from "#/sdk/utils.ts";
 import {
   LibsqlPatchHandler,
   LibsqlSearchStoreManager,
@@ -209,7 +209,7 @@ async function executeSparqlRequest(
   }
 
   // Check if this is an update query
-  const isUpdate = await isUpdateQuery(query);
+  const isUpdate = await isSparqlUpdate(query);
 
   // Updates are only allowed via POST
   if (isUpdate && request.method !== "POST") {

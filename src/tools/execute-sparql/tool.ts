@@ -4,11 +4,8 @@ import { z } from "zod";
 import type { SparqlResult } from "#/sdk/worlds/schema.ts";
 import { Worlds } from "#/sdk/worlds/sdk.ts";
 import type { CreateToolsOptions } from "#/tools/types.ts";
-import {
-  getDefaultSource,
-  getSourceByWorldId,
-  isUpdateQuery,
-} from "#/tools/utils.ts";
+import { isSparqlUpdate } from "#/sdk/utils.ts";
+import { getDefaultSource, getSourceByWorldId } from "#/tools/utils.ts";
 import { formatExecuteSparqlDescription } from "#/tools/format.ts";
 
 /**
@@ -48,7 +45,7 @@ export function createExecuteSparqlTool(
       }
 
       // Validate write permissions for update queries.
-      if (isUpdateQuery(sparql) && !options.write) {
+      if (isSparqlUpdate(sparql) && !options.write) {
         throw new Error(
           "Write operations are disabled. This tool is configured as read-only. " +
             "Only SELECT, ASK, CONSTRUCT, and DESCRIBE queries are allowed.",

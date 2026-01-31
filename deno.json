@@ -26,9 +26,7 @@
     "ai": "npm:ai@^6.0.49",
     "cfonts": "npm:cfonts@^3.3.1",
     "n3": "npm:n3@^2.0.1",
-    "zod": "npm:zod@^4.3.6",
-    "deno_tree_sitter": "https://deno.land/x/deno_tree_sitter@1.0.1.2/main/main.js",
-    "common_tree_sitter_languages/": "https://esm.sh/gh/jeff-hykin/common_tree_sitter_languages@8eeb010ee5edb3dea6ac41f98432815e9e70f211/main/"
+    "zod": "npm:zod@^4.3.6"
   },
   "tasks": {
     "start": "deno serve -A --unstable-kv --env --unstable-raw-imports src/server/main.ts",

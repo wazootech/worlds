@@ -1,5 +1,5 @@
 import { assert } from "@std/assert";
-import { isUpdateQuery } from "./tree-sitter.ts";
+import { isSparqlUpdate } from "./utils.ts";
 
 Deno.test("isUpdateQuery - Update operations", async (t) => {
   const updates = [
@@ -17,7 +17,7 @@ Deno.test("isUpdateQuery - Update operations", async (t) => {
 
   for (const query of updates) {
     await t.step(`identifies '${query.substring(0, 20)}...' as update`, () => {
-      assert(isUpdateQuery(query));
+      assert(isSparqlUpdate(query));
     });
   }
 });
@@ -28,7 +28,7 @@ Deno.test("isUpdateQuery - Update with Prologue", async (t) => {
     INSERT DATA { ex:s ex:p ex:o }
   `;
   await t.step("identifies update with PREFIX", () => {
-    assert(isUpdateQuery(query));
+    assert(isSparqlUpdate(query));
   });
 
   const queryBase = `
@@ -36,7 +36,7 @@ Deno.test("isUpdateQuery - Update with Prologue", async (t) => {
     INSERT DATA { <s> <p> <o> }
   `;
   await t.step("identifies update with BASE", () => {
-    assert(isUpdateQuery(queryBase));
+    assert(isSparqlUpdate(queryBase));
   });
 });
 
@@ -52,7 +52,7 @@ Deno.test("isUpdateQuery - Query operations (Read-only)", async (t) => {
     await t.step(
       `identifies '${query.substring(0, 20)}...' as NOT update`,
       () => {
-        assert(!isUpdateQuery(query));
+        assert(!isSparqlUpdate(query));
       },
     );
   }
@@ -64,6 +64,6 @@ Deno.test("isUpdateQuery - Query with Prologue (Read-only)", async (t) => {
     SELECT ?s WHERE { ?s ?p ?o }
   `;
   await t.step("identifies SELECT with PREFIX as NOT update", () => {
-    assert(!isUpdateQuery(query));
+    assert(!isSparqlUpdate(query));
   });
 });
