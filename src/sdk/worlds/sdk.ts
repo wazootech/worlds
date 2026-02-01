@@ -1,14 +1,14 @@
-import type { WorldsOptions } from "#/sdk/interfaces.ts";
+import type { WorldsSdkOptions } from "#/sdk/interfaces.ts";
 import type {
   CreateWorldParams,
+  ExecuteSparqlOutput,
   RdfFormat,
   SearchResult,
   SearchResultItem,
-  SparqlResult,
   UpdateWorldParams,
   WorldRecord,
 } from "./schema.ts";
-import { parseError } from "#/sdk/parse-error.ts";
+import { parseError } from "#/sdk/utils.ts";
 
 /**
  * Worlds is a TypeScript SDK for the Worlds API.
@@ -17,7 +17,7 @@ export class Worlds {
   private readonly fetch: typeof fetch;
 
   public constructor(
-    public readonly options: WorldsOptions,
+    public readonly options: WorldsSdkOptions,
   ) {
     this.fetch = options.fetch ?? globalThis.fetch;
   }
@@ -185,7 +185,7 @@ export class Worlds {
     worldId: string,
     query: string,
     options?: { tenantId?: string },
-  ): Promise<SparqlResult | null> {
+  ): Promise<ExecuteSparqlOutput> {
     const url = new URL(
       `${this.options.baseUrl}/v1/worlds/${worldId}/sparql`,
     );

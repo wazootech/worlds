@@ -2,7 +2,7 @@ import { Router } from "@fartlabs/rt";
 import { ulid } from "@std/ulid";
 import { authorizeRequest } from "#/server/middleware/auth.ts";
 import type { AppContext } from "#/server/app-context.ts";
-import { paginationParamsSchema } from "#/sdk/pagination.ts";
+import { paginationParamsSchema } from "#/sdk/utils.ts";
 import {
   createInviteParamsSchema,
   inviteRecordSchema,

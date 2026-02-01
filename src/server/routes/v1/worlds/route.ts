@@ -7,7 +7,7 @@ import {
   updateWorldParamsSchema,
   worldRecordSchema,
 } from "#/sdk/worlds/schema.ts";
-import { paginationParamsSchema } from "#/sdk/pagination.ts";
+import { paginationParamsSchema } from "#/sdk/utils.ts";
 import { getPlanPolicy, getPolicy } from "#/server/rate-limit/policies.ts";
 import { Parser, Store, Writer } from "n3";
 import { TokenBucketRateLimiter } from "#/server/rate-limit/rate-limiter.ts";

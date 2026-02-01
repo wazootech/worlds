@@ -7,7 +7,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createClient } from "@libsql/client";
 import { createServer } from "#/server/server.ts";
 import { createTestTenant } from "#/server/testing.ts";
-import type { WorldsOptions } from "#/sdk/interfaces.ts";
+import type { WorldsSdkOptions } from "#/sdk/interfaces.ts";
 import { WorldsSdk } from "#/sdk/sdk.ts";
 import { UniversalSentenceEncoderEmbeddings } from "#/server/embeddings/use.ts";
 import { initializeDatabase } from "#/server/db/init.ts";
@@ -59,7 +59,7 @@ if (import.meta.main) {
   // Set up in-memory world.
   const appContext = await createExampleContext();
   const server = await createServer(appContext);
-  const worldsOptions: WorldsOptions = {
+  const worldsOptions: WorldsSdkOptions = {
     baseUrl: "http://localhost",
     apiKey: appContext.admin!.apiKey!,
     fetch: (url, init) => server.fetch(new Request(url, init)),

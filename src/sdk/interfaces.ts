@@ -1,7 +1,7 @@
 /**
- * WorldsOptions are the options for the Worlds API SDK.
+ * WorldsSdkOptions are the options for the Worlds API SDK.
  */
-export interface WorldsOptions {
+export interface WorldsSdkOptions {
   /**
    * baseUrl is the base URL of the Worlds API.
    */

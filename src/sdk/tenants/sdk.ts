@@ -1,10 +1,10 @@
-import type { WorldsOptions } from "#/sdk/interfaces.ts";
+import type { WorldsSdkOptions } from "#/sdk/interfaces.ts";
 import type {
   CreateTenantParams,
   TenantRecord,
   UpdateTenantParams,
 } from "./schema.ts";
-import { parseError } from "#/sdk/parse-error.ts";
+import { parseError } from "#/sdk/utils.ts";
 
 /**
  * Tenants is a TypeScript SDK for the Tenants API.
@@ -13,7 +13,7 @@ export class Tenants {
   private readonly fetch: typeof fetch;
 
   public constructor(
-    public readonly options: WorldsOptions,
+    public readonly options: WorldsSdkOptions,
   ) {
     this.fetch = options.fetch ?? globalThis.fetch;
   }

@@ -286,21 +286,24 @@ export const sparqlQuadsResultsSchema: z.ZodType<SparqlQuadsResults> = z
   });
 
 /**
- * SparqlResult represents the result of a SPARQL query.
+ * ExecuteSparqlOutput represents the result of a SPARQL query or update.
  */
-export type SparqlResult =
+export type ExecuteSparqlOutput =
   | SparqlSelectResults
   | SparqlAskResults
-  | SparqlQuadsResults;
+  | SparqlQuadsResults
+  | null;
 
 /**
- * sparqlResultSchema is the Zod schema for SparqlResult.
+ * executeSparqlOutputSchema is the Zod schema for the output of a SPARQL query or update.
  */
-export const sparqlResultSchema: z.ZodType<SparqlResult> = z.union([
-  sparqlSelectResultsSchema,
-  sparqlAskResultsSchema,
-  sparqlQuadsResultsSchema,
-]);
+export const executeSparqlOutputSchema: z.ZodType<ExecuteSparqlOutput> = z
+  .union([
+    sparqlSelectResultsSchema,
+    sparqlAskResultsSchema,
+    sparqlQuadsResultsSchema,
+    z.literal(null),
+  ]);
 
 /**
  * RdfFormat represents the supported RDF serialization formats for download.

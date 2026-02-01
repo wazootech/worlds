@@ -1,4 +1,4 @@
-import type { WorldsOptions } from "#/sdk/interfaces.ts";
+import type { WorldsSdkOptions } from "#/sdk/interfaces.ts";
 import type { CreateInviteParams, InviteRecord } from "./schema.ts";
 
 /**
@@ -16,7 +16,7 @@ export class Invites {
   private readonly fetch: typeof fetch;
 
   public constructor(
-    public readonly options: WorldsOptions,
+    public readonly options: WorldsSdkOptions,
   ) {
     this.fetch = options.fetch ?? globalThis.fetch;
   }

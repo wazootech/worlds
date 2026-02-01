@@ -1,3 +1,59 @@
+import { z } from "zod";
+
+/**
+ * PaginationParams represents validated pagination parameters.
+ */
+export interface PaginationParams {
+  page: number;
+  pageSize: number;
+}
+
+/**
+ * paginationParamsSchema is the Zod schema for PaginationParams.
+ */
+export const paginationParamsSchema: z.ZodType<PaginationParams> = z.object({
+  page: z.number().int().positive().max(10000).default(1),
+  pageSize: z.number().int().positive().max(100).default(20),
+});
+
+/**
+ * limitParamSchema validates limit query parameters.
+ * Ensures limit is within reasonable bounds (max 100).
+ */
+export const limitParamSchema: z.ZodType<number> = z.number().int().positive()
+  .max(100);
+
+const errorSchema = z.object({
+  error: z.object({
+    message: z.string(),
+  }),
+}).transform((data) => data.error.message);
+
+/**
+ * parseError parses an error response from the API.
+ */
+export async function parseError(response: Response): Promise<string> {
+  let errorMessage = `${response.status} ${response.statusText}`;
+  try {
+    const contentType = response.headers.get("content-type");
+    if (contentType?.includes("application/json")) {
+      const json = await response.json();
+      const result = errorSchema.safeParse(json);
+      if (result.success) {
+        errorMessage = result.data;
+      }
+    } else {
+      const text = await response.text();
+      if (text) {
+        errorMessage = text;
+      }
+    }
+  } catch {
+    // Ignore parsing errors and return the default status text
+  }
+  return errorMessage;
+}
+
 /**
  * isSparqlUpdate checks if a SPARQL query is an update operation.
  */

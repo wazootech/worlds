@@ -1,9 +1,9 @@
-import type { WorldsOptions } from "#/sdk/mod.ts";
+import type { WorldsSdkOptions } from "#/sdk/mod.ts";
 
 /**
  * CreateToolsOptions are the options for creating tools.
  */
-export interface CreateToolsOptions extends WorldsOptions {
+export interface CreateToolsOptions extends WorldsSdkOptions {
   /**
    * write is a flag indicating whether the tools allow writing (INSERT, DELETE, etc.)
    */

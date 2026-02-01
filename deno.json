@@ -3,7 +3,7 @@
   "version": "0.0.37",
   "exports": {
     ".": "./src/sdk/mod.ts",
-    "./tools": "./src/tools/mod.ts"
+    "./ai-sdk": "./src/ai-sdk/mod.ts"
   },
   "imports": {
     "#/": "./src/",

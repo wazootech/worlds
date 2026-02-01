@@ -1,7 +1,7 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
-import type { SparqlResult } from "#/sdk/worlds/schema.ts";
+import type { ExecuteSparqlOutput } from "#/sdk/worlds/schema.ts";
 import { Worlds } from "#/sdk/worlds/sdk.ts";
 import type { CreateToolsOptions } from "#/tools/types.ts";
 import { isSparqlUpdate } from "#/sdk/utils.ts";
@@ -18,7 +18,7 @@ export function createExecuteSparqlTool(
     sparql: string;
     worldId?: string;
   },
-  SparqlResult | null
+  ExecuteSparqlOutput | null
 > {
   const worlds = new Worlds(options);
 

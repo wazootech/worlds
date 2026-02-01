@@ -13,7 +13,7 @@ import {
 import { checkRateLimit } from "#/server/middleware/rate-limit.ts";
 import type { Patch, PatchHandler } from "@fartlabs/search-store";
 import { getPlanPolicy } from "#/server/rate-limit/policies.ts";
-import { sparqlResultSchema } from "#/sdk/worlds/schema.ts";
+import { executeSparqlOutputSchema } from "#/sdk/worlds/schema.ts";
 import {
   selectWorldByIdWithBlob,
   updateWorld,
@@ -366,7 +366,7 @@ async function executeSparqlRequest(
   }
 
   // For queries, return the result response
-  const validatedResult = sparqlResultSchema.parse(result);
+  const validatedResult = executeSparqlOutputSchema.parse(result);
   return Response.json(validatedResult, {
     headers: {
       "Content-Type": "application/sparql-results+json",
