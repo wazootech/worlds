@@ -4,39 +4,39 @@
  * logsTable is the table definition for system logs.
  */
 export const logsTable =
-  "CREATE TABLE IF NOT EXISTS logs (\n  id TEXT PRIMARY KEY,\n  world_id TEXT,\n  timestamp INTEGER NOT NULL,\n  level TEXT NOT NULL,\n  message TEXT NOT NULL,\n  metadata TEXT\n);";
+  "CREATE TABLE IF NOT EXISTS LOGS (\n  id TEXT PRIMARY KEY,\n  world_id TEXT,\n  timestamp INTEGER NOT NULL,\n  LEVEL TEXT NOT NULL,\n  message TEXT NOT NULL,\n  metadata TEXT\n);";
 
 /**
  * logsWorldIdIndex is an index on world_id for faster filtering.
  */
 export const logsWorldIdIndex =
-  "CREATE INDEX IF NOT EXISTS idx_logs_world_id ON logs(world_id);";
+  "CREATE INDEX IF NOT EXISTS idx_logs_world_id ON LOGS(world_id);";
 
 /**
  * logsTimestampIndex is an index on timestamp for time-based graphical queries and cleanup.
  */
 export const logsTimestampIndex =
-  "CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs(timestamp);";
+  "CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON LOGS(timestamp);";
 
 /**
  * logsAdd inserts a new log entry.
  */
 export const logsAdd =
-  "INSERT INTO\n  logs (\n    id,\n    world_id,\n    timestamp,\n    level,\n    message,\n    metadata\n  )\nVALUES\n  (?, ?, ?, ?, ?, ?);";
+  "INSERT INTO\n  LOGS (\n    id,\n    world_id,\n    timestamp,\n    LEVEL,\n    message,\n    metadata\n  )\nVALUES\n  (?, ?, ?, ?, ?, ?);";
 
 /**
  * logsListByWorld retrieves logs for a specific world, ordered by time descending.
  */
 export const logsListByWorld =
-  "SELECT\n  *\nFROM\n  logs\nWHERE\n  world_id = ?\nORDER BY\n  timestamp DESC\nLIMIT\n  ?;";
+  "SELECT\n  *\nFROM\n  LOGS\nWHERE\n  world_id = ?\nORDER BY\n  timestamp DESC\nLIMIT\n  ?;";
 
 /**
  * logsListSince retrieves logs after a timestamp for streaming.
  */
 export const logsListSince =
-  "SELECT\n  *\nFROM\n  logs\nWHERE\n  timestamp > ?\nORDER BY\n  timestamp ASC\nLIMIT\n  ?;";
+  "SELECT\n  *\nFROM\n  LOGS\nWHERE\n  timestamp > ?\nORDER BY\n  timestamp ASC\nLIMIT\n  ?;";
 
 /**
  * logsDeleteExpired deletes logs older than a specific timestamp (TTL).
  */
-export const logsDeleteExpired = "DELETE FROM\n  logs\nWHERE\n  timestamp < ?;";
+export const logsDeleteExpired = "DELETE FROM\n  LOGS\nWHERE\n  timestamp < ?;";

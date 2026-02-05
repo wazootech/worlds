@@ -33,7 +33,8 @@ export class LogsService {
       id: row.id as string,
       world_id: row.world_id as string,
       timestamp: row.timestamp as number,
-      level: (row.level as string).toLowerCase() as LogsTable["level"],
+      level: ((row.level ?? row.LEVEL) as string)
+        .toLowerCase() as LogsTable["level"],
       message: row.message as string,
       metadata: row.metadata as string | null,
     }));
@@ -48,7 +49,8 @@ export class LogsService {
       id: row.id as string,
       world_id: row.world_id as string,
       timestamp: row.timestamp as number,
-      level: (row.level as string).toLowerCase() as LogsTable["level"],
+      level: ((row.level ?? row.LEVEL) as string)
+        .toLowerCase() as LogsTable["level"],
       message: row.message as string,
       metadata: row.metadata as string | null,
     }));

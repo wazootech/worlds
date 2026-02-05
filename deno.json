@@ -41,6 +41,7 @@
     "precommit": {
       "description": "Runs fmt, lint, check, and test",
       "dependencies": [
+        "generate",
         "fmt",
         "lint",
         "check",
