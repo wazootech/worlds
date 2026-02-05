@@ -27,7 +27,7 @@ import { WorldsSdk } from "@fartlabs/worlds";
 
 // Initialize the client.
 const sdk = new WorldsSdk({
-  baseUrl: "http://localhost:8000/v1",
+  baseUrl: "http://localhost:8000",
   apiKey: "your-api-key",
 });
 
