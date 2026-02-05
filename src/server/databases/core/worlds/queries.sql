@@ -98,7 +98,8 @@ SET
   description = ?,
   updated_at = ?,
   db_hostname = ?,
-  db_token = ?
+  db_token = ?,
+  deleted_at = ?
 WHERE
   id = ?;
 

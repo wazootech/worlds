@@ -127,9 +127,9 @@ export default (appContext: AppContext) => {
             service_account_id: authorized.serviceAccountId,
             feature_id: "semantic_search",
             quantity: 1,
-            metadata: JSON.stringify({
+            metadata: {
               world_count: results.length,
-            }),
+            },
           });
         }
 

@@ -1,4 +1,5 @@
 import { Router } from "@fartlabs/rt";
+import { ulid } from "@std/ulid/ulid";
 import { authorizeRequest } from "#/server/middleware/auth.ts";
 import { checkRateLimit } from "#/server/middleware/rate-limit.ts";
 import type { AppContext } from "#/server/app-context.ts";
@@ -139,7 +140,7 @@ export default (appContext: AppContext) => {
         const managed = await appContext.databaseManager.get(worldId);
         const logsService = new LogsService(managed.database);
         await logsService.add({
-          id: crypto.randomUUID(),
+          id: ulid(),
           world_id: worldId,
           timestamp: Date.now(),
           level: "info",
@@ -284,15 +285,15 @@ export default (appContext: AppContext) => {
         const managed = await appContext.databaseManager.get(worldId);
         const logsService = new LogsService(managed.database);
         await logsService.add({
-          id: crypto.randomUUID(),
+          id: ulid(),
           world_id: worldId,
           timestamp: Date.now(),
           level: "info",
           message: "World updated",
-          metadata: JSON.stringify({
+          metadata: {
             label: data.label,
             description: data.description,
-          }),
+          },
         });
 
         return new Response(null, { status: 204 });
@@ -338,7 +339,7 @@ export default (appContext: AppContext) => {
           const managed = await appContext.databaseManager.get(worldId);
           const logsService = new LogsService(managed.database);
           await logsService.add({
-            id: crypto.randomUUID(),
+            id: ulid(),
             world_id: worldId,
             timestamp: Date.now(),
             level: "info",
@@ -496,7 +497,7 @@ export default (appContext: AppContext) => {
         if (rateLimitRes) return rateLimitRes;
 
         const now = Date.now();
-        const worldId = crypto.randomUUID();
+        const worldId = ulid();
 
         let _dbId: string | null = null;
         const dbHostname: string | null = null; // Stored as null, use LibsqlManager.get()
@@ -546,14 +547,14 @@ export default (appContext: AppContext) => {
         const managed = await appContext.databaseManager.get(worldId);
         const logsService = new LogsService(managed.database);
         await logsService.add({
-          id: crypto.randomUUID(),
+          id: ulid(),
           world_id: worldId,
           timestamp: Date.now(),
           level: "info",
           message: "World created",
-          metadata: JSON.stringify({
+          metadata: {
             label: world.label,
-          }),
+          },
         });
 
         const record = worldRecordSchema.parse({

@@ -1,5 +1,6 @@
 // @deno-types="@types/n3"
 import { DataFactory, Writer } from "n3";
+import { ulid } from "@std/ulid/ulid";
 import { Router } from "@fartlabs/rt";
 import {
   type AuthorizedRequest,
@@ -12,10 +13,8 @@ import { isSparqlUpdate } from "#/sdk/utils.ts";
 import { BufferedPatchHandler, handlePatch } from "#/server/rdf-patch.ts";
 import type { Patch } from "#/server/rdf-patch.ts";
 import { executeSparqlOutputSchema } from "#/sdk/worlds/schema.ts";
-import {
-  selectWorldById,
-  updateWorld,
-} from "#/server/databases/core/worlds/queries.sql.ts";
+
+import { WorldsService } from "#/server/databases/core/worlds/service.ts";
 import {
   worldTableUpdateSchema,
 } from "#/server/databases/core/worlds/schema.ts";
@@ -24,7 +23,6 @@ import { checkRateLimit } from "#/server/middleware/rate-limit.ts";
 import { MetricsService } from "#/server/databases/core/metrics/service.ts";
 import { LogsService } from "#/server/databases/world/logs/service.ts";
 import { BlobsService } from "#/server/databases/world/blobs/service.ts";
-import { worldRowSchema } from "#/server/databases/core/worlds/schema.ts";
 
 const { namedNode, quad } = DataFactory;
 
@@ -215,35 +213,19 @@ async function executeSparqlRequest(
   // Execute query or update using centralized function
   // Resolve organizationId for the search store (always use the world's owner)
   // Also get the world to use its organizationId for plan policy checks
-  const worldResult = await appContext.database.execute({
-    sql: selectWorldById,
-    args: [worldId],
-  });
-  const rawWorld = worldResult.rows[0];
+  const worldsService = new WorldsService(appContext.database);
+  const world = await worldsService.getById(worldId);
 
-  if (!rawWorld || rawWorld.deleted_at != null) {
+  if (!world || world.deleted_at != null) {
     return ErrorResponse.NotFound("World not found");
   }
 
   if (
     !authorized.admin &&
-    authorized.organizationId !== rawWorld.organization_id
+    authorized.organizationId !== world.organization_id
   ) {
     return ErrorResponse.Forbidden();
   }
-
-  // Validate SQL result
-  const world = worldRowSchema.parse({
-    id: rawWorld.id,
-    organization_id: rawWorld.organization_id,
-    label: rawWorld.label,
-    description: rawWorld.description,
-    db_hostname: rawWorld.db_hostname,
-    db_token: rawWorld.db_token,
-    created_at: rawWorld.created_at,
-    updated_at: rawWorld.updated_at,
-    deleted_at: rawWorld.deleted_at,
-  });
 
   const _searchOrganizationId = world?.organization_id as string | undefined;
 
@@ -327,21 +309,18 @@ async function executeSparqlRequest(
 
     // Update world metadata (labels etc)
     const worldUpdate = worldTableUpdateSchema.parse({
-      label: world?.label as string | undefined,
-      description: world?.description as string | null | undefined,
+      label: world?.label,
+      description: world?.description,
       updated_at: updatedAt,
     });
 
-    await appContext.database.execute({
-      sql: updateWorld,
-      args: [
-        worldUpdate.label ?? world?.label ?? null,
-        worldUpdate.description ?? world?.description ?? null,
-        worldUpdate.updated_at ?? updatedAt,
-        world?.db_hostname ?? null,
-        world?.db_token ?? null,
-        worldId,
-      ],
+    await worldsService.update(worldId, {
+      label: worldUpdate.label ?? undefined,
+      description: worldUpdate.description ?? undefined,
+      updated_at: worldUpdate.updated_at,
+      db_hostname: world?.db_hostname ?? undefined,
+      db_token: world?.db_token ?? undefined,
+      deleted_at: world?.deleted_at ?? undefined,
     });
 
     if (authorized.serviceAccountId) {
@@ -356,14 +335,14 @@ async function executeSparqlRequest(
     const managed = await appContext.databaseManager.get(worldId);
     const logsService = new LogsService(managed.database);
     await logsService.add({
-      id: crypto.randomUUID(),
+      id: ulid(),
       world_id: worldId,
       timestamp: Date.now(),
       level: "info",
       message: "SPARQL update",
-      metadata: JSON.stringify({
+      metadata: {
         query: query.slice(0, 1000), // Safety truncation
-      }),
+      },
     });
 
     return new Response(null, {
@@ -384,14 +363,14 @@ async function executeSparqlRequest(
   const managed = await appContext.databaseManager.get(worldId);
   const logsService = new LogsService(managed.database);
   await logsService.add({
-    id: crypto.randomUUID(),
+    id: ulid(),
     world_id: worldId,
     timestamp: Date.now(),
     level: "info",
     message: "SPARQL query",
-    metadata: JSON.stringify({
+    metadata: {
       query: query.slice(0, 1000), // Safety truncation
-    }),
+    },
   });
 
   // For queries, return the result response
@@ -418,28 +397,12 @@ export default (appContext: AppContext) => {
           return ErrorResponse.Unauthorized();
         }
 
-        const worldResult = await appContext.database.execute({
-          sql: selectWorldById,
-          args: [worldId],
-        });
-        const rawWorld = worldResult.rows[0];
+        const worldsService = new WorldsService(appContext.database);
+        const world = await worldsService.getById(worldId);
 
-        if (!rawWorld || rawWorld.deleted_at != null) {
+        if (!world || world.deleted_at != null) {
           return ErrorResponse.NotFound("World not found");
         }
-
-        // Validate SQL result
-        worldRowSchema.parse({
-          id: rawWorld.id,
-          organization_id: rawWorld.organization_id,
-          label: rawWorld.label,
-          description: rawWorld.description,
-          db_hostname: rawWorld.db_hostname,
-          db_token: rawWorld.db_token,
-          created_at: rawWorld.created_at,
-          updated_at: rawWorld.updated_at,
-          deleted_at: rawWorld.deleted_at,
-        });
 
         try {
           return await executeSparqlRequest(
@@ -472,28 +435,12 @@ export default (appContext: AppContext) => {
           return ErrorResponse.Unauthorized();
         }
 
-        const worldResult = await appContext.database.execute({
-          sql: selectWorldById,
-          args: [worldId],
-        });
-        const rawWorld = worldResult.rows[0];
+        const worldsService = new WorldsService(appContext.database);
+        const world = await worldsService.getById(worldId);
 
-        if (!rawWorld || rawWorld.deleted_at != null) {
+        if (!world || world.deleted_at != null) {
           return ErrorResponse.NotFound("World not found");
         }
-
-        // Validate SQL result
-        worldRowSchema.parse({
-          id: rawWorld.id,
-          organization_id: rawWorld.organization_id,
-          label: rawWorld.label,
-          description: rawWorld.description,
-          db_hostname: rawWorld.db_hostname,
-          db_token: rawWorld.db_token,
-          created_at: rawWorld.created_at,
-          updated_at: rawWorld.updated_at,
-          deleted_at: rawWorld.deleted_at,
-        });
 
         // Check for unsupported content types
         const contentType = ctx.request.headers.get("content-type") || "";

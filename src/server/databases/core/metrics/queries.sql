@@ -23,3 +23,16 @@ INSERT INTO
   )
 VALUES
   (?, ?, ?, ?, ?, ?);
+
+-- selectLastMetric retrieves the most recent metric for a service account and feature
+SELECT
+  *
+FROM
+  metrics
+WHERE
+  service_account_id = ?
+  AND feature_id = ?
+ORDER BY
+  timestamp DESC
+LIMIT
+  1;

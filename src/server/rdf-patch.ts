@@ -4,17 +4,17 @@ import type { Patch, PatchHandler } from "@fartlabs/search-store";
 export type { Patch, PatchHandler };
 import { skolemizeQuad } from "@fartlabs/search-store";
 import type { Embeddings } from "#/server/embeddings/embeddings.ts";
-import {
-  deleteTriples,
-  upsertTriples,
-} from "#/server/databases/world/triples/queries.sql.ts";
-import { upsertChunks } from "#/server/databases/world/chunks/queries.sql.ts";
+import { TriplesService } from "#/server/databases/world/triples/service.ts";
+import { ChunkRepository } from "#/server/databases/world/chunks/service.ts";
 
 export async function handlePatch(
   client: Client,
   embeddings: Embeddings,
   patches: Patch[],
 ) {
+  const triplesService = new TriplesService(client);
+  const chunksService = new ChunkRepository(client);
+
   try {
     for (const patch of patches) {
       if (patch.deletions) {
@@ -22,10 +22,7 @@ export async function handlePatch(
           const skolemizedStr = await skolemizeQuad(q);
           const tripleId = await hash(skolemizedStr);
 
-          await client.execute({
-            sql: deleteTriples,
-            args: [tripleId],
-          });
+          await triplesService.delete(tripleId);
         }
       }
 
@@ -50,9 +47,12 @@ export async function handlePatch(
           }
 
           // Upsert triple
-          await client.execute({
-            sql: upsertTriples,
-            args: [tripleId, subject, predicate, object],
+          await triplesService.upsert({
+            id: tripleId,
+            subject,
+            predicate,
+            object,
+            vector: null, // Triples table doesn't store vector in this schema, only Chunks
           });
 
           // Create and upsert chunks
@@ -76,16 +76,13 @@ export async function handlePatch(
               const chunkId = await hash(
                 `${tripleId}:chunk:${i}`,
               );
-              await client.execute({
-                sql: upsertChunks,
-                args: [
-                  chunkId,
-                  tripleId,
-                  subject,
-                  predicate,
-                  chunkText,
-                  new Uint8Array(new Float32Array(chunkVector).buffer),
-                ],
+              await chunksService.upsert({
+                id: chunkId,
+                triple_id: tripleId,
+                subject,
+                predicate,
+                text: chunkText,
+                vector: new Uint8Array(new Float32Array(chunkVector).buffer),
               });
             }
           }

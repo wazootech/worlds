@@ -2,7 +2,6 @@ import { createClient } from "@libsql/client";
 import { ulid } from "@std/ulid/ulid";
 import { initializeDatabase } from "./databases/core/init.ts";
 import { MemoryDatabaseManager } from "./database-manager/database-managers/memory.ts";
-import { insertOrganization } from "./databases/core/organizations/queries.sql.ts";
 import type { Embeddings } from "./embeddings/embeddings.ts";
 import { ServiceAccountsService } from "./databases/core/service-accounts/service.ts";
 import { WorldsService } from "./databases/core/worlds/service.ts";
@@ -35,23 +34,23 @@ export async function createTestContext(): Promise<AppContext> {
   };
 }
 
+import { OrganizationsService } from "./databases/core/organizations/service.ts";
+
 export async function createTestOrganization(
   context: AppContext,
   options?: { plan?: string },
 ) {
+  const service = new OrganizationsService(context.database);
   const id = ulid();
   const now = Date.now();
-  await context.database.execute({
-    sql: insertOrganization,
-    args: [
-      id,
-      "Test Org",
-      "Description",
-      options?.plan ?? "free",
-      now,
-      now,
-      null,
-    ],
+  await service.add({
+    id,
+    label: "Test Org",
+    description: "Description",
+    plan: options?.plan ?? "free",
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
   });
   // Return the admin API key for authentication, as org keys are no longer valid
   return { id, apiKey: context.admin!.apiKey };

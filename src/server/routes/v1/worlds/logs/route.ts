@@ -22,7 +22,7 @@ export default (appContext: AppContext) => {
         }
 
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.admin) {
+        if (!authorized.admin && !authorized.organizationId) {
           return ErrorResponse.Unauthorized();
         }
         const rateLimitRes = await checkRateLimit(
@@ -36,6 +36,13 @@ export default (appContext: AppContext) => {
         const world = await worldsService.getById(worldId);
         if (!world || world.deleted_at != null) {
           return ErrorResponse.NotFound("World not found");
+        }
+
+        if (
+          !authorized.admin &&
+          authorized.organizationId !== world.organization_id
+        ) {
+          return ErrorResponse.Forbidden();
         }
 
         if (!appContext.databaseManager) {

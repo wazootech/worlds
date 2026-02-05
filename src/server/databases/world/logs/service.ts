@@ -19,7 +19,7 @@ export class LogsService {
         log.timestamp,
         log.level.toUpperCase(),
         log.message,
-        log.metadata,
+        log.metadata ? JSON.stringify(log.metadata) : null,
       ],
     });
   }
@@ -36,7 +36,7 @@ export class LogsService {
       level: ((row.level ?? row.LEVEL) as string)
         .toLowerCase() as LogsTable["level"],
       message: row.message as string,
-      metadata: row.metadata as string | null,
+      metadata: row.metadata ? JSON.parse(row.metadata as string) : null,
     }));
   }
 
@@ -52,7 +52,7 @@ export class LogsService {
       level: ((row.level ?? row.LEVEL) as string)
         .toLowerCase() as LogsTable["level"],
       message: row.message as string,
-      metadata: row.metadata as string | null,
+      metadata: row.metadata ? JSON.parse(row.metadata as string) : null,
     }));
   }
 

@@ -1,8 +1,28 @@
+import type { Client } from "@libsql/client";
 import type { AppContext } from "#/server/app-context.ts";
-import { searchChunks } from "./queries.sql.ts";
+import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { TripleSearchResult } from "#/sdk/worlds/schema.ts";
 import type { WorldRow } from "#/server/databases/core/worlds/schema.ts";
 import type { WorldsService } from "#/server/databases/core/worlds/service.ts";
+import type { ChunkTableUpsert } from "./schema.ts";
+
+export class ChunkRepository {
+  constructor(private readonly db: Client) {}
+
+  async upsert(chunk: ChunkTableUpsert): Promise<void> {
+    await this.db.execute({
+      sql: upsertChunks,
+      args: [
+        chunk.id,
+        chunk.triple_id,
+        chunk.subject,
+        chunk.predicate,
+        chunk.text,
+        chunk.vector ? new Uint8Array(chunk.vector) : null,
+      ],
+    });
+  }
+}
 
 export interface SearchParams {
   query: string;

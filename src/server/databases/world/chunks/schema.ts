@@ -7,6 +7,8 @@ import { z } from "zod";
 export const chunkTableSchema = z.object({
   id: z.string(),
   triple_id: z.string(),
+  subject: z.string(),
+  predicate: z.string(),
   text: z.string(),
   vector: z
     .union([z.instanceof(ArrayBuffer), z.instanceof(Uint8Array)])

@@ -9,7 +9,7 @@ export const logsTableSchema = z.object({
   timestamp: z.number(),
   level: z.enum(["info", "warn", "error", "debug"]),
   message: z.string(),
-  metadata: z.string().nullable(), // JSON string
+  metadata: z.record(z.string(), z.unknown()).nullish(),
 });
 
 /**

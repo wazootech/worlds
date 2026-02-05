@@ -161,7 +161,7 @@ export default (appContext: AppContext) => {
       "/v1/organizations/:organization",
       async (ctx) => {
         const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.admin) {
+        if (!authorized.admin && !authorized.organizationId) {
           return ErrorResponse.Unauthorized();
         }
         const rateLimitRes = await checkRateLimit(
@@ -183,6 +183,13 @@ export default (appContext: AppContext) => {
 
         if (!organization) {
           return ErrorResponse.NotFound("Organization not found");
+        }
+
+        if (
+          !authorized.admin &&
+          authorized.organizationId !== organization.id
+        ) {
+          return ErrorResponse.Forbidden();
         }
 
         const record = organizationRecordSchema.parse({

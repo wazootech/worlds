@@ -4,7 +4,7 @@ import { checkRateLimit } from "#/server/middleware/rate-limit.ts";
 import type { AppContext } from "#/server/app-context.ts";
 import { ErrorResponse } from "#/server/errors.ts";
 import { MetricsService } from "#/server/databases/core/metrics/service.ts";
-import { selectOrganizationById } from "#/server/databases/core/organizations/queries.sql.ts";
+import { OrganizationsService } from "#/server/databases/core/organizations/service.ts";
 
 export default (appContext: AppContext) => {
   return new Router().get(
@@ -29,11 +29,9 @@ export default (appContext: AppContext) => {
       }
 
       // Verify organization exists
-      const orgResult = await appContext.database.execute({
-        sql: selectOrganizationById,
-        args: [organizationId],
-      });
-      if (orgResult.rows.length === 0) {
+      const orgService = new OrganizationsService(appContext.database);
+      const org = await orgService.find(organizationId);
+      if (!org) {
         return ErrorResponse.NotFound("Organization not found");
       }
 

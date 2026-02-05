@@ -1,7 +1,9 @@
 import { assert, assertEquals } from "@std/assert";
+import { ulid } from "@std/ulid/ulid";
 import { createTestContext, createTestOrganization } from "#/server/testing.ts";
 import createRoute from "./route.ts";
-import { serviceAccountsAdd } from "#/server/databases/core/service-accounts/queries.sql.ts";
+import { ServiceAccountsService } from "#/server/databases/core/service-accounts/service.ts";
+import { MetricsService } from "#/server/databases/core/metrics/service.ts";
 
 Deno.test("Metrics API routes", async (t) => {
   const testContext = await createTestContext();
@@ -59,11 +61,17 @@ Deno.test("Metrics API routes", async (t) => {
       const org2 = await createTestOrganization(testContext);
 
       // Create service account for Org 1
-      const saId = crypto.randomUUID();
+      const saId = ulid();
       const saKey = "sa-key-123";
-      await testContext.database.execute({
-        sql: serviceAccountsAdd,
-        args: [saId, org1.id, saKey, "Test SA", null, Date.now(), Date.now()],
+      const saService = new ServiceAccountsService(testContext.database);
+      await saService.add({
+        id: saId,
+        organization_id: org1.id,
+        api_key: saKey,
+        label: "Test SA",
+        description: null,
+        created_at: Date.now(),
+        updated_at: Date.now(),
       });
 
       // SA for Org 1 accessing Org 1 -> OK
@@ -93,6 +101,14 @@ Deno.test("Metrics API routes", async (t) => {
         ),
       );
       assertEquals(resp2.status, 403);
+
+      // Verify that accessing its own org recorded a metric
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const metricsService = new MetricsService(testContext.database);
+      const metric = await metricsService.getLast(saId, "metrics_query");
+
+      assert(metric);
+      assertEquals(metric.quantity, 1);
     },
   );
 

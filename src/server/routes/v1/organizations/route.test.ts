@@ -1,8 +1,10 @@
 import { assert, assertEquals } from "@std/assert";
-import { createTestContext } from "#/server/testing.ts";
+import { ulid } from "@std/ulid/ulid";
+import { createTestContext, createTestOrganization } from "#/server/testing.ts";
 import createApp from "./route.ts";
-
 import { OrganizationsService } from "#/server/databases/core/organizations/service.ts";
+import { ServiceAccountsService } from "#/server/databases/core/service-accounts/service.ts";
+import { MetricsService } from "#/server/databases/core/metrics/service.ts";
 
 Deno.test("Organizations API routes", async (t) => {
   const testContext = await createTestContext();
@@ -207,6 +209,53 @@ Deno.test("Organizations API routes - CRUD operations", async (t) => {
         ),
       );
       assertEquals(getRes.status, 404);
+    },
+  );
+});
+
+Deno.test("Organizations API routes - Metrics", async (t) => {
+  const testContext = await createTestContext();
+  const app = createApp(testContext);
+
+  await t.step(
+    "GET /v1/organizations/:organization with Service Account meters usage",
+    async () => {
+      // 1. Setup Organization and Service Account
+      const org = await createTestOrganization(testContext);
+      const saId = ulid();
+      const saKey = "sa-key-meter-org-get";
+
+      const saService = new ServiceAccountsService(testContext.database);
+      await saService.add({
+        id: saId,
+        organization_id: org.id,
+        api_key: saKey,
+        label: "Metered SA",
+        description: null,
+        created_at: Date.now(),
+        updated_at: Date.now(),
+      });
+
+      // 2. Perform GET with SA Key
+      const resp = await app.fetch(
+        new Request(`http://localhost/v1/organizations/${org.id}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${saKey}`,
+          },
+        }),
+      );
+
+      assertEquals(resp.status, 200);
+
+      // 3. Verify Metric Recorded
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const metricsService = new MetricsService(testContext.database);
+      const metric = await metricsService.getLast(saId, "organizations_get");
+
+      assert(metric);
+      assertEquals(metric.quantity, 1);
     },
   );
 });

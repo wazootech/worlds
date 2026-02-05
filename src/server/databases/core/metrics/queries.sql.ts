@@ -17,3 +17,9 @@ export const metricsServiceAccountIdIndex =
  */
 export const insertMetric =
   "INSERT INTO\n  metrics (\n    id,\n    service_account_id,\n    feature_id,\n    quantity,\n    metadata,\n    timestamp\n  )\nVALUES\n  (?, ?, ?, ?, ?, ?);";
+
+/**
+ * selectLastMetric retrieves the most recent metric for a service account and feature
+ */
+export const selectLastMetric =
+  "SELECT * FROM metrics WHERE service_account_id = ? AND feature_id = ? ORDER BY timestamp DESC LIMIT 1;";

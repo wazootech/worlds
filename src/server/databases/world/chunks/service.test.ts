@@ -1,9 +1,10 @@
 import { assertEquals } from "@std/assert";
+import { ulid } from "@std/ulid/ulid";
 
 import { createTestContext, createTestOrganization } from "#/server/testing.ts";
 import { TriplesService } from "../triples/service.ts";
 import { WorldsService } from "#/server/databases/core/worlds/service.ts";
-import { ChunksService } from "./service.ts";
+import { ChunkRepository, ChunksService } from "./service.ts";
 
 Deno.test("ChunksService", async (t) => {
   const testContext = await createTestContext();
@@ -14,7 +15,7 @@ Deno.test("ChunksService", async (t) => {
     plan: "free",
   });
 
-  const worldId = crypto.randomUUID();
+  const worldId = ulid();
   const now = Date.now();
   await worldsService.insert({
     id: worldId,
@@ -51,17 +52,14 @@ Deno.test("ChunksService", async (t) => {
       vector: null,
     });
 
-    await worldManaged.database.execute({
-      sql:
-        "INSERT INTO chunks (id, triple_id, subject, predicate, text, vector) VALUES (?, ?, ?, ?, ?, vector32(?))",
-      args: [
-        "c1",
-        tripleId,
-        "s",
-        "p",
-        "This is a test chunk about apples.",
-        new Uint8Array(new Float32Array(1536).fill(0).buffer),
-      ],
+    const chunkRepo = new ChunkRepository(worldManaged.database);
+    await chunkRepo.upsert({
+      id: "c1",
+      triple_id: tripleId,
+      subject: "s",
+      predicate: "p",
+      text: "This is a test chunk about apples.",
+      vector: new Uint8Array(new Float32Array(1536).fill(0).buffer),
     });
 
     const results = await chunksService.search({
