@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 /**
- * OrganizationRecord represents an organization in the Worlds API.
+ * Organization represents an organization in the Worlds API.
  */
-export interface OrganizationRecord {
+export interface Organization {
   id: string;
   label: string | null;
   description: string | null;
@@ -14,9 +14,9 @@ export interface OrganizationRecord {
 }
 
 /**
- * organizationRecordSchema is the Zod schema for OrganizationRecord.
+ * organizationSchema is the Zod schema for Organization.
  */
-export const organizationRecordSchema: z.ZodType<OrganizationRecord> = z.object(
+export const organizationSchema: z.ZodType<Organization> = z.object(
   {
     id: z.string(),
     label: z.string().nullable(),

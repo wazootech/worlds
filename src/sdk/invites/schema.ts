@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 /**
- * InviteRecord represents an invite in the Worlds API.
+ * Invite represents an invite in the Worlds API.
  */
-export interface InviteRecord {
+export interface Invite {
   code: string;
   createdAt: number;
   redeemedBy: string | null;
@@ -11,9 +11,9 @@ export interface InviteRecord {
 }
 
 /**
- * inviteRecordSchema is the Zod schema for InviteRecord.
+ * inviteSchema is the Zod schema for Invite.
  */
-export const inviteRecordSchema: z.ZodType<InviteRecord> = z.object({
+export const inviteSchema: z.ZodType<Invite> = z.object({
   code: z.string(),
   createdAt: z.number(),
   redeemedBy: z.string().nullable(),

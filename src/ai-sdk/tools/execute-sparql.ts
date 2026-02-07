@@ -6,7 +6,8 @@ import {
   type ExecuteSparqlOutput,
   executeSparqlOutputSchema,
 } from "#/sdk/worlds/schema.ts";
-import type { CreateToolsOptions } from "#/ai-sdk/interfaces.ts";
+import type { CreateToolsOptions } from "../options.ts";
+import type { Source } from "#/sdk/interfaces.ts";
 import { isSparqlUpdate } from "#/sdk/utils.ts";
 
 // Re-export the output schema and type from the SDK.
@@ -33,11 +34,16 @@ export const executeSparqlInputSchema: z.ZodType<ExecuteSparqlInput> = z.object(
 );
 
 /**
+ * ExecuteSparqlTool is a tool that executes SPARQL queries and updates.
+ */
+export type ExecuteSparqlTool = Tool<ExecuteSparqlInput, ExecuteSparqlOutput>;
+
+/**
  * createExecuteSparqlTool creates a tool that executes SPARQL queries and updates.
  */
 export function createExecuteSparqlTool(
   options: CreateToolsOptions,
-): Tool<ExecuteSparqlInput, ExecuteSparqlOutput> {
+): ExecuteSparqlTool {
   const sdk = new WorldsSdk(options);
   return tool({
     description:
@@ -45,10 +51,10 @@ export function createExecuteSparqlTool(
     inputSchema: executeSparqlInputSchema,
     outputSchema: executeSparqlOutputSchema,
     execute: async ({ sparql, source }) => {
-      // Validate write permissions for update queries.
       if (
         isSparqlUpdate(sparql) &&
-        !options.sources.find((s) => s.id === source)?.writable
+        !(options.sources.find((s: Source) => s.id === source)?.writable ??
+          false)
       ) {
         throw new Error(
           "Write operations are disabled. This source is configured as read-only. " +

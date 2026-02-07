@@ -1,8 +1,9 @@
 import type { WorldsSdkOptions } from "#/sdk/interfaces.ts";
 import { ServiceAccounts } from "#/sdk/service-accounts/sdk.ts";
+import { Metrics } from "#/sdk/metrics/sdk.ts";
 import type {
   CreateOrganizationParams,
-  OrganizationRecord,
+  Organization,
   UpdateOrganizationParams,
 } from "./schema.ts";
 import { parseError } from "#/sdk/utils.ts";
@@ -13,12 +14,14 @@ import { parseError } from "#/sdk/utils.ts";
 export class Organizations {
   private readonly fetch: typeof fetch;
   public readonly serviceAccounts: ServiceAccounts;
+  public readonly metrics: Metrics;
 
   public constructor(
     public readonly options: WorldsSdkOptions,
   ) {
     this.fetch = options.fetch ?? globalThis.fetch;
     this.serviceAccounts = new ServiceAccounts(options);
+    this.metrics = new Metrics(options);
   }
 
   /**
@@ -27,7 +30,7 @@ export class Organizations {
   public async list(
     page = 1,
     pageSize = 20,
-  ): Promise<OrganizationRecord[]> {
+  ): Promise<Organization[]> {
     const url = new URL(`${this.options.baseUrl}/v1/organizations`);
     url.searchParams.set("page", page.toString());
     url.searchParams.set("pageSize", pageSize.toString());
@@ -49,7 +52,7 @@ export class Organizations {
    */
   public async create(
     data: CreateOrganizationParams,
-  ): Promise<OrganizationRecord> {
+  ): Promise<Organization> {
     const url = new URL(`${this.options.baseUrl}/v1/organizations`);
     const response = await this.fetch(
       url,
@@ -75,7 +78,7 @@ export class Organizations {
    */
   public async get(
     organizationId: string,
-  ): Promise<OrganizationRecord | null> {
+  ): Promise<Organization | null> {
     const url = new URL(
       `${this.options.baseUrl}/v1/organizations/${organizationId}`,
     );

@@ -5,7 +5,7 @@ import type {
   RdfFormat,
   TripleSearchResult,
   UpdateWorldParams,
-  WorldRecord,
+  World,
 } from "./schema.ts";
 import { parseError } from "#/sdk/utils.ts";
 
@@ -28,7 +28,7 @@ export class Worlds {
     page = 1,
     pageSize = 20,
     options?: { organizationId?: string },
-  ): Promise<WorldRecord[]> {
+  ): Promise<World[]> {
     const url = new URL(`${this.options.baseUrl}/v1/worlds`);
     const organizationId = options?.organizationId;
     if (organizationId) {
@@ -55,13 +55,8 @@ export class Worlds {
    */
   public async get(
     worldId: string,
-    options?: { organizationId?: string },
-  ): Promise<WorldRecord | null> {
+  ): Promise<World | null> {
     const url = new URL(`${this.options.baseUrl}/v1/worlds/${worldId}`);
-    const organizationId = options?.organizationId;
-    if (organizationId) {
-      url.searchParams.set("organizationId", organizationId);
-    }
 
     const response = await this.fetch(
       url,
@@ -86,15 +81,8 @@ export class Worlds {
   /**
    * create creates a world in the Worlds API.
    */
-  public async create(
-    data: CreateWorldParams,
-    options?: { organizationId?: string },
-  ): Promise<WorldRecord> {
+  public async create(data: CreateWorldParams): Promise<World> {
     const url = new URL(`${this.options.baseUrl}/v1/worlds`);
-    const organizationId = options?.organizationId;
-    if (organizationId) {
-      url.searchParams.set("organizationId", organizationId);
-    }
 
     const response = await this.fetch(
       url,
@@ -121,13 +109,8 @@ export class Worlds {
   public async update(
     worldId: string,
     data: UpdateWorldParams,
-    options?: { organizationId?: string },
   ): Promise<void> {
     const url = new URL(`${this.options.baseUrl}/v1/worlds/${worldId}`);
-    const organizationId = options?.organizationId;
-    if (organizationId) {
-      url.searchParams.set("organizationId", organizationId);
-    }
 
     const response = await this.fetch(
       url,
@@ -151,13 +134,8 @@ export class Worlds {
    */
   public async delete(
     worldId: string,
-    options?: { organizationId?: string },
   ): Promise<void> {
     const url = new URL(`${this.options.baseUrl}/v1/worlds/${worldId}`);
-    const organizationId = options?.organizationId;
-    if (organizationId) {
-      url.searchParams.set("organizationId", organizationId);
-    }
 
     const response = await this.fetch(
       url,
@@ -183,15 +161,10 @@ export class Worlds {
   public async sparql(
     worldId: string,
     query: string,
-    options?: { organizationId?: string },
   ): Promise<ExecuteSparqlOutput> {
     const url = new URL(
       `${this.options.baseUrl}/v1/worlds/${worldId}/sparql`,
     );
-    const organizationId = options?.organizationId;
-    if (organizationId) {
-      url.searchParams.set("organizationId", organizationId);
-    }
 
     const response = await this.fetch(
       url,
@@ -221,25 +194,19 @@ export class Worlds {
    * search searches a world.
    */
   public async search(
+    worldId: string,
     query: string,
     options?: {
       limit?: number;
-      organizationId?: string;
-      worldIds?: string[];
       subjects?: string[];
       predicates?: string[];
     },
   ): Promise<TripleSearchResult[]> {
-    const url = new URL(`${this.options.baseUrl}/v1/search`);
-    const organizationId = options?.organizationId;
-    if (organizationId) {
-      url.searchParams.set("organizationId", organizationId);
-    }
+    const url = new URL(
+      `${this.options.baseUrl}/v1/worlds/${worldId}/search`,
+    );
 
     url.searchParams.set("q", query);
-    if (options?.worldIds && options?.worldIds.length > 0) {
-      url.searchParams.set("worlds", options.worldIds.join(","));
-    }
 
     if (options?.limit) {
       url.searchParams.set("limit", options.limit.toString());
@@ -247,13 +214,13 @@ export class Worlds {
 
     if (options?.subjects) {
       for (const s of options.subjects) {
-        url.searchParams.append("s", s);
+        url.searchParams.append("subjects", s);
       }
     }
 
     if (options?.predicates) {
       for (const p of options.predicates) {
-        url.searchParams.append("p", p);
+        url.searchParams.append("predicates", p);
       }
     }
 
@@ -271,25 +238,58 @@ export class Worlds {
   }
 
   /**
-   * download downloads a world in the specified RDF format.
+   * import imports data into a world.
+   */
+  public async import(
+    worldId: string,
+    data: string | ArrayBuffer,
+    options?: {
+      format?: RdfFormat;
+    },
+  ): Promise<void> {
+    const url = new URL(
+      `${this.options.baseUrl}/v1/worlds/${worldId}/import`,
+    );
+
+    const contentType = options?.format === "turtle"
+      ? "text/turtle"
+      : options?.format === "n-triples"
+      ? "application/n-triples"
+      : options?.format === "n3"
+      ? "text/n3"
+      : "application/n-quads";
+
+    const response = await this.fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.options.apiKey}`,
+        "Content-Type": contentType,
+      },
+      body: data,
+    });
+
+    if (!response.ok) {
+      const errorMessage = await parseError(response);
+      throw new Error(`Failed to import world data: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * export exports a world in the specified RDF format.
    *
    * @example
    * ```ts
-   * const buffer = await sdk.worlds.download(worldId, { format: "turtle" });
+   * const buffer = await sdk.worlds.export(worldId, { format: "turtle" });
    * const text = new TextDecoder().decode(buffer);
    * ```
    */
-  public async download(
+  public async export(
     worldId: string,
-    options?: { format?: RdfFormat; organizationId?: string },
+    options?: { format?: RdfFormat },
   ): Promise<ArrayBuffer> {
     const url = new URL(
-      `${this.options.baseUrl}/v1/worlds/${worldId}/download`,
+      `${this.options.baseUrl}/v1/worlds/${worldId}/export`,
     );
-    const organizationId = options?.organizationId;
-    if (organizationId) {
-      url.searchParams.set("organizationId", organizationId);
-    }
     if (options?.format) {
       url.searchParams.set("format", options.format);
     }
@@ -302,7 +302,7 @@ export class Worlds {
 
     if (!response.ok) {
       const errorMessage = await parseError(response);
-      throw new Error(`Failed to download world: ${errorMessage}`);
+      throw new Error(`Failed to export world: ${errorMessage}`);
     }
 
     return await response.arrayBuffer();

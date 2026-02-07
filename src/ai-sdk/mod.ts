@@ -1,4 +1,5 @@
-export * from "./interfaces.ts";
+export * from "./options.ts";
+export * from "./schema.ts";
 export * from "./utils.ts";
 export * from "./tools/discover-schema.ts";
 export * from "./tools/execute-sparql.ts";

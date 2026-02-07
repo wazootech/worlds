@@ -6,7 +6,7 @@ import type { AppContext } from "#/server/app-context.ts";
 import { paginationParamsSchema } from "#/sdk/utils.ts";
 import {
   createInviteParamsSchema,
-  inviteRecordSchema,
+  inviteSchema,
 } from "#/sdk/invites/schema.ts";
 import { ErrorResponse } from "#/server/errors.ts";
 import { InvitesService } from "#/server/databases/core/invites/service.ts";
@@ -57,7 +57,7 @@ export default (appContext: AppContext) =>
 
         // Map to SDK record and validate
         const validatedRows = invites.map((invite: InviteTable) => {
-          return inviteRecordSchema.parse({
+          return inviteSchema.parse({
             code: invite.code,
             createdAt: invite.created_at,
             redeemedBy: invite.redeemed_by,
@@ -127,7 +127,7 @@ export default (appContext: AppContext) =>
             quantity: 1,
           });
         }
-        const record = inviteRecordSchema.parse({
+        const record = inviteSchema.parse({
           code: invite.code,
           createdAt: invite.created_at,
           redeemedBy: invite.redeemed_by,
@@ -163,7 +163,7 @@ export default (appContext: AppContext) =>
           return ErrorResponse.NotFound("Invite not found");
         }
 
-        const record = inviteRecordSchema.parse({
+        const record = inviteSchema.parse({
           code: invite.code,
           createdAt: invite.created_at,
           redeemedBy: invite.redeemed_by,

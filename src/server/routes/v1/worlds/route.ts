@@ -7,7 +7,7 @@ import type { AppContext } from "#/server/app-context.ts";
 import {
   createWorldParamsSchema,
   updateWorldParamsSchema,
-  worldRecordSchema,
+  worldSchema,
 } from "#/sdk/worlds/schema.ts";
 import { paginationParamsSchema } from "#/sdk/utils.ts";
 import { Parser, Store, Writer } from "n3";
@@ -16,6 +16,7 @@ import { ErrorResponse } from "#/server/errors.ts";
 import { MetricsService } from "#/server/databases/core/metrics/service.ts";
 import { LogsService } from "#/server/databases/world/logs/service.ts";
 import { BlobsService } from "#/server/databases/world/blobs/service.ts";
+import { handlePatch } from "#/server/rdf-patch.ts";
 
 const SERIALIZATIONS: Record<string, { contentType: string; format: string }> =
   {
@@ -81,7 +82,7 @@ export default (appContext: AppContext) => {
         }
 
         // Map to SDK record and validate against SDK schema
-        const record = worldRecordSchema.parse({
+        const record = worldSchema.parse({
           id: world.id,
           organizationId: world.organization_id,
           label: world.label,
@@ -95,7 +96,7 @@ export default (appContext: AppContext) => {
       },
     )
     .get(
-      "/v1/worlds/:world/download",
+      "/v1/worlds/:world/export",
       async (ctx) => {
         const worldId = ctx.params?.pathname.groups.world;
         if (!worldId) {
@@ -124,7 +125,7 @@ export default (appContext: AppContext) => {
         const rateLimitRes = await checkRateLimit(
           appContext,
           authorized,
-          "worlds_download",
+          "worlds_export",
         );
         if (rateLimitRes) return rateLimitRes;
 
@@ -132,7 +133,7 @@ export default (appContext: AppContext) => {
           const metricsService = new MetricsService(appContext.database);
           metricsService.meter({
             service_account_id: authorized.serviceAccountId,
-            feature_id: "worlds_download",
+            feature_id: "worlds_export",
             quantity: 1,
           });
         }
@@ -144,7 +145,7 @@ export default (appContext: AppContext) => {
           world_id: worldId,
           timestamp: Date.now(),
           level: "info",
-          message: "World downloaded",
+          message: "World exported",
           metadata: null,
         });
 
@@ -209,6 +210,118 @@ export default (appContext: AppContext) => {
             "Failed to serialize world data",
           );
         }
+      },
+    )
+    .post(
+      "/v1/worlds/:world/import",
+      async (ctx) => {
+        const worldId = ctx.params?.pathname.groups.world;
+        if (!worldId) {
+          return ErrorResponse.BadRequest("World ID required");
+        }
+
+        const authorized = await authorizeRequest(appContext, ctx.request);
+        if (!authorized.admin && !authorized.organizationId) {
+          console.warn("[DEBUG] Unauthorized in worlds/route.ts:", authorized);
+          return ErrorResponse.Unauthorized();
+        }
+
+        const rawWorld = await worldsService.getById(worldId);
+
+        if (!rawWorld || rawWorld.deleted_at != null) {
+          return ErrorResponse.NotFound("World not found");
+        }
+
+        if (
+          !authorized.admin &&
+          authorized.organizationId !== rawWorld.organization_id
+        ) {
+          return ErrorResponse.Forbidden();
+        }
+
+        const rateLimitRes = await checkRateLimit(
+          appContext,
+          authorized,
+          "worlds_import",
+        );
+        if (rateLimitRes) return rateLimitRes;
+
+        const contentType = ctx.request.headers.get("content-type") ||
+          "application/n-quads";
+        let format = "N-Quads";
+        if (contentType.includes("text/turtle")) {
+          format = "Turtle";
+        } else if (contentType.includes("application/n-triples")) {
+          format = "N-Triples";
+        } else if (contentType.includes("text/n3")) {
+          format = "N3";
+        }
+
+        const bodyText = await ctx.request.text();
+        const parser = new Parser({ format });
+        const quads = parser.parse(bodyText);
+
+        const managed = await appContext.databaseManager.get(worldId);
+        const blobsService = new BlobsService(managed.database);
+        const worldData = await blobsService.get();
+
+        const store = new Store();
+        if (worldData && worldData.blob) {
+          const blobData = worldData.blob as unknown as ArrayBuffer;
+          const worldString = new TextDecoder().decode(
+            new Uint8Array(blobData),
+          );
+          const existingQuads = new Parser({ format: "N-Quads" }).parse(
+            worldString,
+          );
+          store.addQuads(existingQuads);
+        }
+
+        store.addQuads(quads);
+
+        const writer = new Writer({ format: "N-Quads" });
+        writer.addQuads(store.getQuads(null, null, null, null));
+        const newWorldString = await new Promise<string>((resolve, reject) => {
+          writer.end((error, result) => {
+            if (error) reject(error);
+            else resolve(result as string);
+          });
+        });
+
+        const now = Date.now();
+        await blobsService.set(
+          new TextEncoder().encode(newWorldString),
+          now,
+        );
+
+        // Index new triples for semantic search
+        await handlePatch(managed.database, appContext.embeddings, [
+          { insertions: quads, deletions: [] },
+        ]);
+
+        if (authorized.serviceAccountId) {
+          const metricsService = new MetricsService(appContext.database);
+          metricsService.meter({
+            service_account_id: authorized.serviceAccountId,
+            feature_id: "worlds_import",
+            quantity: 1,
+          });
+        }
+
+        const logsService = new LogsService(managed.database);
+        await logsService.add({
+          id: ulid(),
+          world_id: worldId,
+          timestamp: Date.now(),
+          level: "info",
+          message: "World data imported",
+          metadata: {
+            format,
+            tripleCount: quads.length,
+          },
+        });
+
+        return new Response(null, { status: 204 });
       },
     )
     .put(
@@ -439,7 +552,7 @@ export default (appContext: AppContext) => {
         const validatedRows = rows.map((row) => {
           const validated = row;
 
-          return worldRecordSchema.parse({
+          return worldSchema.parse({
             id: validated.id,
             organizationId: validated.organization_id,
             label: validated.label,
@@ -480,9 +593,14 @@ export default (appContext: AppContext) => {
           );
         }
         const data = result.data;
+        const organizationId = data.organizationId ?? authorized.organizationId;
+
+        if (!organizationId) {
+          return ErrorResponse.BadRequest("Organization ID required");
+        }
 
         if (
-          !authorized.admin && authorized.organizationId !== data.organizationId
+          !authorized.admin && organizationId !== authorized.organizationId
         ) {
           return ErrorResponse.Forbidden(
             "Cannot create world for another organization",
@@ -523,7 +641,7 @@ export default (appContext: AppContext) => {
 
         const world = {
           id: worldId,
-          organization_id: data.organizationId,
+          organization_id: organizationId,
           label: data.label,
           description: data.description ?? null,
           db_hostname: dbHostname,
@@ -557,7 +675,7 @@ export default (appContext: AppContext) => {
           },
         });
 
-        const record = worldRecordSchema.parse({
+        const record = worldSchema.parse({
           id: world.id,
           organizationId: world.organization_id,
           label: world.label,

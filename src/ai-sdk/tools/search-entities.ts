@@ -2,12 +2,17 @@ import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
 import { WorldsSdk } from "#/sdk/sdk.ts";
-import type { CreateToolsOptions } from "#/ai-sdk/interfaces.ts";
+import {
+  type TripleSearchResult,
+  tripleSearchResultSchema,
+} from "#/sdk/worlds/schema.ts";
+import type { CreateToolsOptions } from "../options.ts";
 
 /**
  * SearchEntitiesInput is the input to the searchEntities tool.
  */
 export interface SearchEntitiesInput {
+  source: string;
   query: string;
   limit?: number;
 }
@@ -17,6 +22,9 @@ export interface SearchEntitiesInput {
  */
 export const searchEntitiesInputSchema: z.ZodType<SearchEntitiesInput> = z
   .object({
+    source: z.string().describe(
+      "The ID of the source to search within.",
+    ),
     query: z.string().describe(
       "The text of the associated entity as mentioned in the given text.",
     ),
@@ -29,12 +37,7 @@ export const searchEntitiesInputSchema: z.ZodType<SearchEntitiesInput> = z
  * SearchEntitiesOutput is the output of the searchEntities tool.
  */
 export interface SearchEntitiesOutput {
-  candidates: {
-    iri: string;
-    label?: string;
-    description?: string;
-    score: number;
-  }[];
+  results: TripleSearchResult[];
 }
 
 /**
@@ -42,24 +45,25 @@ export interface SearchEntitiesOutput {
  */
 export const searchEntitiesOutputSchema: z.ZodType<SearchEntitiesOutput> = z
   .object({
-    candidates: z.array(
-      z.object({
-        iri: z.string().describe("The IRI of the candidate entity."),
-        label: z.string().optional().describe("The label of the entity."),
-        description: z.string().optional().describe(
-          "A description or snippet for the entity.",
-        ),
-        score: z.number().describe("The search relevance score."),
-      }),
-    ).describe("A list of potential entity matches."),
+    results: z.array(tripleSearchResultSchema).describe(
+      "A list of potential entity matches.",
+    ),
   });
+
+/**
+ * SearchEntitiesTool is a tool that resolves entities by searching for facts.
+ */
+export type SearchEntitiesTool = Tool<
+  SearchEntitiesInput,
+  SearchEntitiesOutput
+>;
 
 /**
  * createSearchEntitiesTool creates a tool that resolves entities by searching for facts.
  */
 export function createSearchEntitiesTool(
   options: CreateToolsOptions,
-): Tool<SearchEntitiesInput, SearchEntitiesOutput> {
+): SearchEntitiesTool {
   const sdk = new WorldsSdk(options);
   return tool({
     description:
@@ -67,23 +71,13 @@ export function createSearchEntitiesTool(
     inputSchema: searchEntitiesInputSchema,
     outputSchema: searchEntitiesOutputSchema,
     execute: async (
-      { query, limit }: SearchEntitiesInput,
+      { source, query, limit = 10 }: SearchEntitiesInput,
     ): Promise<SearchEntitiesOutput> => {
-      const worldIds = options.sources
-        .filter((source) => !source.schema)
-        .map((source) => source.id);
-      const searchResults = await sdk.worlds.search(query, {
-        worldIds,
-        limit: limit ?? 5, // Default to top 5 candidates
+      const results = await sdk.worlds.search(source, query, {
+        limit,
       });
 
-      return {
-        candidates: searchResults.map((result) => ({
-          iri: result.subject,
-          label: result.object, // Assuming object often contains the label/text match
-          score: result.score,
-        })),
-      };
+      return { results };
     },
   });
 }
