@@ -31,9 +31,9 @@ export const tripleSearchResultSchema: z.ZodType<TripleSearchResult> = z.object(
 );
 
 /**
- * WorldRecord represents a world in the Worlds API.
+ * World represents a world in the Worlds API.
  */
-export interface WorldRecord {
+export interface World {
   id: string;
   organizationId: string;
   label: string;
@@ -44,9 +44,9 @@ export interface WorldRecord {
 }
 
 /**
- * worldRecordSchema is the Zod schema for WorldRecord.
+ * worldSchema is the Zod schema for World.
  */
-export const worldRecordSchema: z.ZodType<WorldRecord> = z.object({
+export const worldSchema: z.ZodType<World> = z.object({
   id: z.string(),
   organizationId: z.string(),
   label: z.string(),
@@ -60,7 +60,7 @@ export const worldRecordSchema: z.ZodType<WorldRecord> = z.object({
  * CreateWorldParams represents the parameters for creating a world.
  */
 export interface CreateWorldParams {
-  organizationId: string;
+  organizationId?: string;
   label: string;
   description?: string | null;
 }
@@ -69,7 +69,7 @@ export interface CreateWorldParams {
  * createWorldParamsSchema is the Zod schema for CreateWorldParams.
  */
 export const createWorldParamsSchema: z.ZodType<CreateWorldParams> = z.object({
-  organizationId: z.string(),
+  organizationId: z.string().optional(),
   label: z.string(),
   description: z.string().nullable().optional(),
 });

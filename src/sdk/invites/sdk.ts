@@ -1,5 +1,5 @@
 import type { WorldsSdkOptions } from "#/sdk/interfaces.ts";
-import type { CreateInviteParams, InviteRecord } from "./schema.ts";
+import type { CreateInviteParams, Invite } from "./schema.ts";
 
 /**
  * RedeemInviteResult represents the result of redeeming an invite.
@@ -27,7 +27,7 @@ export class Invites {
   public async list(
     page = 1,
     pageSize = 20,
-  ): Promise<InviteRecord[]> {
+  ): Promise<Invite[]> {
     const url = new URL(`${this.options.baseUrl}/v1/invites`);
     url.searchParams.set("page", page.toString());
     url.searchParams.set("pageSize", pageSize.toString());
@@ -48,7 +48,7 @@ export class Invites {
   /**
    * create creates an invite in the Worlds API.
    */
-  public async create(data?: CreateInviteParams): Promise<InviteRecord> {
+  public async create(data?: CreateInviteParams): Promise<Invite> {
     const url = new URL(`${this.options.baseUrl}/v1/invites`);
     const response = await this.fetch(
       url,
@@ -75,7 +75,7 @@ export class Invites {
    */
   public async get(
     code: string,
-  ): Promise<InviteRecord | null> {
+  ): Promise<Invite | null> {
     const url = new URL(`${this.options.baseUrl}/v1/invites/${code}`);
     const response = await this.fetch(
       url,

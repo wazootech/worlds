@@ -2,7 +2,7 @@ import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
 import { ulid } from "@std/ulid/ulid";
-import type { CreateToolsOptions } from "#/ai-sdk/interfaces.ts";
+import type { CreateToolsOptions } from "../options.ts";
 
 /**
  * GenerateIriInput is the input to the generateIri tool.
@@ -41,13 +41,19 @@ export const generateIriOutputSchema: z.ZodType<GenerateIriOutput> = z.object(
 );
 
 /**
+ * GenerateIriTool is a tool that generates a unique IRI
+ * (Internationalized Resource Identifier) for a new entity.
+ */
+export type GenerateIriTool = Tool<GenerateIriInput, GenerateIriOutput>;
+
+/**
  * createGenerateIriTool creates a tool that generates a unique IRI
  * (Internationalized Resource Identifier) for a new entity.
  */
 export function createGenerateIriTool(
   { generateIri = () => `https://wazoo.tech/.well-known/genid/${ulid()}` }:
     CreateToolsOptions,
-): Tool<GenerateIriInput, GenerateIriOutput> {
+): GenerateIriTool {
   return tool({
     description:
       "Generate a unique IRI for a new entity when you need to insert a new node into the graph.",

@@ -95,19 +95,30 @@ Deno.test("WorldsSdk - Worlds", async (t) => {
     assertEquals(result.results.bindings[0].o.value, "Update Object");
   });
 
-  await t.step("download world", async () => {
+  await t.step("export world", async () => {
     // 1. Add some data if not already there (should be there from previous steps)
-    // 2. Download in default format (N-Quads)
-    const nQuadsBuffer = await sdk.worlds.download(worldId);
+    // 2. Export in default format (N-Quads)
+    const nQuadsBuffer = await sdk.worlds.export(worldId);
     const nQuads = new TextDecoder().decode(nQuadsBuffer);
     assert(nQuads.includes("http://example.org/subject"));
 
-    // 3. Download in Turtle format
-    const turtleBuffer = await sdk.worlds.download(worldId, {
+    // 3. Export in Turtle format
+    const turtleBuffer = await sdk.worlds.export(worldId, {
       format: "turtle",
     });
     const turtle = new TextDecoder().decode(turtleBuffer);
     assert(turtle.includes("<http://example.org/subject>"));
+  });
+
+  await t.step("import world", async () => {
+    const turtleData =
+      '<http://example.org/subject2> <http://example.org/predicate> "Imported Object" .';
+    await sdk.worlds.import(worldId, turtleData, { format: "turtle" });
+
+    const nQuadsBuffer = await sdk.worlds.export(worldId);
+    const nQuads = new TextDecoder().decode(nQuadsBuffer);
+    assert(nQuads.includes("http://example.org/subject2"));
+    assert(nQuads.includes("Imported Object"));
   });
 
   await t.step("delete world", async () => {
@@ -217,9 +228,7 @@ Deno.test("WorldsSdk - Admin Organization Override", async (t) => {
     await appContext.databaseManager!.create(worldId);
 
     // Get world using admin override
-    const world = await adminSdk.worlds.get(worldId, {
-      organizationId: organizationA.id,
-    });
+    const world = await adminSdk.worlds.get(worldId);
     assert(world !== null);
     assertEquals(world.organizationId, organizationA.id);
   });
@@ -244,12 +253,10 @@ Deno.test("WorldsSdk - Admin Organization Override", async (t) => {
     // Update using admin override
     await adminSdk.worlds.update(worldId2, {
       description: "Updated via admin",
-    }, { organizationId: organizationA.id });
+    });
 
     // Verify update
-    const world = await adminSdk.worlds.get(worldId2, {
-      organizationId: organizationA.id,
-    });
+    const world = await adminSdk.worlds.get(worldId2);
     assert(world !== null);
     assertEquals(world.description, "Updated via admin");
   });
@@ -272,9 +279,7 @@ Deno.test("WorldsSdk - Admin Organization Override", async (t) => {
     await appContext.databaseManager!.create(worldId3);
 
     // Delete using admin override
-    await adminSdk.worlds.delete(worldId3, {
-      organizationId: organizationB.id,
-    });
+    await adminSdk.worlds.delete(worldId3);
 
     // Verify deletion
     const worldResult = await worldsService.getById(worldId3);
@@ -301,18 +306,14 @@ Deno.test("WorldsSdk - Admin Organization Override", async (t) => {
       await appContext.databaseManager!.create(worldId4);
       const worldId = worldId4;
 
-      // Perform SPARQL update using admin override
       await adminSdk.worlds.sparql(
         worldId,
         'INSERT DATA { <http://example.org/s> <http://example.org/p> "Admin Object" . }',
-        { organizationId: organizationA.id },
       );
 
-      // Perform SPARQL query using admin override
       const queryResult = await adminSdk.worlds.sparql(
         worldId,
         "SELECT * WHERE { ?s ?p ?o }",
-        { organizationId: organizationA.id },
       ) as SparqlSelectResults;
 
       assert(queryResult.results.bindings.length > 0);

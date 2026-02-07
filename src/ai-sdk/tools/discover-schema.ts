@@ -2,14 +2,13 @@ import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
 import { WorldsSdk } from "#/sdk/sdk.ts";
-import type { CreateToolsOptions } from "#/ai-sdk/interfaces.ts";
-
-// TODO: Consider rename to resolve-schema.ts
+import type { CreateToolsOptions } from "../options.ts";
 
 /**
  * DiscoverSchemaInput is the input to the discoverSchema tool.
  */
 export interface DiscoverSchemaInput {
+  source: string;
   referenceText: string;
   limit?: number;
 }
@@ -19,6 +18,9 @@ export interface DiscoverSchemaInput {
  */
 export const discoverSchemaInputSchema: z.ZodType<DiscoverSchemaInput> = z
   .object({
+    source: z.string().describe(
+      "The ID of the schema source to discover concepts from.",
+    ),
     referenceText: z.string().describe(
       "A natural language description of the entities or properties to discover (e.g., 'A person with a name').",
     ),
@@ -28,178 +30,219 @@ export const discoverSchemaInputSchema: z.ZodType<DiscoverSchemaInput> = z
   });
 
 /**
- * SchemaConcept represents an RDF class, property, or context dimension.
+ * DiscoverSchemaResult is a result of the discoverSchema tool.
  */
-export interface SchemaConcept {
-  iri: string;
-  label?: string;
-  kind: "Class" | "Property" | "ContextDimension" | "Unknown";
-  description?: string;
-  domain?: string;
-  range?: string;
-}
+export type DiscoverSchemaResult =
+  | {
+    type: "Class";
+    iri: string;
+    label?: string;
+    description?: string;
+  }
+  | {
+    type: "Property";
+    iri: string;
+    domain: string[];
+    range: string[];
+    label?: string;
+    description?: string;
+  };
+
+/**
+ * discoverSchemaResultSchema is the schema for the discoverSchema tool.
+ */
+export const discoverSchemaResultSchema: z.ZodType<DiscoverSchemaResult> = z
+  .discriminatedUnion("type", [
+    z.object({
+      type: z.literal("Class"),
+      iri: z.string(),
+      label: z.string().optional(),
+      description: z.string().optional(),
+    }),
+    z.object({
+      type: z.literal("Property"),
+      iri: z.string(),
+      label: z.string().optional(),
+      description: z.string().optional(),
+      domain: z.array(z.string()),
+      range: z.array(z.string()),
+    }),
+  ]);
 
 /**
  * DiscoverSchemaOutput is the output of the discoverSchema tool.
  */
 export interface DiscoverSchemaOutput {
-  concepts: SchemaConcept[];
+  results: DiscoverSchemaResult[];
 }
-
-// TODO: Carefully design this tool schema because it is what i will base the next search documents table on.
 
 /**
  * discoverSchemaOutputSchema is the output schema for the discoverSchema tool.
  */
 export const discoverSchemaOutputSchema: z.ZodType<DiscoverSchemaOutput> = z
   .object({
-    concepts: z.array(
-      z.object({
-        iri: z.string().describe("The IRI of the discovered schema element."),
-        label: z.string().optional().describe(
-          "The human-readable label of the element.",
-        ),
-        kind: z.enum(["Class", "Property", "ContextDimension", "Unknown"])
-          .describe("The kind of schema element."),
-        description: z.string().optional().describe(
-          "A description of the element.",
-        ),
-        domain: z.string().optional().describe(
-          "The domain of the property (if applicable).",
-        ),
-        range: z.string().optional().describe(
-          "The range of the property (if applicable).",
-        ),
-      }),
-    ),
+    results: z.array(discoverSchemaResultSchema),
   });
 
+const terms = {
+  rdf: {
+    type: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+    Property: "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+  },
+  rdfs: {
+    label: "http://www.w3.org/2000/01/rdf-schema#label",
+    comment: "http://www.w3.org/2000/01/rdf-schema#comment",
+    subClassOf: "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+    domain: "http://www.w3.org/2000/01/rdf-schema#domain",
+    range: "http://www.w3.org/2000/01/rdf-schema#range",
+    Class: "http://www.w3.org/2000/01/rdf-schema#Class",
+  },
+  owl: {
+    Class: "http://www.w3.org/2002/07/owl#Class",
+    ObjectProperty: "http://www.w3.org/2002/07/owl#ObjectProperty",
+    DatatypeProperty: "http://www.w3.org/2002/07/owl#DatatypeProperty",
+  },
+  skos: {
+    prefLabel: "http://www.w3.org/2004/02/skos/core#prefLabel",
+    definition: "http://www.w3.org/2004/02/skos/core#definition",
+  },
+};
+
 /**
- * createDiscoverSchemaTool creates a tool that discovers RDF classes, properties, and contextual dimensions.
+ * DiscoverSchemaTool is a tool that discovers RDF classes and properties.
+ */
+export type DiscoverSchemaTool = Tool<
+  DiscoverSchemaInput,
+  DiscoverSchemaOutput
+>;
+
+/**
+ * createDiscoverSchemaTool creates a tool that discovers RDF classes and properties.
  */
 export function createDiscoverSchemaTool(
   options: CreateToolsOptions,
-): Tool<DiscoverSchemaInput, DiscoverSchemaOutput> {
+): DiscoverSchemaTool {
   const sdk = new WorldsSdk(options);
   return tool({
     description:
       "Discover the available classes and properties (vocabulary) in the knowledge base schema.",
     inputSchema: discoverSchemaInputSchema,
     outputSchema: discoverSchemaOutputSchema,
-    execute: async ({ referenceText, limit }) => {
-      const worldIds = options.sources
-        .filter((source) => source.schema)
-        .map((source) => source.id);
-
-      if (worldIds.length === 0) {
-        return { concepts: [] };
-      }
-
-      // Search for triples in schema worlds, explicitly looking for potential subjects using the reference text.
-      const searchResults = await sdk.worlds.search(referenceText, {
-        worldIds,
-        limit: (limit ?? 10) * 2, // Fetch a few more to filter/group
-      });
-
-      // Identify unique potential subjects and their source worlds.
-      const subjectMap = new Map<string, string>(); // IRI -> worldId
-      for (const result of searchResults) {
-        // We prioritize results where the subject matches our search, or the object matches (label search)
-        // For simplicity, we take the subject of any matching triple as a candidate concept.
-        const subject = result.subject;
-        if (!subjectMap.has(subject) && result.worldId) {
-          subjectMap.set(subject, result.worldId);
-        }
-
-        if (subjectMap.size >= (limit ?? 10)) break;
-      }
-
-      // Hydrate concepts using SPARQL queries to fetch full properties.
-      // We run a query for each subject to get its full properties.
-      // To optimize, we group by worldId and use VALUES or just loop if N is small.
-      // Since N is small (limit=10), parallel requests are fine.
-      const concepts: SchemaConcept[] = [];
-
-      await Promise.all(
-        Array.from(subjectMap.entries()).map(async ([iri, worldId]) => {
-          try {
-            const query = `
-              SELECT ?p ?o WHERE {
-                { <${iri}> ?p ?o . }
-                UNION
-                { <${iri}> rdfs:subClassOf* ?parent . ?parent ?p ?o . }
-                UNION
-                { <${iri}> owl:equivalentClass ?equiv . ?equiv ?p ?o . }
-              }
-            `;
-            const output = await sdk.worlds.sparql(worldId, query);
-            if (!output || !output.results) return;
-
-            // Ensure it's a SELECT result with bindings (not quads)
-            if (!("bindings" in output.results)) return;
-
-            const concept: SchemaConcept = {
-              iri,
-              kind: "Unknown",
-            };
-
-            for (const binding of output.results.bindings) {
-              const p = binding.p.value;
-              const o = binding.o.value;
-
-              if (
-                p === "http://www.w3.org/2000/01/rdf-schema#label" ||
-                p === "http://www.w3.org/2004/02/skos/core#prefLabel"
-              ) {
-                concept.label = o;
-              } else if (
-                p === "http://www.w3.org/2000/01/rdf-schema#comment" ||
-                p === "http://www.w3.org/2004/02/skos/core#definition"
-              ) {
-                concept.description = o;
-              } else if (
-                p === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-              ) {
-                if (
-                  o === "http://www.w3.org/2000/01/rdf-schema#Class" ||
-                  o === "http://www.w3.org/2002/07/owl#Class"
-                ) {
-                  concept.kind = "Class";
-                } else if (
-                  o ===
-                    "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property" ||
-                  o === "http://www.w3.org/2002/07/owl#ObjectProperty" ||
-                  o === "http://www.w3.org/2002/07/owl#DatatypeProperty"
-                ) {
-                  concept.kind = "Property";
-                }
-              } else if (
-                p === "http://www.w3.org/2000/01/rdf-schema#subClassOf"
-              ) {
-                // If it's a subclass of something, it's a Class.
-                concept.kind = "Class";
-              } else if (
-                p === "http://www.w3.org/2000/01/rdf-schema#domain"
-              ) {
-                concept.domain = o;
-              } else if (
-                p === "http://www.w3.org/2000/01/rdf-schema#range"
-              ) {
-                concept.range = o;
-              }
-            }
-            concepts.push(concept);
-          } catch (e) {
-            console.warn(`Failed to hydrate concept ${iri}:`, e);
-            // Optionally include partial info from search result?
-            // For now, allow skipping if SPARQL fails (e.g., restricted access).
-          }
-        }),
-      );
-
-      return {
-        concepts,
-      };
+    execute: async (input) => {
+      return await discoverSchema(sdk, input);
     },
   });
+}
+
+/**
+ * discoverSchema discovers classes and properties.
+ */
+export async function discoverSchema(
+  sdk: WorldsSdk,
+  { source, referenceText, limit = 10 }: DiscoverSchemaInput,
+): Promise<DiscoverSchemaOutput> {
+  const searchResults = await sdk.worlds.search(source, referenceText, {
+    limit,
+  });
+
+  const subjects = new Set<string>();
+  for (const result of searchResults) {
+    subjects.add(result.subject);
+    if (subjects.size >= limit) {
+      break;
+    }
+  }
+
+  const results: DiscoverSchemaResult[] = [];
+
+  await Promise.all(
+    Array.from(subjects).map(async (iri) => {
+      try {
+        const output = await sdk.worlds.sparql(
+          source,
+          `
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          PREFIX owl: <http://www.w3.org/2002/07/owl#>
+          
+          SELECT ?p ?o WHERE {
+            { <${iri}> ?p ?o . }
+            UNION
+            { <${iri}> rdfs:subClassOf* ?parent . ?parent ?p ?o . }
+            UNION
+            { <${iri}> owl:equivalentClass ?equiv . ?equiv ?p ?o . }
+          }
+        `,
+        );
+        if (!output || !output.results) {
+          return;
+        }
+
+        // Ensure it's a SELECT result with bindings (not quads)
+        if (!("bindings" in output.results)) {
+          return;
+        }
+
+        let label: string | undefined;
+        let description: string | undefined;
+        let type: "Class" | "Property" | undefined;
+        const domains = new Set<string>();
+        const ranges = new Set<string>();
+
+        for (const binding of output.results.bindings) {
+          const p = binding.p.value;
+          const o = binding.o.value;
+
+          if (p === terms.rdfs.label || p === terms.skos.prefLabel) {
+            label = o;
+          } else if (
+            p === terms.rdfs.comment || p === terms.skos.definition
+          ) {
+            description = o;
+          } else if (p === terms.rdf.type) {
+            if (o === terms.rdfs.Class || o === terms.owl.Class) {
+              type = "Class";
+            } else if (
+              o === terms.rdf.Property ||
+              o === terms.owl.ObjectProperty ||
+              o === terms.owl.DatatypeProperty
+            ) {
+              type = "Property";
+            }
+          } else if (p === terms.rdfs.subClassOf) {
+            type = "Class";
+          } else if (p === terms.rdfs.domain) {
+            domains.add(o);
+          } else if (p === terms.rdfs.range) {
+            ranges.add(o);
+          }
+        }
+
+        if (type === "Class") {
+          results.push({
+            iri,
+            label,
+            description,
+            type: "Class",
+          });
+        } else if (type === "Property") {
+          results.push({
+            iri,
+            label,
+            description,
+            type: "Property",
+            domain: Array.from(domains),
+            range: Array.from(ranges),
+          });
+        }
+      } catch (e) {
+        console.warn(`Failed to hydrate result ${iri}:`, e);
+        // Optionally include partial info from search result?
+        // For now, allow skipping if SPARQL fails (e.g., restricted access).
+      }
+    }),
+  );
+
+  return {
+    results,
+  };
 }

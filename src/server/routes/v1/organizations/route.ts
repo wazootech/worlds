@@ -5,7 +5,7 @@ import type { AppContext } from "#/server/app-context.ts";
 import { paginationParamsSchema } from "#/sdk/utils.ts";
 import {
   createOrganizationParamsSchema,
-  organizationRecordSchema,
+  organizationSchema,
   updateOrganizationParamsSchema,
 } from "#/sdk/organizations/schema.ts";
 // import { LibsqlSearchStoreManager } from "#/server/search/libsql.ts";
@@ -66,7 +66,7 @@ export default (appContext: AppContext) => {
 
         // Map to SDK record and validate
         const validatedRows = organizations.map((org: OrganizationRow) => {
-          return organizationRecordSchema.parse({
+          return organizationSchema.parse({
             id: org.id,
             label: org.label,
             description: org.description,
@@ -144,7 +144,7 @@ export default (appContext: AppContext) => {
             quantity: 1,
           });
         }
-        const record = organizationRecordSchema.parse({
+        const record = organizationSchema.parse({
           id: organization.id,
           label: organization.label,
           description: organization.description,
@@ -192,7 +192,7 @@ export default (appContext: AppContext) => {
           return ErrorResponse.Forbidden();
         }
 
-        const record = organizationRecordSchema.parse({
+        const record = organizationSchema.parse({
           id: organization.id,
           label: organization.label,
           description: organization.description,

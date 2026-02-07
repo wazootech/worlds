@@ -114,7 +114,7 @@ Deno.test("Worlds API routes", async (t) => {
   );
 
   await t.step(
-    "GET /v1/worlds/:world/download returns world data",
+    "GET /v1/worlds/:world/export returns world data",
     async () => {
       const { id: organizationId, apiKey } = await createTestOrganization(
         testContext,
@@ -142,7 +142,7 @@ Deno.test("Worlds API routes", async (t) => {
 
       // Test default (N-Quads)
       const resp = await app.fetch(
-        new Request(`http://localhost/v1/worlds/${worldId}/download`, {
+        new Request(`http://localhost/v1/worlds/${worldId}/export`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
@@ -158,7 +158,7 @@ Deno.test("Worlds API routes", async (t) => {
       // Test Turtle format via format param
       const turtleResp = await app.fetch(
         new Request(
-          `http://localhost/v1/worlds/${worldId}/download?format=turtle`,
+          `http://localhost/v1/worlds/${worldId}/export?format=turtle`,
           {
             method: "GET",
             headers: {
@@ -176,7 +176,7 @@ Deno.test("Worlds API routes", async (t) => {
   );
 
   await t.step(
-    "GET /v1/worlds/:world/download returns 401 for unauthorized",
+    "GET /v1/worlds/:world/export returns 401 for unauthorized",
     async () => {
       const { id: organizationId } = await createTestOrganization(
         testContext,
@@ -198,7 +198,7 @@ Deno.test("Worlds API routes", async (t) => {
       await testContext.databaseManager?.create(worldId);
 
       const resp = await app.fetch(
-        new Request(`http://localhost/v1/worlds/${worldId}/download`, {
+        new Request(`http://localhost/v1/worlds/${worldId}/export`, {
           method: "GET",
         }),
       );
