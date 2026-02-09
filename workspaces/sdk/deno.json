@@ -1,0 +1,18 @@
+{
+  "name": "@wazoo/sdk",
+  "version": "0.0.1",
+  "exports": {
+    ".": "./mod.ts",
+    "./clients/invites": "./clients/invites/mod.ts",
+    "./clients/organizations": "./clients/organizations/mod.ts",
+    "./clients/organizations/metrics": "./clients/organizations/metrics/mod.ts",
+    "./clients/organizations/service-accounts": "./clients/organizations/service-accounts/mod.ts",
+    "./clients/worlds": "./clients/worlds/mod.ts"
+  },
+  "imports": {
+    "#/": "./"
+  },
+  "tasks": {
+    "test": "deno test -A"
+  }
+}
