@@ -5,7 +5,7 @@ import { checkRateLimit } from "#/middleware/rate-limit.ts";
 import type { AppContext } from "#/context.ts";
 import { paginationParamsSchema } from "@wazoo/sdk";
 import { createInviteParamsSchema, inviteSchema } from "@wazoo/sdk";
-import { ErrorResponse } from "#/errors.ts";
+import { ErrorResponse } from "../../../lib/errors/errors.ts";
 import { InvitesService } from "#/lib/database/tables/invites/service.ts";
 import { MetricsService } from "#/lib/database/tables/metrics/service.ts";
 import type { InviteTable } from "#/lib/database/tables/invites/schema.ts";

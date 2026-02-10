@@ -3,7 +3,6 @@ import { ulid } from "@std/ulid/ulid";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { checkRateLimit } from "#/middleware/rate-limit.ts";
 import type { AppContext } from "#/context.ts";
-// import { LibsqlSearchStoreManager } from "#/search/libsql.ts";
 import {
   createWorldParamsSchema,
   paginationParamsSchema,
@@ -12,7 +11,7 @@ import {
 } from "@wazoo/sdk";
 import { Parser, Store, Writer } from "n3";
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
-import { ErrorResponse } from "#/errors.ts";
+import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { MetricsService } from "#/lib/database/tables/metrics/service.ts";
 import { LogsService } from "#/lib/database/tables/logs/service.ts";
 import { BlobsService } from "#/lib/database/tables/blobs/service.ts";

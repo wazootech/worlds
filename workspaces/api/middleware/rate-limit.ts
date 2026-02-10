@@ -1,6 +1,6 @@
 import type { AppContext } from "#/context.ts";
 import type { AuthorizedRequest } from "#/middleware/auth.ts";
-import { ErrorResponse } from "#/errors.ts";
+import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { RateLimitsService } from "#/lib/database/tables/rate-limits/service.ts";
 
 /**

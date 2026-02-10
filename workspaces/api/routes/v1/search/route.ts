@@ -3,7 +3,7 @@ import { authorizeRequest } from "#/middleware/auth.ts";
 import { checkRateLimit } from "#/middleware/rate-limit.ts";
 import type { AppContext } from "#/context.ts";
 import { limitParamSchema, worldIdsParamSchema } from "@wazoo/sdk";
-import { ErrorResponse } from "#/errors.ts";
+import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
 import { MetricsService } from "#/lib/database/tables/metrics/service.ts";
 import { ChunksService } from "#/lib/database/tables/chunks/service.ts";

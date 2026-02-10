@@ -8,7 +8,7 @@ import {
   paginationParamsSchema,
   updateOrganizationParamsSchema,
 } from "@wazoo/sdk";
-import { ErrorResponse } from "#/errors.ts";
+import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { OrganizationsService } from "#/lib/database/tables/organizations/service.ts";
 import { MetricsService } from "#/lib/database/tables/metrics/service.ts";
 import type { OrganizationRow } from "#/lib/database/tables/organizations/schema.ts";

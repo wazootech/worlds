@@ -12,10 +12,9 @@ import {
   handlePatch,
 } from "#/lib/rdf-patch/rdf-patch.ts";
 import type { Patch } from "#/lib/rdf-patch/rdf-patch.ts";
-
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
 import { worldTableUpdateSchema } from "#/lib/database/tables/worlds/schema.ts";
-import { ErrorResponse } from "#/errors.ts";
+import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { checkRateLimit } from "#/middleware/rate-limit.ts";
 import { MetricsService } from "#/lib/database/tables/metrics/service.ts";
 import { LogsService } from "#/lib/database/tables/logs/service.ts";

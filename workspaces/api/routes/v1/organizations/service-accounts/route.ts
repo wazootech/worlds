@@ -4,7 +4,7 @@ import { authorizeRequest } from "#/middleware/auth.ts";
 import { checkRateLimit } from "#/middleware/rate-limit.ts";
 import type { AppContext } from "#/context.ts";
 import { paginationParamsSchema } from "@wazoo/sdk";
-import { ErrorResponse } from "#/errors.ts";
+import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { ServiceAccountsService } from "#/lib/database/tables/service-accounts/service.ts";
 import type { ServiceAccountTable } from "#/lib/database/tables/service-accounts/schema.ts";
 import {
