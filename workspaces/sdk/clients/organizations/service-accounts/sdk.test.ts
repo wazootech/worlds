@@ -1,19 +1,27 @@
 import { assert, assertEquals } from "@std/assert";
 import { createServer } from "@wazoo/api";
-import { createTestContext, createTestOrganization } from "@wazoo/api/testing";
+import { createTestContext } from "@wazoo/api/testing";
 import { WorldsSdk } from "#/sdk.ts";
 
 Deno.test("WorldsSdk - Service Accounts", async (t) => {
   const appContext = await createTestContext();
   const server = await createServer(appContext);
-  const { id: orgId, apiKey } = await createTestOrganization(appContext);
 
-  const sdk = new WorldsSdk({
+  const adminSdk = new WorldsSdk({
     baseUrl: "http://localhost",
-    apiKey: apiKey,
+    apiKey: appContext.admin!.apiKey,
     fetch: (url: string | URL | Request, init?: RequestInit) =>
       server.fetch(new Request(url, init)),
   });
+
+  const orgId = crypto.randomUUID();
+  await adminSdk.organizations.create({
+    id: orgId,
+    label: "Test Org",
+    description: "Description",
+  });
+
+  const sdk = adminSdk;
 
   let createdAccountId: string;
 

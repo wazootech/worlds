@@ -1,7 +1,7 @@
 import { assert } from "@std/assert";
 import { isSparqlUpdate } from "./utils.ts";
 
-Deno.test("isUpdateQuery - Update operations", async (t) => {
+Deno.test("isSparqlUpdate - Update operations", async (t) => {
   const updates = [
     `INSERT DATA { <http://s> <http://p> <http://o> }`,
     `DELETE DATA { <http://s> <http://p> <http://o> }`,
@@ -22,7 +22,7 @@ Deno.test("isUpdateQuery - Update operations", async (t) => {
   }
 });
 
-Deno.test("isUpdateQuery - Update with Prologue", async (t) => {
+Deno.test("isSparqlUpdate - Update with Prologue", async (t) => {
   const query = `
     PREFIX ex: <http://example.org/>
     INSERT DATA { ex:s ex:p ex:o }
@@ -40,7 +40,7 @@ Deno.test("isUpdateQuery - Update with Prologue", async (t) => {
   });
 });
 
-Deno.test("isUpdateQuery - Query operations (Read-only)", async (t) => {
+Deno.test("isSparqlUpdate - Query operations (Read-only)", async (t) => {
   const queries = [
     `SELECT * WHERE { ?s ?p ?o }`,
     `CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }`,
@@ -58,7 +58,7 @@ Deno.test("isUpdateQuery - Query operations (Read-only)", async (t) => {
   }
 });
 
-Deno.test("isUpdateQuery - Query with Prologue (Read-only)", async (t) => {
+Deno.test("isSparqlUpdate - Query with Prologue (Read-only)", async (t) => {
   const query = `
     PREFIX ex: <http://example.org/>
     SELECT ?s WHERE { ?s ?p ?o }

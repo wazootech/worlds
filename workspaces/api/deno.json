@@ -2,16 +2,16 @@
   "name": "@wazoo/api",
   "version": "0.0.1",
   "exports": {
-    ".": "./mod.ts",
+    ".": "./server.ts",
     "./server": "./server.ts",
-    "./testing": "./lib/testing/context.ts"
+    "./testing": "./lib/testing/mod.ts"
   },
   "imports": {
     "#/": "./",
     "@fartlabs/rt": "jsr:@fartlabs/rt@^0.0.11",
+    "@google/genai": "npm:@google/genai@^1.40.0",
     "@libsql/client": "npm:@libsql/client@^0.17.0",
     "@tursodatabase/api": "npm:@tursodatabase/api@^1.9.2",
-    "@google/generative-ai": "npm:@google/generative-ai@^0.24.1",
     "@tensorflow/tfjs": "npm:@tensorflow/tfjs@^4.22.0",
     "@tensorflow/tfjs-backend-wasm": "npm:@tensorflow/tfjs-backend-wasm@^4.22.0",
     "@tensorflow-models/universal-sentence-encoder": "npm:@tensorflow-models/universal-sentence-encoder@^1.3.3",

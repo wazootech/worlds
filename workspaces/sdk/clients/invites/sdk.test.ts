@@ -1,6 +1,6 @@
 import { assert, assertEquals } from "@std/assert";
 import { createServer } from "@wazoo/api";
-import { createTestContext } from "@wazoo/api";
+import { createTestContext } from "@wazoo/api/testing";
 import { WorldsSdk } from "#/sdk.ts";
 
 Deno.test("WorldsSdk - Invites", async (t) => {

@@ -1,4 +1,4 @@
-import type { GoogleGenerativeAI } from "@google/generative-ai";
+import type { GoogleGenAI } from "@google/genai";
 import type { Embeddings } from "#/lib/embeddings/embeddings.ts";
 
 /**
@@ -6,9 +6,9 @@ import type { Embeddings } from "#/lib/embeddings/embeddings.ts";
  */
 export interface GeminiEmbeddingsOptions {
   /**
-   * client is the GoogleGenerativeAI client.
+   * client is the GoogleGenAI client.
    */
-  client: GoogleGenerativeAI;
+  client: GoogleGenAI;
 
   /**
    * model is the model to use for embedding.
@@ -38,20 +38,17 @@ export class GeminiEmbeddings implements Embeddings {
    * embed generates a vector embedding for a given text.
    */
   public async embed(text: string): Promise<number[]> {
-    const model = this.options.client.getGenerativeModel({
+    const response = await this.options.client.models.embedContent({
       model: this.options.model,
+      contents: [text],
+      config: { outputDimensionality: this.options.dimensions },
     });
-    const response = await model.embedContent({
-      content: { role: "user", parts: [{ text }] },
-      outputDimensionality: this.options.dimensions,
-    } as unknown as {
-      content: { role: string; parts: { text: string }[] };
-      outputDimensionality: number;
-    });
-    if (!response.embedding?.values) {
+
+    const embedding = response.embeddings?.[0];
+    if (!embedding?.values) {
       throw new Error("Failed to generate embedding");
     }
 
-    return response.embedding.values;
+    return embedding.values;
   }
 }

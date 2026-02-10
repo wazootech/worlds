@@ -4,7 +4,6 @@ import type {
   ManagedDatabase,
 } from "#/lib/database/manager.ts";
 import { initializeWorldDatabase } from "#/lib/database/init.ts";
-import type { WorldsService } from "#/lib/database/tables/worlds/service.ts";
 
 /**
  * MemoryDatabaseManager implements DatabaseManager using in-memory databases.
@@ -13,10 +12,6 @@ import type { WorldsService } from "#/lib/database/tables/worlds/service.ts";
  */
 export class MemoryDatabaseManager implements DatabaseManager {
   private readonly databases = new Map<string, Client>();
-
-  public constructor(
-    private readonly _worldsService?: WorldsService,
-  ) {}
 
   public async create(id: string): Promise<ManagedDatabase> {
     const client = createClient({ url: ":memory:" });

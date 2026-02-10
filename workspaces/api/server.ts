@@ -1,6 +1,6 @@
 import { Router } from "@fartlabs/rt";
 import { createClient } from "@libsql/client";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import type { AppContext } from "#/context.ts";
 import { GeminiEmbeddings } from "#/lib/embeddings/gemini.ts";
 import { initializeDatabase } from "#/lib/database/init.ts";
@@ -35,13 +35,15 @@ export async function createServer(appContext: AppContext): Promise<Router> {
  * AppContextConfig is the configuration for an app context.
  */
 export interface AppContextConfig {
-  LIBSQL_URL?: string;
-  LIBSQL_AUTH_TOKEN?: string;
-  TURSO_API_TOKEN?: string;
-  TURSO_ORG?: string;
-  GOOGLE_API_KEY?: string;
-  GOOGLE_EMBEDDINGS_MODEL?: string;
-  ADMIN_API_KEY?: string;
+  env: {
+    LIBSQL_URL?: string;
+    LIBSQL_AUTH_TOKEN?: string;
+    TURSO_API_TOKEN?: string;
+    TURSO_ORG?: string;
+    GOOGLE_API_KEY?: string;
+    GOOGLE_EMBEDDINGS_MODEL?: string;
+    ADMIN_API_KEY?: string;
+  };
 }
 
 /**
@@ -50,13 +52,13 @@ export interface AppContextConfig {
 export async function createAppContext(
   config: AppContextConfig,
 ): Promise<AppContext> {
-  if (!config.LIBSQL_URL) {
+  if (!config.env.LIBSQL_URL) {
     console.warn("LIBSQL_URL is not set, using in-memory database");
   }
 
   const libsqlClient = createClient({
-    url: config.LIBSQL_URL ?? ":memory:",
-    authToken: config.LIBSQL_AUTH_TOKEN,
+    url: config.env.LIBSQL_URL ?? ":memory:",
+    authToken: config.env.LIBSQL_AUTH_TOKEN,
   });
 
   // Initialize database tables
@@ -64,20 +66,20 @@ export async function createAppContext(
 
   // TODO: Implement different embedding models.
 
-  const googleGenAI = new GoogleGenerativeAI(config.GOOGLE_API_KEY!);
+  const googleGenAI = new GoogleGenAI({ apiKey: config.env.GOOGLE_API_KEY! });
 
   const embeddings = new GeminiEmbeddings({
     client: googleGenAI,
     dimensions: 768,
 
     // https://ai.google.dev/gemini-api/docs/embeddings#model-versions
-    model: config.GOOGLE_EMBEDDINGS_MODEL ?? "models/gemini-embedding-001",
+    model: config.env.GOOGLE_EMBEDDINGS_MODEL ?? "models/gemini-embedding-001",
   });
 
   const worldsService = new WorldsService(libsqlClient);
   let libsqlManager: DatabaseManager;
-  if (config.TURSO_API_TOKEN) {
-    if (!config.TURSO_ORG) {
+  if (config.env.TURSO_API_TOKEN) {
+    if (!config.env.TURSO_ORG) {
       throw new Error("TURSO_ORG is required when TURSO_API_TOKEN is set");
     }
     const { createClient: createTursoClient } = await import(
@@ -87,8 +89,8 @@ export async function createAppContext(
       "#/lib/database/managers/api.ts"
     );
     const tursoClient = createTursoClient({
-      token: config.TURSO_API_TOKEN,
-      org: config.TURSO_ORG,
+      token: config.env.TURSO_API_TOKEN,
+      org: config.env.TURSO_ORG,
     });
     libsqlManager = new TursoLibsqlManager(tursoClient, worldsService);
   } else {
@@ -103,7 +105,7 @@ export async function createAppContext(
     database: libsqlClient,
     databaseManager: libsqlManager,
     admin: {
-      apiKey: config.ADMIN_API_KEY!,
+      apiKey: config.env.ADMIN_API_KEY!,
     },
   };
 }
