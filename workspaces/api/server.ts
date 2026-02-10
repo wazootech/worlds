@@ -1,32 +1,39 @@
+import type { AppContext } from "#/context.ts";
+import type { DatabaseManager } from "#/lib/database/manager.ts";
 import { Router } from "@fartlabs/rt";
 import { createClient } from "@libsql/client";
 import { GoogleGenAI } from "@google/genai";
-import type { AppContext } from "#/context.ts";
 import { GeminiEmbeddings } from "#/lib/embeddings/gemini.ts";
 import { initializeDatabase } from "#/lib/database/init.ts";
-import type { DatabaseManager } from "#/lib/database/manager.ts";
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
 
+import organizationsRouter from "./routes/v1/organizations/route.ts";
+import serviceAccountsRouter from "./routes/v1/organizations/service-accounts/route.ts";
+import invitesRouter from "./routes/v1/invites/route.ts";
+import worldsRouter from "./routes/v1/worlds/route.ts";
+import sparqlRouter from "./routes/v1/worlds/sparql/route.ts";
+import logsRouter from "./routes/v1/worlds/logs/route.ts";
+import searchRouter from "./routes/v1/worlds/search/route.ts";
+import metricsRouter from "./routes/v1/organizations/metrics/route.ts";
+
 const routes = [
-  "./routes/v1/organizations/route.ts",
-  "./routes/v1/organizations/service-accounts/route.ts",
-  "./routes/v1/invites/route.ts",
-  "./routes/v1/worlds/route.ts",
-  "./routes/v1/worlds/sparql/route.ts",
-  "./routes/v1/worlds/logs/route.ts",
-  "./routes/v1/worlds/search/route.ts",
-  "./routes/v1/search/route.ts",
-  "./routes/v1/organizations/metrics/route.ts",
-] as const;
+  organizationsRouter,
+  serviceAccountsRouter,
+  invitesRouter,
+  worldsRouter,
+  sparqlRouter,
+  logsRouter,
+  searchRouter,
+  metricsRouter,
+];
 
 /**
  * createServer creates a server from an app context.
  */
-export async function createServer(appContext: AppContext): Promise<Router> {
+export function createServer(appContext: AppContext): Router {
   const app = new Router();
-  for (const specifier of routes) {
-    const module = await import(specifier);
-    app.use(module.default(appContext));
+  for (const router of routes) {
+    app.use(router(appContext));
   }
 
   return app;
