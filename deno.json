@@ -23,7 +23,7 @@
     "@tensorflow/tfjs-backend-wasm": "npm:@tensorflow/tfjs-backend-wasm@^4.22.0",
     "@tensorflow-models/universal-sentence-encoder": "npm:@tensorflow-models/universal-sentence-encoder@^1.3.3"
   },
-  "exclude": ["./packages/console"],
+  "exclude": ["./packages/console", "./packages/docs"],
   "publish": {
     "exclude": ["**/*.test.ts", "**/*_test.ts"]
   }

@@ -97,7 +97,7 @@ export async function createServerContext(
   // Resolve embeddings strategy based on environment variables.
   let embeddings: Embeddings;
   if (config.env.GOOGLE_API_KEY) {
-    const genai = new GoogleGenAI({ apiKey: config.env.GOOGLE_API_KEY! });
+    const genai = new GoogleGenAI({ apiKey: config.env.GOOGLE_API_KEY });
     embeddings = new GeminiEmbeddings({
       client: genai,
       dimensions: 768,
