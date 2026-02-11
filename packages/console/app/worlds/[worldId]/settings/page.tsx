@@ -18,7 +18,7 @@ export async function generateMetadata(props: {
   }
 
   try {
-    const world = await sdk.worlds.get(worldId, { accountId: user.id });
+    const world = await sdk.worlds.get(worldId);
     return {
       title: world ? `Settings - ${world.label}` : "Settings",
     };
@@ -41,7 +41,7 @@ export default async function WorldSettingsPage(props: {
   // Fetch world data for settings
   let world;
   try {
-    world = await sdk.worlds.get(worldId, { accountId: user.id });
+    world = await sdk.worlds.get(worldId);
   } catch (error) {
     console.error("Failed to fetch world:", error);
     return null;

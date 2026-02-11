@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { errorSchema, type Source } from "./schema.ts";
+import type { Source } from "./schema.ts";
+import { errorResponseSchema } from "./schema.ts";
 
 /**
  * parseError parses an error response from the API.
@@ -10,9 +11,9 @@ export async function parseError(response: Response): Promise<string> {
     const contentType = response.headers.get("content-type");
     if (contentType?.includes("application/json")) {
       const json = await response.json();
-      const result = errorSchema.safeParse(json);
+      const result = errorResponseSchema.safeParse(json);
       if (result.success) {
-        errorMessage = result.data;
+        errorMessage = result.data.error.message;
       }
     } else {
       const text = await response.text();

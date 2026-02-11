@@ -35,7 +35,7 @@ export function PageHeader({
         <div className="flex items-center space-x-4">
           {accountId && (
             <Link
-              href={`/accounts/${accountId}#api-keys`}
+              href={`/users/${accountId}#api-keys`}
               className="text-xs font-medium px-2.5 py-1 rounded-md border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all"
             >
               API Key

@@ -3,12 +3,12 @@
 import { startTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { WorldRecord } from "@fartlabs/worlds";
+import type { World } from "@wazoo/sdk";
 
 import { PixelPlanet } from "./pixel-planet/pixel-planet";
 import { getSeedFromId } from "./pixel-planet/lib/seed-utils";
 
-export function WorldRow({ world }: { world: WorldRecord }) {
+export function WorldRow({ world }: { world: World }) {
   const router = useRouter();
 
   const handlePlanetClick = (e: React.MouseEvent) => {

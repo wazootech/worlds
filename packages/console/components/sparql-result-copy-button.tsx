@@ -3,11 +3,11 @@
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import type { SparqlResult } from "@fartlabs/worlds";
+import type { ExecuteSparqlOutput } from "@wazoo/sdk";
 import { formatSparqlResultsForCopy } from "@/lib/sparql-utils";
 
 interface SparqlResultCopyButtonProps {
-  results: SparqlResult | { message: string } | null;
+  results: ExecuteSparqlOutput | { message: string } | null;
   variant?: "default" | "ghost" | "outline";
   size?: "default" | "sm" | "lg" | "icon";
   className?: string;

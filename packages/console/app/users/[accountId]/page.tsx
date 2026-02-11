@@ -13,12 +13,15 @@ export const metadata: Metadata = {
 export default async function AccountPage() {
   const { user } = await authkit.withAuth();
 
+  const workos = authkit.getWorkOS();
+  const currentUser = user ? await workos.userManagement.getUser(user.id) : null;
+
   if (!user) {
     const signInUrl = await authkit.getSignInUrl();
     redirect(signInUrl);
   }
 
-  const account = await sdk.accounts.get(user.id);
+  const account = await sdk.organizations.get(user.id);
   if (!account) {
     return (
       <div className="flex min-h-screen items-center justify-center p-8 bg-stone-50 dark:bg-stone-950 font-sans">
@@ -115,7 +118,7 @@ export default async function AccountPage() {
           </dl>
         </div>
 
-        <ApiKeySection apiKey={account.apiKey} />
+        <ApiKeySection apiKey={currentUser?.metadata?.testApiKey as string} />
 
         <DeleteAccountSection userEmail={user.email} />
       </div>

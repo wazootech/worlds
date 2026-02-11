@@ -10,11 +10,10 @@
     "format": "prettier --write .",
     "check": "tsc --noEmit",
     "precommit": "npm run lint && npm run format && npm run check",
-    "update:sdk": "npx jsr add @fartlabs/worlds"
+    "update:sdk": "npx jsr add @wazoo/sdk"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.23",
-    "@fartlabs/worlds": "npm:@jsr/fartlabs__worlds@^0.0.37",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",
@@ -35,6 +34,7 @@
     "@react-three/fiber": "^9.5.0",
     "@types/three": "^0.182.0",
     "@uiw/react-textarea-code-editor": "^3.1.1",
+    "@wazoo/sdk": "npm:@jsr/wazoo__sdk@^0.0.1",
     "@workos-inc/authkit-nextjs": "^2.13.0",
     "@workos-inc/node": "^8.0.0",
     "ai": "^6.0.49",

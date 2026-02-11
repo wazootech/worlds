@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { parseAsBoolean, useQueryState } from "nuqs";
-import type { WorldRecord } from "@fartlabs/worlds";
+import type { World } from "@wazoo/sdk";
 import { ConnectSdkButton } from "@/components/connect-sdk";
 import { PixelPlanet } from "@/components/pixel-planet/pixel-planet";
 import { PlanetDialog } from "@/components/pixel-planet/planet-dialog";
@@ -11,16 +11,15 @@ import { ComingSoonPlaceholder } from "@/components/coming-soon-placeholder";
 
 export function WorldDetails({
   world,
-  userId, // eslint-disable-line @typescript-eslint/no-unused-vars
-  apiKey,
+  userId,
   codeSnippet,
   maskedCodeSnippet,
   codeSnippetHtml,
   maskedCodeSnippetHtml,
+  isAdmin,
 }: {
-  world: WorldRecord;
+  world: World;
   userId: string;
-  apiKey: string;
   codeSnippet: string;
   maskedCodeSnippet: string;
   codeSnippetHtml: string;
@@ -132,7 +131,6 @@ export function WorldDetails({
             </div>
 
             <ConnectSdkButton
-              apiKey={apiKey}
               codeSnippet={codeSnippet}
               maskedCodeSnippet={maskedCodeSnippet}
               codeSnippetHtml={codeSnippetHtml}
@@ -180,7 +178,7 @@ export function WorldDetails({
               </span>
               <div
                 onClick={() => {
-                  navigator.clipboard.writeText(world.accountId);
+                  navigator.clipboard.writeText(world.organizationId || "");
                   setIsAccountCopied(true);
                   setTimeout(() => setIsAccountCopied(false), 2000);
                 }}
@@ -188,7 +186,7 @@ export function WorldDetails({
                 title="Click to copy Account ID"
               >
                 <span className="text-sm font-mono text-stone-600 dark:text-stone-400">
-                  {world.accountId}
+                  {world.organizationId}
                 </span>
                 {isAccountCopied
                   ? (

@@ -5,13 +5,11 @@ import { parseAsBoolean, useQueryState } from "nuqs";
 import { DialogCloseButton } from "@/components/ui/dialog-close-button";
 
 export function ConnectSdkButton({
-  apiKey,
   codeSnippet,
   maskedCodeSnippet,
   codeSnippetHtml,
   maskedCodeSnippetHtml,
 }: {
-  apiKey: string;
   codeSnippet: string;
   maskedCodeSnippet: string;
   codeSnippetHtml: string;
@@ -47,7 +45,6 @@ export function ConnectSdkButton({
 
       {isOpen && (
         <ConnectSdkDialog
-          apiKey={apiKey}
           codeSnippet={codeSnippet}
           maskedCodeSnippet={maskedCodeSnippet}
           codeSnippetHtml={codeSnippetHtml}
@@ -66,21 +63,19 @@ function ConnectSdkDialog({
   maskedCodeSnippetHtml,
   onClose,
 }: {
-  apiKey: string;
   codeSnippet: string;
   maskedCodeSnippet: string;
   codeSnippetHtml: string;
   maskedCodeSnippetHtml: string;
   onClose: () => void;
 }) {
-  const [showApiKey, setShowApiKey] = useState(false);
   const [copiedInstall, setCopiedInstall] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [installTab, setInstallTab] = useState<"npm" | "deno">("npm");
 
   const installCommand = installTab === "npm"
-    ? "npx jsr add @fartlabs/worlds"
-    : "deno add jsr:@fartlabs/worlds";
+    ? "npx jsr add @wazoo/sdk"
+    : "deno add jsr:@wazoo/sdk";
 
   const copyToClipboard = (text: string, setCopied: (v: boolean) => void) => {
     navigator.clipboard.writeText(text);
@@ -121,9 +116,9 @@ function ConnectSdkDialog({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary dark:text-primary-light hover:underline cursor-pointer"
-                  href="https://jsr.io/@fartlabs/worlds"
+                  href="https://jsr.io/@wazoo/sdk"
                 >
-                  jsr.io/@fartlabs/worlds
+                  jsr.io/@wazoo/sdk
                 </a>{" "}
                 for more details.
               </span>
@@ -203,12 +198,6 @@ function ConnectSdkDialog({
               <h3 className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
                 2. Use the SDK
               </h3>
-              <button
-                onClick={() => setShowApiKey(!showApiKey)}
-                className="text-xs text-primary dark:text-primary-light hover:underline cursor-pointer"
-              >
-                {showApiKey ? "Hide API Key" : "Show API Key"}
-              </button>
             </div>
             <p className="text-sm text-stone-600 dark:text-stone-400">
               Initialize the client with your API key to connect.
@@ -217,13 +206,13 @@ function ConnectSdkDialog({
               <div
                 className="bg-[#24292e] text-stone-100 p-4 rounded-md font-mono text-sm overflow-x-auto border border-stone-800"
                 dangerouslySetInnerHTML={{
-                  __html: showApiKey ? codeSnippetHtml : maskedCodeSnippetHtml,
+                  __html: maskedCodeSnippetHtml,
                 }}
               />
               <button
                 onClick={() =>
                   copyToClipboard(
-                    showApiKey ? codeSnippet : maskedCodeSnippet,
+                    codeSnippet,
                     setCopiedCode,
                   )}
                 className="absolute right-2 top-2 p-2 bg-stone-800 text-stone-400 hover:text-white rounded transition-colors cursor-pointer"

@@ -21,6 +21,7 @@ export default async function Home() {
     redirect(signInUrl);
   }
 
+
   if (!user.id) {
     return (
       <ErrorState
@@ -30,9 +31,13 @@ export default async function Home() {
     );
   }
 
+  // Get full user object to access metadata
+  const workos = authkit.getWorkOS();
+  const currentUser = await workos.userManagement.getUser(user.id);
+
   let account;
   try {
-    account = await sdk.accounts.get(user.id);
+    account = await sdk.organizations.get(user.id);
   } catch (error) {
     console.error("Failed to fetch account:", error);
     return (
@@ -55,7 +60,7 @@ export default async function Home() {
 
   let worlds;
   try {
-    const listResult = await sdk.worlds.list(1, 100, { accountId: user.id });
+    const listResult = await sdk.worlds.list(1, 100, { organizationId: user.id });
     worlds = listResult.toSorted(
       (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0),
     );
@@ -71,20 +76,25 @@ export default async function Home() {
   }
 
   // Generate general SDK snippets for the account
-  const codeSnippet = `import { WorldsSdk } from "@fartlabs/worlds";
+  const apiKey = (currentUser?.metadata?.testApiKey as string) || "YOUR_API_KEY";
 
-const sdk = new WorldsSdk({ apiKey: "${account.apiKey}" });
+  // Generate general SDK snippets for the account
+  const codeSnippet = `import { WorldsSdk } from "@wazoo/sdk";
+
+const sdk = new WorldsSdk({
+  baseUrl: "https://api.wazoo.tech",
+  apiKey: "${apiKey}"
+});
 
 const worlds = await sdk.worlds.list();
 console.log("My worlds:", worlds.length);`;
 
-  const maskedCodeSnippet = `import { WorldsSdk } from "@fartlabs/worlds";
+  const maskedCodeSnippet = `import { WorldsSdk } from "@wazoo/sdk";
 
-const sdk = new WorldsSdk({ apiKey: "${account.apiKey.slice(0, 4)}...${
-    account.apiKey.slice(
-      -4,
-    )
-  }" });
+const sdk = new WorldsSdk({
+  baseUrl: "https://api.wazoo.tech",
+  apiKey: "${apiKey}"
+});
 
 const worlds = await sdk.worlds.list();
 console.log("My worlds:", worlds.length);`;
@@ -111,7 +121,6 @@ console.log("My worlds:", worlds.length);`;
           </h1>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <ConnectSdkButton
-              apiKey={account.apiKey}
               codeSnippet={codeSnippet}
               maskedCodeSnippet={maskedCodeSnippet}
               codeSnippetHtml={codeSnippetHtml}

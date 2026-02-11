@@ -26,7 +26,7 @@ export default async function AdminLayout({
 
   // Check if user is a shadow user - redirect to root if plan is null/undefined or "shadow"
   try {
-    const account = await sdk.accounts.get(user.id);
+    const account = await sdk.organizations.get(user.id);
     if (account && (!account.plan || account.plan === "shadow")) {
       redirect("/");
     }

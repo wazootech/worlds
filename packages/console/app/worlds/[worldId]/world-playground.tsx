@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { SparqlResult } from "@fartlabs/worlds";
+import type { ExecuteSparqlOutput } from "@wazoo/sdk";
 import dynamic from "next/dynamic";
 import { SparqlResultsDisplay } from "./sparql-results-display";
 import { SparqlResultCopyButton } from "@/components/sparql-result-copy-button";
@@ -41,7 +41,7 @@ INSERT DATA {
 export function WorldPlayground({ worldId, userId }: WorldPlaygroundProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<
-    SparqlResult | { message: string } | null
+    ExecuteSparqlOutput | { message: string } | null
   >(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -69,7 +69,7 @@ export function WorldPlayground({ worldId, userId }: WorldPlaygroundProps) {
         throw new Error(errorText || response.statusText);
       }
 
-      const data = (await response.json()) as SparqlResult | null;
+      const data = (await response.json()) as ExecuteSparqlOutput | null;
       if (data === null) {
         setResults({ message: "Update executed successfully" });
       } else {

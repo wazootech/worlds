@@ -71,7 +71,7 @@ export async function toggleAdminAction(userId: string, isAdmin: boolean) {
   }
 }
 
-export async function deleteUserAction(userId: string) {
+export async function deleteOrganizationAction(userId: string) {
   // Verify the current user is an admin
   const { user } = await authkit.withAuth();
   if (!user) {
@@ -84,7 +84,7 @@ export async function deleteUserAction(userId: string) {
   if (!currentUser || !currentUser.metadata?.admin) {
     return {
       success: false,
-      error: "Forbidden: Only admins can delete users",
+      error: "Forbidden: Only admins can delete organizations",
     };
   }
 
@@ -101,7 +101,7 @@ export async function deleteUserAction(userId: string) {
 
     // 1. Delete from Worlds API
     try {
-      await sdk.accounts.delete(userId);
+      await sdk.organizations.delete(userId);
     } catch (error) {
       console.error(
         `Failed to delete account ${userId} from Worlds API:`,
@@ -117,10 +117,10 @@ export async function deleteUserAction(userId: string) {
     revalidatePath("/admins");
     return { success: true };
   } catch (error) {
-    console.error("Failed to delete user:", error);
+    console.error("Failed to delete organization:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete user",
+      error: error instanceof Error ? error.message : "Failed to delete organization",
     };
   }
 }

@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { rotateApiKey } from "@/app/actions";
 
-export function ApiKeySection({ apiKey }: { apiKey: string }) {
+export function ApiKeySection({ apiKey: initialApiKey }: { apiKey?: string }) {
+  const [apiKey, setApiKey] = useState(initialApiKey ?? "");
   const [showKey, setShowKey] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [confirmRotate, setConfirmRotate] = useState(false);
@@ -23,9 +24,10 @@ export function ApiKeySection({ apiKey }: { apiKey: string }) {
     }
 
     startTransition(async () => {
-      await rotateApiKey();
+      const newKey = await rotateApiKey();
+      setApiKey(newKey);
       setConfirmRotate(false);
-      setShowKey(false);
+      setShowKey(true);
     });
   };
 

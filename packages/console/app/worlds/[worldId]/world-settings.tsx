@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { WorldRecord } from "@fartlabs/worlds";
+import type { World } from "@wazoo/sdk";
 import { updateWorld } from "./actions";
 import { DeleteWorldSection } from "@/components/delete-world-section";
 
-export function WorldSettings({ world }: { world: WorldRecord }) {
+export function WorldSettings({ world }: { world: World }) {
   const [label, setName] = useState(world.label);
   const [description, setDescription] = useState(world.description || "");
   const [isPending, startTransition] = useTransition();

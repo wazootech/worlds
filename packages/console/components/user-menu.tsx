@@ -70,7 +70,7 @@ export function UserMenu({
         {finalAccountId && (
           <DropdownMenuItem asChild>
             <Link
-              href={`/accounts/${finalAccountId}`}
+              href={`/users/${finalAccountId}`}
               className="w-full cursor-pointer"
             >
               Account

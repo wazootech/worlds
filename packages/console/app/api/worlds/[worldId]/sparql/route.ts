@@ -13,17 +13,10 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const accountId = req.nextUrl.searchParams.get("account");
-  if (!accountId) {
-    return NextResponse.json({ error: "Account ID required" }, { status: 400 });
-  }
-
   const body = await req.text();
 
   try {
-    const result = await sdk.worlds.sparql(worldId, body, {
-      accountId,
-    });
+    const result = await sdk.worlds.sparql(worldId, body);
     console.log("SPARQL Result:", result);
     return NextResponse.json(result);
   } catch (error) {

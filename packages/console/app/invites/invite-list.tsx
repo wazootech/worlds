@@ -3,11 +3,11 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { InviteRecord } from "@fartlabs/worlds/internal";
+import { Invite } from "@wazoo/sdk";
 import { deleteInvitesAction } from "./actions";
 
 type InviteListProps = {
-  invites: InviteRecord[];
+  invites: Invite[];
   page: number;
   pageSize: number;
   hasMore: boolean;
@@ -228,7 +228,7 @@ function InviteRow({
   isSelected,
   onToggle,
 }: {
-  invite: InviteRecord;
+  invite: Invite;
   isSelected: boolean;
   onToggle: () => void;
 }) {

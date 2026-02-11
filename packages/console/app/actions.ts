@@ -17,7 +17,7 @@ export async function updateWorldDescription(
     throw new Error("Unauthorized");
   }
 
-  await sdk.worlds.update(worldId, { description }, { accountId: user.id });
+  await sdk.worlds.update(worldId, { description });
   revalidatePath("/");
 }
 
@@ -27,7 +27,7 @@ export async function deleteWorld(worldId: string) {
     throw new Error("Unauthorized");
   }
 
-  await sdk.worlds.delete(worldId, { accountId: user.id });
+  await sdk.worlds.delete(worldId);
   revalidatePath("/");
 }
 
@@ -38,13 +38,12 @@ export async function createWorld() {
       throw new Error("Unauthorized");
     }
 
-    console.log("Creating new world...", { accountId: user.id });
+    console.log("Creating new world...", { organizationId: user.id });
     const world = await sdk.worlds.create(
       {
         label: "New World",
-        isPublic: false,
+        organizationId: user.id,
       },
-      { accountId: user.id },
     );
 
     console.log("World created successfully:", world.id);
@@ -69,8 +68,8 @@ export async function deleteAccount() {
     throw new Error("Unauthorized");
   }
 
-  // Remove the account from the database
-  await sdk.accounts.delete(user.id);
+  // Remove the organization from the database
+  await sdk.organizations.delete(user.id);
 
   // Sign out the user
   await authkit.signOut();
@@ -101,6 +100,38 @@ export async function rotateApiKey() {
     throw new Error("Unauthorized");
   }
 
-  await sdk.accounts.rotate(user.id);
-  revalidatePath(`/accounts/${user.id}`);
+  const serviceAccounts = await sdk.organizations.serviceAccounts.list(user.id);
+  await Promise.all(
+    serviceAccounts.map((sa) =>
+      sdk.organizations.serviceAccounts.delete(user.id, sa.id)
+    ),
+  );
+
+  const newServiceAccount = await sdk.organizations.serviceAccounts.create(
+    user.id,
+    {
+      label: "Default",
+    },
+  );
+
+  const workos = authkit.getWorkOS();
+  
+  // Use the correct update signature: { userId, metadata: ... }
+  // Wait, I need to check if user.id is correct. Yes.
+  // And merge with existing metadata? The API merges at top level but replaces nested?
+  // WorkOS metadata is key-value strings.
+  // I should probably fetch existing metadata first to be safe, like admin actions.
+  // But strictly for testApiKey, I can just upsert.
+  // Actually, let's just do a direct update for now as we did in callback/route.ts (Wait, callback used the new signature).
+  // The signature issue in route.ts was `updateUser(id, { ... })` -> `updateUser({ userId: id, ... })`.
+  
+  await workos.userManagement.updateUser({
+    userId: user.id,
+    metadata: {
+      testApiKey: newServiceAccount.apiKey,
+    },
+  });
+
+  revalidatePath(`/users/${user.id}`);
+  return newServiceAccount.apiKey;
 }

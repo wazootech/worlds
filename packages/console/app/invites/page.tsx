@@ -2,7 +2,7 @@ import { sdk } from "@/lib/sdk";
 import { CreateInviteButton } from "./create-button";
 import { InviteList } from "./invite-list";
 import { Metadata } from "next";
-import { InviteRecord } from "@fartlabs/worlds/internal";
+import { Invite } from "@wazoo/sdk";
 import * as authkit from "@workos-inc/authkit-nextjs";
 import { notFound, redirect } from "next/navigation";
 
@@ -33,7 +33,7 @@ export default async function InvitesPage({
 
   // Check if user is a shadow user - redirect to root if plan is null/undefined or "shadow"
   try {
-    const account = await sdk.accounts.get(user.id);
+    const account = await sdk.organizations.get(user.id);
     if (account && (!account.plan || account.plan === "shadow")) {
       redirect("/");
     }
@@ -49,7 +49,7 @@ export default async function InvitesPage({
     Math.min(100, parseInt(params.pageSize ?? "25", 10)),
   );
 
-  let invites: InviteRecord[] = [];
+  let invites: Invite[] = [];
   let hasMore = false;
 
   try {
@@ -62,7 +62,7 @@ export default async function InvitesPage({
   }
 
   // Sort invites explicitly
-  invites = invites.sort((a: InviteRecord, b: InviteRecord) => {
+  invites = invites.sort((a: Invite, b: Invite) => {
     const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
     const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
     return tB - tA;

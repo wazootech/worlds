@@ -1,6 +1,6 @@
 import type { Router } from "@fartlabs/rt";
-import { createServer, createServerContext } from "#/server.ts";
 import type { ServerContext } from "#/context.ts";
+import { createServer, createServerContext } from "#/server.ts";
 
 const serverContext: ServerContext = await createServerContext({
   env: {

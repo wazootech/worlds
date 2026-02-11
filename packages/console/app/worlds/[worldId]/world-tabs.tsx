@@ -1,6 +1,6 @@
 "use client";
 
-import type { WorldRecord } from "@fartlabs/worlds";
+import type { World } from "@wazoo/sdk";
 import { useState } from "react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { WorldDetails } from "./world-details";
@@ -11,9 +11,9 @@ import { WorldSettings } from "./world-settings";
 const tabs = ["overview", "playground", "search", "settings"] as const;
 
 interface WorldTabsProps {
-  world: WorldRecord;
+  world: World;
   userId: string;
-  apiKey: string;
+
   codeSnippet: string;
   maskedCodeSnippet: string;
   codeSnippetHtml: string;
@@ -24,7 +24,6 @@ interface WorldTabsProps {
 export function WorldTabs({
   world,
   userId,
-  apiKey,
   codeSnippet,
   maskedCodeSnippet,
   codeSnippetHtml,
@@ -100,7 +99,7 @@ export function WorldTabs({
           <WorldDetails
             world={world}
             userId={userId}
-            apiKey={apiKey}
+
             codeSnippet={codeSnippet}
             maskedCodeSnippet={maskedCodeSnippet}
             codeSnippetHtml={codeSnippetHtml}

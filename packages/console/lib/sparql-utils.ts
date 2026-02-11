@@ -1,4 +1,4 @@
-import type { SparqlResult } from "@fartlabs/worlds";
+import type { ExecuteSparqlOutput } from "@wazoo/sdk";
 
 /**
  * Formats SPARQL results as text for copying.
@@ -8,7 +8,7 @@ import type { SparqlResult } from "@fartlabs/worlds";
  * - Other: Returns formatted JSON
  */
 export function formatSparqlResultsForCopy(
-  results: SparqlResult | { message: string } | null,
+  results: ExecuteSparqlOutput | { message: string } | null,
 ): string {
   if (!results) {
     return "";

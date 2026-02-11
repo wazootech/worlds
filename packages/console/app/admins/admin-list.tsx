@@ -3,8 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import { deleteUserAction, toggleAdminAction } from "./actions";
-import type { AccountRecord } from "@fartlabs/worlds/internal";
+import { deleteOrganizationAction, toggleAdminAction } from "./actions";
+import type { Organization } from "@wazoo/sdk";
 import type { WorkOSUser } from "./types";
 import { MoreVertical, Trash2, UserMinus, UserPlus } from "lucide-react";
 import {
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dialog";
 
 type AdminListProps = {
-  users: Array<{ user: WorkOSUser; account: AccountRecord | null }>;
+  organizations: Array<{ user: WorkOSUser; account: Organization | null }>;
   pageSize: number;
   nextCursor?: string;
   hasMore: boolean;
@@ -33,7 +33,7 @@ type AdminListProps = {
 };
 
 export function AdminList({
-  users,
+  organizations,
   pageSize: initialPageSize,
   nextCursor,
   hasMore,
@@ -84,7 +84,7 @@ export function AdminList({
                   scope="col"
                   className="sticky top-0 z-10 bg-stone-50 dark:bg-stone-950 border-b border-stone-200 dark:border-stone-800 py-3 pl-4 pr-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider whitespace-nowrap"
                 >
-                  User
+                  Organization
                 </th>
                 <th
                   scope="col"
@@ -132,16 +132,16 @@ export function AdminList({
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200 dark:divide-stone-800 bg-white dark:bg-stone-900">
-              {users.map(({ user, account }) => (
+              {organizations.map(({ user, account }) => (
                 <AdminRow key={user.id} user={user} account={account} />
               ))}
-              {users.length === 0 && (
+              {organizations.length === 0 && (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={7}
                     className="px-3 py-8 text-center text-sm text-stone-500 dark:text-stone-400"
                   >
-                    No users found.
+                    No organizations found.
                   </td>
                 </tr>
               )}
@@ -173,7 +173,7 @@ export function AdminList({
             </select>
           </div>
           <span className="text-sm text-stone-600 dark:text-stone-400">
-            Showing {users.length} user{users.length !== 1 ? "s" : ""}
+            Showing {organizations.length} organization{organizations.length !== 1 ? "s" : ""}
             {hasMore && " (more available)"}
           </span>
         </div>
@@ -204,11 +204,10 @@ function AdminRow({
   account,
 }: {
   user: WorkOSUser;
-  account: AccountRecord | null;
+  account: Organization | null;
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [isApiKeyCopied, setIsApiKeyCopied] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -230,11 +229,11 @@ function AdminRow({
   const handleDelete = () => {
     setError(null);
     startTransition(async () => {
-      const result = await deleteUserAction(user.id);
+      const result = await deleteOrganizationAction(user.id);
       if (result.success) {
         setShowDeleteDialog(false);
       } else {
-        setError(result.error || "Failed to delete user");
+        setError(result.error || "Failed to delete organization");
       }
     });
   };
@@ -246,21 +245,9 @@ function AdminRow({
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const handleCopyApiKey = () => {
-    if (!fullApiKey) return;
-    navigator.clipboard.writeText(fullApiKey);
-    setIsApiKeyCopied(true);
-    setTimeout(() => setIsApiKeyCopied(false), 2000);
-  };
-
   // Format account data
   const plan = account?.plan || "No plan";
   const accountId = account?.id || "-";
-
-  const fullApiKey = account?.apiKey || null;
-  const maskedApiKey = fullApiKey
-    ? `${fullApiKey.slice(0, 4)}...${fullApiKey.slice(-4)}`
-    : "-";
 
   return (
     <tr>
@@ -314,30 +301,7 @@ function AdminRow({
           )}
       </td>
 
-      <td className="px-3 py-4 text-sm text-stone-500 dark:text-stone-400 font-mono whitespace-nowrap min-w-[150px]">
-        {fullApiKey
-          ? (
-            <button
-              onClick={handleCopyApiKey}
-              className="hover:text-stone-700 dark:hover:text-stone-300 transition-colors cursor-pointer text-left flex items-center gap-1 group"
-              title="Click to copy API Key"
-            >
-              {maskedApiKey}
-              <span
-                className={`text-[10px] uppercase font-sans font-bold px-1 rounded transition-opacity ${
-                  isApiKeyCopied
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 opacity-100"
-                    : "opacity-0 group-hover:opacity-40"
-                }`}
-              >
-                {isApiKeyCopied ? "Copied" : "Copy"}
-              </span>
-            </button>
-          )
-          : (
-            "-"
-          )}
-      </td>
+
       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
         <div className="flex items-center justify-end gap-2">
           {error && (
@@ -382,7 +346,7 @@ function AdminRow({
                 className="cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                <span>Delete User</span>
+                <span>Delete Organization</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -390,10 +354,10 @@ function AdminRow({
           <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Delete User</DialogTitle>
+                <DialogTitle>Delete Organization</DialogTitle>
                 <DialogDescription>
                   Are you sure you want to delete <strong>{displayName}</strong>
-                  ? This will remove the user from the platform and delete their
+                  ? This will remove the organization from the platform and delete their
                   account on the Worlds API. This action cannot be undone.
                 </DialogDescription>
               </DialogHeader>
@@ -408,7 +372,7 @@ function AdminRow({
                   onClick={handleDelete}
                   disabled={isPending}
                 >
-                  {isPending ? "Deleting..." : "Delete User"}
+                  {isPending ? "Deleting..." : "Delete Organization"}
                 </Button>
               </DialogFooter>
             </DialogContent>

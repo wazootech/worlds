@@ -20,7 +20,7 @@ export async function generateMetadata(props: {
   }
 
   try {
-    const world = await sdk.worlds.get(worldId, { accountId: user.id });
+    const world = await sdk.worlds.get(worldId);
     if (!world) {
       return {
         title: "World Details",
@@ -61,7 +61,7 @@ export default async function WorldOverviewPage(props: {
   // Fetch account
   let account;
   try {
-    account = await sdk.accounts.get(user.id);
+    account = await sdk.organizations.get(user.id);
   } catch (error) {
     console.error("Failed to fetch account:", error);
     return null; // Layout will handle error state or not found
@@ -74,7 +74,7 @@ export default async function WorldOverviewPage(props: {
   // Fetch world data
   let world;
   try {
-    world = await sdk.worlds.get(worldId, { accountId: user.id });
+    world = await sdk.worlds.get(worldId);
   } catch (error) {
     console.error("Failed to fetch world:", error);
     return null;
@@ -85,19 +85,19 @@ export default async function WorldOverviewPage(props: {
   }
 
   // Generate code snippets
-  const codeSnippet = `import { WorldsSdk } from "@fartlabs/worlds";
+  const codeSnippet = `import { WorldsSdk } from "@wazoo/sdk";
 
 const sdk = new WorldsSdk({
-  apiKey: "${account.apiKey}",
+  apiKey: "YOUR_API_KEY",
 });
 
 const world = await sdk.worlds.get("${worldId}");
 console.log("Connected to world:", world.label);`;
 
-  const maskedCodeSnippet = `import { WorldsSdk } from "@fartlabs/worlds";
+  const maskedCodeSnippet = `import { WorldsSdk } from "@wazoo/sdk";
 
 const sdk = new WorldsSdk({
-  apiKey: "${account.apiKey.slice(0, 4)}...${account.apiKey.slice(-4)}",
+  apiKey: "YOUR_API_KEY",
 });
 
 const world = await sdk.worlds.get("${worldId}");
@@ -117,7 +117,6 @@ console.log("Connected to world:", world.label);`;
     <WorldDetails
       world={world}
       userId={user.id}
-      apiKey={account.apiKey}
       codeSnippet={codeSnippet}
       maskedCodeSnippet={maskedCodeSnippet}
       codeSnippetHtml={codeSnippetHtml}

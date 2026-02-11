@@ -33,15 +33,27 @@ export const sourceSchema: z.ZodType<Source> = z.object({
 export const limitParamSchema: z.ZodType<number> = z.number().int().positive()
   .max(100);
 
+/**
+ * ErrorResponse is the standard error response format.
+ */
 export interface ErrorResponse {
   error: {
     message: string;
   };
 }
 
-// deno-lint-ignore no-explicit-any
-export const errorSchema: z.ZodType<string, any, any> = z.object({
+/**
+ * errorResponseSchema is the Zod schema for ErrorResponse.
+ */
+export const errorResponseSchema: z.ZodType<ErrorResponse> = z.object({
   error: z.object({
     message: z.string(),
   }),
-}).transform((data) => data.error.message);
+});
+
+/**
+ * errorSchema extracts the error message from an ErrorResponse.
+ */
+// deno-lint-ignore no-explicit-any
+export const errorSchema: z.ZodType<string, any, any> = errorResponseSchema
+  .transform((data) => data.error.message);

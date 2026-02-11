@@ -13,7 +13,7 @@ export async function updateWorld(
     throw new Error("Unauthorized");
   }
 
-  await sdk.worlds.update(worldId, updates, { accountId: user.id });
+  await sdk.worlds.update(worldId, updates);
   revalidatePath(`/worlds/${worldId}`);
   revalidatePath("/dashboard");
   revalidatePath("/");
@@ -36,6 +36,6 @@ export async function deleteWorld(worldId: string) {
     throw new Error("Unauthorized");
   }
 
-  await sdk.worlds.delete(worldId, { accountId: user.id });
+  await sdk.worlds.delete(worldId);
   revalidatePath("/");
 }

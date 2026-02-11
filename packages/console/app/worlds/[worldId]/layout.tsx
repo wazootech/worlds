@@ -32,7 +32,7 @@ export default async function WorldLayout(props: {
   // Fetch account
   let account;
   try {
-    account = await sdk.accounts.get(user.id);
+    account = await sdk.organizations.get(user.id);
   } catch (error) {
     console.error("Failed to fetch account:", error);
     return (
@@ -61,7 +61,7 @@ export default async function WorldLayout(props: {
   // Fetch world data
   let world;
   try {
-    world = await sdk.worlds.get(worldId, { accountId: user.id });
+    world = await sdk.worlds.get(worldId);
   } catch (error) {
     console.error("Failed to fetch world:", error);
     return (
@@ -78,7 +78,7 @@ export default async function WorldLayout(props: {
   }
 
   // Verify ownership
-  if (world.accountId !== user.id) {
+  if (world.organizationId !== user.id) {
     return (
       <ErrorState
         title="Forbidden"

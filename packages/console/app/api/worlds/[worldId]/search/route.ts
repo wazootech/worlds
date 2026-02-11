@@ -8,18 +8,9 @@ export async function POST(
   try {
     const { worldId } = await params;
     const searchParams = request.nextUrl.searchParams;
-    const accountId = searchParams.get("account");
-
-    if (!accountId) {
-      return new NextResponse("Missing account ID", { status: 400 });
-    }
-
     const body = await request.text();
     const query = body;
-    const results = await sdk.worlds.search(query, {
-      worldIds: [worldId],
-      accountId,
-    });
+    const results = await sdk.worlds.search(worldId, query);
 
     return NextResponse.json(results);
   } catch (error) {

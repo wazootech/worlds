@@ -1,8 +1,8 @@
-import type { SparqlBinding, SparqlResult } from "@fartlabs/worlds";
+import type { ExecuteSparqlOutput, SparqlBinding } from "@wazoo/sdk";
 import { Loader2Icon } from "lucide-react";
 
 interface SparqlResultsDisplayProps {
-  results: SparqlResult | { message: string } | null;
+  results: ExecuteSparqlOutput | { message: string } | null;
   loading?: boolean;
   compact?: boolean;
 }

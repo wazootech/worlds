@@ -2,7 +2,7 @@ import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
 import { ulid } from "@std/ulid";
-import type { CreateToolsOptions } from "../options.ts";
+import type { CreateToolsOptions } from "#/options.ts";
 
 /**
  * GenerateIriInput is the input to the generateIri tool.
