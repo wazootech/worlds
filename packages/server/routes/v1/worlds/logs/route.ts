@@ -2,7 +2,7 @@ import { Router } from "@fartlabs/rt";
 
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { checkRateLimit } from "#/middleware/rate-limit.ts";
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { LogsService } from "#/lib/database/tables/logs/service.ts";
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
@@ -11,7 +11,7 @@ import { MetricsService } from "#/lib/database/tables/metrics/service.ts";
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
 
-export default (appContext: AppContext) => {
+export default (appContext: ServerContext) => {
   return new Router()
     .get(
       "/v1/worlds/:world/logs",

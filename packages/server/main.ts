@@ -1,8 +1,8 @@
 import type { Router } from "@fartlabs/rt";
-import { createAppContext, createServer } from "#/server.ts";
-import type { AppContext } from "#/context.ts";
+import { createServer, createServerContext } from "#/server.ts";
+import type { ServerContext } from "#/context.ts";
 
-const appContext: AppContext = await createAppContext({
+const serverContext: ServerContext = await createServerContext({
   env: {
     ADMIN_API_KEY: Deno.env.get("ADMIN_API_KEY")!,
     LIBSQL_URL: Deno.env.get("LIBSQL_URL")!,
@@ -14,7 +14,7 @@ const appContext: AppContext = await createAppContext({
   },
 });
 
-const app: Router = await createServer(appContext);
+const app: Router = await createServer(serverContext);
 
 export default {
   fetch: (request: Request) => app.fetch(request),

@@ -3,7 +3,7 @@ import { DataFactory, Writer } from "n3";
 import { ulid } from "@std/ulid/ulid";
 import { Router } from "@fartlabs/rt";
 import { type AuthorizedRequest, authorizeRequest } from "#/middleware/auth.ts";
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import type { DatasetParams } from "#/lib/blob/sparql.ts";
 import { sparql } from "#/lib/blob/sparql.ts";
 import { executeSparqlOutputSchema, isSparqlUpdate } from "@wazoo/sdk";
@@ -144,7 +144,7 @@ function generateServiceDescription(endpointUrl: string): Promise<string> {
  * Shared handler for executing SPARQL queries and updates
  */
 async function executeSparqlRequest(
-  appContext: AppContext,
+  appContext: ServerContext,
   request: Request,
   worldId: string,
   authorized: AuthorizedRequest,
@@ -378,7 +378,7 @@ async function executeSparqlRequest(
   });
 }
 
-export default (appContext: AppContext) => {
+export default (appContext: ServerContext) => {
   return new Router()
     .get(
       "/v1/worlds/:world/sparql",

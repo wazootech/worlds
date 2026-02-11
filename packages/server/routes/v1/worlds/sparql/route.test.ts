@@ -5,7 +5,7 @@ import {
   createTestContext,
   createTestOrganization,
 } from "#/lib/testing/context.ts";
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import { generateBlobFromN3Store } from "#/lib/blob/n3.ts";
 import { BlobsService } from "#/lib/database/tables/blobs/service.ts";
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
@@ -19,7 +19,7 @@ import createRoute from "./route.ts";
  */
 
 async function setWorldData(
-  testContext: AppContext,
+  testContext: ServerContext,
   worldId: string,
   ttl: string,
 ) {

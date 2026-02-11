@@ -2,7 +2,7 @@ import { Router } from "@fartlabs/rt";
 import { ulid } from "@std/ulid/ulid";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { checkRateLimit } from "#/middleware/rate-limit.ts";
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import { paginationParamsSchema } from "@wazoo/sdk";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { ServiceAccountsService } from "#/lib/database/tables/service-accounts/service.ts";
@@ -27,7 +27,7 @@ function requireOrgAccess(
   );
 }
 
-export default (appContext: AppContext) => {
+export default (appContext: ServerContext) => {
   return new Router()
     .get(
       "/v1/organizations/:organization/service-accounts",

@@ -1,7 +1,7 @@
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { checkRateLimit } from "#/middleware/rate-limit.ts";
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import {
   createOrganizationParamsSchema,
   organizationSchema,
@@ -17,7 +17,7 @@ import {
   organizationTableUpdateSchema,
 } from "#/lib/database/tables/organizations/schema.ts";
 
-export default (appContext: AppContext) => {
+export default (appContext: ServerContext) => {
   return new Router()
     .get(
       "/v1/organizations",

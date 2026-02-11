@@ -2,7 +2,7 @@ import { Router } from "@fartlabs/rt";
 import { ulid } from "@std/ulid/ulid";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { checkRateLimit } from "#/middleware/rate-limit.ts";
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import {
   createWorldParamsSchema,
   paginationParamsSchema,
@@ -27,7 +27,7 @@ const SERIALIZATIONS: Record<string, { contentType: string; format: string }> =
 
 const DEFAULT_SERIALIZATION = SERIALIZATIONS["n-quads"];
 
-export default (appContext: AppContext) => {
+export default (appContext: ServerContext) => {
   const worldsService = new WorldsService(appContext.libsql.database);
 
   return new Router()

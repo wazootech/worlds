@@ -1,29 +1,30 @@
 import { parseArgs } from "@std/cli/parse-args";
 import { promptSecret } from "@std/cli/prompt-secret";
-import { createClient } from "@libsql/client";
-import { type RdfFormat as _RdfFormat, WorldsSdk } from "@wazoo/sdk";
-import { createServer } from "@wazoo/server";
-import { FileDatabaseManager } from "@wazoo/server/database";
-import { UniversalSentenceEncoderEmbeddings } from "@wazoo/server/embeddings";
+import { WorldsSdk } from "@wazoo/sdk";
+import { createServer, createServerContext } from "@wazoo/server";
 import { WorldsCli } from "./cli.ts";
 
 async function main() {
   const baseUrl = Deno.env.get("WORLDS_BASE_URL") ??
     "https://api.wazoo.dev";
-  if (baseUrl.startsWith("./")) {
-    // const appContext = await createAppContext({ env: {} });
-    const database = createClient({ url: baseUrl });
 
-    // TODO: Migrate to createAppContext
-    const _server = await createServer({
-      libsql: {
-        database,
-        manager: new FileDatabaseManager(database, "./worlds"),
+  let fetch: typeof globalThis.fetch | undefined;
+  if (baseUrl.startsWith("./") || baseUrl.startsWith("file:")) {
+    const serverContext = await createServerContext({
+      env: {
+        ADMIN_API_KEY: Deno.env.get("ADMIN_API_KEY")!,
+        LIBSQL_URL: Deno.env.get("LIBSQL_URL")!,
+        LIBSQL_AUTH_TOKEN: Deno.env.get("LIBSQL_AUTH_TOKEN")!,
+        TURSO_API_TOKEN: Deno.env.get("TURSO_API_TOKEN"),
+        TURSO_ORG: Deno.env.get("TURSO_ORG"),
+        GOOGLE_API_KEY: Deno.env.get("GOOGLE_API_KEY"),
+        GOOGLE_EMBEDDINGS_MODEL: Deno.env.get("GOOGLE_EMBEDDINGS_MODEL"),
       },
-      embeddings: new UniversalSentenceEncoderEmbeddings(),
     });
 
-    // TODO: Create helper createClient and createServer
+    const app = await createServer(serverContext);
+    fetch = (input: RequestInfo | URL, init?: RequestInit) =>
+      app.fetch(new Request(input, init));
   }
 
   const apiKey = Deno.env.get("WORLDS_API_KEY") ??
@@ -33,7 +34,7 @@ async function main() {
     Deno.exit(1);
   }
 
-  const sdk = new WorldsSdk({ apiKey, baseUrl });
+  const sdk = new WorldsSdk({ apiKey, baseUrl, fetch });
   const cli = new WorldsCli(sdk);
 
   if (Deno.args.length === 0) {

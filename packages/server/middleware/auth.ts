@@ -1,4 +1,4 @@
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import { ServiceAccountsService } from "#/lib/database/tables/service-accounts/service.ts";
 
 /**
@@ -17,7 +17,7 @@ export interface AuthorizedRequest {
  * Accepts either the admin API key or a service account API key.
  */
 export async function authorizeRequest(
-  appContext: AppContext,
+  appContext: ServerContext,
   request: Request,
 ): Promise<AuthorizedRequest> {
   const authHeader = request.headers.get("Authorization");

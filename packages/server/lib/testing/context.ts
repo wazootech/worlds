@@ -5,13 +5,13 @@ import { MemoryDatabaseManager } from "#/lib/database/managers/memory.ts";
 import { OrganizationsService } from "#/lib/database/tables/organizations/service.ts";
 import type { Embeddings } from "#/lib/embeddings/embeddings.ts";
 import { ServiceAccountsService } from "#/lib/database/tables/service-accounts/service.ts";
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 
 /**
  * createTestContext creates a test application context with an in-memory
  * database and mock embeddings.
  */
-export async function createTestContext(): Promise<AppContext> {
+export async function createTestContext(): Promise<ServerContext> {
   const client = createClient({ url: ":memory:" });
   await initializeDatabase(client);
 
@@ -43,7 +43,7 @@ export async function createTestContext(): Promise<AppContext> {
  * createTestOrganization creates a test organization and returns its ID and the admin API key.
  */
 export async function createTestOrganization(
-  context: AppContext,
+  context: ServerContext,
   options?: { plan?: string },
 ): Promise<{ id: string; apiKey: string }> {
   const service = new OrganizationsService(context.libsql.database);
@@ -67,7 +67,7 @@ export async function createTestOrganization(
  * organization and returns its ID and API key.
  */
 export async function createTestServiceAccount(
-  context: AppContext,
+  context: ServerContext,
   organizationId: string,
 ): Promise<{ id: string; apiKey: string }> {
   const serviceAccountsService = new ServiceAccountsService(

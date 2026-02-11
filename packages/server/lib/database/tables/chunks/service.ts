@@ -1,5 +1,5 @@
 import type { Client } from "@libsql/client";
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { TripleSearchResult } from "@wazoo/sdk";
 import type { WorldRow } from "#/lib/database/tables/worlds/schema.ts";
@@ -39,7 +39,7 @@ export interface SearchParams {
 
 export class ChunksService {
   constructor(
-    private readonly ctx: AppContext,
+    private readonly ctx: ServerContext,
     private readonly worldsService: WorldsService,
   ) {}
 

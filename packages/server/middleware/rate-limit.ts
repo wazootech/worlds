@@ -1,4 +1,4 @@
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import type { AuthorizedRequest } from "#/middleware/auth.ts";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { RateLimitsService } from "#/lib/database/tables/rate-limits/service.ts";
@@ -46,7 +46,7 @@ export const POLICY_LIMITS = {
  * Returns a Response to return (429 or 401) or null to proceed.
  */
 export async function checkRateLimit(
-  appContext: AppContext,
+  appContext: ServerContext,
   authorized: AuthorizedRequest,
   featureId: keyof typeof POLICY_LIMITS,
 ): Promise<Response | null> {

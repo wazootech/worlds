@@ -1,13 +1,13 @@
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { checkRateLimit } from "#/middleware/rate-limit.ts";
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { MetricsService } from "#/lib/database/tables/metrics/service.ts";
 import { OrganizationsService } from "#/lib/database/tables/organizations/service.ts";
 import { metricListParamsSchema } from "@wazoo/sdk";
 
-export default (appContext: AppContext) => {
+export default (appContext: ServerContext) => {
   return new Router().get(
     "/v1/organizations/:organization/metrics",
     async (ctx) => {

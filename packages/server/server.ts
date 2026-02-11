@@ -1,8 +1,9 @@
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import type { DatabaseManager } from "#/lib/database/manager.ts";
 import { Router } from "@fartlabs/rt";
 import { createClient } from "@libsql/client";
 import { GoogleGenAI } from "@google/genai";
+import type { Embeddings } from "#/lib/embeddings/embeddings.ts";
 import { GeminiEmbeddings } from "#/lib/embeddings/gemini.ts";
 import { initializeDatabase } from "#/lib/database/init.ts";
 import { createClient as createTursoClient } from "@tursodatabase/api";
@@ -32,7 +33,7 @@ const routes = [
 /**
  * createServer creates a server from an app context.
  */
-export function createServer(appContext: AppContext): Router {
+export function createServer(appContext: ServerContext): Router {
   const app = new Router();
   for (const router of routes) {
     app.use(router(appContext));
@@ -42,9 +43,9 @@ export function createServer(appContext: AppContext): Router {
 }
 
 /**
- * AppContextConfig is the configuration for an app context.
+ * ServerContextConfig is the configuration for an app context.
  */
-export interface AppContextConfig {
+export interface ServerContextConfig {
   env: {
     LIBSQL_URL?: string;
     LIBSQL_AUTH_TOKEN?: string;
@@ -57,57 +58,64 @@ export interface AppContextConfig {
 }
 
 /**
- * createAppContext creates an app context from environment variables.
+ * createServerContext creates an app context from environment variables.
  */
-export async function createAppContext(
-  config: AppContextConfig,
-): Promise<AppContext> {
-  if (!config.env.LIBSQL_URL) {
-    console.warn("LIBSQL_URL is not set, using in-memory database");
+export async function createServerContext(
+  config: ServerContextConfig,
+): Promise<ServerContext> {
+  if (!config.env.ADMIN_API_KEY) {
+    throw new Error("ADMIN_API_KEY is required");
   }
 
+  // Resolve database strategy based on environment variables.
   const database = createClient({
-    url: config.env.LIBSQL_URL ?? ":memory:",
+    url: config.env.LIBSQL_URL!,
     authToken: config.env.LIBSQL_AUTH_TOKEN,
   });
 
   // Initialize database tables
   await initializeDatabase(database);
 
-  // TODO: Implement different embedding models.
-
-  const googleGenAI = new GoogleGenAI({ apiKey: config.env.GOOGLE_API_KEY! });
-
-  const embeddings = new GeminiEmbeddings({
-    client: googleGenAI,
-    dimensions: 768,
-
-    // https://ai.google.dev/gemini-api/docs/embeddings#model-versions
-    model: config.env.GOOGLE_EMBEDDINGS_MODEL ?? "models/gemini-embedding-001",
-  });
-
-  let databaseManager: DatabaseManager;
+  // Resolve database manager strategy based on environment variables.
+  let manager: DatabaseManager;
   if (config.env.TURSO_API_TOKEN) {
     if (!config.env.TURSO_ORG) {
       throw new Error("TURSO_ORG is required when TURSO_API_TOKEN is set");
     }
+
     const tursoClient = createTursoClient({
       token: config.env.TURSO_API_TOKEN,
       org: config.env.TURSO_ORG,
     });
-    databaseManager = new TursoDatabaseManager(database, tursoClient);
+    manager = new TursoDatabaseManager(database, tursoClient);
   } else {
-    databaseManager = new FileDatabaseManager(database, "./database/worlds");
+    manager = new FileDatabaseManager(database, "./worlds");
+  }
+
+  // Resolve embeddings strategy based on environment variables.
+  let embeddings: Embeddings;
+  if (config.env.GOOGLE_API_KEY) {
+    const genai = new GoogleGenAI({ apiKey: config.env.GOOGLE_API_KEY! });
+    embeddings = new GeminiEmbeddings({
+      client: genai,
+      dimensions: 768,
+
+      // https://ai.google.dev/gemini-api/docs/embeddings#model-versions
+      model: config.env.GOOGLE_EMBEDDINGS_MODEL ??
+        "models/gemini-embedding-001",
+    });
+  } else {
+    const { UniversalSentenceEncoderEmbeddings } = await import(
+      "#/lib/embeddings/use.ts"
+    );
+    embeddings = new UniversalSentenceEncoderEmbeddings();
   }
 
   return {
     embeddings,
-    libsql: {
-      database,
-      manager: databaseManager,
-    },
+    libsql: { database, manager },
     admin: {
-      apiKey: config.env.ADMIN_API_KEY!,
+      apiKey: config.env.ADMIN_API_KEY,
     },
   };
 }

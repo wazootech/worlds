@@ -1,7 +1,7 @@
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { checkRateLimit } from "#/middleware/rate-limit.ts";
-import type { AppContext } from "#/context.ts";
+import type { ServerContext } from "#/context.ts";
 import { limitParamSchema } from "@wazoo/sdk";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
@@ -10,7 +10,7 @@ import { ChunksService } from "#/lib/database/tables/chunks/service.ts";
 import { LogsService } from "#/lib/database/tables/logs/service.ts";
 import { ulid } from "@std/ulid/ulid";
 
-export default (appContext: AppContext) => {
+export default (appContext: ServerContext) => {
   return new Router().get(
     "/v1/worlds/:world/search",
     async (ctx) => {
