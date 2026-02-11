@@ -1,0 +1,16 @@
+{
+  "name": "@wazoo/sdk",
+  "version": "0.0.1",
+  "exports": {
+    ".": "./mod.ts"
+  },
+  "imports": {
+    "#/": "./"
+  },
+  "tasks": {
+    "test": "deno test -A"
+  },
+  "publish": {
+    "exclude": ["**/*.test.ts", "**/*_test.ts"]
+  }
+}
