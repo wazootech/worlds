@@ -1,0 +1,19 @@
+---
+title: "Create World"
+api: "POST https://api.wazoo.tech/v1/worlds"
+description: "Create a new world."
+---
+
+## Body Parameters
+
+<ParamField body="name" type="string" required>
+  The name of the new world.
+</ParamField>
+
+<ParamField body="description" type="string">
+  A description of the world.
+</ParamField>
+
+## Response
+
+Returns the created [World object](/api-reference/worlds/get).

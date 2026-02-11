@@ -1,0 +1,25 @@
+---
+title: "SPARQL"
+description: "Querying your world with SPARQL 1.1"
+---
+
+**SPARQL** (SPARQL Protocol and RDF Query Language) is the standard query language for graph data. Worlds API supports the full [SPARQL 1.1 Client](https://www.w3.org/TR/sparql11-overview/) specification.
+
+## Why SPARQL?
+
+Unlike vector search, which gives you approximate matches based on meaning, SPARQL allows you to ask precise, structured questions about your data.
+
+- **Exact Pattern Matching**: Find exactly the nodes that fit the pattern.
+- **Joins**: Connect data across multiple relationships.
+- **Filtering**: Apply complex logic to filter results.
+
+## Example
+
+Find all people who know "Ethan":
+
+```sparql
+SELECT ?personName WHERE {
+  ?person <http://schema.org/knows> <http://example.org/ethan> .
+  ?person <http://schema.org/name> ?personName .
+}
+```

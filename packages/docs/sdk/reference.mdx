@@ -1,0 +1,69 @@
+---
+title: SDK Reference
+description: "Method reference for the `WorldsSdk` class"
+---
+
+## `WorldsSdk` Class
+
+The `WorldsSdk` class is the main entry point for the SDK.
+
+### Constructor
+
+```typescript
+new WorldsSdk(options: {
+  baseUrl?: string;
+  apiKey: string;
+  fetch?: typeof fetch;
+})
+```
+
+### Properties
+
+#### `worlds`
+
+Interface for managing functionality related to worlds.
+
+### Methods
+
+#### `worlds.sparql`
+
+Executes a SPARQL query or update against a world.
+
+```typescript
+worlds.sparql(worldId: string, query: string, options?: { abortSignal?: AbortSignal }): Promise<SparqlResults | null>
+```
+
+#### `worlds.search`
+
+Performs a semantic search within a world.
+
+```typescript
+worlds.search(worldId: string, query: string, options?: {
+  limit?: number;
+  offset?: number;
+}): Promise<SearchResult>
+```
+
+#### `worlds.get`
+
+Retrieves a world's metadata.
+
+```typescript
+worlds.get(worldId: string): Promise<WorldRecord | null>
+```
+
+#### `worlds.update`
+
+Updates a world's metadata.
+
+```typescript
+worlds.update(worldId: string, data: Partial<WorldRecord>): Promise<void>
+```
+
+#### `worlds.delete`
+
+Deletes a world.
+
+```typescript
+worlds.delete(worldId: string): Promise<void>
+```

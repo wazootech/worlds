@@ -1,0 +1,126 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Worlds API",
+  "colors": {
+    "primary": "#D97706",
+    "light": "#F59E0B",
+    "dark": "#78350F"
+  },
+  "favicon": "/images/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "index",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/worlds",
+              "concepts/sparql",
+              "concepts/search"
+            ]
+          },
+          {
+            "group": "Internal",
+            "pages": [
+              "design",
+              "paper"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Worlds",
+            "pages": [
+              "api-reference/worlds/list",
+              "api-reference/worlds/get",
+              "api-reference/worlds/create",
+              "api-reference/worlds/update",
+              "api-reference/worlds/delete"
+            ]
+          },
+          {
+            "group": "SPARQL",
+            "pages": [
+              "api-reference/sparql/query",
+              "api-reference/sparql/update"
+            ]
+          },
+          {
+            "group": "Search",
+            "pages": [
+              "api-reference/search/search"
+            ]
+          },
+          {
+            "group": "Usage",
+            "pages": [
+              "api-reference/usage/get"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "SDKs",
+        "groups": [
+          {
+            "group": "TypeScript SDK",
+            "pages": [
+              "sdk/overview",
+              "sdk/reference"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Dashboard",
+          "href": "https://console.wazoo.tech",
+          "icon": "globe"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "https://github.com/EthanThatOneKid/worlds-api/issues"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Go to Console",
+      "href": "https://console.wazoo.tech"
+    }
+  },
+  "footer": {
+    "socials": {
+      "linkedin": "https://www.linkedin.com/company/wazootech/",
+      "github": "https://github.com/wazootech"
+    }
+  },
+  "integrations": {
+    "ga4": {
+      "measurementId": "G-V64G870T6Z"
+    }
+  }
+}

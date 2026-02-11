@@ -1,0 +1,38 @@
+---
+title: "List Worlds"
+api: "GET https://api.wazoo.tech/v1/worlds"
+description: "List all worlds accessible to the authenticated account."
+---
+
+## Query Parameters
+
+<ParamField query="page" type="number" default="1">
+  The page number to return.
+</ParamField>
+
+<ParamField query="pageSize" type="number" default="20">
+  The number of items to return per page.
+</ParamField>
+
+<ParamField query="account" type="string">
+  Optional account ID to filter by (admin only).
+</ParamField>
+
+## Response
+
+<ResponseField name="response" type="array">
+  <Expandable title="World Object">
+    <ResponseField name="id" type="string">
+      The unique identifier for the world.
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      The name of the world.
+    </ResponseField>
+    <ResponseField name="description" type="string">
+      A description of the world.
+    </ResponseField>
+    <ResponseField name="created_at" type="string">
+      The ISO 8601 timestamp of creation.
+    </ResponseField>
+  </Expandable>
+</ResponseField>

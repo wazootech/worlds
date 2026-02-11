@@ -1,0 +1,78 @@
+---
+title: "Quickstart"
+description: "Start building with Worlds API in under 5 minutes"
+---
+
+## Setup
+
+To get started, you'll need an API key and a World ID. You can get these from the [Worlds Console](https://console.wazoo.tech).
+
+### 1. Install the SDK
+
+<CodeGroup>
+
+```bash npm
+npx jsr add @fartlabs/worlds
+```
+
+```bash deno
+deno add jsr:@fartlabs/worlds
+```
+
+</CodeGroup>
+
+### 2. Initialize the Client
+
+```typescript
+import { WorldsSdk } from "@fartlabs/worlds";
+
+const sdk = new WorldsSdk({
+  baseUrl: "https://api.wazoo.tech/v1", // Adjust if using a different endpoint
+  apiKey: "YOUR_API_KEY",
+});
+
+const worldId = "YOUR_WORLD_ID";
+```
+
+### 3. Add Knowledge
+
+Insert some data into your world using SPARQL.
+
+```typescript
+await sdk.worlds.sparql(
+  worldId,
+  `
+  INSERT DATA {
+    <http://example.org/ethan> <http://schema.org/name> "Ethan" .
+    <http://example.org/ethan> <http://schema.org/jobTitle> "Software Engineer" .
+  }
+`
+);
+```
+
+### 4. Query Knowledge
+
+Retrieve the data you just added.
+
+```typescript
+const result = await sdk.worlds.sparql(
+  worldId,
+  `
+  SELECT ?name ?title WHERE {
+    ?person <http://schema.org/name> ?name ;
+            <http://schema.org/jobTitle> ?title .
+  }
+`
+);
+
+console.log(result);
+```
+
+### 5. Search
+
+Perform a semantic search.
+
+```typescript
+const searchResults = await sdk.worlds.search(worldId, "Who is the software engineer?");
+console.log(searchResults);
+```

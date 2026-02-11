@@ -1,0 +1,32 @@
+---
+title: "SPARQL Update"
+api: "POST https://api.wazoo.tech/v1/worlds/{worldId}/sparql"
+description: "Execute a SPARQL update against a world."
+---
+
+## Path Parameters
+
+<ParamField path="worldId" type="string" required>
+  The unique identifier of the world.
+</ParamField>
+
+## Headers
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/sparql-update`.
+</ParamField>
+
+## Body
+
+The body should contain the raw SPARQL update string.
+
+Example:
+```sparql
+INSERT DATA {
+  <http://example.org/subject> <http://example.org/predicate> "object" .
+}
+```
+
+## Response
+
+The endpoint returns a 204 No Content status on success.

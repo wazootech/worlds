@@ -1,0 +1,17 @@
+---
+title: "Vector Search"
+description: "Semantic search over your knowledge graph"
+---
+
+**Vector Search** allows you to find information in your world based on its *meaning*, rather than exact keyword matches.
+
+## How it Works
+
+1. **Ingestion**: When you insert triples into your world, the API automatically generates embeddings for the subject, predicate, and object.
+2. **Indexing**: These embeddings are stored in a vector index.
+3. **Querying**: When you perform a search, your query is embedded, and the API finds the semantically closest triples in the index.
+
+## Use Cases
+
+- **RAG (Retrieval Augmented Generation)**: Retrieve relevant context for an LLM based on a user's prompt.
+- **Fuzzy Finding**: Find entities even if the user doesn't know their exact URI or name.

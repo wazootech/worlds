@@ -1,0 +1,22 @@
+---
+title: "Worlds"
+description: "Understanding the core concept of Worlds"
+---
+
+A **World** is an isolated container for knowledge. It is the fundamental unit of organization in the Worlds API.
+
+## Anatomy of a World
+
+Each World consists of:
+
+- **Metadata**: Name, description, and configuration.
+- **RDF Store**: A high-performance triple store containing the world's knowledge graph.
+- **Vector Store**: An embedding index that enables semantic search over the knowledge graph.
+
+## Isolation
+
+Worlds are completely isolated from one another. Data inserted into one world cannot be queried from another, ensuring strict data separation for different agents or contexts.
+
+## Edge Deployment
+
+Worlds are designed to live at the edge. The underlying storage and query engine are optimized for low-latency access, making them ideal for real-time AI applications.

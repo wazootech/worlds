@@ -1,0 +1,43 @@
+---
+title: "Vector Search"
+api: "GET https://api.wazoo.tech/v1/worlds/{worldId}/search"
+description: "Perform a semantic vector search on the world."
+---
+
+## Path Parameters
+
+<ParamField path="worldId" type="string" required>
+  The unique identifier of the world.
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="q" type="string" required>
+  The search query text.
+</ParamField>
+
+<ParamField query="limit" type="number" default="10">
+  The maximum number of results to return.
+</ParamField>
+
+<ParamField query="offset" type="number" default="0">
+  The offset for pagination.
+</ParamField>
+
+## Response
+
+<ResponseField name="response" type="array">
+  <Expandable title="Search Result">
+    <ResponseField name="score" type="number">
+      The similarity score (0-1).
+    </ResponseField>
+    <ResponseField name="value" type="object">
+      The triple associated with the match.
+      <Expandable title="Triple">
+        <ResponseField name="subject" type="string" />
+        <ResponseField name="predicate" type="string" />
+        <ResponseField name="object" type="string" />
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>

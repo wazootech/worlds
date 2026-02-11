@@ -1,0 +1,33 @@
+---
+title: "Authentication"
+description: "How to authenticate requests to the Worlds API"
+---
+
+The Worlds API uses **Bearer Token** authentication. You must include your API key in the `Authorization` header of every request.
+
+## Generating an API Key
+
+You can generate an API key in the [Worlds Console](https://console.wazoo.tech/settings).
+
+## Usage
+
+### Header format
+
+```http
+Authorization: Bearer <YOUR_API_KEY>
+```
+
+### SDK Example
+
+The SDK handles authentication for you automatically when you initialize the client.
+
+```typescript
+const world = new World({
+  apiKey: "YOUR_API_KEY",
+  // ... other options
+});
+```
+
+## Admin Access
+
+Certain endpoints (like listing all worlds for an account) require an Admin API key. These keys are typically only used for server-side integrations or by the account owner.

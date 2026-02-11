@@ -1,0 +1,29 @@
+---
+title: "Get World"
+api: "GET https://api.wazoo.tech/v1/worlds/{worldId}"
+description: "Retrieve details for a specific world."
+---
+
+## Path Parameters
+
+<ParamField path="worldId" type="string" required>
+  The unique identifier of the world.
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="string">
+  The unique identifier for the world.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name of the world.
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  A description of the world.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  The ISO 8601 timestamp of creation.
+</ResponseField>

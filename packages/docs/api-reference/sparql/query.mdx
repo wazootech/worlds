@@ -1,0 +1,34 @@
+---
+title: "SPARQL Query"
+api: "POST https://api.wazoo.tech/v1/worlds/{worldId}/sparql"
+description: "Execute a SPARQL query against a world."
+---
+
+## Path Parameters
+
+<ParamField path="worldId" type="string" required>
+  The unique identifier of the world.
+</ParamField>
+
+## Headers
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/sparql-query`.
+</ParamField>
+
+<ParamField header="Accept" type="string">
+  Desired response format, e.g., `application/sparql-results+json`.
+</ParamField>
+
+## Body
+
+The body should contain the raw SPARQL query string.
+
+Example:
+```sparql
+SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10
+```
+
+## Response
+
+Returns the SPARQL query results in the requested format (JSON by default).

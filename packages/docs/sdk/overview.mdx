@@ -1,0 +1,40 @@
+---
+title: SDK Overview
+description: "Interact with `worlds-api` using the official TypeScript SDK"
+---
+
+The **Worlds API SDK** is the easiest way to interact with the API. It provides a fully typed interface for managing worlds, executing SPARQL queries, and performing vector searches.
+
+## Installation
+
+Install the package via your preferred package manager (using JSR):
+
+```bash
+npx jsr add @fartlabs/worlds
+```
+
+## Basic Usage
+
+Initialize the client with your API key.
+
+```typescript
+import { WorldsSdk } from "@fartlabs/worlds";
+
+// Initialize the client
+const sdk = new WorldsSdk({
+  baseUrl: "https://api.wazoo.tech/v1", // Adjust if using a different endpoint
+  apiKey: "your-api-key",
+});
+
+// Run a SPARQL query
+const result = await sdk.worlds.sparql(
+  "my-knowledge-base",
+  `
+  SELECT ?s ?p ?o WHERE {
+    ?s ?p ?o .
+  } LIMIT 10
+`
+);
+
+console.log(result);
+```
