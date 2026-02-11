@@ -1,11 +1,7 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
-import {
-  type TripleSearchResult,
-  tripleSearchResultSchema,
-  WorldsSdk,
-} from "@wazoo/sdk";
+import { type TripleSearchResult, tripleSearchResultSchema } from "@wazoo/sdk";
 import type { CreateToolsOptions } from "../options.ts";
 
 /**
@@ -62,9 +58,8 @@ export type SearchEntitiesTool = Tool<
  * createSearchEntitiesTool creates a tool that resolves entities by searching for facts.
  */
 export function createSearchEntitiesTool(
-  options: CreateToolsOptions,
+  { sdk }: CreateToolsOptions,
 ): SearchEntitiesTool {
-  const sdk = new WorldsSdk(options);
   return tool({
     description:
       "Search for entities in the knowledge base. Returns a list of candidates to help resolve ambiguities.",

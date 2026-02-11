@@ -70,4 +70,4 @@ documentation: <https://github.com/wazootech/docs>.
 
 ---
 
-Developed with 🧪 [**@FartLabs**](https://github.com/FartLabs)
+Developed with 🧪 [**@wazootech**](https://github.com/wazootech)

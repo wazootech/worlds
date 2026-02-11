@@ -51,7 +51,7 @@ export type GenerateIriTool = Tool<GenerateIriInput, GenerateIriOutput>;
  * (Internationalized Resource Identifier) for a new entity.
  */
 export function createGenerateIriTool(
-  { generateIri = () => `https://wazoo.tech/.well-known/genid/${ulid()}` }:
+  { generateIri = () => `https://wazoo.dev/.well-known/genid/${ulid()}` }:
     CreateToolsOptions,
 ): GenerateIriTool {
   return tool({

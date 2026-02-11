@@ -1,29 +1,28 @@
-# Worlds API™
+# Worlds Platform™
 
-[![JSR](https://jsr.io/badges/@fartlabs/worlds)](https://jsr.io/@fartlabs/worlds)
-[![JSR score](https://jsr.io/badges/@fartlabs/worlds/score)](https://jsr.io/@fartlabs/worlds/score)
-[![GitHub Actions](https://github.com/wazootech/worlds-api/actions/workflows/check.yaml/badge.svg)](https://github.com/wazootech/worlds-api/actions/workflows/check.yaml)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/wazootech/worlds-api)
+[![JSR](https://jsr.io/badges/@wazoo/sdk)](https://jsr.io/@wazoo/sdk)
+[![JSR score](https://jsr.io/badges/@wazoo/sdk/score)](https://jsr.io/@wazoo/sdk/score)
 
-**Worlds API™** is a REST API designed to manage, query, update, and reason over
-[SPARQL 1.1](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge
+**Worlds Platform™** is a REST API designed to manage, query, update, and reason
+over [SPARQL](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge
 bases at the edge. It places a malleable **context graph** within arm's reach of
 your AI agent.
 
 ## Design
 
-**Bring your own brain (BYOB).** Worlds API™ is agnostic to the agent using it.
+**Bring your own brain (BYOB).** Worlds Platform™ is agnostic to the agent using
+it.
 
-**Powered by N3.** Worlds API™ leverages [N3](https://github.com/rdfjs/N3.js)
-for high-performance store operations.
+**Powered by N3.** Worlds Platform™ leverages
+[N3](https://github.com/rdfjs/N3.js) for high-performance store operations.
 
 ## Usage
 
-You can use the Worlds API SDK to interact with your knowledge bases
+You can use the Worlds SDK to interact with your knowledge bases
 programmatically.
 
 ```typescript
-import { WorldsSdk } from "@fartlabs/worlds";
+import { WorldsSdk } from "@wazoo/sdk";
 
 // Initialize the client.
 const sdk = new WorldsSdk({
@@ -50,12 +49,12 @@ const searchResult = await sdk.worlds.search(worldId, "Gregory");
 console.log(searchResult);
 // [
 //   {
-//     score: 0.9,
-//     value: {
-//       subject: "http://example.com/gregory",
-//       predicate: "http://schema.org/givenName",
-//       object: "Gregory"
-//     }
+//     subject: "http://example.com/gregory",
+//     predicate: "http://schema.org/givenName",
+//     object: "Gregory",
+//     vecRank: 0.1,
+//     ftsRank: 0.1,
+//     score: 0.9
 //   }
 // ]
 
@@ -131,4 +130,4 @@ For further information, please refer to our [whitepaper](docs/paper.md).
 
 ---
 
-Developed with 🧪 [**@FartLabs**](https://github.com/FartLabs)
+Developed with 🧪 [**@wazootech**](https://github.com/wazootech)

@@ -6,7 +6,6 @@ import {
   executeSparqlOutputSchema,
   isSparqlUpdate,
   type Source,
-  WorldsSdk,
 } from "@wazoo/sdk";
 import type { CreateToolsOptions } from "../options.ts";
 
@@ -42,9 +41,8 @@ export type ExecuteSparqlTool = Tool<ExecuteSparqlInput, ExecuteSparqlOutput>;
  * createExecuteSparqlTool creates a tool that executes SPARQL queries and updates.
  */
 export function createExecuteSparqlTool(
-  options: CreateToolsOptions,
+  { sdk, sources }: CreateToolsOptions,
 ): ExecuteSparqlTool {
-  const sdk = new WorldsSdk(options);
   return tool({
     description:
       "Execute SPARQL queries and updates against a specific world knowledge base.",
@@ -53,7 +51,7 @@ export function createExecuteSparqlTool(
     execute: async ({ sparql, source }: ExecuteSparqlInput) => {
       if (
         isSparqlUpdate(sparql) &&
-        !(options.sources.find((s: Source) => s.id === source)?.write ??
+        !(sources.find((s: Source) => s.id === source)?.write ??
           false)
       ) {
         throw new Error(

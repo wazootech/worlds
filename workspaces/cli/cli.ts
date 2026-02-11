@@ -1,7 +1,6 @@
 import { parseArgs } from "@std/cli/parse-args";
-import { promptSecret } from "@std/cli/prompt-secret";
 import { render } from "cfonts";
-import { type RdfFormat, WorldsSdk } from "@wazoo/sdk";
+import type { RdfFormat, WorldsSdk } from "@wazoo/sdk";
 
 /**
  * WorldsCli is a command line application for the Worlds API.
@@ -9,7 +8,7 @@ import { type RdfFormat, WorldsSdk } from "@wazoo/sdk";
 export class WorldsCli {
   public constructor(private readonly sdk: WorldsSdk) {}
 
-  public static logTitle() {
+  public static logo() {
     const renderResult = render("Worlds CLI", {
       colors: ["#d97706"],
       gradient: ["#d97706", "#f59e0b"],
@@ -23,96 +22,6 @@ export class WorldsCli {
     console.log(renderResult.string);
   }
 
-  public static async main() {
-    const apiKey = Deno.env.get("WORLDS_API_KEY") ??
-      promptSecret("Worlds API key: ");
-    if (!apiKey) {
-      console.error("WORLDS_API_KEY environment variable is not set.");
-      Deno.exit(1);
-    }
-
-    if (Deno.args.length === 0) {
-      WorldsCli.logTitle();
-      console.log("Usage: worlds <command> <options>");
-      console.log(
-        "Commands: create, update, delete, list, get, search, sparql, import, export",
-      );
-      Deno.exit(0);
-    }
-
-    const baseUrl = Deno.env.get("WORLDS_BASE_URL") ??
-      "https://worlds.wazoo.tech";
-    const sdk = new WorldsSdk({ apiKey, baseUrl });
-    const cli = new WorldsCli(sdk);
-    const [command, ...commandArgs] = Deno.args;
-
-    switch (command) {
-      case "create": {
-        await cli.create(commandArgs);
-        break;
-      }
-
-      case "update": {
-        await cli.update(commandArgs);
-        break;
-      }
-
-      case "delete": {
-        await cli.delete(commandArgs);
-        break;
-      }
-
-      case "list": {
-        await cli.list(commandArgs);
-        break;
-      }
-
-      case "get": {
-        await cli.get(commandArgs);
-        break;
-      }
-
-      case "search": {
-        await cli.search(commandArgs);
-        break;
-      }
-
-      case "sparql": {
-        await cli.sparql(commandArgs);
-        break;
-      }
-
-      case "import": {
-        await cli.import(commandArgs);
-        break;
-      }
-
-      case "export": {
-        await cli.export(commandArgs);
-        break;
-      }
-
-      default: {
-        const parsedArgs = parseArgs(Deno.args, {
-          boolean: "help",
-          alias: { h: "help" },
-        });
-
-        if (parsedArgs.help) {
-          WorldsCli.logTitle();
-          console.log("Usage: worlds <command> <options>");
-          console.log(
-            "Commands: create, update, delete, list, get, search, sparql, import, export",
-          );
-          Deno.exit(0);
-        }
-
-        console.error(`Unknown command: ${command}`);
-        Deno.exit(1);
-      }
-    }
-  }
-
   public async create(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
@@ -121,7 +30,7 @@ export class WorldsCli {
     });
 
     if (parsed.help) {
-      WorldsCli.logTitle();
+      WorldsCli.logo();
       console.log(
         "Usage: worlds create --label <label> [--organizationId <id>] [--description <desc>]",
       );
@@ -150,7 +59,7 @@ export class WorldsCli {
     });
 
     if (parsed.help) {
-      WorldsCli.logTitle();
+      WorldsCli.logo();
       console.log(
         "Usage: worlds update <worldId> [--label <label>] [--description <desc>]",
       );
@@ -177,7 +86,7 @@ export class WorldsCli {
     });
 
     if (parsed.help) {
-      WorldsCli.logTitle();
+      WorldsCli.logo();
       console.log("Usage: worlds delete <worldId>");
       return;
     }
@@ -199,7 +108,7 @@ export class WorldsCli {
     });
 
     if (parsed.help) {
-      WorldsCli.logTitle();
+      WorldsCli.logo();
       console.log(
         "Usage: worlds list [--organizationId <id>] [--page <n>] [--pageSize <n>]",
       );
@@ -220,7 +129,7 @@ export class WorldsCli {
     });
 
     if (parsed.help) {
-      WorldsCli.logTitle();
+      WorldsCli.logo();
       console.log("Usage: worlds get <worldId>");
       return;
     }
@@ -249,7 +158,7 @@ export class WorldsCli {
     });
 
     if (parsed.help) {
-      WorldsCli.logTitle();
+      WorldsCli.logo();
       console.log(
         "Usage: worlds search <worldId> <query> [--limit <n>] [--subjects <s1> --subjects <s2>]",
       );
@@ -278,7 +187,7 @@ export class WorldsCli {
     });
 
     if (parsed.help) {
-      WorldsCli.logTitle();
+      WorldsCli.logo();
       console.log("Usage: worlds sparql <worldId> <query_or_file_path>");
       return;
     }
@@ -309,7 +218,7 @@ export class WorldsCli {
     });
 
     if (parsed.help) {
-      WorldsCli.logTitle();
+      WorldsCli.logo();
       console.log(
         "Usage: worlds import <worldId> <file_path> [--format <turtle|n-quads|...>]",
       );
@@ -338,7 +247,7 @@ export class WorldsCli {
     });
 
     if (parsed.help) {
-      WorldsCli.logTitle();
+      WorldsCli.logo();
       console.log(
         "Usage: worlds export <worldId> [--format <turtle|n-quads|...>]",
       );

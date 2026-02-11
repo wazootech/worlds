@@ -1,7 +1,7 @@
 import { assert, assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
-import { createServer } from "@wazoo/api";
-import { createTestContext } from "@wazoo/api/testing";
+import { createServer } from "@wazoo/server";
+import { createTestContext } from "@wazoo/server/testing";
 import { WorldsSdk } from "#/sdk.ts";
 
 Deno.test("WorldsSdk - Service Accounts", async (t) => {

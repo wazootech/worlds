@@ -1,9 +1,14 @@
-import type { Source, WorldsSdkOptions } from "@wazoo/sdk";
+import type { Source, WorldsSdk } from "@wazoo/sdk";
 
 /**
  * CreateToolsOptions is the options for the createTools function.
  */
-export interface CreateToolsOptions extends WorldsSdkOptions {
+export interface CreateToolsOptions {
+  /**
+   * sdk is the WorldsSdk instance to use for the tools.
+   */
+  sdk: WorldsSdk;
+
   /**
    * sources is the list of sources visible to the tools.
    */

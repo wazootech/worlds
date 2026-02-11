@@ -1,7 +1,7 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
-import { WorldsSdk } from "@wazoo/sdk";
+import type { WorldsSdk } from "@wazoo/sdk";
 import type { CreateToolsOptions } from "#/options.ts";
 
 /**
@@ -122,14 +122,13 @@ export type DiscoverSchemaTool = Tool<
 export function createDiscoverSchemaTool(
   options: CreateToolsOptions,
 ): DiscoverSchemaTool {
-  const sdk = new WorldsSdk(options);
   return tool({
     description:
       "Discover the available classes and properties (vocabulary) in the knowledge base schema.",
     inputSchema: discoverSchemaInputSchema,
     outputSchema: discoverSchemaOutputSchema,
     execute: async (input) => {
-      return await discoverSchema(sdk, input);
+      return await discoverSchema(options.sdk, input);
     },
   });
 }
