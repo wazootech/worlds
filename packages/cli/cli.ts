@@ -265,4 +265,6 @@ export class WorldsCli {
     });
     await Deno.stdout.write(new Uint8Array(buffer));
   }
+
+  // TODO: List recent logs using the logs endpoint.
 }

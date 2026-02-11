@@ -1,40 +1,9 @@
 import { parseArgs } from "@std/cli/parse-args";
-import { promptSecret } from "@std/cli/prompt-secret";
-import { WorldsSdk } from "@wazoo/sdk";
-import { createServer, createServerContext } from "@wazoo/server";
 import { WorldsCli } from "./cli.ts";
+import { createWazoo } from "./wazoo.ts";
 
 async function main() {
-  const baseUrl = Deno.env.get("WORLDS_BASE_URL") ??
-    "https://api.wazoo.dev";
-
-  let fetch: typeof globalThis.fetch | undefined;
-  if (baseUrl.startsWith("./") || baseUrl.startsWith("file:")) {
-    const serverContext = await createServerContext({
-      env: {
-        ADMIN_API_KEY: Deno.env.get("ADMIN_API_KEY")!,
-        LIBSQL_URL: Deno.env.get("LIBSQL_URL")!,
-        LIBSQL_AUTH_TOKEN: Deno.env.get("LIBSQL_AUTH_TOKEN")!,
-        TURSO_API_TOKEN: Deno.env.get("TURSO_API_TOKEN"),
-        TURSO_ORG: Deno.env.get("TURSO_ORG"),
-        GOOGLE_API_KEY: Deno.env.get("GOOGLE_API_KEY"),
-        GOOGLE_EMBEDDINGS_MODEL: Deno.env.get("GOOGLE_EMBEDDINGS_MODEL"),
-      },
-    });
-
-    const app = await createServer(serverContext);
-    fetch = (input: RequestInfo | URL, init?: RequestInit) =>
-      app.fetch(new Request(input, init));
-  }
-
-  const apiKey = Deno.env.get("WORLDS_API_KEY") ??
-    promptSecret("Worlds API key: ");
-  if (!apiKey) {
-    console.error("WORLDS_API_KEY environment variable is not set.");
-    Deno.exit(1);
-  }
-
-  const sdk = new WorldsSdk({ apiKey, baseUrl, fetch });
+  const { sdk } = await createWazoo({ remote: false });
   const cli = new WorldsCli(sdk);
 
   if (Deno.args.length === 0) {

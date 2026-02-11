@@ -1,8 +1,7 @@
--- worldsTable is a table where each world is owned by an organization.
--- TODO: Make organization_id nullable to support admin-created (non-org scoped) worlds
+-- worldsTable initializes the worlds table.
 CREATE TABLE IF NOT EXISTS worlds (
   id TEXT PRIMARY KEY NOT NULL,
-  organization_id TEXT NOT NULL,
+  organization_id TEXT,
   label TEXT NOT NULL,
   description TEXT,
   db_hostname TEXT,
@@ -68,6 +67,26 @@ FROM
 WHERE
   organization_id = ?
   AND deleted_at IS NULL
+ORDER BY
+  created_at DESC
+LIMIT
+  ? OFFSET ?;
+
+-- selectAllWorlds is a query that finds worlds without organization filtering.
+SELECT
+  id,
+  organization_id,
+  label,
+  description,
+  db_hostname,
+  db_token,
+  created_at,
+  updated_at,
+  deleted_at
+FROM
+  worlds
+WHERE
+  deleted_at IS NULL
 ORDER BY
   created_at DESC
 LIMIT

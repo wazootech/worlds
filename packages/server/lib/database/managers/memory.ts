@@ -13,9 +13,12 @@ import { initializeWorldDatabase } from "#/lib/database/init.ts";
 export class MemoryDatabaseManager implements DatabaseManager {
   private readonly databases = new Map<string, Client>();
 
+  public constructor(private readonly dimensions: number = 1536) {}
+
   public async create(id: string): Promise<ManagedDatabase> {
     const client = createClient({ url: ":memory:" });
-    await initializeWorldDatabase(client);
+    await initializeWorldDatabase(client, this.dimensions);
+
     this.databases.set(id, client);
     return {
       database: client,

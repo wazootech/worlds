@@ -60,9 +60,17 @@ export async function initializeDatabase(client: Client): Promise<void> {
 /**
  * initializeWorldDatabase creates all world-specific tables and indexes if they don't exist.
  */
-export async function initializeWorldDatabase(client: Client): Promise<void> {
+export async function initializeWorldDatabase(
+  client: Client,
+  dimensions: number,
+): Promise<void> {
+  const chunksTableWithDimensions = chunksTable.replace(
+    "F32_BLOB(1536)",
+    `F32_BLOB(${dimensions})`,
+  );
+
   // Create tables
-  await client.execute(chunksTable);
+  await client.execute(chunksTableWithDimensions);
   await client.execute(chunksFtsTable);
   await client.execute(blobsTable);
   await client.execute(triplesTable);

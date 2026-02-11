@@ -11,6 +11,10 @@ import {
 } from "@wazoo/sdk";
 import { Parser, Store, Writer } from "n3";
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
+import type {
+  WorldRow,
+  WorldTable,
+} from "#/lib/database/tables/worlds/schema.ts";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { MetricsService } from "#/lib/database/tables/metrics/service.ts";
 import { LogsService } from "#/lib/database/tables/logs/service.ts";
@@ -519,14 +523,8 @@ export default (appContext: ServerContext) => {
         const url = new URL(ctx.request.url);
         // Admin must specify organizationId, service account uses its own
         let organizationId = url.searchParams.get("organizationId");
-        if (!authorized.admin) {
-          organizationId = authorized.organizationId!;
-        }
-
-        if (!organizationId) {
-          return ErrorResponse.BadRequest(
-            "organizationId query parameter is required",
-          );
+        if (!authorized.admin && authorized.organizationId) {
+          organizationId = authorized.organizationId;
         }
 
         const rateLimitRes = await checkRateLimit(
@@ -568,14 +566,16 @@ export default (appContext: ServerContext) => {
         const { page, pageSize } = paginationResult.data;
         const offset = (page - 1) * pageSize;
 
-        const rows = await worldsService.getByOrganizationId(
-          organizationId,
-          pageSize,
-          offset,
-        );
+        const rows = organizationId
+          ? await worldsService.getByOrganizationId(
+            organizationId,
+            pageSize,
+            offset,
+          )
+          : await worldsService.listAll(pageSize, offset);
 
         // Validate each SQL result row
-        const validatedRows = rows.map((row) => {
+        const validatedRows = rows.map((row: WorldRow) => {
           const validated = row;
 
           return worldSchema.parse({
@@ -621,10 +621,6 @@ export default (appContext: ServerContext) => {
         const data = result.data;
         const organizationId = data.organizationId ?? authorized.organizationId;
 
-        if (!organizationId) {
-          return ErrorResponse.BadRequest("Organization ID required");
-        }
-
         if (
           !authorized.admin && organizationId !== authorized.organizationId
         ) {
@@ -656,7 +652,10 @@ export default (appContext: ServerContext) => {
             const { initializeWorldDatabase } = await import(
               "#/lib/database/init.ts"
             );
-            await initializeWorldDatabase(client);
+            await initializeWorldDatabase(
+              client,
+              appContext.embeddings.dimensions,
+            );
           } catch (error) {
             console.error("Failed to provision Turso database:", error);
             return ErrorResponse.InternalServerError(
@@ -665,9 +664,9 @@ export default (appContext: ServerContext) => {
           }
         }
 
-        const world = {
+        const world: WorldTable = {
           id: worldId,
-          organization_id: organizationId,
+          organization_id: organizationId ?? null,
           label: data.label,
           description: data.description ?? null,
           db_hostname: dbHostname,

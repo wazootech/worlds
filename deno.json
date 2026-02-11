@@ -6,6 +6,7 @@
     "./packages/cli"
   ],
   "tasks": {
+    "start:cli": "deno -A --env ./packages/cli/main.ts",
     "test": "deno test -A",
     "lint": "deno lint",
     "fmt": "deno fmt",

@@ -67,13 +67,15 @@ export async function createServerContext(
     throw new Error("ADMIN_API_KEY is required");
   }
 
+  // TODO: Set up Embedded Replicas config.
+
   // Resolve database strategy based on environment variables.
   const database = createClient({
     url: config.env.LIBSQL_URL!,
     authToken: config.env.LIBSQL_AUTH_TOKEN,
   });
 
-  // Initialize database tables
+  // Initialize database tables.
   await initializeDatabase(database);
 
   // Resolve database manager strategy based on environment variables.

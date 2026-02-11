@@ -35,7 +35,7 @@ export const tripleSearchResultSchema: z.ZodType<TripleSearchResult> = z.object(
  */
 export interface World {
   id: string;
-  organizationId: string;
+  organizationId: string | null;
   label: string;
   description: string | null;
   createdAt: number;
@@ -48,7 +48,7 @@ export interface World {
  */
 export const worldSchema: z.ZodType<World> = z.object({
   id: z.string(),
-  organizationId: z.string(),
+  organizationId: z.string().nullable(),
   label: z.string(),
   description: z.string().nullable(),
   createdAt: z.number(),

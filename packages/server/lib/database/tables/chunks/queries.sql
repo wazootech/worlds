@@ -1,4 +1,5 @@
 -- chunksTable is a table for overlapping text chunks with vector embeddings.
+-- Note: F32_BLOB(1536) is a placeholder replaced at runtime (see init.ts)
 CREATE TABLE IF NOT EXISTS chunks (
   id TEXT PRIMARY KEY,
   triple_id TEXT NOT NULL,

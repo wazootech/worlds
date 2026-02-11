@@ -19,6 +19,7 @@
     "npm:@google/genai@1.40.0": "1.40.0",
     "npm:@google/genai@^1.40.0": "1.40.0",
     "npm:@langchain/textsplitters@^1.0.1": "1.0.1_@langchain+core@1.1.19",
+    "npm:@libsql/client@*": "0.17.0",
     "npm:@libsql/client@0.17": "0.17.0",
     "npm:@libsql/client@latest": "0.17.0",
     "npm:@rdfjs/types@^2.0.1": "2.0.1",

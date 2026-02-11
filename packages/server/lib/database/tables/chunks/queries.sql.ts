@@ -2,6 +2,7 @@
 
 /**
  * chunksTable is a table for overlapping text chunks with vector embeddings.
+ * Note: F32_BLOB(1536) is a placeholder replaced at runtime (see init.ts)
  */
 export const chunksTable =
   "CREATE TABLE IF NOT EXISTS chunks (\n  id TEXT PRIMARY KEY,\n  triple_id TEXT NOT NULL,\n  subject TEXT NOT NULL,\n  predicate TEXT NOT NULL,\n  text TEXT NOT NULL,\n  vector F32_BLOB(1536),\n  FOREIGN KEY(triple_id) REFERENCES triples(id) ON DELETE CASCADE\n);";
