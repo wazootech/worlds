@@ -149,12 +149,14 @@ export function createlandMassLayer(
   rotation = 0.0,
   land = 0.6,
 ): Mesh {
-  const colorPalette = colors ? colors : [
-    new Vector4(0.784314, 0.831373, 0.364706, 1),
-    new Vector4(0.388235, 0.670588, 0.247059, 1),
-    new Vector4(0.184314, 0.341176, 0.32549, 1),
-    new Vector4(0.156863, 0.207843, 0.25098, 1),
-  ];
+  const colorPalette = colors
+    ? colors
+    : [
+        new Vector4(0.784314, 0.831373, 0.364706, 1),
+        new Vector4(0.388235, 0.670588, 0.247059, 1),
+        new Vector4(0.184314, 0.341176, 0.32549, 1),
+        new Vector4(0.156863, 0.207843, 0.25098, 1),
+      ];
   const planetGeometry = new PlaneGeometry(1, 1);
   const planetMaterial = new ShaderMaterial({
     uniforms: {

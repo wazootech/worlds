@@ -9,7 +9,7 @@ export function PageFooter() {
         </p>
         <div className="flex items-center space-x-6">
           <Link
-            href="https://wazoo.tech"
+            href="https://wazoo.dev"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-colors"
@@ -18,7 +18,7 @@ export function PageFooter() {
           </Link>
 
           <Link
-            href="https://docs.wazoo.tech"
+            href="https://docs.wazoo.dev"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-colors"

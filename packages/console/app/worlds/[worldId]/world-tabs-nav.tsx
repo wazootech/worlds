@@ -82,8 +82,8 @@ function MobileTabSelect({
   activeTab: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const activeTabLabel = tabs.find((t) => t.id === activeTab)?.label ||
-    "Overview";
+  const activeTabLabel =
+    tabs.find((t) => t.id === activeTab)?.label || "Overview";
 
   return (
     <div className="relative">

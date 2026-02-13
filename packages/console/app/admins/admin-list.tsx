@@ -173,7 +173,8 @@ export function AdminList({
             </select>
           </div>
           <span className="text-sm text-stone-600 dark:text-stone-400">
-            Showing {organizations.length} organization{organizations.length !== 1 ? "s" : ""}
+            Showing {organizations.length} organization
+            {organizations.length !== 1 ? "s" : ""}
             {hasMore && " (more available)"}
           </span>
         </div>
@@ -212,9 +213,10 @@ function AdminRow({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const isAdmin = !!user.metadata?.admin;
-  const displayName = user.firstName || user.lastName
-    ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
-    : "N/A";
+  const displayName =
+    user.firstName || user.lastName
+      ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+      : "N/A";
 
   const handleToggle = () => {
     setError(null);
@@ -261,46 +263,41 @@ function AdminRow({
         {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}
       </td>
       <td className="whitespace-nowrap px-3 py-4 text-sm">
-        {isAdmin
-          ? (
-            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
-              Admin
-            </span>
-          )
-          : (
-            <span className="inline-flex items-center rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-800 dark:bg-stone-800 dark:text-stone-300">
-              User
-            </span>
-          )}
+        {isAdmin ? (
+          <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+            Admin
+          </span>
+        ) : (
+          <span className="inline-flex items-center rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-800 dark:bg-stone-800 dark:text-stone-300">
+            User
+          </span>
+        )}
       </td>
       <td className="whitespace-nowrap px-3 py-4 text-sm text-stone-500 dark:text-stone-400">
         {plan}
       </td>
       <td className="px-3 py-4 text-sm text-stone-500 dark:text-stone-400 font-mono whitespace-nowrap min-w-[120px]">
-        {accountId !== "-"
-          ? (
-            <button
-              onClick={handleCopyAccountId}
-              className="hover:text-stone-700 dark:hover:text-stone-300 transition-colors cursor-pointer text-left flex items-center gap-1 group"
-              title="Click to copy Account ID"
+        {accountId !== "-" ? (
+          <button
+            onClick={handleCopyAccountId}
+            className="hover:text-stone-700 dark:hover:text-stone-300 transition-colors cursor-pointer text-left flex items-center gap-1 group"
+            title="Click to copy Account ID"
+          >
+            {accountId}
+            <span
+              className={`text-[10px] uppercase font-sans font-bold px-1 rounded transition-opacity ${
+                isCopied
+                  ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 opacity-100"
+                  : "opacity-0 group-hover:opacity-40"
+              }`}
             >
-              {accountId}
-              <span
-                className={`text-[10px] uppercase font-sans font-bold px-1 rounded transition-opacity ${
-                  isCopied
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 opacity-100"
-                    : "opacity-0 group-hover:opacity-40"
-                }`}
-              >
-                {isCopied ? "Copied" : "Copy"}
-              </span>
-            </button>
-          )
-          : (
-            "-"
-          )}
+              {isCopied ? "Copied" : "Copy"}
+            </span>
+          </button>
+        ) : (
+          "-"
+        )}
       </td>
-
 
       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
         <div className="flex items-center justify-end gap-2">
@@ -327,19 +324,17 @@ function AdminRow({
                 className="cursor-pointer"
                 variant={isAdmin ? "destructive" : "default"}
               >
-                {isAdmin
-                  ? (
-                    <>
-                      <UserMinus className="mr-2 h-4 w-4" />
-                      <span>Remove Admin</span>
-                    </>
-                  )
-                  : (
-                    <>
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      <span>Make Admin</span>
-                    </>
-                  )}
+                {isAdmin ? (
+                  <>
+                    <UserMinus className="mr-2 h-4 w-4" />
+                    <span>Remove Admin</span>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    <span>Make Admin</span>
+                  </>
+                )}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setShowDeleteDialog(true)}
@@ -357,8 +352,9 @@ function AdminRow({
                 <DialogTitle>Delete Organization</DialogTitle>
                 <DialogDescription>
                   Are you sure you want to delete <strong>{displayName}</strong>
-                  ? This will remove the organization from the platform and delete their
-                  account on the Worlds API. This action cannot be undone.
+                  ? This will remove the organization from the platform and
+                  delete their account on the Worlds API. This action cannot be
+                  undone.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>

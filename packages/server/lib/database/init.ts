@@ -5,10 +5,6 @@ import {
   worldsTable,
 } from "#/lib/database/tables/worlds/queries.sql.ts";
 import {
-  invitesRedeemedByIndex,
-  invitesTable,
-} from "#/lib/database/tables/invites/queries.sql.ts";
-import {
   serviceAccountsApiKeyIndex,
   serviceAccountsOrganizationIdIndex,
   serviceAccountsTable,
@@ -44,14 +40,12 @@ export async function initializeDatabase(client: Client): Promise<void> {
   // Create tables
   await client.execute(organizationsTable);
   await client.execute(worldsTable);
-  await client.execute(invitesTable);
   await client.execute(serviceAccountsTable);
   await client.execute(rateLimitsTable);
   await client.execute(metricsTable);
 
   // Create indexes
   await client.execute(worldsOrganizationIdIndex);
-  await client.execute(invitesRedeemedByIndex);
   await client.execute(serviceAccountsOrganizationIdIndex);
   await client.execute(serviceAccountsApiKeyIndex);
   await client.execute(metricsServiceAccountIdIndex);

@@ -26,8 +26,8 @@ export function formatSparqlResultsForCopy(
 
   // Handle Select - check for different possible structures
   const hasHead = results && typeof results === "object" && "head" in results;
-  const hasResults = results && typeof results === "object" &&
-    "results" in results;
+  const hasResults =
+    results && typeof results === "object" && "results" in results;
 
   if (hasHead && hasResults) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,7 +44,7 @@ export function formatSparqlResultsForCopy(
             const cell = binding[v];
             return cell ? `"${cell.value.replace(/"/g, '""')}"` : "";
           })
-          .join(",")
+          .join(","),
       );
       return [header, ...rows].join("\n");
     }

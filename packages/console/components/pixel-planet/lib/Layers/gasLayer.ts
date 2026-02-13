@@ -153,12 +153,14 @@ export function createGasPLayer(
   rotation = 0.0,
   cloudCurve = 1.3,
 ): Mesh {
-  const colorPalette = colors ? colors : [
-    new Vector4(0.231373, 0.12549, 0.152941, 1),
-    new Vector4(0.231373, 0.12549, 0.152941, 1),
-    new Vector4(0.129412, 0.0941176, 0.105882, 1),
-    new Vector4(0.129412, 0.0941176, 0.105882, 1),
-  ];
+  const colorPalette = colors
+    ? colors
+    : [
+        new Vector4(0.231373, 0.12549, 0.152941, 1),
+        new Vector4(0.231373, 0.12549, 0.152941, 1),
+        new Vector4(0.129412, 0.0941176, 0.105882, 1),
+        new Vector4(0.129412, 0.0941176, 0.105882, 1),
+      ];
   const planetGeometryGas = new PlaneGeometry(1, 1);
   const planetMaterialGas = new ShaderMaterial({
     uniforms: {

@@ -12,7 +12,6 @@ import { FileDatabaseManager } from "#/lib/database/managers/file.ts";
 
 import organizationsRouter from "./routes/v1/organizations/route.ts";
 import serviceAccountsRouter from "./routes/v1/organizations/service-accounts/route.ts";
-import invitesRouter from "./routes/v1/invites/route.ts";
 import worldsRouter from "./routes/v1/worlds/route.ts";
 import sparqlRouter from "./routes/v1/worlds/sparql/route.ts";
 import logsRouter from "./routes/v1/worlds/logs/route.ts";
@@ -22,7 +21,6 @@ import metricsRouter from "./routes/v1/organizations/metrics/route.ts";
 const routes = [
   organizationsRouter,
   serviceAccountsRouter,
-  invitesRouter,
   worldsRouter,
   sparqlRouter,
   logsRouter,

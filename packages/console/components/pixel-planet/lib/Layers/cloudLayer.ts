@@ -160,12 +160,14 @@ export function createCloudLayer(
   cloudCover = 0.546,
   stretch = 2.5,
 ): Mesh {
-  const colorPalette = colors ? colors : [
-    new Vector4(0.882353, 0.94902, 1, 1),
-    new Vector4(0.752941, 0.890196, 1, 1),
-    new Vector4(0.368627, 0.439216, 0.647059, 1),
-    new Vector4(0.25098, 0.286275, 0.45098, 1),
-  ];
+  const colorPalette = colors
+    ? colors
+    : [
+        new Vector4(0.882353, 0.94902, 1, 1),
+        new Vector4(0.752941, 0.890196, 1, 1),
+        new Vector4(0.368627, 0.439216, 0.647059, 1),
+        new Vector4(0.25098, 0.286275, 0.45098, 1),
+      ];
   const planetGeometryClouds = new PlaneGeometry(1, 1);
   const planetMaterialClouds = new ShaderMaterial({
     uniforms: {

@@ -122,11 +122,13 @@ export function createLakeLayer(
   colors?: Vector4[],
   rotation = 0.0,
 ): Mesh {
-  const colorPalette = colors ? colors : [
-    new Vector4(79 / 255, 164 / 255, 184 / 255, 1),
-    new Vector4(76 / 255, 104 / 255, 133 / 255, 1),
-    new Vector4(58 / 255, 63 / 255, 94 / 255, 1),
-  ];
+  const colorPalette = colors
+    ? colors
+    : [
+        new Vector4(79 / 255, 164 / 255, 184 / 255, 1),
+        new Vector4(76 / 255, 104 / 255, 133 / 255, 1),
+        new Vector4(58 / 255, 63 / 255, 94 / 255, 1),
+      ];
   const planetGeometryLakes = new PlaneGeometry(1, 1);
   const planetMaterialLakes = new ShaderMaterial({
     uniforms: {

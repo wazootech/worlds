@@ -1,4 +1,4 @@
-import * as authkit from "@workos-inc/authkit-nextjs";
+import * as authkit from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import { sdk } from "@/lib/sdk";
 import { WorldSettings } from "../world-settings";

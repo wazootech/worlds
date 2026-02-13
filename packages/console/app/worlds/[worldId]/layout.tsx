@@ -1,4 +1,4 @@
-import * as authkit from "@workos-inc/authkit-nextjs";
+import * as authkit from "@/lib/auth";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { sdk } from "@/lib/sdk";

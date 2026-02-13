@@ -1,4 +1,4 @@
-import * as authkit from "@workos-inc/authkit-nextjs";
+import * as authkit from "@/lib/auth";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { sdk } from "@/lib/sdk";
@@ -38,11 +38,11 @@ function StatusPage({
                 : "bg-red-100 dark:bg-red-900/30"
             }`}
           >
-            {isSuccess
-              ? (
-                <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
-              )
-              : <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />}
+            {isSuccess ? (
+              <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+            ) : (
+              <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+            )}
           </div>
           <h1 className="text-2xl font-bold text-stone-900 dark:text-white mb-3">
             {title}
@@ -116,9 +116,8 @@ export default async function InvitePage(props: { params: Promise<Params> }) {
   } catch (error) {
     console.error("Failed to redeem invite:", error);
     // Handle case where invite was redeemed between check and redemption
-    const errorMessage = error instanceof Error
-      ? error.message
-      : "Failed to redeem invite";
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to redeem invite";
     if (
       errorMessage.includes("already redeemed") ||
       errorMessage.includes("not found")

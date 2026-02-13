@@ -193,8 +193,7 @@ body {
   /* Custom Scrollbar Styles - Webkit (Chrome, Safari, Edge) */
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgb(168 162 158 / 0.5)
-      transparent; /* stone-400 with opacity */
+    scrollbar-color: rgb(168 162 158 / 0.5) transparent; /* stone-400 with opacity */
   }
 
   *::-webkit-scrollbar {
@@ -228,8 +227,7 @@ body {
 
   /* Dark mode scrollbar styles */
   .dark * {
-    scrollbar-color: rgb(87 83 78 / 0.6)
-      transparent; /* stone-600 with opacity */
+    scrollbar-color: rgb(87 83 78 / 0.6) transparent; /* stone-600 with opacity */
   }
 
   .dark *::-webkit-scrollbar-thumb {
@@ -246,8 +244,7 @@ body {
 
   @media (prefers-color-scheme: dark) {
     * {
-      scrollbar-color: rgb(87 83 78 / 0.6)
-        transparent; /* stone-600 with opacity */
+      scrollbar-color: rgb(87 83 78 / 0.6) transparent; /* stone-600 with opacity */
     }
 
     *::-webkit-scrollbar-thumb {

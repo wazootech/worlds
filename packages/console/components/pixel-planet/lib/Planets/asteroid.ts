@@ -160,11 +160,13 @@ export const createAsteroid = (options?: PlanetOptions): Group => {
     : null;
   const rotation = options?.rotation ?? 0.0;
 
-  const colorPalette = colors ? colors : [
-    new Vector4(155 / 255, 158 / 255, 184 / 255, 1),
-    new Vector4(71 / 255, 97 / 255, 124 / 255, 1),
-    new Vector4(53 / 255, 57 / 255, 85 / 255, 1),
-  ];
+  const colorPalette = colors
+    ? colors
+    : [
+        new Vector4(155 / 255, 158 / 255, 184 / 255, 1),
+        new Vector4(71 / 255, 97 / 255, 124 / 255, 1),
+        new Vector4(53 / 255, 57 / 255, 85 / 255, 1),
+      ];
   const planetGeometry = new PlaneGeometry(1.5, 1.5);
   const planetMaterial = new ShaderMaterial({
     uniforms: {

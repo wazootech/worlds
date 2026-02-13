@@ -107,10 +107,12 @@ export function createCraterLayer(
   rotationSpeed = 0.1,
   rotation = 0.0,
 ): Mesh {
-  const colorPalette = colors ? colors : [
-    new Vector4(71 / 255, 97 / 255, 124 / 255, 1),
-    new Vector4(53 / 255, 57 / 255, 85 / 255, 1),
-  ];
+  const colorPalette = colors
+    ? colors
+    : [
+        new Vector4(71 / 255, 97 / 255, 124 / 255, 1),
+        new Vector4(53 / 255, 57 / 255, 85 / 255, 1),
+      ];
   const craterGeometry = new PlaneGeometry(1, 1);
   const craterMaterial = new ShaderMaterial({
     uniforms: {

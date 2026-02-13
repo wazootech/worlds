@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as authkit from "@workos-inc/authkit-nextjs";
+import * as authkit from "@/lib/auth";
 import { sdk } from "@/lib/sdk";
 
 export async function POST(
@@ -23,9 +23,8 @@ export async function POST(
     console.error("Failed to execute SPARQL:", error);
     return NextResponse.json(
       {
-        error: error instanceof Error
-          ? error.message
-          : "Failed to execute SPARQL",
+        error:
+          error instanceof Error ? error.message : "Failed to execute SPARQL",
       },
       { status: 500 },
     );

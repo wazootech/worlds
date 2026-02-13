@@ -17,10 +17,10 @@ export const createIcePlanet = (options?: PlanetOptions): Group => {
   const baseColors = options?.colors?.base
     ? options.colors.base.map((c) => new Vector4(c[0], c[1], c[2], c[3]))
     : [
-      new Vector4(250 / 255, 255 / 255, 255 / 255, 1),
-      new Vector4(199 / 255, 212 / 255, 255 / 255, 1),
-      new Vector4(146 / 255, 143 / 255, 184 / 255, 1),
-    ];
+        new Vector4(250 / 255, 255 / 255, 255 / 255, 1),
+        new Vector4(199 / 255, 212 / 255, 255 / 255, 1),
+        new Vector4(146 / 255, 143 / 255, 184 / 255, 1),
+      ];
 
   const lakeColors = options?.colors?.rivers
     ? options.colors.rivers.map((c) => new Vector4(c[0], c[1], c[2], c[3]))

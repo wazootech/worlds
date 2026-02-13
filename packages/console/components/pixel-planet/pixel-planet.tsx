@@ -182,7 +182,9 @@ export function PixelPlanet({
   };
 
   const cursorStyle = orbitControlsEnabled
-    ? isDragging ? "grabbing" : "grab"
+    ? isDragging
+      ? "grabbing"
+      : "grab"
     : "inherit";
 
   const canvasRef = useRef<HTMLDivElement>(null);

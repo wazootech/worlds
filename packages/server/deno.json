@@ -22,7 +22,7 @@
     "@types/n3": "npm:@types/n3@^1.26.1"
   },
   "tasks": {
-    "start": "deno serve -A --env main.ts",
+    "start": "deno serve -A --env ./main.ts",
     "generate": "deno -A jsr:@fartlabs/sql-embedder@0.0.5 ./"
   },
   "publish": {

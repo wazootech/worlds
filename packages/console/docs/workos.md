@@ -2068,6 +2068,7 @@ For reference in understanding the following features, below is a simplified
 hierarchy of the XML elements in a SAML Response:
 
 ```xml title="SAML response"
+
 ```
 
 ### Signed response assertions
@@ -5767,6 +5768,7 @@ alternate between light and dark mode icons by changing the path in the URL or
 using CSS media queries.
 
 ```html title="Example icon"
+
 ```
 
 You can change the icons to grayscale by adding the `filter` CSS property.
@@ -6447,10 +6449,11 @@ Stytch organization. Map `organization_name` to `name` and
 const workos = new WorkOS(process.env.WORKOS_API_KEY);
 
 async function importOrganization(stytchOrg: any) {
-  const domainData = stytchOrg.email_allowed_domains?.map((domain: string) => ({
-    domain,
-    state: "pending", // or 'verified' if domains are pre-verified
-  })) || [];
+  const domainData =
+    stytchOrg.email_allowed_domains?.map((domain: string) => ({
+      domain,
+      state: "pending", // or 'verified' if domains are pre-verified
+    })) || [];
 
   const org = await workos.organizations.createOrganization({
     name: stytchOrg.organization_name,
@@ -6749,8 +6752,8 @@ if using long-lived sessions.
 ```typescript title="Handle WorkOS sessions"
 const workos = new WorkOS(process.env.WORKOS_API_KEY);
 
-const { user, organizationId, role } = await workos.userManagement
-  .authenticateWithCode({
+const { user, organizationId, role } =
+  await workos.userManagement.authenticateWithCode({
     code: authorizationCode,
     clientId: process.env.WORKOS_CLIENT_ID,
   });
@@ -7005,12 +7008,12 @@ PHC parameters.
 
 #### scrypt
 
-| `Scrypt` value    |   | PHC hash parameter |
-| ----------------- | - | ------------------ |
-| `key length`      | → | `kl`               |
-| `cost`            | → | `n`                |
-| `rounds`          | → | `r`                |
-| `parallelization` | → | `p`                |
+| `Scrypt` value    |     | PHC hash parameter |
+| ----------------- | --- | ------------------ |
+| `key length`      | →   | `kl`               |
+| `cost`            | →   | `n`                |
+| `rounds`          | →   | `r`                |
+| `parallelization` | →   | `p`                |
 
 A valid `scrypt` PHC formatted string looks like this:
 
@@ -7020,10 +7023,10 @@ $scrypt$v=1$n=16384,r=8,p=1,kl=64$Swhqd4iUYTtWfbCYIPeuMw$q7pfdBQMJujd5FX/qX+ozM2
 
 #### pbkdf2
 
-| `pbkdf2` value |   | PHC hash parameter |
-| -------------- | - | ------------------ |
-| `digest`       | → | `d`                |
-| `iterations`   | → | `i`                |
+| `pbkdf2` value |     | PHC hash parameter |
+| -------------- | --- | ------------------ |
+| `digest`       | →   | `d`                |
+| `iterations`   | →   | `i`                |
 
 For `pbkdf2` allowed values for digest are `sha256` or `sha512`. The value for
 iterations is dependent on digest. For `sha256` there is a minimum of 600,000
@@ -7038,13 +7041,13 @@ $pbkdf2$i=600000,d=sha256$T2ptRFh6MXhDQVh2SWZuUGdpQXBUTg$xXiyTisD7390NijyCv5ICMh
 
 #### argon2
 
-| `argon2` value |   | PHC hash parameter |
-| -------------- | - | ------------------ |
-| `variant`      | → | algorithm id       |
-| `version`      | → | `v`                |
-| `memory`       | → | `m`                |
-| `time`         | → | `t`                |
-| `parallelism`  | → | `p`                |
+| `argon2` value |     | PHC hash parameter |
+| -------------- | --- | ------------------ |
+| `variant`      | →   | algorithm id       |
+| `version`      | →   | `v`                |
+| `memory`       | →   | `m`                |
+| `time`         | →   | `t`                |
+| `parallelism`  | →   | `p`                |
 
 The variant should be `argon2id`, but older supported variants include `argon2d`
 and `argon2i`. The version must be `19`. The following memory, time
@@ -7211,12 +7214,12 @@ create a corresponding record in WorkOS for each exported user. Use the
 following mapping from the Firebase format to parameters in your WorkOS Create
 User API calls:
 
-| Firebase        |   | WorkOS API       |
-| --------------- | - | ---------------- |
-| `email`         | → | `email`          |
-| `emailVerified` | → | `email_verified` |
-| `displayName`   | → | `first_name`     |
-| `displayName`   | → | `last_name`      |
+| Firebase        |     | WorkOS API       |
+| --------------- | --- | ---------------- |
+| `email`         | →   | `email`          |
+| `emailVerified` | →   | `email_verified` |
+| `displayName`   | →   | `first_name`     |
+| `displayName`   | →   | `last_name`      |
 
 ### Importing passwords
 
@@ -7243,12 +7246,12 @@ Finally, you will need to format these parameters into a
 [PHC-compatible](https://github.com/P-H-C/phc-string-format/blob/5f1e4ec633845d43776849f503f8ce8314b5290c/phc-sf-spec.md)
 password hash following this Firebase to PHC hash parameter mapping:
 
-| Firebase value          |   | PHC hash parameter |
-| ----------------------- | - | ------------------ |
-| `base64_signer_key`     | → | `sk`               |
-| `base64_salt_separator` | → | `ss`               |
-| `rounds`                | → | `r`                |
-| `mem_cost`              | → | `m`                |
+| Firebase value          |     | PHC hash parameter |
+| ----------------------- | --- | ------------------ |
+| `base64_signer_key`     | →   | `sk`               |
+| `base64_salt_separator` | →   | `ss`               |
+| `rounds`                | →   | `r`                |
+| `mem_cost`              | →   | `m`                |
 
 The hash, salt, along with `sk` and `ss` parameters, should be
 [B64 encoded](https://github.com/P-H-C/phc-string-format/blob/5f1e4ec633845d43776849f503f8ce8314b5290c/phc-sf-spec.md#b64),
@@ -7354,11 +7357,11 @@ Using the default fields from the
 [Clerk export](https://clerk.com/docs/deployments/exporting-users), use the
 following mapping from Clerk to parameters in your WorkOS Create User API calls:
 
-| Clerk             |   | WorkOS API   |
-| ----------------- | - | ------------ |
-| `email_addresses` | → | `email`      |
-| `first_name`      | → | `first_name` |
-| `last_name`       | → | `last_name`  |
+| Clerk             |     | WorkOS API   |
+| ----------------- | --- | ------------ |
+| `email_addresses` | →   | `email`      |
+| `first_name`      | →   | `first_name` |
+| `last_name`       | →   | `last_name`  |
 
 ### Handle users with multiple email addresses
 
@@ -7528,13 +7531,13 @@ documentation for more information.
 Using the Better Auth user table schema, use the following mapping to Create
 User API parameters:
 
-| Better Auth     |   | WorkOS           |
-| --------------- | - | ---------------- |
-| `email`         | → | `email`          |
-| `emailVerified` | → | `email_verified` |
-| `name`          | → | `first_name`     |
-| `name`          | → | `last_name`      |
-| `image`         | → | (not supported)  |
+| Better Auth     |     | WorkOS           |
+| --------------- | --- | ---------------- |
+| `email`         | →   | `email`          |
+| `emailVerified` | →   | `email_verified` |
+| `name`          | →   | `first_name`     |
+| `name`          | →   | `last_name`      |
+| `image`         | →   | (not supported)  |
 
 > Better Auth stores a single `name` field, while WorkOS has separate
 > `first_name` and `last_name` fields. You'll need to parse the name field or
@@ -7919,12 +7922,12 @@ create a corresponding record in WorkOS for each exported user. Use the
 following mapping from the AWS Cognito object to parameters in your WorkOS
 Create User API calls:
 
-| AWS Cognito     |   | WorkOS API       |
-| --------------- | - | ---------------- |
-| `email`         | → | `email`          |
-| `emailVerified` | → | `email_verified` |
-| `given_name`    | → | `first_name`     |
-| `family_name`   | → | `last_name`      |
+| AWS Cognito     |     | WorkOS API       |
+| --------------- | --- | ---------------- |
+| `email`         | →   | `email`          |
+| `emailVerified` | →   | `email_verified` |
+| `given_name`    | →   | `first_name`     |
+| `family_name`   | →   | `last_name`      |
 
 > Migrated users **must reset their passwords** before they can sign in.
 
@@ -8020,12 +8023,12 @@ Using the default fields from the
 use the following mapping from Auth0 to parameters in your WorkOS Create User
 API calls:
 
-| Auth0          |   | WorkOS API       |
-| -------------- | - | ---------------- |
-| Email          | → | `email`          |
-| Email Verified | → | `email_verified` |
-| Given Name     | → | `first_name`     |
-| Family Name    | → | `last_name`      |
+| Auth0          |     | WorkOS API       |
+| -------------- | --- | ---------------- |
+| Email          | →   | `email`          |
+| Email Verified | →   | `email_verified` |
+| Given Name     | →   | `first_name`     |
+| Family Name    | →   | `last_name`      |
 
 ### Importing passwords
 
@@ -10808,8 +10811,7 @@ const connection_id = process.env.WORKOS_CONNECTION_ID;
 const client_id = process.env.WORKOS_CLIENT_ID;
 
 // Format the URL for the Get Authorization URL call and pass in the Client ID, Redirect URI, and Connection ID
-const url =
-  `https://api.workos.com/sso/authorize?response_type=code&client_id=${client_id}&redirect_uri=${redirect}&state=&connection=${connection_id}`;
+const url = `https://api.workos.com/sso/authorize?response_type=code&client_id=${client_id}&redirect_uri=${redirect}&state=&connection=${connection_id}`;
 
 // Call openAuthSessionAsync with the url and redirect from above, and save the returned object to a variable
 const result = await WebBrowser.openAuthSessionAsync(url, redirect);
@@ -10831,8 +10833,7 @@ shown here using Axios:
 // Use the profile returned in response.data as you need!
 axios({
   method: "post",
-  url:
-    `https://api.workos.com/sso/token?client_id=${client_id}&client_secret=${apiKey}&grant_type=authorization_code&code=${code}`,
+  url: `https://api.workos.com/sso/token?client_id=${client_id}&client_secret=${apiKey}&grant_type=authorization_code&code=${code}`,
 }).then((response) => {});
 ```
 
@@ -20105,8 +20106,8 @@ select
 ```
 
 > `` can be a comma separated list of one or more resource types that results of
-> the query will be filtered to. To select resources matching _any_ resource
-> type, pass a wildcard (`\*`) instead.
+the query will be filtered to. To select resources matching _any_ resource
+type, pass a wildcard (`\*`) instead.
 
 ### Select Subjects
 
@@ -25833,9 +25834,10 @@ IT admins the flexibility to map any field from their directory provider.
 **Before (deprecated):**
 
 ```javascript
-const license_tier = user.raw_attributes[
-  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
-]?.license_tier;
+const license_tier =
+  user.raw_attributes[
+    "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+  ]?.license_tier;
 const employeeId = user.raw_attributes.customSchemas?.Company?.employeeId;
 ```
 
@@ -26062,6 +26064,7 @@ console.log();
 ## Empty code block
 
 ```plain
+
 ```
 
 ## With tabs across all languages
@@ -26069,6 +26072,7 @@ console.log();
 Input:
 
 ```html
+
 ```
 
 Output:
@@ -26080,6 +26084,7 @@ Only Java should have tabs here.
 Input:
 
 ```html
+
 ```
 
 Output:
@@ -28428,7 +28433,8 @@ app.get("/.well-known/oauth-protected-resource", (req, res) =>
     resource: `https://mcp.example.com`,
     authorization_servers: ["https://authkit_domain"],
     bearer_methods_supported: ["header"],
-  }));
+  }),
+);
 ```
 
 MCP clients that support metadata discovery will automatically fetch this
@@ -29791,7 +29797,7 @@ transactional emails, are translated into the user's native tongue.
   | `am`        | Amharic                 | አማርኛ                    |
   | `ar`        | Arabic                  | العربية                 |
   | `bg`        | Bulgarian               | Български               |
-  | `bn`        | Bengali (Bangla)        | বাংলা                     |
+  | `bn`        | Bengali (Bangla)        | বাংলা                   |
   | `bs`        | Bosnian                 | Bosanski                |
   | `ca`        | Catalan                 | Català                  |
   | `cs`        | Czech                   | Čeština                 |
@@ -29818,10 +29824,10 @@ transactional emails, are translated into the user's native tongue.
   | `fr-FR`     | French (France)         | Français (France)       |
   | `fy`        | Frisian                 | Frysk                   |
   | `gl`        | Galician                | Galego                  |
-  | `gu`        | Gujarati                | ગુજરાતી                  |
-  | `ha`        | Hausa                   | هَرْشٜن هَوْس                |
+  | `gu`        | Gujarati                | ગુજરાતી                 |
+  | `ha`        | Hausa                   | هَرْشٜن هَوْس           |
   | `he`        | Hebrew                  | עברית                   |
-  | `hi`        | Hindi                   | हिन्दी                   |
+  | `hi`        | Hindi                   | हिन्दी                  |
   | `hr`        | Croatian                | Hrvatski                |
   | `hu`        | Hungarian               | Magyar                  |
   | `hy`        | Armenian                | Հայերեն                 |
@@ -29834,24 +29840,24 @@ transactional emails, are translated into the user's native tongue.
   | `ka`        | Georgian                | ქართული                 |
   | `kk`        | Kazakh                  | Қазақ тілі              |
   | `km`        | Khmer                   | ខេមរភាសា                |
-  | `kn`        | Kannada                 | ಕನ್ನಡ                    |
+  | `kn`        | Kannada                 | ಕನ್ನಡ                   |
   | `ko`        | Korean                  | 한국어                  |
   | `lt`        | Lithuanian              | Lietuvių                |
   | `lv`        | Latvian                 | Latviešu                |
   | `mk`        | Macedonian              | Македонски              |
-  | `ml`        | Malayalam               | മലയാളം                   |
+  | `ml`        | Malayalam               | മലയാളം                  |
   | `mn`        | Mongolian               | Монгол                  |
   | `mr`        | Marathi                 | मराठी                   |
   | `ms`        | Malay                   | Bahasa Melayu           |
-  | `my`        | Burmese                 | မြန်မာ                   |
+  | `my`        | Burmese                 | မြန်မာ                  |
   | `nb`        | Norwegian Bokmål        | Norsk Bokmål            |
-  | `ne`        | Nepali                  | नेपाली भाषा              |
+  | `ne`        | Nepali                  | नेपाली भाषा             |
   | `nl`        | Dutch                   | Nederlands              |
   | `nl-BE`     | Flemish                 | Vlaams                  |
   | `nl-NL`     | Dutch (Netherlands)     | Nederlands (Nederland)  |
   | `nn`        | Norwegian Nynorsk       | Norsk Nynorsk           |
   | `no`        | Norwegian               | Norsk                   |
-  | `pa`        | Punjabi                 | ਪੰਜਾਬੀ                   |
+  | `pa`        | Punjabi                 | ਪੰਜਾਬੀ                  |
   | `pl`        | Polish                  | Polski                  |
   | `pt`        | Portuguese              | Português               |
   | `pt-BR`     | Portuguese (Brazil)     | Português (Brasil)      |
@@ -29864,12 +29870,12 @@ transactional emails, are translated into the user's native tongue.
   | `sr`        | Serbian                 | Српски                  |
   | `sv`        | Swedish                 | Svenska                 |
   | `sw`        | Swahili                 | Kiswahili               |
-  | `ta`        | Tamil                   | தமிழ்                    |
-  | `te`        | Telugu                  | తెలుగు                   |
+  | `ta`        | Tamil                   | தமிழ்                   |
+  | `te`        | Telugu                  | తెలుగు                  |
   | `th`        | Thai                    | ไทย                     |
   | `tr`        | Turkish                 | Türkçe                  |
   | `uk`        | Ukrainian               | Українська              |
-  | `ur`        | Urdu                    | اُردُو                    |
+  | `ur`        | Urdu                    | اُردُو                  |
   | `uz`        | Uzbek                   | Ózbekça                 |
   | `vi`        | Vietnamese              | Tiếng Việt              |
   | `zh`        | Chinese                 | 中文                    |

@@ -18,10 +18,10 @@ export const createEarthPlanet = (options?: PlanetOptions): Group => {
   const baseColors = options?.colors?.base
     ? options.colors.base.map((c) => new Vector4(c[0], c[1], c[2], c[3]))
     : [
-      new Vector4(102 / 255, 176 / 255, 199 / 255, 1),
-      new Vector4(102 / 255, 176 / 255, 199 / 255, 1),
-      new Vector4(52 / 255, 65 / 255, 157 / 255, 1),
-    ];
+        new Vector4(102 / 255, 176 / 255, 199 / 255, 1),
+        new Vector4(102 / 255, 176 / 255, 199 / 255, 1),
+        new Vector4(52 / 255, 65 / 255, 157 / 255, 1),
+      ];
 
   const cloudColors = options?.colors?.clouds
     ? options.colors.clouds.map((c) => new Vector4(c[0], c[1], c[2], c[3]))

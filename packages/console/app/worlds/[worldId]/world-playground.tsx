@@ -144,10 +144,10 @@ export function WorldPlayground({ worldId, userId }: WorldPlaygroundProps) {
               {!error && results && "boolean" in results
                 ? " (Boolean)"
                 : !error && results && "results" in results
-                ? " (Select)"
-                : !error && results && "message" in results
-                ? " (Update)"
-                : ""}
+                  ? " (Select)"
+                  : !error && results && "message" in results
+                    ? " (Update)"
+                    : ""}
             </h3>
             {!error && results && (
               <SparqlResultCopyButton
@@ -157,19 +157,17 @@ export function WorldPlayground({ worldId, userId }: WorldPlaygroundProps) {
             )}
           </div>
           <div className="flex-grow bg-stone-950 overflow-hidden relative">
-            {error
-              ? (
-                <div className="p-4 overflow-auto h-full">
-                  <pre className="text-sm text-red-400 whitespace-pre-wrap font-mono">
+            {error ? (
+              <div className="p-4 overflow-auto h-full">
+                <pre className="text-sm text-red-400 whitespace-pre-wrap font-mono">
                   {error}
-                  </pre>
-                </div>
-              )
-              : (
-                <div className="h-full overflow-hidden bg-white dark:bg-stone-950">
-                  <SparqlResultsDisplay results={results} loading={loading} />
-                </div>
-              )}
+                </pre>
+              </div>
+            ) : (
+              <div className="h-full overflow-hidden bg-white dark:bg-stone-950">
+                <SparqlResultsDisplay results={results} loading={loading} />
+              </div>
+            )}
           </div>
         </div>
       </div>

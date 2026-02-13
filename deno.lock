@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@fartlabs/invites@*": "0.0.3",
     "jsr:@fartlabs/rt@*": "0.0.11",
     "jsr:@fartlabs/rt@^0.0.11": "0.0.11",
     "jsr:@fartlabs/search-store@*": "0.0.2",
@@ -35,12 +36,22 @@
     "npm:n3@*": "2.0.1",
     "npm:n3@^2.0.1": "2.0.1",
     "npm:n3@latest": "2.0.1",
+    "npm:nanoid@^5.1.6": "5.1.6",
     "npm:rdf-canonize@5": "5.0.0",
     "npm:zod@*": "4.3.6",
     "npm:zod@^4.3.6": "4.3.6",
     "npm:zod@latest": "4.3.6"
   },
   "jsr": {
+    "@fartlabs/invites@0.0.3": {
+      "integrity": "826e8522e6490daceead6f876f6756f5c59851fd8a07fe0e774ec053a35c7511",
+      "dependencies": [
+        "jsr:@fartlabs/rt@^0.0.11",
+        "jsr:@std/ulid@1",
+        "npm:nanoid",
+        "npm:zod@^4.3.6"
+      ]
+    },
     "@fartlabs/rt@0.0.11": {
       "integrity": "6473912e7654a38c3b40031f0d4c6474b5c5c46c43775baf63c9c571000b92d4",
       "dependencies": [
@@ -3997,6 +4008,10 @@
         "buffer",
         "readable-stream@4.7.0"
       ]
+    },
+    "nanoid@5.1.6": {
+      "integrity": "sha512-c7+7RQ+dMB5dPwwCp4ee1/iV/q2P6aK1mTZcfr1BTuVlyW9hJYiMPybJCcnBlQtuSmTIWNeazm/zqNoZSSElBg==",
+      "bin": true
     },
     "negotiate@1.0.1": {
       "integrity": "sha512-KBCIM4dAIT9j/pSXLHHQbZG74NmKNXTtxU2zHN0HG6uzzuFE01m1UdGoUmVHmACiBuCAOL7KwfqSW1oUQBj/vg=="

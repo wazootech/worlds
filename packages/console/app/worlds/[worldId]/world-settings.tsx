@@ -10,16 +10,15 @@ export function WorldSettings({ world }: { world: World }) {
   const [description, setDescription] = useState(world.description || "");
   const [isPending, startTransition] = useTransition();
 
-  const hasChanges = label !== world.label ||
-    description !== (world.description || "");
+  const hasChanges =
+    label !== world.label || description !== (world.description || "");
 
   const handleSave = () => {
     startTransition(async () => {
       await updateWorld(world.id, {
         label: label !== world.label ? label : undefined,
-        description: description !== (world.description || "")
-          ? description
-          : undefined,
+        description:
+          description !== (world.description || "") ? description : undefined,
       });
     });
   };

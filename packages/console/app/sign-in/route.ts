@@ -1,4 +1,4 @@
-import { getSignInUrl } from "@workos-inc/authkit-nextjs";
+import { getSignInUrl } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 

@@ -88,8 +88,8 @@ export function SparqlResultsDisplay({
   // Handle Select - check for different possible structures
   // Some SPARQL results have 'head' and 'results', some might be slightly different
   const hasHead = results && typeof results === "object" && "head" in results;
-  const hasResults = results && typeof results === "object" &&
-    "results" in results;
+  const hasResults =
+    results && typeof results === "object" && "results" in results;
 
   if (hasHead && hasResults) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -148,19 +148,17 @@ export function SparqlResultsDisplay({
                         } text-stone-900 dark:text-stone-100 whitespace-nowrap max-w-xs truncate`}
                         title={cell?.value || ""}
                       >
-                        {cell
-                          ? (
-                            cell.type === "uri"
-                              ? (
-                                <span className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
-                                  {cell.value}
-                                </span>
-                              )
-                              : <span>{cell.value}</span>
+                        {cell ? (
+                          cell.type === "uri" ? (
+                            <span className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                              {cell.value}
+                            </span>
+                          ) : (
+                            <span>{cell.value}</span>
                           )
-                          : (
-                            <span className="text-stone-400 opacity-50">-</span>
-                          )}
+                        ) : (
+                          <span className="text-stone-400 opacity-50">-</span>
+                        )}
                       </td>
                     );
                   })}

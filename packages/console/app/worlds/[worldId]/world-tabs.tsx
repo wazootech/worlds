@@ -99,7 +99,6 @@ export function WorldTabs({
           <WorldDetails
             world={world}
             userId={userId}
-
             codeSnippet={codeSnippet}
             maskedCodeSnippet={maskedCodeSnippet}
             codeSnippetHtml={codeSnippetHtml}
