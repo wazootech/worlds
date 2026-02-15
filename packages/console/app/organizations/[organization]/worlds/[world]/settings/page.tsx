@@ -6,15 +6,16 @@ import { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { WorldSettingsForm } from "@/components/world-settings-form";
 
-type Params = { organizationId: string; worldId: string };
+type Params = { organization: string; world: string };
 
 export async function generateMetadata(props: {
   params: Promise<Params>;
 }): Promise<Metadata> {
-  const { organizationId, worldId } = await props.params;
+  const { organization: organizationId, world: worldId } = await props.params;
+
   try {
     const [world, organization] = await Promise.all([
-      sdk.worlds.get(worldId),
+      (sdk.worlds as any).get(worldId, { organizationId }),
       sdk.organizations.get(organizationId),
     ]);
     return {
@@ -30,7 +31,7 @@ export async function generateMetadata(props: {
 export default async function WorldSettingsPage(props: {
   params: Promise<Params>;
 }) {
-  const { organizationId, worldId } = await props.params;
+  const { organization: organizationId, world: worldId } = await props.params;
   const { user } = await authkit.withAuth();
 
   if (!user) {
@@ -52,42 +53,48 @@ export default async function WorldSettingsPage(props: {
     notFound();
   }
 
+  const actualOrgId = organization.id;
+  const orgSlug = (organization as any).slug || organization.id;
+
   let world;
   try {
-    world = await sdk.worlds.get(worldId);
+    world = await (sdk.worlds as any).get(worldId, { organizationId: actualOrgId });
   } catch (error) {
     console.error("Failed to fetch world:", error);
     return notFound();
   }
 
-  if (!world || world.organizationId !== organizationId) {
+  if (!world || world.organizationId !== actualOrgId) {
     notFound();
   }
+
+  const actualWorldId = world.id;
+  const worldSlug = (world as any).slug || world.id;
 
   const tabs = [
     {
       label: "Overview",
-      href: `/organizations/${organizationId}/worlds/${worldId}`,
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
     },
     {
       label: "SPARQL",
-      href: `/organizations/${organizationId}/worlds/${worldId}/sparql`,
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}/sparql`,
     },
     {
       label: "Search",
-      href: `/organizations/${organizationId}/worlds/${worldId}/search`,
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}/search`,
     },
     {
       label: "Settings",
-      href: `/organizations/${organizationId}/worlds/${worldId}/settings`,
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}/settings`,
     },
   ];
 
   const resourceMenuItems = [
-    { label: "Overview", href: `/organizations/${organizationId}/worlds/${worldId}`, icon: <Globe className="w-4 h-4" /> },
-    { label: "SPARQL", href: `/organizations/${organizationId}/worlds/${worldId}/sparql`, icon: <Terminal className="w-4 h-4" /> },
-    { label: "Search", href: `/organizations/${organizationId}/worlds/${worldId}/search`, icon: <Search className="w-4 h-4" /> },
-    { label: "Settings", href: `/organizations/${organizationId}/worlds/${worldId}/settings`, icon: <Settings className="w-4 h-4" /> },
+    { label: "Overview", href: `/organizations/${orgSlug}/worlds/${worldSlug}`, icon: <Globe className="w-4 h-4" /> },
+    { label: "SPARQL", href: `/organizations/${orgSlug}/worlds/${worldSlug}/sparql`, icon: <Terminal className="w-4 h-4" /> },
+    { label: "Search", href: `/organizations/${orgSlug}/worlds/${worldSlug}/search`, icon: <Search className="w-4 h-4" /> },
+    { label: "Settings", href: `/organizations/${orgSlug}/worlds/${worldSlug}/settings`, icon: <Settings className="w-4 h-4" /> },
   ];
 
   return (
@@ -97,7 +104,7 @@ export default async function WorldSettingsPage(props: {
         isAdmin={isAdmin}
         resource={{
           label: world.label,
-          href: `/organizations/${organizationId}/worlds/${worldId}`,
+          href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
           icon: <Globe className="w-3 h-3 text-stone-500" />,
           menuItems: resourceMenuItems,
         }}

@@ -25,26 +25,40 @@ export class WorldsCli {
   public async create(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["organizationId", "label", "description"],
-      alias: { o: "organizationId", l: "label", d: "description", h: "help" },
+      string: ["label", "organizationId", "description", "slug"],
+      alias: {
+        l: "label",
+        o: "organizationId",
+        d: "description",
+        s: "slug",
+        h: "help",
+      },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds create --label <label> [--organizationId <id>] [--description <desc>]",
+        "Usage: worlds create --label <label> [--slug <slug>] [--organizationId <id>] [--description <desc>]",
       );
       return;
     }
 
     if (!parsed.label) {
       console.error(
-        "Usage: worlds create --label <label> [--organizationId <id>] [--description <desc>]",
+        "Usage: worlds create --label <label> [--slug <slug>] [--organizationId <id>] [--description <desc>]",
       );
       return;
     }
+
+    const slug = parsed.slug ||
+      parsed.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(
+        /^-+|-+$/g,
+        "",
+      );
+
     const world = await this.sdk.worlds.create({
       organizationId: parsed.organizationId,
+      slug,
       label: parsed.label,
       description: parsed.description,
     });
@@ -54,25 +68,26 @@ export class WorldsCli {
   public async update(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["label", "description"],
-      alias: { l: "label", d: "description", h: "help" },
+      string: ["label", "description", "slug"],
+      alias: { l: "label", d: "description", s: "slug", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds update <worldId> [--label <label>] [--description <desc>]",
+        "Usage: worlds update <worldId> [--slug <slug>] [--label <label>] [--description <desc>]",
       );
       return;
     }
     const worldId = parsed._[0] as string;
     if (!worldId) {
       console.error(
-        "Usage: worlds update <worldId> [--label <label>] [--description <desc>]",
+        "Usage: worlds update <worldId> [--slug <slug>] [--label <label>] [--description <desc>]",
       );
       return;
     }
     await this.sdk.worlds.update(worldId, {
+      slug: parsed.slug,
       label: parsed.label,
       description: parsed.description,
     });

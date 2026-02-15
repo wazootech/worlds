@@ -6,12 +6,12 @@ import { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { ComingSoonPlaceholder } from "@/components/coming-soon-placeholder";
 
-type Params = { organizationId: string };
+type Params = { organization: string };
 
 export async function generateMetadata(props: {
   params: Promise<Params>;
 }): Promise<Metadata> {
-  const { organizationId } = await props.params;
+  const { organization: organizationId } = await props.params;
   try {
     const organization = await sdk.organizations.get(organizationId);
     return {
@@ -27,7 +27,7 @@ export async function generateMetadata(props: {
 export default async function MetricsPage(props: {
   params: Promise<Params>;
 }) {
-  const { organizationId } = await props.params;
+  const { organization: organizationId } = await props.params;
   const { user } = await authkit.withAuth();
 
   if (!user) {
@@ -49,18 +49,20 @@ export default async function MetricsPage(props: {
     notFound();
   }
 
+  const orgSlug = (organization as any).slug || organization.id;
+
   const tabs = [
-    { label: "Worlds", href: `/organizations/${organizationId}` },
-    { label: "Service Accounts", href: `/organizations/${organizationId}/service-accounts` },
-    { label: "Metrics", href: `/organizations/${organizationId}/metrics` },
-    { label: "Settings", href: `/organizations/${organizationId}/settings` },
+    { label: "Worlds", href: `/organizations/${orgSlug}` },
+    { label: "Service Accounts", href: `/organizations/${orgSlug}/service-accounts` },
+    { label: "Metrics", href: `/organizations/${orgSlug}/metrics` },
+    { label: "Settings", href: `/organizations/${orgSlug}/settings` },
   ];
 
   const resourceMenuItems = [
-    { label: "Worlds", href: `/organizations/${organizationId}`, icon: <LayoutGrid className="w-4 h-4" /> },
-    { label: "Service Accounts", href: `/organizations/${organizationId}/service-accounts`, icon: <ShieldCheck className="w-4 h-4" /> },
-    { label: "Metrics", href: `/organizations/${organizationId}/metrics`, icon: <BarChart3 className="w-4 h-4" /> },
-    { label: "Settings", href: `/organizations/${organizationId}/settings`, icon: <Settings className="w-4 h-4" /> },
+    { label: "Worlds", href: `/organizations/${orgSlug}`, icon: <LayoutGrid className="w-4 h-4" /> },
+    { label: "Service Accounts", href: `/organizations/${orgSlug}/service-accounts`, icon: <ShieldCheck className="w-4 h-4" /> },
+    { label: "Metrics", href: `/organizations/${orgSlug}/metrics`, icon: <BarChart3 className="w-4 h-4" /> },
+    { label: "Settings", href: `/organizations/${orgSlug}/settings`, icon: <Settings className="w-4 h-4" /> },
   ];
 
   return (
@@ -70,7 +72,7 @@ export default async function MetricsPage(props: {
         isAdmin={isAdmin}
         resource={{
           label: "Metrics",
-          href: `/organizations/${organizationId}/metrics`,
+          href: `/organizations/${orgSlug}/metrics`,
           icon: <BarChart3 className="w-3 h-3 text-stone-500" />,
           menuItems: resourceMenuItems,
         }}

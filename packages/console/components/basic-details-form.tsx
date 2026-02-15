@@ -11,7 +11,7 @@ export function BasicDetailsForm({
   initialLabel: string | null;
   initialSlug: string | null;
 }) {
-  const { organizationId } = useParams() as { organizationId: string };
+  const { organization: organizationId } = useParams() as { organization: string };
   const [label, setLabel] = useState(initialLabel || "");
   const [slug, setSlug] = useState(initialSlug || "");
   const [isPending, startTransition] = useTransition();

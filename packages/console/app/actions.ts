@@ -26,8 +26,18 @@ export async function updateWorld(
   }
 
   await sdk.worlds.update(worldId, updates);
-  revalidatePath(`/organizations/${organizationId}`);
-  revalidatePath(`/organizations/${organizationId}/worlds/${worldId}`);
+  
+  const [world, organization] = await Promise.all([
+    (sdk.worlds as any).get(worldId, { organizationId }),
+    sdk.organizations.get(organizationId),
+  ]);
+
+  if (world && organization) {
+    const orgSlug = (organization as any).slug || organization.id;
+    const worldSlug = (world as any).slug || world.id;
+    revalidatePath(`/organizations/${orgSlug}`);
+    revalidatePath(`/organizations/${orgSlug}/worlds/${worldSlug}`);
+  }
 }
 
 export async function deleteWorld(organizationId: string, worldId: string) {
@@ -37,7 +47,11 @@ export async function deleteWorld(organizationId: string, worldId: string) {
   }
 
   await sdk.worlds.delete(worldId);
-  revalidatePath(`/organizations/${organizationId}`);
+  const organization = await sdk.organizations.get(organizationId);
+  if (organization) {
+    const orgSlug = (organization as any).slug || organization.id;
+    revalidatePath(`/organizations/${orgSlug}`);
+  }
 }
 
 export async function createWorld(organizationId: string, label: string, slug: string) {
@@ -47,11 +61,20 @@ export async function createWorld(organizationId: string, label: string, slug: s
       throw new Error("Unauthorized");
     }
 
-    console.log("Creating new world...", { organizationId, label, slug });
+    // Resolve organization to get actual ID and slug
+    const organization = await sdk.organizations.get(organizationId);
+    if (!organization) {
+      throw new Error("Organization not found");
+    }
+
+    const actualOrgId = organization.id;
+    const orgSlug = (organization as any).slug || organization.id;
+
+    console.log("Creating new world...", { organizationId: actualOrgId, label, slug });
     const world = await sdk.worlds.create({
       label,
       slug,
-      organizationId,
+      organizationId: actualOrgId,
     } as any);
 
     console.log("World created successfully:", world.id);
@@ -59,7 +82,9 @@ export async function createWorld(organizationId: string, label: string, slug: s
     // Artificial delay to allow for eventual consistency in DB
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    revalidatePath(`/organizations/${organizationId}`);
+    revalidatePath(`/organizations/${actualOrgId}`);
+    revalidatePath(`/organizations/${orgSlug}`);
+    
     return { success: true };
   } catch (error) {
     console.error("Failed to create world:", error);
@@ -198,7 +223,12 @@ export async function rotateApiKey(organizationId: string) {
     });
   }
 
-  revalidatePath(`/organizations/${user.id}`);
+  revalidatePath(`/organizations/${organizationId}`);
+  const organization = await sdk.organizations.get(organizationId);
+  if (organization) {
+    const orgSlug = (organization as any).slug || organization.id;
+    revalidatePath(`/organizations/${orgSlug}`);
+  }
   return newServiceAccount.apiKey;
 }
 
@@ -242,6 +272,7 @@ export async function createOrganization(label: string, slug: string) {
     });
 
     revalidatePath(`/organizations/${organizationId}`);
+    revalidatePath(`/organizations/${slug}`);
     revalidatePath("/");
     return { success: true, organizationId };
   } catch (error) {
@@ -262,8 +293,14 @@ export async function updateOrganization(
   }
 
   await sdk.organizations.update(organizationId, updates);
-  revalidatePath(`/organizations/${organizationId}/settings`);
-  revalidatePath(`/organizations/${organizationId}`);
+  
+  const organization = await sdk.organizations.get(organizationId);
+  if (organization) {
+    const orgSlug = (organization as any).slug || organization.id;
+    revalidatePath(`/organizations/${orgSlug}/settings`);
+    revalidatePath(`/organizations/${orgSlug}`);
+  }
+
   revalidatePath(`/`);
 }
 
@@ -339,12 +376,17 @@ export async function updateServiceAccount(
     serviceAccountId,
     updates,
   );
-  revalidatePath(
-    `/organizations/${organizationId}/service-accounts/${serviceAccountId}`,
-  );
-  revalidatePath(
-    `/organizations/${organizationId}/service-accounts/${serviceAccountId}/settings`,
-  );
+
+  const organization = await sdk.organizations.get(organizationId);
+  if (organization) {
+    const orgSlug = (organization as any).slug || organization.id;
+    revalidatePath(
+      `/organizations/${orgSlug}/service-accounts/${serviceAccountId}`,
+    );
+    revalidatePath(
+      `/organizations/${orgSlug}/service-accounts/${serviceAccountId}/settings`,
+    );
+  }
 }
 
 export async function rotateServiceAccountKey(
@@ -362,13 +404,17 @@ export async function rotateServiceAccountKey(
     serviceAccountId,
   );
 
-  revalidatePath(`/organizations/${organizationId}/service-accounts`);
-  revalidatePath(
-    `/organizations/${organizationId}/service-accounts/${serviceAccountId}`,
-  );
-  revalidatePath(
-    `/organizations/${organizationId}/service-accounts/${serviceAccountId}/settings`,
-  );
+  const organization = await sdk.organizations.get(organizationId);
+  if (organization) {
+    const orgSlug = (organization as any).slug || organization.id;
+    revalidatePath(`/organizations/${orgSlug}/service-accounts`);
+    revalidatePath(
+      `/organizations/${orgSlug}/service-accounts/${serviceAccountId}`,
+    );
+    revalidatePath(
+      `/organizations/${orgSlug}/service-accounts/${serviceAccountId}/settings`,
+    );
+  }
   
   return result;
 }
@@ -386,5 +432,9 @@ export async function deleteServiceAccount(
     organizationId,
     serviceAccountId,
   );
-  revalidatePath(`/organizations/${organizationId}/service-accounts`);
+  const organization = await sdk.organizations.get(organizationId);
+  if (organization) {
+    const orgSlug = (organization as any).slug || organization.id;
+    revalidatePath(`/organizations/${orgSlug}/service-accounts`);
+  }
 }

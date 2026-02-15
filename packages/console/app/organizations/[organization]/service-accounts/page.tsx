@@ -6,13 +6,13 @@ import { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { ServiceAccountList } from "@/components/service-account-list";
 
-type Params = { organizationId: string };
+type Params = { organization: string };
 type SearchParams = { page?: string; pageSize?: string };
 
 export async function generateMetadata(props: {
   params: Promise<Params>;
 }): Promise<Metadata> {
-  const { organizationId } = await props.params;
+  const { organization: organizationId } = await props.params;
   try {
     const organization = await sdk.organizations.get(organizationId);
     return {
@@ -29,7 +29,7 @@ export default async function ServiceAccountsPage(props: {
   params: Promise<Params>;
   searchParams: Promise<SearchParams>;
 }) {
-  const { organizationId } = await props.params;
+  const { organization: organizationId } = await props.params;
   const searchParams = await props.searchParams;
   const { user } = await authkit.withAuth();
 
@@ -55,10 +55,13 @@ export default async function ServiceAccountsPage(props: {
     notFound();
   }
 
+  const actualOrgId = organization.id;
+  const orgSlug = (organization as any).slug || organization.id;
+
   let serviceAccounts: any[] = [];
   try {
     serviceAccounts = await sdk.organizations.serviceAccounts.list(
-      organizationId,
+      actualOrgId,
       page,
       pageSize,
     );
@@ -67,34 +70,34 @@ export default async function ServiceAccountsPage(props: {
   }
 
   const tabs = [
-    { label: "Worlds", href: `/organizations/${organizationId}` },
+    { label: "Worlds", href: `/organizations/${orgSlug}` },
     {
       label: "Service Accounts",
-      href: `/organizations/${organizationId}/service-accounts`,
+      href: `/organizations/${orgSlug}/service-accounts`,
     },
-    { label: "Metrics", href: `/organizations/${organizationId}/metrics` },
-    { label: "Settings", href: `/organizations/${organizationId}/settings` },
+    { label: "Metrics", href: `/organizations/${orgSlug}/metrics` },
+    { label: "Settings", href: `/organizations/${orgSlug}/settings` },
   ];
 
   const resourceMenuItems = [
     {
       label: "Worlds",
-      href: `/organizations/${organizationId}`,
+      href: `/organizations/${orgSlug}`,
       icon: <LayoutGrid className="w-4 h-4" />,
     },
     {
       label: "Service Accounts",
-      href: `/organizations/${organizationId}/service-accounts`,
+      href: `/organizations/${orgSlug}/service-accounts`,
       icon: <ShieldCheck className="w-4 h-4" />,
     },
     {
       label: "Metrics",
-      href: `/organizations/${organizationId}/metrics`,
+      href: `/organizations/${orgSlug}/metrics`,
       icon: <BarChart3 className="w-4 h-4" />,
     },
     {
       label: "Settings",
-      href: `/organizations/${organizationId}/settings`,
+      href: `/organizations/${orgSlug}/settings`,
       icon: <Settings className="w-4 h-4" />,
     },
   ];
@@ -106,7 +109,7 @@ export default async function ServiceAccountsPage(props: {
         isAdmin={isAdmin}
         resource={{
           label: "Service Accounts",
-          href: `/organizations/${organizationId}/service-accounts`,
+          href: `/organizations/${orgSlug}/service-accounts`,
           icon: <ShieldCheck className="w-3 h-3 text-stone-500" />,
           menuItems: resourceMenuItems,
         }}

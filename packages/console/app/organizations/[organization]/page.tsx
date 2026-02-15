@@ -8,13 +8,13 @@ import { codeToHtml } from "shiki";
 import { ConnectSdkButton } from "@/components/connect-sdk";
 import { WorldList } from "@/components/world-list";
 
-type Params = { organizationId: string };
+type Params = { organization: string };
 type SearchParams = { page?: string; pageSize?: string };
 
 export async function generateMetadata(props: {
   params: Promise<Params>;
 }): Promise<Metadata> {
-  const { organizationId } = await props.params;
+  const { organization: organizationId } = await props.params;
   try {
     const organization = await sdk.organizations.get(organizationId);
     return {
@@ -31,7 +31,7 @@ export default async function OrganizationDashboard(props: {
   params: Promise<Params>;
   searchParams: Promise<SearchParams>;
 }) {
-  const { organizationId } = await props.params;
+  const { organization: organizationId } = await props.params;
   const searchParams = await props.searchParams;
   const { user } = await authkit.withAuth();
 
@@ -39,7 +39,7 @@ export default async function OrganizationDashboard(props: {
   const pageSize = parseInt(searchParams.pageSize || "20");
 
 
-  // Fetch organization (using organizationId from params now)
+  // Fetch organization (verify organization existence)
   let organization;
   try {
     organization = await sdk.organizations.get(organizationId);
@@ -63,10 +63,14 @@ export default async function OrganizationDashboard(props: {
     );
   }
 
+  // Use the actual ID for subsequent lookups if possible, or stick to slug if organizationId is the slug
+  const actualOrgId = organization.id;
+  const orgSlug = (organization as any).slug || organization.id;
+
   let worlds;
   try {
     worlds = await sdk.worlds.list(page, pageSize, {
-      organizationId: organizationId,
+      organizationId: actualOrgId,
     });
   } catch (error) {
     console.error("Failed to list worlds:", error);
@@ -84,18 +88,18 @@ export default async function OrganizationDashboard(props: {
   const tabs = [
     {
       label: "Worlds",
-      href: `/organizations/${organizationId}`,
+      href: `/organizations/${orgSlug}`,
       count: worlds.length,
     },
     {
       label: "Service Accounts",
-      href: `/organizations/${organizationId}/service-accounts`,
+      href: `/organizations/${orgSlug}/service-accounts`,
     },
-    { label: "Metrics", href: `/organizations/${organizationId}/metrics` },
-    { label: "Settings", href: `/organizations/${organizationId}/settings` },
+    { label: "Metrics", href: `/organizations/${orgSlug}/metrics` },
+    { label: "Settings", href: `/organizations/${orgSlug}/settings` },
   ];
 
-  // Generate general SDK snippets for the account (using organizationId for apiKey lookup if applicable)
+  // Generate general SDK snippets for the account
   const apiKey = (user?.metadata?.testApiKey as string) || "YOUR_API_KEY";
 
   const codeSnippet = `import { WorldsSdk } from "@wazoo/sdk";
@@ -135,27 +139,27 @@ console.log("My worlds:", worlds.length);`;
         isAdmin={isAdmin}
         resource={{
           label: "Worlds",
-          href: `/organizations/${organizationId}`,
+          href: `/organizations/${orgSlug}`,
           icon: <LayoutGrid className="w-3 h-3 text-stone-500" />,
           menuItems: [
             {
               label: "Worlds",
-              href: `/organizations/${organizationId}`,
+              href: `/organizations/${orgSlug}`,
               icon: <LayoutGrid className="w-4 h-4" />,
             },
             {
               label: "Service Accounts",
-              href: `/organizations/${organizationId}/service-accounts`,
+              href: `/organizations/${orgSlug}/service-accounts`,
               icon: <ShieldCheck className="w-4 h-4" />,
             },
             {
               label: "Metrics",
-              href: `/organizations/${organizationId}/metrics`,
+              href: `/organizations/${orgSlug}/metrics`,
               icon: <BarChart3 className="w-4 h-4" />,
             },
             {
               label: "Settings",
-              href: `/organizations/${organizationId}/settings`,
+              href: `/organizations/${orgSlug}/settings`,
               icon: <Settings className="w-4 h-4" />,
             },
           ],

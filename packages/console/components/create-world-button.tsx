@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { CreateWorldDialog } from "./create-world-dialog";
 
 export function CreateWorldButton() {
-  const { organizationId } = useParams() as { organizationId: string };
+  const { organization: organizationId } = useParams() as { organization: string };
   const [isOpen, setIsOpen] = useState(false);
 
   return (

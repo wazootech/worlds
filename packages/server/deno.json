@@ -14,7 +14,7 @@
   "imports": {
     "#/": "./",
     "@fartlabs/rt": "jsr:@fartlabs/rt@^0.0.11",
-    "@google/genai": "npm:@google/genai@^1.40.0",
+    "@google/genai": "npm:@google/genai@^1.41.0",
     "@langchain/textsplitters": "npm:@langchain/textsplitters@^1.0.1",
     "@fartlabs/search-store": "jsr:@fartlabs/search-store@^0.0.2",
     "@comunica/query-sparql-rdfjs-lite": "npm:@comunica/query-sparql-rdfjs-lite@^5.1.3",

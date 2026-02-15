@@ -7,25 +7,19 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/page-header";
 import { Globe, Settings, Terminal, Search } from "lucide-react";
 
-type Params = { organizationId: string; worldId: string };
+type Params = { organization: string; world: string };
 
 export async function generateMetadata(props: {
   params: Promise<Params>;
 }): Promise<Metadata> {
-  const { organizationId, worldId } = await props.params;
-
+  const { organization: organizationId, world: worldId } = await props.params;
   try {
     const [world, organization] = await Promise.all([
-      sdk.worlds.get(worldId),
+      (sdk.worlds as any).get(worldId, { organizationId }),
       sdk.organizations.get(organizationId),
     ]);
-
-    if (!world || !organization) {
-      return { title: "World Details" };
-    }
-
     return {
-      title: `${world.label} | ${organization.label}`,
+      title: `${world?.label || "World"} | ${organization?.label || "Organization"}`,
     };
   } catch {
     return {
@@ -38,7 +32,7 @@ export default async function WorldOverviewPage(props: {
   params: Promise<Params>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { organizationId, worldId } = await props.params;
+  const { organization: organizationId, world: worldId } = await props.params;
 
   // Check authentication
   const { user } = await authkit.withAuth();
@@ -63,35 +57,41 @@ export default async function WorldOverviewPage(props: {
     notFound();
   }
 
+  const actualOrgId = organization.id;
+  const orgSlug = (organization as any).slug || organization.id;
+
   // Fetch world data
   let world;
   try {
-    world = await (sdk.worlds as any).get(worldId, { organizationId });
+    world = await (sdk.worlds as any).get(worldId, { organizationId: actualOrgId });
   } catch (error) {
     console.error("Failed to fetch world:", error);
     return null;
   }
 
-  if (!world || world.organizationId !== organizationId) {
+  if (!world || world.organizationId !== actualOrgId) {
     notFound();
   }
+
+  const actualWorldId = world.id;
+  const worldSlug = world.slug || world.id;
 
   const tabs = [
     {
       label: "Overview",
-      href: `/organizations/${organizationId}/worlds/${worldId}`,
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
     },
     {
       label: "SPARQL",
-      href: `/organizations/${organizationId}/worlds/${worldId}/sparql`,
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}/sparql`,
     },
     {
       label: "Search",
-      href: `/organizations/${organizationId}/worlds/${worldId}/search`,
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}/search`,
     },
     {
       label: "Settings",
-      href: `/organizations/${organizationId}/worlds/${worldId}/settings`,
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}/settings`,
     },
   ];
 
@@ -103,7 +103,7 @@ const sdk = new WorldsSdk({
   apiKey: "${apiKey}",
 });
 
-const world = await sdk.worlds.get("${worldId}");
+const world = await sdk.worlds.get("${actualWorldId}");
 console.log("Connected to world:", world.label);`;
 
   const maskedApiKey = apiKey === "YOUR_API_KEY"
@@ -116,7 +116,7 @@ const sdk = new WorldsSdk({
   apiKey: "${maskedApiKey}",
 });
 
-const world = await sdk.worlds.get("${worldId}");
+const world = await sdk.worlds.get("${actualWorldId}");
 console.log("Connected to world:", world.label);`;
 
   const codeSnippetHtml = await codeToHtml(codeSnippet, {
@@ -136,13 +136,13 @@ console.log("Connected to world:", world.label);`;
         isAdmin={isAdmin}
         resource={{
           label: world.label,
-          href: `/organizations/${organizationId}/worlds/${worldId}`,
+          href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
           icon: <Globe className="w-3 h-3 text-stone-500" />,
           menuItems: [
-            { label: "Overview", href: `/organizations/${organizationId}/worlds/${worldId}`, icon: <Globe className="w-4 h-4" /> },
-            { label: "SPARQL", href: `/organizations/${organizationId}/worlds/${worldId}/sparql`, icon: <Terminal className="w-4 h-4" /> },
-            { label: "Search", href: `/organizations/${organizationId}/worlds/${worldId}/search`, icon: <Search className="w-4 h-4" /> },
-            { label: "Settings", href: `/organizations/${organizationId}/worlds/${worldId}/settings`, icon: <Settings className="w-4 h-4" /> },
+            { label: "Overview", href: `/organizations/${orgSlug}/worlds/${worldSlug}`, icon: <Globe className="w-4 h-4" /> },
+            { label: "SPARQL", href: `/organizations/${orgSlug}/worlds/${worldSlug}/sparql`, icon: <Terminal className="w-4 h-4" /> },
+            { label: "Search", href: `/organizations/${orgSlug}/worlds/${worldSlug}/search`, icon: <Search className="w-4 h-4" /> },
+            { label: "Settings", href: `/organizations/${orgSlug}/worlds/${worldSlug}/settings`, icon: <Settings className="w-4 h-4" /> },
           ]
         }}
         tabs={tabs}
@@ -150,7 +150,7 @@ console.log("Connected to world:", world.label);`;
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <WorldDetails
           world={world}
-          organizationId={organizationId}
+          organizationId={actualOrgId}
           codeSnippet={codeSnippet}
           maskedCodeSnippet={maskedCodeSnippet}
           codeSnippetHtml={codeSnippetHtml}

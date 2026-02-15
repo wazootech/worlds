@@ -36,7 +36,7 @@ export function OrganizationSwitcher({
 }: {
   resource?: ResourceBreadcrumb | ResourceBreadcrumb[];
 }) {
-  const { organizationId } = useParams() as { organizationId?: string };
+  const { organization: organizationId } = useParams() as { organization?: string };
   const router = useRouter();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,11 +58,11 @@ export function OrganizationSwitcher({
     loadOrganizations();
   }, []);
 
-  const currentOrg = organizations.find((o) => o.id === organizationId);
+  const currentOrg = organizations.find((o) => o.id === organizationId || (o as any).slug === organizationId);
 
-  const handleSelect = (id: string) => {
+  const handleSelect = (idOrSlug: string) => {
     startTransition(() => {
-      router.push(`/organizations/${id}`);
+      router.push(`/organizations/${idOrSlug}`);
     });
   };
 
@@ -109,7 +109,7 @@ export function OrganizationSwitcher({
           {currentOrg && (
             <DropdownMenuItem
               className="flex items-center justify-between group"
-              onClick={() => handleSelect(currentOrg.id)}
+              onClick={() => handleSelect((currentOrg as any).slug || currentOrg.id)}
             >
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-stone-400" />
@@ -136,7 +136,7 @@ export function OrganizationSwitcher({
               .map((org) => (
                 <DropdownMenuItem
                   key={org.id}
-                  onClick={() => handleSelect(org.id)}
+                  onClick={() => handleSelect((org as any).slug || org.id)}
                   className="flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-2">

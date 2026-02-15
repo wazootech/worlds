@@ -13,9 +13,9 @@ export function WorldSettingsForm({
   initialSlug: string;
   initialDescription: string | null;
 }) {
-  const { organizationId, worldId } = useParams() as {
-    organizationId: string;
-    worldId: string;
+  const { organization: organizationId, world: worldId } = useParams() as {
+    organization: string;
+    world: string;
   };
   const [label, setLabel] = useState(initialLabel);
   const [slug, setSlug] = useState(initialSlug);

@@ -7,9 +7,9 @@ import { WorldTripleSearch } from "@/components/world-triple-search";
 export default async function WorldSearchPage({
   params,
 }: {
-  params: Promise<{ organizationId: string; worldId: string }>;
+  params: Promise<{ organization: string; world: string }>;
 }) {
-  const { organizationId, worldId } = await params;
+  const { organization: organizationId, world: worldId } = await params;
   const { user } = await authkit.withAuth();
 
   if (!user) {
@@ -17,15 +17,21 @@ export default async function WorldSearchPage({
     redirect(signInUrl);
   }
 
-  const world = await sdk.worlds.get(worldId);
-  if (!world) {
-    notFound();
-  }
-
   const organization = await sdk.organizations.get(organizationId);
   if (!organization) {
     notFound();
   }
+
+  const actualOrgId = organization.id;
+  const orgSlug = (organization as any).slug || organization.id;
+
+  const world = await (sdk.worlds as any).get(worldId, { organizationId: actualOrgId });
+  if (!world) {
+    notFound();
+  }
+
+  const actualWorldId = world.id;
+  const worldSlug = (world as any).slug || world.id;
 
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-stone-50/50 dark:bg-stone-900/50">
@@ -34,32 +40,32 @@ export default async function WorldSearchPage({
         resource={[
           {
             label: organization.label || "Organization",
-            href: `/organizations/${organizationId}`,
+            href: `/organizations/${orgSlug}`,
           },
           {
             label: "Worlds",
-            href: `/organizations/${organizationId}/worlds`,
+            href: `/organizations/${orgSlug}`,
           },
           {
             label: world.label || "World",
-            href: `/organizations/${organizationId}/worlds/${worldId}`,
+            href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
             icon: null,
             menuItems: [
               {
                 label: "Overview",
-                href: `/organizations/${organizationId}/worlds/${worldId}`,
+                href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
               },
               {
                 label: "SPARQL",
-                href: `/organizations/${organizationId}/worlds/${worldId}/sparql`,
+                href: `/organizations/${orgSlug}/worlds/${worldSlug}/sparql`,
               },
               {
                 label: "Search",
-                href: `/organizations/${organizationId}/worlds/${worldId}/search`,
+                href: `/organizations/${orgSlug}/worlds/${worldSlug}/search`,
               },
               {
                 label: "Settings",
-                href: `/organizations/${organizationId}/worlds/${worldId}/settings`,
+                href: `/organizations/${orgSlug}/worlds/${worldSlug}/settings`,
               },
             ],
           },
@@ -68,25 +74,25 @@ export default async function WorldSearchPage({
         tabs={[
           {
             label: "Overview",
-            href: `/organizations/${organizationId}/worlds/${worldId}`,
+            href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
           },
           {
             label: "SPARQL",
-            href: `/organizations/${organizationId}/worlds/${worldId}/sparql`,
+            href: `/organizations/${orgSlug}/worlds/${worldSlug}/sparql`,
           },
           {
             label: "Search",
-            href: `/organizations/${organizationId}/worlds/${worldId}/search`,
+            href: `/organizations/${orgSlug}/worlds/${worldSlug}/search`,
           },
           {
             label: "Settings",
-            href: `/organizations/${organizationId}/worlds/${worldId}/settings`,
+            href: `/organizations/${orgSlug}/worlds/${worldSlug}/settings`,
           },
         ]}
       />
 
       <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto w-full">
-        <WorldTripleSearch worldId={worldId} />
+        <WorldTripleSearch worldId={actualWorldId} />
       </div>
     </div>
   );

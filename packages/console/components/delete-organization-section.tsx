@@ -9,7 +9,7 @@ export function DeleteOrganizationSection({
 }: {
   userEmail: string | null;
 }) {
-  const { organizationId } = useParams() as { organizationId: string };
+  const { organization: organizationId } = useParams() as { organization: string };
   const [isOpen, setIsOpen] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState("");
   const [isPending, startTransition] = useTransition();

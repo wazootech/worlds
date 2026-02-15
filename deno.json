@@ -11,7 +11,8 @@
     "test": "deno test -A",
     "lint": "deno lint",
     "fmt": "deno fmt",
-    "precommit": "deno task fmt && deno task lint && deno task test"
+    "precommit": "deno task fmt && deno task lint && deno task test",
+    "publish:dry": "deno publish --dry-run --allow-dirty"
   },
   "imports": {
     "zod": "npm:zod@^4.3.6",
