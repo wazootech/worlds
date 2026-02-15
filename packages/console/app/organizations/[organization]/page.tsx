@@ -1,32 +1,9 @@
-import { PageHeader } from "@/components/page-header";
-import { LayoutGrid, ShieldCheck, BarChart3, Settings } from "lucide-react";
-import * as authkit from "@/lib/auth";
+import { OrganizationDashboardContent } from "@/components/organization-dashboard-content";
 import { sdk } from "@/lib/sdk";
-import { CreateWorldButton } from "@/components/create-world-button";
-import { redirect } from "next/navigation";
-import { Metadata } from "next";
-import { codeToHtml } from "shiki";
-import { ConnectSdkButton } from "@/components/connect-sdk";
-import { WorldList } from "@/components/world-list";
+import { notFound } from "next/navigation";
 
 type Params = { organization: string };
 type SearchParams = { page?: string; pageSize?: string };
-
-export async function generateMetadata(props: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
-  const { organization: organizationId } = await props.params;
-  try {
-    const organization = await sdk.organizations.get(organizationId);
-    return {
-      title: organization?.label || "Organization",
-    };
-  } catch {
-    return {
-      title: "Organization",
-    };
-  }
-}
 
 export default async function OrganizationDashboard(props: {
   params: Promise<Params>;
@@ -34,7 +11,6 @@ export default async function OrganizationDashboard(props: {
 }) {
   const { organization: organizationId } = await props.params;
   const searchParams = await props.searchParams;
-  const { user } = await authkit.withAuth();
 
   const page = parseInt(searchParams.page || "1");
   const pageSize = parseInt(searchParams.pageSize || "20");
@@ -45,35 +21,14 @@ export default async function OrganizationDashboard(props: {
     organization = await sdk.organizations.get(organizationId);
   } catch (error) {
     console.error("Failed to fetch organization:", error);
-    return (
-      <ErrorState
-        title="Organization Not Found"
-        message="The requested organization could not be found."
-        titleClassName="text-red-600"
-      />
-    );
+    notFound();
   }
 
   if (!organization) {
-    return (
-      <ErrorState
-        title="Organization Not Found"
-        message="The requested organization could not be found."
-      />
-    );
-  }
-
-  // Canonical redirect to slug if ID was used in the URL
-  if (
-    organizationId === organization.id &&
-    organization.slug &&
-    organization.slug !== organization.id
-  ) {
-    redirect(`/organizations/${organization.slug}`);
+    notFound();
   }
 
   const actualOrgId = organization.id;
-  const orgSlug = organization.slug || organization.id;
 
   let worlds;
   try {
@@ -91,94 +46,12 @@ export default async function OrganizationDashboard(props: {
     );
   }
 
-  const isAdmin = !!user?.metadata?.admin;
-
-  // Generate general SDK snippets for the account
-  const apiKey = (user?.metadata?.testApiKey as string) || "YOUR_API_KEY";
-
-  const codeSnippet = `import { WorldsSdk } from "@wazoo/sdk";
-
-const sdk = new WorldsSdk({
-  baseUrl: "https://api.wazoo.dev",
-  apiKey: "${apiKey}"
-});
-
-const worlds = await sdk.worlds.list();
-console.log("My worlds:", worlds.length);`;
-
-  const maskedCodeSnippet = `import { WorldsSdk } from "@wazoo/sdk";
-
-const sdk = new WorldsSdk({
-  baseUrl: "https://api.wazoo.dev",
-  apiKey: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-});
-
-const worlds = await sdk.worlds.list();
-console.log("My worlds:", worlds.length);`;
-
-  const maskedCodeSnippetHtml = await codeToHtml(maskedCodeSnippet, {
-    lang: "typescript",
-    theme: "github-dark",
-  });
-
   return (
-    <>
-      <PageHeader
-        user={user}
-        isAdmin={isAdmin}
-        resource={{
-          label: "Worlds",
-          href: `/organizations/${orgSlug}`,
-          icon: <LayoutGrid className="w-3 h-3 text-stone-500" />,
-          menuItems: [
-            {
-              label: "Worlds",
-              href: `/organizations/${orgSlug}`,
-              icon: <LayoutGrid className="w-4 h-4" />,
-            },
-            {
-              label: "Service Accounts",
-              href: `/organizations/${orgSlug}/service-accounts`,
-              icon: <ShieldCheck className="w-4 h-4" />,
-            },
-            {
-              label: "Metrics",
-              href: `/organizations/${orgSlug}/metrics`,
-              icon: <BarChart3 className="w-4 h-4" />,
-            },
-            {
-              label: "Settings",
-              href: `/organizations/${orgSlug}/settings`,
-              icon: <Settings className="w-4 h-4" />,
-            },
-          ],
-        }}
-      />
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-xl font-bold tracking-tight text-stone-900 dark:text-white flex items-center gap-2">
-            My Worlds
-            <span className="inline-flex items-center rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-0.5 text-xs font-medium text-stone-800 dark:text-stone-100">
-              {worlds.length >= pageSize ? `${worlds.length}+` : worlds.length}
-            </span>
-          </h1>
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <ConnectSdkButton
-              codeSnippet={codeSnippet}
-              maskedCodeSnippetHtml={maskedCodeSnippetHtml}
-            />
-            <CreateWorldButton />
-          </div>
-        </div>
-
-        <WorldList
-          organizationId={organizationId}
-          initialData={worlds}
-          initialPage={page}
-          initialPageSize={pageSize}
-        />
-      </main>
-    </>
+    <OrganizationDashboardContent
+      worlds={worlds}
+      page={page}
+      pageSize={pageSize}
+    />
   );
 }
 

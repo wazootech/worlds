@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryState, parseAsString, parseAsInteger } from "nuqs";
 import { useState } from "react";
 import type { ExecuteSparqlOutput } from "@wazoo/sdk";
 import { SparqlResultsDisplay } from "@/components/sparql-results-display";
@@ -11,12 +12,22 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 export function WorldTripleSearch({ worldId }: { worldId: string }) {
-  const [searchParams, setSearchParams] = useState({
-    query: "",
-    subject: "",
-    predicate: "",
-    limit: 100,
-  });
+  const [query, setQuery] = useQueryState(
+    "query",
+    parseAsString.withDefault(""),
+  );
+  const [limit, setLimit] = useQueryState(
+    "limit",
+    parseAsInteger.withDefault(100),
+  );
+  const [subject, setSubject] = useQueryState(
+    "subject",
+    parseAsString.withDefault(""),
+  );
+  const [predicate, setPredicate] = useQueryState(
+    "predicate",
+    parseAsString.withDefault(""),
+  );
 
   const [results, setResults] = useState<
     ExecuteSparqlOutput | { message: string } | null
@@ -28,19 +39,29 @@ export function WorldTripleSearch({ worldId }: { worldId: string }) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await searchTriples(worldId, searchParams.query, {
-        limit: searchParams.limit,
-        subjects: searchParams.subject ? [searchParams.subject] : undefined,
-        predicates: searchParams.predicate
-          ? [searchParams.predicate]
-          : undefined,
+      const response = await searchTriples(worldId, query, {
+        limit,
+        subjects: subject ? [subject] : undefined,
+        predicates: predicate ? [predicate] : undefined,
       });
       if (response.success) {
         setResults({
-          head: { vars: ["subject", "predicate", "object"], link: null },
+          head: {
+            vars: ["score", "subject", "predicate", "object"],
+            link: null,
+          },
           results: {
             bindings: (response.results || []).map(
-              (r: { subject: string; predicate: string; object: string }) => ({
+              (r: {
+                subject: string;
+                predicate: string;
+                object: string;
+                score: number;
+              }) => ({
+                score: {
+                  type: "literal",
+                  value: r.score.toFixed(3),
+                },
                 subject: { type: "uri", value: r.subject },
                 predicate: { type: "uri", value: r.predicate },
                 object: {
@@ -62,7 +83,7 @@ export function WorldTripleSearch({ worldId }: { worldId: string }) {
   };
 
   return (
-    <div className="flex flex-col gap-6 h-[calc(100vh-300px)] min-h-[600px]">
+    <div className="flex flex-col gap-6 h-full min-h-[600px]">
       <div className="border border-stone-200 dark:border-stone-800 rounded-lg bg-white dark:bg-stone-950 p-6 shadow-sm space-y-6">
         <div className="flex items-center gap-2 border-b border-stone-100 dark:border-stone-900 pb-4">
           <Filter className="w-4 h-4 text-stone-400" />
@@ -77,13 +98,8 @@ export function WorldTripleSearch({ worldId }: { worldId: string }) {
             <Input
               id="search-query"
               placeholder="e.g. hello"
-              value={searchParams.query}
-              onChange={(e) =>
-                setSearchParams({
-                  ...searchParams,
-                  query: e.target.value,
-                })
-              }
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -91,13 +107,8 @@ export function WorldTripleSearch({ worldId }: { worldId: string }) {
             <Input
               id="search-limit"
               type="number"
-              value={searchParams.limit}
-              onChange={(e) =>
-                setSearchParams({
-                  ...searchParams,
-                  limit: parseInt(e.target.value) || 100,
-                })
-              }
+              value={limit}
+              onChange={(e) => setLimit(parseInt(e.target.value) || 100)}
             />
           </div>
           <div className="space-y-2">
@@ -105,13 +116,8 @@ export function WorldTripleSearch({ worldId }: { worldId: string }) {
             <Input
               id="search-subject"
               placeholder="e.g. http://example.org/user/1"
-              value={searchParams.subject}
-              onChange={(e) =>
-                setSearchParams({
-                  ...searchParams,
-                  subject: e.target.value,
-                })
-              }
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -119,13 +125,8 @@ export function WorldTripleSearch({ worldId }: { worldId: string }) {
             <Input
               id="search-predicate"
               placeholder="e.g. rdf:type"
-              value={searchParams.predicate}
-              onChange={(e) =>
-                setSearchParams({
-                  ...searchParams,
-                  predicate: e.target.value,
-                })
-              }
+              value={predicate}
+              onChange={(e) => setPredicate(e.target.value)}
             />
           </div>
         </div>
@@ -160,7 +161,15 @@ export function WorldTripleSearch({ worldId }: { worldId: string }) {
           <h3 className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
             Results
           </h3>
-          {results && <SparqlResultCopyButton results={results} showLabel />}
+          {results && (
+            <SparqlResultCopyButton
+              results={results}
+              showLabel
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs"
+            />
+          )}{" "}
         </div>
         <div className="flex-1 overflow-auto">
           <SparqlResultsDisplay results={results} loading={isLoading} />
