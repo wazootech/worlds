@@ -40,7 +40,9 @@ export function ServiceAccountDetails({
 
               <div className="flex flex-wrap items-center gap-3 text-sm">
                 <button
-                  onClick={() => copyToClipboard(serviceAccount.id, setIsCopied)}
+                  onClick={() =>
+                    copyToClipboard(serviceAccount.id, setIsCopied)
+                  }
                   className="inline-flex items-center gap-2 px-1.5 py-0.5 -ml-1.5 rounded-md text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 transition-colors cursor-pointer group select-none"
                   title="Click to copy ID"
                 >
@@ -114,15 +116,22 @@ export function ServiceAccountDetails({
               </button>
             </div>
             <div className="flex flex-col col-span-full sm:col-span-2 lg:col-span-3">
-               <span className="text-[10px] uppercase tracking-wider font-semibold text-stone-500 dark:text-stone-500 mb-1">
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-stone-500 dark:text-stone-500 mb-1">
                 API Key
               </span>
               <div className="flex items-center gap-2">
                 <code className="text-sm font-mono bg-stone-100 dark:bg-stone-800 px-2 py-1 rounded text-stone-700 dark:text-stone-300 break-all">
-                  {(serviceAccount as any).apiKey || "••••••••••••••••"}
+                  {(serviceAccount as ServiceAccount & { apiKey?: string })
+                    .apiKey || "••••••••••••••••"}
                 </code>
                 <button
-                  onClick={() => copyToClipboard((serviceAccount as any).apiKey || "", setIsKeyCopied)}
+                  onClick={() =>
+                    copyToClipboard(
+                      (serviceAccount as ServiceAccount & { apiKey?: string })
+                        .apiKey || "",
+                      setIsKeyCopied,
+                    )
+                  }
                   className="p-1.5 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
                   title="Copy API Key"
                 >

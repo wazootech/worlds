@@ -6,13 +6,9 @@ import { DialogCloseButton } from "@/components/ui/dialog-close-button";
 
 export function ConnectSdkButton({
   codeSnippet,
-  maskedCodeSnippet,
-  codeSnippetHtml,
   maskedCodeSnippetHtml,
 }: {
   codeSnippet: string;
-  maskedCodeSnippet: string;
-  codeSnippetHtml: string;
   maskedCodeSnippetHtml: string;
 }) {
   const [isOpen, setIsOpen] = useQueryState(

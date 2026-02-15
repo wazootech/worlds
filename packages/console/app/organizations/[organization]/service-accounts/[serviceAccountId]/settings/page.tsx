@@ -50,7 +50,9 @@ export default async function ServiceAccountSettingsPage(props: {
   // Fetch data
   const [organization, sa] = await Promise.all([
     sdk.organizations.get(organizationId).catch(() => null),
-    sdk.organizations.serviceAccounts.get(organizationId, serviceAccountId).catch(() => null),
+    sdk.organizations.serviceAccounts
+      .get(organizationId, serviceAccountId)
+      .catch(() => null),
   ]);
 
   if (!organization || !sa) {
@@ -93,15 +95,21 @@ export default async function ServiceAccountSettingsPage(props: {
       icon: <ShieldCheck className="w-3 h-3 text-stone-500" />,
     },
     {
-        label: "Settings",
-        href: `/organizations/${organizationId}/service-accounts/${serviceAccountId}/settings`,
-        icon: <Settings className="w-3 h-3 text-stone-500" />,
+      label: "Settings",
+      href: `/organizations/${organizationId}/service-accounts/${serviceAccountId}/settings`,
+      icon: <Settings className="w-3 h-3 text-stone-500" />,
     },
   ];
 
   const tabs = [
-    { label: "Overview", href: `/organizations/${organizationId}/service-accounts/${serviceAccountId}` },
-    { label: "Settings", href: `/organizations/${organizationId}/service-accounts/${serviceAccountId}/settings` },
+    {
+      label: "Overview",
+      href: `/organizations/${organizationId}/service-accounts/${serviceAccountId}`,
+    },
+    {
+      label: "Settings",
+      href: `/organizations/${organizationId}/service-accounts/${serviceAccountId}/settings`,
+    },
   ];
 
   return (

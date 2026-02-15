@@ -3,6 +3,7 @@ import { LayoutGrid, ShieldCheck, BarChart3, Settings } from "lucide-react";
 import * as authkit from "@/lib/auth";
 import { sdk } from "@/lib/sdk";
 import { CreateWorldButton } from "@/components/create-world-button";
+import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import { codeToHtml } from "shiki";
 import { ConnectSdkButton } from "@/components/connect-sdk";
@@ -38,7 +39,6 @@ export default async function OrganizationDashboard(props: {
   const page = parseInt(searchParams.page || "1");
   const pageSize = parseInt(searchParams.pageSize || "20");
 
-
   // Fetch organization (verify organization existence)
   let organization;
   try {
@@ -63,9 +63,17 @@ export default async function OrganizationDashboard(props: {
     );
   }
 
-  // Use the actual ID for subsequent lookups if possible, or stick to slug if organizationId is the slug
+  // Canonical redirect to slug if ID was used in the URL
+  if (
+    organizationId === organization.id &&
+    organization.slug &&
+    organization.slug !== organization.id
+  ) {
+    redirect(`/organizations/${organization.slug}`);
+  }
+
   const actualOrgId = organization.id;
-  const orgSlug = (organization as any).slug || organization.id;
+  const orgSlug = organization.slug || organization.id;
 
   let worlds;
   try {
@@ -84,20 +92,6 @@ export default async function OrganizationDashboard(props: {
   }
 
   const isAdmin = !!user?.metadata?.admin;
-
-  const tabs = [
-    {
-      label: "Worlds",
-      href: `/organizations/${orgSlug}`,
-      count: worlds.length,
-    },
-    {
-      label: "Service Accounts",
-      href: `/organizations/${orgSlug}/service-accounts`,
-    },
-    { label: "Metrics", href: `/organizations/${orgSlug}/metrics` },
-    { label: "Settings", href: `/organizations/${orgSlug}/settings` },
-  ];
 
   // Generate general SDK snippets for the account
   const apiKey = (user?.metadata?.testApiKey as string) || "YOUR_API_KEY";
@@ -121,11 +115,6 @@ const sdk = new WorldsSdk({
 
 const worlds = await sdk.worlds.list();
 console.log("My worlds:", worlds.length);`;
-
-  const codeSnippetHtml = await codeToHtml(codeSnippet, {
-    lang: "typescript",
-    theme: "github-dark",
-  });
 
   const maskedCodeSnippetHtml = await codeToHtml(maskedCodeSnippet, {
     lang: "typescript",
@@ -164,7 +153,6 @@ console.log("My worlds:", worlds.length);`;
             },
           ],
         }}
-        tabs={tabs}
       />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -177,8 +165,6 @@ console.log("My worlds:", worlds.length);`;
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <ConnectSdkButton
               codeSnippet={codeSnippet}
-              maskedCodeSnippet={maskedCodeSnippet}
-              codeSnippetHtml={codeSnippetHtml}
               maskedCodeSnippetHtml={maskedCodeSnippetHtml}
             />
             <CreateWorldButton />

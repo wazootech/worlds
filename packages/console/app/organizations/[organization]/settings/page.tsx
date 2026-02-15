@@ -25,9 +25,7 @@ export async function generateMetadata(props: {
   }
 }
 
-export default async function SettingsPage(props: {
-  params: Promise<Params>;
-}) {
+export default async function SettingsPage(props: { params: Promise<Params> }) {
   const { organization: organizationId } = await props.params;
   const { user } = await authkit.withAuth();
 
@@ -50,20 +48,48 @@ export default async function SettingsPage(props: {
     notFound();
   }
 
-  const orgSlug = (organization as any).slug || organization.id;
+  const orgSlug = organization.slug || organization.id;
+
+  // Canonical redirect to slug if ID was used in the URL
+  if (
+    organizationId === organization.id &&
+    organization.slug &&
+    organization.slug !== organization.id
+  ) {
+    redirect(`/organizations/${organization.slug}/settings`);
+  }
 
   const tabs = [
     { label: "Worlds", href: `/organizations/${orgSlug}` },
-    { label: "Service Accounts", href: `/organizations/${orgSlug}/service-accounts` },
+    {
+      label: "Service Accounts",
+      href: `/organizations/${orgSlug}/service-accounts`,
+    },
     { label: "Metrics", href: `/organizations/${orgSlug}/metrics` },
     { label: "Settings", href: `/organizations/${orgSlug}/settings` },
   ];
 
   const resourceMenuItems = [
-    { label: "Worlds", href: `/organizations/${orgSlug}`, icon: <LayoutGrid className="w-4 h-4" /> },
-    { label: "Service Accounts", href: `/organizations/${orgSlug}/service-accounts`, icon: <ShieldCheck className="w-4 h-4" /> },
-    { label: "Metrics", href: `/organizations/${orgSlug}/metrics`, icon: <BarChart3 className="w-4 h-4" /> },
-    { label: "Settings", href: `/organizations/${orgSlug}/settings`, icon: <Settings className="w-4 h-4" /> },
+    {
+      label: "Worlds",
+      href: `/organizations/${orgSlug}`,
+      icon: <LayoutGrid className="w-4 h-4" />,
+    },
+    {
+      label: "Service Accounts",
+      href: `/organizations/${orgSlug}/service-accounts`,
+      icon: <ShieldCheck className="w-4 h-4" />,
+    },
+    {
+      label: "Metrics",
+      href: `/organizations/${orgSlug}/metrics`,
+      icon: <BarChart3 className="w-4 h-4" />,
+    },
+    {
+      label: "Settings",
+      href: `/organizations/${orgSlug}/settings`,
+      icon: <Settings className="w-4 h-4" />,
+    },
   ];
 
   return (
@@ -92,14 +118,15 @@ export default async function SettingsPage(props: {
               <h2 className="text-base font-semibold text-stone-900 dark:text-white mb-4">
                 Basic Details
               </h2>
-              <BasicDetailsForm 
-                initialLabel={organization.label} 
-                initialSlug={(organization as any).slug} 
+              <BasicDetailsForm
+                initialLabel={organization.label}
+                initialSlug={organization.slug}
               />
             </div>
             <div className="bg-stone-50 dark:bg-stone-950/50 px-6 py-4 border-t border-stone-200 dark:border-stone-800">
               <p className="text-xs text-stone-500 dark:text-stone-400">
-                Organization ID: <code className="font-mono">{organization.id}</code>
+                Organization ID:{" "}
+                <code className="font-mono">{organization.id}</code>
               </p>
             </div>
           </div>

@@ -42,8 +42,8 @@ export function ApiKeySection({ apiKey: initialApiKey }: { apiKey?: string }) {
         API Key
       </h3>
       <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-        Your API key carries full access to your organization. Keep it secret and
-        never share it in public repositories or client-side code.
+        Your API key carries full access to your organization. Keep it secret
+        and never share it in public repositories or client-side code.
       </p>
 
       <div className="mt-4 flex items-center space-x-2">

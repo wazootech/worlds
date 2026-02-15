@@ -102,7 +102,9 @@ export async function deleteUserAction(userId: string) {
 
     // Get the target user to find their associated organization
     const targetUser = await workos.userManagement.getUser(userId);
-    const organizationId = targetUser.metadata?.organizationId as string | undefined;
+    const organizationId = targetUser.metadata?.organizationId as
+      | string
+      | undefined;
 
     // 1. Delete associated organization from Worlds API if it exists
     if (organizationId) {
@@ -126,10 +128,7 @@ export async function deleteUserAction(userId: string) {
     console.error("Failed to delete user:", error);
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to delete user",
+      error: error instanceof Error ? error.message : "Failed to delete user",
     };
   }
 }

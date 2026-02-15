@@ -41,7 +41,7 @@ export class LocalUserManagement implements UserManagement {
 
   async updateUser(opts: {
     userId: string;
-    metadata?: Record<string, string>;
+    metadata?: AuthUser["metadata"];
   }): Promise<AuthUser> {
     const user = this.readUserJson();
     const updatedUser: AuthUser = {

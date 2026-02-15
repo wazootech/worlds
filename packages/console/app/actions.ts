@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import * as authkit from "@/lib/auth";
 import { sdk } from "@/lib/sdk";
-import type { Organization } from "@wazoo/sdk";
 import { ulid } from "ulid";
 
 async function getActiveOrgId(user: authkit.AuthUser) {
@@ -26,15 +25,15 @@ export async function updateWorld(
   }
 
   await sdk.worlds.update(worldId, updates);
-  
+
   const [world, organization] = await Promise.all([
-    (sdk.worlds as any).get(worldId, { organizationId }),
+    sdk.worlds.get(worldId, { organizationId }),
     sdk.organizations.get(organizationId),
   ]);
 
   if (world && organization) {
-    const orgSlug = (organization as any).slug || organization.id;
-    const worldSlug = (world as any).slug || world.id;
+    const orgSlug = organization.slug || organization.id;
+    const worldSlug = world.slug || world.id;
     revalidatePath(`/organizations/${orgSlug}`);
     revalidatePath(`/organizations/${orgSlug}/worlds/${worldSlug}`);
   }
@@ -49,12 +48,16 @@ export async function deleteWorld(organizationId: string, worldId: string) {
   await sdk.worlds.delete(worldId);
   const organization = await sdk.organizations.get(organizationId);
   if (organization) {
-    const orgSlug = (organization as any).slug || organization.id;
+    const orgSlug = organization.slug || organization.id;
     revalidatePath(`/organizations/${orgSlug}`);
   }
 }
 
-export async function createWorld(organizationId: string, label: string, slug: string) {
+export async function createWorld(
+  organizationId: string,
+  label: string,
+  slug: string,
+) {
   try {
     const { user } = await authkit.withAuth();
     if (!user) {
@@ -68,14 +71,18 @@ export async function createWorld(organizationId: string, label: string, slug: s
     }
 
     const actualOrgId = organization.id;
-    const orgSlug = (organization as any).slug || organization.id;
+    const orgSlug = organization.slug || organization.id;
 
-    console.log("Creating new world...", { organizationId: actualOrgId, label, slug });
+    console.log("Creating new world...", {
+      organizationId: actualOrgId,
+      label,
+      slug,
+    });
     const world = await sdk.worlds.create({
       label,
       slug,
       organizationId: actualOrgId,
-    } as any);
+    });
 
     console.log("World created successfully:", world.id);
 
@@ -84,8 +91,8 @@ export async function createWorld(organizationId: string, label: string, slug: s
 
     revalidatePath(`/organizations/${actualOrgId}`);
     revalidatePath(`/organizations/${orgSlug}`);
-    
-    return { success: true };
+
+    return { success: true, worldId: world.id, slug: world.slug };
   } catch (error) {
     console.error("Failed to create world:", error);
     return {
@@ -130,7 +137,10 @@ export async function deleteOrganization(organizationId: string) {
       }
     }
   } catch (error) {
-    console.warn("Failed to list service accounts for cleanup (ignoring):", error);
+    console.warn(
+      "Failed to list service accounts for cleanup (ignoring):",
+      error,
+    );
   }
 
   // 3. Remove the organization from the database
@@ -155,29 +165,6 @@ export async function deleteOrganization(organizationId: string) {
 
   await authkit.signOut();
   return { success: true };
-}
-
-export async function redeemInviteAction(code: string) {
-  const { user } = await authkit.withAuth();
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
-
-  try {
-    await sdk.invites.redeem(code, user.id);
-    const organizationId = await getActiveOrgId(user);
-    if (organizationId) {
-      revalidatePath(`/organizations/${organizationId}`);
-    }
-    revalidatePath("/");
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to redeem invite:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to redeem invite",
-    };
-  }
 }
 
 export async function rotateApiKey(organizationId: string) {
@@ -226,7 +213,7 @@ export async function rotateApiKey(organizationId: string) {
   revalidatePath(`/organizations/${organizationId}`);
   const organization = await sdk.organizations.get(organizationId);
   if (organization) {
-    const orgSlug = (organization as any).slug || organization.id;
+    const orgSlug = organization.slug || organization.id;
     revalidatePath(`/organizations/${orgSlug}`);
   }
   return newServiceAccount.apiKey;
@@ -247,7 +234,7 @@ export async function createOrganization(label: string, slug: string) {
       id: organizationId,
       slug,
       label,
-    } as any);
+    });
 
     // 2. Create a default service account and get its API key.
     const serviceAccount = await sdk.organizations.serviceAccounts.create(
@@ -274,7 +261,7 @@ export async function createOrganization(label: string, slug: string) {
     revalidatePath(`/organizations/${organizationId}`);
     revalidatePath(`/organizations/${slug}`);
     revalidatePath("/");
-    return { success: true, organizationId };
+    return { success: true, organizationId, slug };
   } catch (error) {
     console.error("Failed to create organization:", error);
     return {
@@ -293,10 +280,10 @@ export async function updateOrganization(
   }
 
   await sdk.organizations.update(organizationId, updates);
-  
+
   const organization = await sdk.organizations.get(organizationId);
   if (organization) {
-    const orgSlug = (organization as any).slug || organization.id;
+    const orgSlug = organization.slug || organization.id;
     revalidatePath(`/organizations/${orgSlug}/settings`);
     revalidatePath(`/organizations/${orgSlug}`);
   }
@@ -379,7 +366,7 @@ export async function updateServiceAccount(
 
   const organization = await sdk.organizations.get(organizationId);
   if (organization) {
-    const orgSlug = (organization as any).slug || organization.id;
+    const orgSlug = organization.slug || organization.id;
     revalidatePath(
       `/organizations/${orgSlug}/service-accounts/${serviceAccountId}`,
     );
@@ -398,15 +385,14 @@ export async function rotateServiceAccountKey(
     throw new Error("Unauthorized");
   }
 
-  // Use type assertion because the method is added locally but not yet published
-  const result = await (sdk.organizations.serviceAccounts as any).rotateKey(
+  const result = await sdk.organizations.serviceAccounts.rotateKey(
     organizationId,
     serviceAccountId,
   );
 
   const organization = await sdk.organizations.get(organizationId);
   if (organization) {
-    const orgSlug = (organization as any).slug || organization.id;
+    const orgSlug = organization.slug || organization.id;
     revalidatePath(`/organizations/${orgSlug}/service-accounts`);
     revalidatePath(
       `/organizations/${orgSlug}/service-accounts/${serviceAccountId}`,
@@ -415,7 +401,7 @@ export async function rotateServiceAccountKey(
       `/organizations/${orgSlug}/service-accounts/${serviceAccountId}/settings`,
     );
   }
-  
+
   return result;
 }
 
@@ -434,7 +420,7 @@ export async function deleteServiceAccount(
   );
   const organization = await sdk.organizations.get(organizationId);
   if (organization) {
-    const orgSlug = (organization as any).slug || organization.id;
+    const orgSlug = organization.slug || organization.id;
     revalidatePath(`/organizations/${orgSlug}/service-accounts`);
   }
 }

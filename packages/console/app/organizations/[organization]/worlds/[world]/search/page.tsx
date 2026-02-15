@@ -23,29 +23,31 @@ export default async function WorldSearchPage({
   }
 
   const actualOrgId = organization.id;
-  const orgSlug = (organization as any).slug || organization.id;
+  const orgSlug = organization.slug || organization.id;
 
-  const world = await (sdk.worlds as any).get(worldId, { organizationId: actualOrgId });
+  const world = await sdk.worlds.get(worldId, { organizationId: actualOrgId });
   if (!world) {
     notFound();
   }
 
   const actualWorldId = world.id;
-  const worldSlug = (world as any).slug || world.id;
+  const worldSlug = world.slug || world.id;
+
+  // Canonical redirect to slug if ID was used in the URL for either organization or world
+  if (
+    (organizationId === organization.id &&
+      organization.slug &&
+      organization.slug !== organization.id) ||
+    (worldId === world.id && world.slug && world.slug !== world.id)
+  ) {
+    redirect(`/organizations/${orgSlug}/worlds/${worldSlug}/search`);
+  }
 
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-stone-50/50 dark:bg-stone-900/50">
       <PageHeader
         user={user}
         resource={[
-          {
-            label: organization.label || "Organization",
-            href: `/organizations/${orgSlug}`,
-          },
-          {
-            label: "Worlds",
-            href: `/organizations/${orgSlug}`,
-          },
           {
             label: world.label || "World",
             href: `/organizations/${orgSlug}/worlds/${worldSlug}`,

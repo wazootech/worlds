@@ -11,7 +11,9 @@ export function BasicDetailsForm({
   initialLabel: string | null;
   initialSlug: string | null;
 }) {
-  const { organization: organizationId } = useParams() as { organization: string };
+  const { organization: organizationId } = useParams() as {
+    organization: string;
+  };
   const [label, setLabel] = useState(initialLabel || "");
   const [slug, setSlug] = useState(initialSlug || "");
   const [isPending, startTransition] = useTransition();
@@ -79,7 +81,9 @@ export function BasicDetailsForm({
       <div>
         <button
           type="submit"
-          disabled={isPending || (label === initialLabel && slug === initialSlug)}
+          disabled={
+            isPending || (label === initialLabel && slug === initialSlug)
+          }
           className="px-4 py-2 rounded-md bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 text-sm font-medium hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Saving..." : "Save Changes"}

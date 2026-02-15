@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ExecuteSparqlOutput } from "@wazoo/sdk";
 import { SparqlResultsDisplay } from "@/components/sparql-results-display";
 import { SparqlResultCopyButton } from "@/components/sparql-result-copy-button";
 import { searchTriples } from "@/app/actions";
@@ -9,11 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
-export function WorldTripleSearch({
-  worldId,
-}: {
-  worldId: string;
-}) {
+export function WorldTripleSearch({ worldId }: { worldId: string }) {
   const [searchParams, setSearchParams] = useState({
     query: "",
     subject: "",
@@ -21,7 +18,9 @@ export function WorldTripleSearch({
     limit: 100,
   });
 
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<
+    ExecuteSparqlOutput | { message: string } | null
+  >(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,19 +37,24 @@ export function WorldTripleSearch({
       });
       if (response.success) {
         setResults({
-          head: { vars: ["subject", "predicate", "object"] },
+          head: { vars: ["subject", "predicate", "object"], link: null },
           results: {
-            bindings: (response.results || []).map((r: any) => ({
-              subject: { type: "uri", value: r.subject },
-              predicate: { type: "uri", value: r.predicate },
-              object: { type: r.object.startsWith("http") ? "uri" : "literal", value: r.object },
-            })),
+            bindings: (response.results || []).map(
+              (r: { subject: string; predicate: string; object: string }) => ({
+                subject: { type: "uri", value: r.subject },
+                predicate: { type: "uri", value: r.predicate },
+                object: {
+                  type: r.object.startsWith("http") ? "uri" : "literal",
+                  value: r.object,
+                },
+              }),
+            ),
           },
         });
       } else {
         setError(response.error || "Failed to search");
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred while searching.");
     } finally {
       setIsLoading(false);
@@ -156,9 +160,7 @@ export function WorldTripleSearch({
           <h3 className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
             Results
           </h3>
-          {results && (
-            <SparqlResultCopyButton results={results} showLabel />
-          )}
+          {results && <SparqlResultCopyButton results={results} showLabel />}
         </div>
         <div className="flex-1 overflow-auto">
           <SparqlResultsDisplay results={results} loading={isLoading} />

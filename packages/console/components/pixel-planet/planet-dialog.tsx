@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { PixelPlanet, PixelPlanetProps } from "./pixel-planet";
 import { DialogCloseButton } from "@/components/ui/dialog-close-button";
@@ -18,6 +18,13 @@ export function PlanetDialog({
   type,
   seed,
 }: PlanetDialogProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
   // Lock scroll when dialog is open
   useEffect(() => {
     if (isOpen) {
@@ -30,10 +37,7 @@ export function PlanetDialog({
     };
   }, [isOpen]);
 
-  // Only render on client side to avoid SSR issues with createPortal
-  if (typeof window === "undefined") return null;
-
-  if (!isOpen) return null;
+  if (!mounted || !isOpen) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">

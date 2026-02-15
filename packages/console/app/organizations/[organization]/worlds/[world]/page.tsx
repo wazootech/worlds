@@ -15,7 +15,7 @@ export async function generateMetadata(props: {
   const { organization: organizationId, world: worldId } = await props.params;
   try {
     const [world, organization] = await Promise.all([
-      (sdk.worlds as any).get(worldId, { organizationId }),
+      sdk.worlds.get(worldId, { organizationId }),
       sdk.organizations.get(organizationId),
     ]);
     return {
@@ -58,12 +58,12 @@ export default async function WorldOverviewPage(props: {
   }
 
   const actualOrgId = organization.id;
-  const orgSlug = (organization as any).slug || organization.id;
+  const orgSlug = organization.slug || organization.id;
 
   // Fetch world data
   let world;
   try {
-    world = await (sdk.worlds as any).get(worldId, { organizationId: actualOrgId });
+    world = await sdk.worlds.get(worldId, { organizationId: actualOrgId });
   } catch (error) {
     console.error("Failed to fetch world:", error);
     return null;
@@ -73,8 +73,17 @@ export default async function WorldOverviewPage(props: {
     notFound();
   }
 
-  const actualWorldId = world.id;
   const worldSlug = world.slug || world.id;
+
+  // Canonical redirect to slug if ID was used in the URL for either organization or world
+  if (
+    (organizationId === organization.id &&
+      organization.slug &&
+      organization.slug !== organization.id) ||
+    (worldId === world.id && world.slug && world.slug !== world.id)
+  ) {
+    redirect(`/organizations/${orgSlug}/worlds/${worldSlug}`);
+  }
 
   const tabs = [
     {
@@ -97,32 +106,28 @@ export default async function WorldOverviewPage(props: {
 
   // Generate code snippets
   const apiKey = (user?.metadata?.testApiKey as string) || "YOUR_API_KEY";
+  const worldIdSnippet = world.id;
   const codeSnippet = `import { WorldsSdk } from "@wazoo/sdk";
 
 const sdk = new WorldsSdk({
   apiKey: "${apiKey}",
 });
 
-const world = await sdk.worlds.get("${actualWorldId}");
+const world = await sdk.worlds.get("${worldIdSnippet}");
 console.log("Connected to world:", world.label);`;
 
-  const maskedApiKey = apiKey === "YOUR_API_KEY"
-    ? "YOUR_API_KEY"
-    : apiKey.slice(0, 4) + "..." + apiKey.slice(-4);
-
+  const maskedApiKey =
+    apiKey === "YOUR_API_KEY"
+      ? "YOUR_API_KEY"
+      : apiKey.slice(0, 4) + "..." + apiKey.slice(-4);
   const maskedCodeSnippet = `import { WorldsSdk } from "@wazoo/sdk";
 
 const sdk = new WorldsSdk({
   apiKey: "${maskedApiKey}",
 });
 
-const world = await sdk.worlds.get("${actualWorldId}");
+const world = await sdk.worlds.get("${worldIdSnippet}");
 console.log("Connected to world:", world.label);`;
-
-  const codeSnippetHtml = await codeToHtml(codeSnippet, {
-    lang: "typescript",
-    theme: "github-dark",
-  });
 
   const maskedCodeSnippetHtml = await codeToHtml(maskedCodeSnippet, {
     lang: "typescript",
@@ -139,11 +144,27 @@ console.log("Connected to world:", world.label);`;
           href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
           icon: <Globe className="w-3 h-3 text-stone-500" />,
           menuItems: [
-            { label: "Overview", href: `/organizations/${orgSlug}/worlds/${worldSlug}`, icon: <Globe className="w-4 h-4" /> },
-            { label: "SPARQL", href: `/organizations/${orgSlug}/worlds/${worldSlug}/sparql`, icon: <Terminal className="w-4 h-4" /> },
-            { label: "Search", href: `/organizations/${orgSlug}/worlds/${worldSlug}/search`, icon: <Search className="w-4 h-4" /> },
-            { label: "Settings", href: `/organizations/${orgSlug}/worlds/${worldSlug}/settings`, icon: <Settings className="w-4 h-4" /> },
-          ]
+            {
+              label: "Overview",
+              href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
+              icon: <Globe className="w-4 h-4" />,
+            },
+            {
+              label: "SPARQL",
+              href: `/organizations/${orgSlug}/worlds/${worldSlug}/sparql`,
+              icon: <Terminal className="w-4 h-4" />,
+            },
+            {
+              label: "Search",
+              href: `/organizations/${orgSlug}/worlds/${worldSlug}/search`,
+              icon: <Search className="w-4 h-4" />,
+            },
+            {
+              label: "Settings",
+              href: `/organizations/${orgSlug}/worlds/${worldSlug}/settings`,
+              icon: <Settings className="w-4 h-4" />,
+            },
+          ],
         }}
         tabs={tabs}
       />
@@ -152,8 +173,6 @@ console.log("Connected to world:", world.label);`;
           world={world}
           organizationId={actualOrgId}
           codeSnippet={codeSnippet}
-          maskedCodeSnippet={maskedCodeSnippet}
-          codeSnippetHtml={codeSnippetHtml}
           maskedCodeSnippetHtml={maskedCodeSnippetHtml}
         />
       </main>

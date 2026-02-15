@@ -7,7 +7,12 @@ export interface AuthUser {
   firstName: string | null;
   lastName: string | null;
   profilePictureUrl?: string | null;
-  metadata?: Record<string, unknown>;
+  metadata?: {
+    organizationId?: string;
+    testApiKey?: string;
+    admin?: string;
+    // [key: string]: string | undefined;
+  };
 }
 
 /**
@@ -24,7 +29,7 @@ export interface UserManagement {
    */
   updateUser(opts: {
     userId: string;
-    metadata?: Record<string, string>;
+    metadata?: AuthUser["metadata"];
   }): Promise<AuthUser>;
 
   /**

@@ -61,7 +61,9 @@ export function ServiceAccountList({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            router.push(`/organizations/${organizationId}/service-accounts/${sa.id}`);
+            router.push(
+              `/organizations/${organizationId}/service-accounts/${sa.id}`,
+            );
           }}
           className="p-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 transition-colors"
           title="View Details"
@@ -76,7 +78,11 @@ export function ServiceAccountList({
     <ResourceTable
       columns={columns}
       data={initialData}
-      onRowClick={(sa) => router.push(`/organizations/${organizationId}/service-accounts/${sa.id}`)}
+      onRowClick={(sa) =>
+        router.push(
+          `/organizations/${organizationId}/service-accounts/${sa.id}`,
+        )
+      }
       pagination={{
         currentPage: page,
         pageSize: pageSize,

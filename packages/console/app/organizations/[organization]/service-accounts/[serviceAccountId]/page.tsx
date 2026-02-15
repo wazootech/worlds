@@ -50,7 +50,9 @@ export default async function ServiceAccountDetailsPage(props: {
   // Fetch data
   const [organization, sa] = await Promise.all([
     sdk.organizations.get(organizationId).catch(() => null),
-    sdk.organizations.serviceAccounts.get(organizationId, serviceAccountId).catch(() => null),
+    sdk.organizations.serviceAccounts
+      .get(organizationId, serviceAccountId)
+      .catch(() => null),
   ]);
 
   if (!organization || !sa) {
@@ -95,8 +97,14 @@ export default async function ServiceAccountDetailsPage(props: {
   ];
 
   const tabs = [
-    { label: "Overview", href: `/organizations/${organizationId}/service-accounts/${serviceAccountId}` },
-    { label: "Settings", href: `/organizations/${organizationId}/service-accounts/${serviceAccountId}/settings` },
+    {
+      label: "Overview",
+      href: `/organizations/${organizationId}/service-accounts/${serviceAccountId}`,
+    },
+    {
+      label: "Settings",
+      href: `/organizations/${organizationId}/service-accounts/${serviceAccountId}/settings`,
+    },
   ];
 
   return (

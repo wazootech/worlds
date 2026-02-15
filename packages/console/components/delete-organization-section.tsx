@@ -9,7 +9,9 @@ export function DeleteOrganizationSection({
 }: {
   userEmail: string | null;
 }) {
-  const { organization: organizationId } = useParams() as { organization: string };
+  const { organization: organizationId } = useParams() as {
+    organization: string;
+  };
   const [isOpen, setIsOpen] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -33,8 +35,8 @@ export function DeleteOrganizationSection({
           Danger Zone
         </h3>
         <p className="mt-2 text-sm text-red-700 dark:text-red-300">
-          Permanently delete your organization and all of your worlds. This action
-          cannot be undone.
+          Permanently delete your organization and all of your worlds. This
+          action cannot be undone.
         </p>
         <div className="mt-4">
           <button

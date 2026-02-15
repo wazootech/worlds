@@ -25,14 +25,20 @@ export async function GET(request: NextRequest) {
 
         try {
           // Skip if user already has an organization.
-          const existingOrganization = await sdk.organizations.get(data.user.id);
+          const existingOrganization = await sdk.organizations.get(
+            data.user.id,
+          );
           if (existingOrganization) {
             return;
           }
 
           // Create the organization in Worlds API.
+          const slug = data.user.firstName
+            ? data.user.firstName.toLowerCase().replace(/\s+/g, "-")
+            : data.user.id;
           await sdk.organizations.create({
             id: data.user.id, // Associate WorkOS ID with organization ID.
+            slug: slug,
             label: `${data.user.firstName}'s Org`, // Default label
           });
 

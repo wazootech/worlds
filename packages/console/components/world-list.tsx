@@ -30,11 +30,16 @@ export function WorldList({
     parseAsInteger.withDefault(initialPageSize).withOptions({ shallow: false }),
   );
 
-  const handlePlanetClick = (e: React.MouseEvent, worldId: string) => {
+  const handlePlanetClick = (
+    e: React.MouseEvent,
+    worldId: string,
+    slug?: string,
+  ) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const targetUrl = `/organizations/${organizationId}/worlds/${worldId}?lounge=true`;
+    const worldSlug = slug || worldId;
+    const targetUrl = `/organizations/${organizationId}/worlds/${worldSlug}?lounge=true`;
 
     if (typeof document !== "undefined" && "startViewTransition" in document) {
       document.startViewTransition(() => {
@@ -58,7 +63,13 @@ export function WorldList({
         const seed = getSeedFromId(world.id);
         return (
           <button
-            onClick={(e) => handlePlanetClick(e, world.id)}
+            onClick={(e) =>
+              handlePlanetClick(
+                e,
+                world.id,
+                (world as World & { slug?: string }).slug,
+              )
+            }
             className="h-8 w-8 overflow-hidden rounded-full bg-black/5 dark:bg-black/40 flex items-center justify-center relative hover:scale-110 transition-transform cursor-pointer border border-stone-200 dark:border-stone-700 shadow-sm"
             title="View Planet"
           >
@@ -72,7 +83,7 @@ export function WorldList({
       label: "World Name",
       render: (world) => (
         <Link
-          href={`/organizations/${organizationId}/worlds/${world.id}`}
+          href={`/organizations/${organizationId}/worlds/${(world as World & { slug?: string }).slug || world.id}`}
           className="font-medium text-stone-900 dark:text-stone-100 hover:text-primary transition-colors block"
         >
           {world.label || "Untitled World"}
@@ -105,7 +116,7 @@ export function WorldList({
       className: "text-right",
       render: (world) => (
         <Link
-          href={`/organizations/${organizationId}/worlds/${world.id}`}
+          href={`/organizations/${organizationId}/worlds/${(world as World & { slug?: string }).slug || world.id}`}
           className="text-primary hover:text-primary-dark dark:hover:text-primary-light text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity"
         >
           Manage &rarr;
@@ -119,7 +130,9 @@ export function WorldList({
       columns={columns}
       data={initialData}
       onRowClick={(world) =>
-        router.push(`/organizations/${organizationId}/worlds/${(world as any).slug || world.id}`)
+        router.push(
+          `/organizations/${organizationId}/worlds/${(world as World & { slug?: string }).slug || world.id}`,
+        )
       }
       pagination={{
         currentPage: page,

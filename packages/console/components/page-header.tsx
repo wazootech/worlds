@@ -4,7 +4,10 @@ import Image from "next/image";
 import { UserMenu } from "./user-menu";
 import { signOutAction } from "@/app/actions";
 import { AuthUser } from "@/lib/auth";
-import { OrganizationSwitcher, ResourceMenuItem, ResourceBreadcrumb } from "./organization-switcher";
+import {
+  OrganizationSwitcher,
+  ResourceBreadcrumb,
+} from "./organization-switcher";
 import { NavTab, NavTabs } from "./nav-tabs";
 
 export function PageHeader({
@@ -27,7 +30,11 @@ export function PageHeader({
           <div className="flex items-center space-x-2">
             {children}
             <Link
-              href={user?.id ? `/organizations/${user.id}` : "/"}
+              href={
+                (user?.metadata?.organizationId as string)
+                  ? `/organizations/${user?.metadata?.organizationId}`
+                  : "/"
+              }
               className="flex items-center py-1.5 group transition-all"
             >
               <div className="relative w-6 h-6 rounded-full overflow-hidden shadow-sm transition-colors">

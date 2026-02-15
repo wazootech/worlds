@@ -15,7 +15,7 @@ export async function generateMetadata(props: {
 
   try {
     const [world, organization] = await Promise.all([
-      (sdk.worlds as any).get(worldId, { organizationId }),
+      sdk.worlds.get(worldId, { organizationId }),
       sdk.organizations.get(organizationId),
     ]);
     return {
@@ -54,11 +54,11 @@ export default async function WorldSettingsPage(props: {
   }
 
   const actualOrgId = organization.id;
-  const orgSlug = (organization as any).slug || organization.id;
+  const orgSlug = organization.slug || organization.id;
 
   let world;
   try {
-    world = await (sdk.worlds as any).get(worldId, { organizationId: actualOrgId });
+    world = await sdk.worlds.get(worldId, { organizationId: actualOrgId });
   } catch (error) {
     console.error("Failed to fetch world:", error);
     return notFound();
@@ -68,8 +68,17 @@ export default async function WorldSettingsPage(props: {
     notFound();
   }
 
-  const actualWorldId = world.id;
-  const worldSlug = (world as any).slug || world.id;
+  const worldSlug = world.slug || world.id;
+
+  // Canonical redirect to slug if ID was used in the URL for either organization or world
+  if (
+    (organizationId === organization.id &&
+      organization.slug &&
+      organization.slug !== organization.id) ||
+    (worldId === world.id && world.slug && world.slug !== world.id)
+  ) {
+    redirect(`/organizations/${orgSlug}/worlds/${worldSlug}/settings`);
+  }
 
   const tabs = [
     {
@@ -91,10 +100,26 @@ export default async function WorldSettingsPage(props: {
   ];
 
   const resourceMenuItems = [
-    { label: "Overview", href: `/organizations/${orgSlug}/worlds/${worldSlug}`, icon: <Globe className="w-4 h-4" /> },
-    { label: "SPARQL", href: `/organizations/${orgSlug}/worlds/${worldSlug}/sparql`, icon: <Terminal className="w-4 h-4" /> },
-    { label: "Search", href: `/organizations/${orgSlug}/worlds/${worldSlug}/search`, icon: <Search className="w-4 h-4" /> },
-    { label: "Settings", href: `/organizations/${orgSlug}/worlds/${worldSlug}/settings`, icon: <Settings className="w-4 h-4" /> },
+    {
+      label: "Overview",
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
+      icon: <Globe className="w-4 h-4" />,
+    },
+    {
+      label: "SPARQL",
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}/sparql`,
+      icon: <Terminal className="w-4 h-4" />,
+    },
+    {
+      label: "Search",
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}/search`,
+      icon: <Search className="w-4 h-4" />,
+    },
+    {
+      label: "Settings",
+      href: `/organizations/${orgSlug}/worlds/${worldSlug}/settings`,
+      icon: <Settings className="w-4 h-4" />,
+    },
   ];
 
   return (
@@ -118,7 +143,7 @@ export default async function WorldSettingsPage(props: {
             </h1>
           </div>
           <p className="text-sm text-stone-500 dark:text-stone-400">
-            Manage your world's details and identification.
+            Manage your world&apos;s details and identification.
           </p>
         </div>
 
@@ -128,10 +153,10 @@ export default async function WorldSettingsPage(props: {
               <h2 className="text-base font-semibold text-stone-900 dark:text-white mb-4">
                 Basic Details
               </h2>
-              <WorldSettingsForm 
-                initialLabel={world.label} 
-                initialSlug={(world as any).slug} 
-                initialDescription={world.description} 
+              <WorldSettingsForm
+                initialLabel={world.label}
+                initialSlug={world.slug}
+                initialDescription={world.description}
               />
             </div>
             <div className="bg-stone-50 dark:bg-stone-950/50 px-6 py-4 border-t border-stone-200 dark:border-stone-800">

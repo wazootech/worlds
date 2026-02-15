@@ -11,7 +11,9 @@ export function DeleteWorldSection({
   worldId: string;
   worldName: string;
 }) {
-  const { organization: organizationId } = useParams() as { organization: string };
+  const { organization: organizationId } = useParams() as {
+    organization: string;
+  };
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [confirmName, setConfirmName] = useState("");

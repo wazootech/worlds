@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { AlertTriangle } from "lucide-react";
-import { redeemInviteAction } from "@/app/actions";
 
 export function InviteRedemptionForm() {
   const [isPending, startTransition] = useTransition();
@@ -10,15 +9,13 @@ export function InviteRedemptionForm() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const code = formData.get("code") as string;
+    // const formData = new FormData(event.currentTarget);
+    // const code = formData.get("code") as string;
 
     startTransition(async () => {
       setError(null);
-      const result = await redeemInviteAction(code);
-      if (!result.success) {
-        setError(result.error ?? "Failed to redeem invite");
-      }
+      // Legacy redemption logic removed as internal invites are no longer supported
+      setError("Invite redemption is currently managed via external system.");
     });
   };
 

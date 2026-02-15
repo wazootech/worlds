@@ -43,6 +43,7 @@ export function SparqlEditor({
           language="sparql"
           placeholder="PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nSELECT * WHERE {\n  ?s ?p ?o\n} LIMIT 10"
           onChange={(evn) => onChange(evn.target.value)}
+          disabled={isLoading}
           padding={15}
           style={{
             fontSize: 14,

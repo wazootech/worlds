@@ -34,8 +34,8 @@ export function CreateOrganizationForm() {
     setError(null);
     startTransition(async () => {
       const result = await createOrganization(name, slug);
-      if (result.success && result.organizationId) {
-        router.push(`/organizations/${result.organizationId}`);
+      if (result.success && result.slug) {
+        router.push(`/organizations/${result.slug}`);
       } else {
         setError(result.error ?? "Failed to create organization");
       }

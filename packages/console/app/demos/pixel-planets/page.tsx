@@ -2,7 +2,6 @@ import { PlanetDemoPage } from "@/components/planet-demo-page";
 import { Metadata } from "next";
 import * as authkit from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { sdk } from "@/lib/sdk";
 import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = {

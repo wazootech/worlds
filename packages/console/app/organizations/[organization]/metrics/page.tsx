@@ -24,9 +24,7 @@ export async function generateMetadata(props: {
   }
 }
 
-export default async function MetricsPage(props: {
-  params: Promise<Params>;
-}) {
+export default async function MetricsPage(props: { params: Promise<Params> }) {
   const { organization: organizationId } = await props.params;
   const { user } = await authkit.withAuth();
 
@@ -49,20 +47,48 @@ export default async function MetricsPage(props: {
     notFound();
   }
 
-  const orgSlug = (organization as any).slug || organization.id;
+  const orgSlug = organization.slug || organization.id;
+
+  // Canonical redirect to slug if ID was used in the URL
+  if (
+    organizationId === organization.id &&
+    organization.slug &&
+    organization.slug !== organization.id
+  ) {
+    redirect(`/organizations/${organization.slug}/metrics`);
+  }
 
   const tabs = [
     { label: "Worlds", href: `/organizations/${orgSlug}` },
-    { label: "Service Accounts", href: `/organizations/${orgSlug}/service-accounts` },
+    {
+      label: "Service Accounts",
+      href: `/organizations/${orgSlug}/service-accounts`,
+    },
     { label: "Metrics", href: `/organizations/${orgSlug}/metrics` },
     { label: "Settings", href: `/organizations/${orgSlug}/settings` },
   ];
 
   const resourceMenuItems = [
-    { label: "Worlds", href: `/organizations/${orgSlug}`, icon: <LayoutGrid className="w-4 h-4" /> },
-    { label: "Service Accounts", href: `/organizations/${orgSlug}/service-accounts`, icon: <ShieldCheck className="w-4 h-4" /> },
-    { label: "Metrics", href: `/organizations/${orgSlug}/metrics`, icon: <BarChart3 className="w-4 h-4" /> },
-    { label: "Settings", href: `/organizations/${orgSlug}/settings`, icon: <Settings className="w-4 h-4" /> },
+    {
+      label: "Worlds",
+      href: `/organizations/${orgSlug}`,
+      icon: <LayoutGrid className="w-4 h-4" />,
+    },
+    {
+      label: "Service Accounts",
+      href: `/organizations/${orgSlug}/service-accounts`,
+      icon: <ShieldCheck className="w-4 h-4" />,
+    },
+    {
+      label: "Metrics",
+      href: `/organizations/${orgSlug}/metrics`,
+      icon: <BarChart3 className="w-4 h-4" />,
+    },
+    {
+      label: "Settings",
+      href: `/organizations/${orgSlug}/settings`,
+      icon: <Settings className="w-4 h-4" />,
+    },
   ];
 
   return (
@@ -85,7 +111,7 @@ export default async function MetricsPage(props: {
           </h1>
         </div>
 
-        <ComingSoonPlaceholder 
+        <ComingSoonPlaceholder
           title="Metrics are coming soon"
           description="We're building a comprehensive metrics dashboard to help you monitor your organization's activity and performance."
           icon={<BarChart3 className="w-6 h-6 text-amber-600" />}

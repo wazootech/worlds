@@ -20,8 +20,14 @@ export default async function Home(props: {
   const isAdmin = !!userInfo?.user?.metadata?.admin;
 
   if (userInfo.user && !isCreatingNew) {
-    if (userInfo.user.metadata?.organizationId) {
-      redirect(`/organizations/${userInfo.user.metadata.organizationId}`);
+    const organizationId = userInfo.user.metadata?.organizationId as
+      | string
+      | undefined;
+    if (organizationId) {
+      const organization = await sdk.organizations.get(organizationId);
+      if (organization) {
+        redirect(`/organizations/${organization.slug || organization.id}`);
+      }
     }
   }
 
@@ -57,8 +63,8 @@ export default async function Home(props: {
     );
   }
 
-  // Redirect to the actual organization dashboard
-  redirect(`/organizations/${organization.id}`);
+  // Redirect to the actual organization dashboard using slug
+  redirect(`/organizations/${organization.slug || organization.id}`);
 }
 
 function ErrorState({

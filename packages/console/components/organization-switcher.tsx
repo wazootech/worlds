@@ -13,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Check, Plus, Users, LayoutGrid } from "lucide-react";
-import { NavTab, NavTabs } from "./nav-tabs";
 import { cn } from "@/lib/utils";
 
 export interface ResourceBreadcrumb {
@@ -36,13 +35,19 @@ export function OrganizationSwitcher({
 }: {
   resource?: ResourceBreadcrumb | ResourceBreadcrumb[];
 }) {
-  const { organization: organizationId } = useParams() as { organization?: string };
+  const { organization: organizationId } = useParams() as {
+    organization?: string;
+  };
   const router = useRouter();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
 
-  const resources = Array.isArray(resource) ? resource : resource ? [resource] : [];
+  const resources = Array.isArray(resource)
+    ? resource
+    : resource
+      ? [resource]
+      : [];
 
   useEffect(() => {
     async function loadOrganizations() {
@@ -58,7 +63,11 @@ export function OrganizationSwitcher({
     loadOrganizations();
   }, []);
 
-  const currentOrg = organizations.find((o) => o.id === organizationId || (o as any).slug === organizationId);
+  const currentOrg = organizations.find(
+    (o) =>
+      o.id === organizationId ||
+      (o as Organization & { slug?: string }).slug === organizationId,
+  );
 
   const handleSelect = (idOrSlug: string) => {
     startTransition(() => {
@@ -109,7 +118,12 @@ export function OrganizationSwitcher({
           {currentOrg && (
             <DropdownMenuItem
               className="flex items-center justify-between group"
-              onClick={() => handleSelect((currentOrg as any).slug || currentOrg.id)}
+              onClick={() =>
+                handleSelect(
+                  (currentOrg as Organization & { slug?: string }).slug ||
+                    currentOrg.id,
+                )
+              }
             >
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-stone-400" />
@@ -136,7 +150,11 @@ export function OrganizationSwitcher({
               .map((org) => (
                 <DropdownMenuItem
                   key={org.id}
-                  onClick={() => handleSelect((org as any).slug || org.id)}
+                  onClick={() =>
+                    handleSelect(
+                      (org as Organization & { slug?: string }).slug || org.id,
+                    )
+                  }
                   className="flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-2">
@@ -172,7 +190,7 @@ export function OrganizationSwitcher({
       </DropdownMenu>
 
       {resources.map((res, index) => (
-        <Fragment key={res.href || index}>
+        <Fragment key={`${res.href || "no-href"}-${index}`}>
           <div className="text-stone-300 dark:text-stone-700 font-light text-xl select-none">
             /
           </div>

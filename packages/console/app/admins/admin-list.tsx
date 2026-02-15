@@ -120,9 +120,7 @@ export function AdminList({
       key: "plan",
       label: "Plan",
       render: (item) => (
-        <span className="capitalize">
-          {item.organization?.plan || "Free"}
-        </span>
+        <span className="capitalize">{item.organization?.plan || "Free"}</span>
       ),
     },
     {
@@ -253,7 +251,8 @@ function AdminActions({ user }: { user: WorkOSUser }) {
             <DialogTitle>Delete User</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete <strong>{displayName}</strong>?
-              This will remove the user and their associated organization from the platform. This action cannot be undone.
+              This will remove the user and their associated organization from
+              the platform. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

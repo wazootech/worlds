@@ -13,15 +13,11 @@ export function WorldDetails({
   world,
   organizationId,
   codeSnippet,
-  maskedCodeSnippet,
-  codeSnippetHtml,
   maskedCodeSnippetHtml,
 }: {
   world: World;
   organizationId: string;
   codeSnippet: string;
-  maskedCodeSnippet: string;
-  codeSnippetHtml: string;
   maskedCodeSnippetHtml: string;
 }) {
   const [isCopied, setIsCopied] = useState(false);
@@ -123,15 +119,13 @@ export function WorldDetails({
                 </span>
               </div>
             </div>
- 
+
             <ConnectSdkButton
               codeSnippet={codeSnippet}
-              maskedCodeSnippet={maskedCodeSnippet}
-              codeSnippetHtml={codeSnippetHtml}
               maskedCodeSnippetHtml={maskedCodeSnippetHtml}
             />
           </div>
- 
+
           {/* Description */}
           <div className="group -ml-2 p-2 rounded-md transition-colors">
             <div className="flex items-center gap-2 mb-1">

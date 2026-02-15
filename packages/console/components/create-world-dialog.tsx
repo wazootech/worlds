@@ -40,9 +40,9 @@ export function CreateWorldDialog({
     e.preventDefault();
     startTransition(async () => {
       const result = await createWorld(organizationId, label, slug);
-      if (result.success) {
+      if (result.success && result.slug) {
         onClose();
-        router.refresh();
+        router.push(`/organizations/${organizationId}/worlds/${result.slug}`);
       } else {
         alert(`Failed to create world: ${result.error}`);
       }

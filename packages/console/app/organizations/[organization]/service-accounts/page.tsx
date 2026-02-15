@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/page-header";
 import { LayoutGrid, ShieldCheck, BarChart3, Settings } from "lucide-react";
 import * as authkit from "@/lib/auth";
 import { sdk } from "@/lib/sdk";
+import type { ServiceAccount } from "@wazoo/sdk";
 import { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { ServiceAccountList } from "@/components/service-account-list";
@@ -56,9 +57,18 @@ export default async function ServiceAccountsPage(props: {
   }
 
   const actualOrgId = organization.id;
-  const orgSlug = (organization as any).slug || organization.id;
+  const orgSlug = organization.slug || organization.id;
 
-  let serviceAccounts: any[] = [];
+  // Canonical redirect to slug if ID was used in the URL
+  if (
+    organizationId === organization.id &&
+    organization.slug &&
+    organization.slug !== organization.id
+  ) {
+    redirect(`/organizations/${organization.slug}/service-accounts`);
+  }
+
+  let serviceAccounts: ServiceAccount[] = [];
   try {
     serviceAccounts = await sdk.organizations.serviceAccounts.list(
       actualOrgId,
