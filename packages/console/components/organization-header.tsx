@@ -1,12 +1,20 @@
 "use client";
 
+import { useSelectedLayoutSegment, usePathname } from "next/navigation";
+import {
+  Globe,
+  Settings,
+  ShieldCheck,
+  BarChart3,
+  LayoutGrid,
+} from "lucide-react";
 import { useOrganization } from "@/components/organization-context";
 import { PageHeader } from "@/components/page-header";
-import { usePathname } from "next/navigation";
 
 export function OrganizationHeader() {
   const { organization, user, isAdmin } = useOrganization();
   const pathname = usePathname();
+  const segment = useSelectedLayoutSegment();
   const orgSlug = organization.slug || organization.id;
 
   // Check if we are on a world-specific page
@@ -17,10 +25,57 @@ export function OrganizationHeader() {
     return null;
   }
 
+  // Determine current section for the dropdown label
+  let currentLabel = "Worlds";
+  let currentIcon = <LayoutGrid className="w-3 h-3 text-stone-500" />;
+
+  if (segment === "service-accounts") {
+    currentLabel = "Service Accounts";
+    currentIcon = <ShieldCheck className="w-3 h-3 text-stone-500" />;
+  } else if (segment === "metrics") {
+    currentLabel = "Metrics";
+    currentIcon = <BarChart3 className="w-3 h-3 text-stone-500" />;
+  } else if (segment === "settings") {
+    currentLabel = "Settings";
+    currentIcon = <Settings className="w-3 h-3 text-stone-500" />;
+  } else {
+    // Default to Worlds (Overview)
+    currentIcon = <LayoutGrid className="w-3 h-3 text-stone-500" />;
+  }
+
+  const menuItems = [
+    {
+      label: "Worlds",
+      href: `/organizations/${orgSlug}`,
+      icon: <Globe className="w-4 h-4" />,
+    },
+    {
+      label: "Service Accounts",
+      href: `/organizations/${orgSlug}/service-accounts`,
+      icon: <ShieldCheck className="w-4 h-4" />,
+    },
+    {
+      label: "Metrics",
+      href: `/organizations/${orgSlug}/metrics`,
+      icon: <BarChart3 className="w-4 h-4" />,
+    },
+    {
+      label: "Settings",
+      href: `/organizations/${orgSlug}/settings`,
+      icon: <Settings className="w-4 h-4" />,
+    },
+  ];
+
   return (
     <PageHeader
       user={user}
       isAdmin={isAdmin}
+      resource={{
+        label: currentLabel,
+        href: `/organizations/${orgSlug}/${segment || ""}`,
+        icon: currentIcon,
+        menuItems: menuItems,
+      }}
       tabs={[
         { label: "Worlds", href: `/organizations/${orgSlug}` },
         {

@@ -3,7 +3,13 @@ import { codeToHtml } from "shiki";
 import { notFound, redirect } from "next/navigation";
 import { sdk } from "@/lib/sdk";
 import { PageHeader } from "@/components/page-header";
-import { Globe, Settings, Terminal, Search } from "lucide-react";
+import {
+  Globe,
+  Settings,
+  LayoutGrid,
+  ShieldCheck,
+  BarChart3,
+} from "lucide-react";
 import { WorldProvider } from "@/components/world-context";
 import type { Metadata } from "next";
 
@@ -162,16 +168,47 @@ console.log("Connected to world:", world.label);`;
         <PageHeader
           user={user}
           isAdmin={isAdmin}
-          resource={{
-            label: world.label,
-            href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
-            icon: <Globe className="w-3 h-3 text-stone-500" />,
-            menuItems: worlds.map((w) => ({
-              label: w.label || w.slug || w.id,
-              href: `/organizations/${orgSlug}/worlds/${w.slug || w.id}`,
-              icon: <Globe className="w-4 h-4" />,
-            })),
-          }}
+          resource={[
+            {
+              label: "Worlds",
+              href: `/organizations/${orgSlug}`,
+              icon: <LayoutGrid className="w-3 h-3 text-stone-500" />,
+              menuItems: [
+                {
+                  label: "Worlds",
+                  href: `/organizations/${orgSlug}`,
+                  icon: <Globe className="w-4 h-4" />,
+                },
+                {
+                  label: "Service Accounts",
+                  href: `/organizations/${orgSlug}/service-accounts`,
+                  icon: <ShieldCheck className="w-4 h-4" />,
+                },
+                {
+                  label: "Metrics",
+                  href: `/organizations/${orgSlug}/metrics`,
+                  icon: <BarChart3 className="w-4 h-4" />,
+                },
+                {
+                  label: "Settings",
+                  href: `/organizations/${orgSlug}/settings`,
+                  icon: <Settings className="w-4 h-4" />,
+                },
+              ],
+            },
+            {
+              label: world.label,
+              href: `/organizations/${orgSlug}/worlds/${worldSlug}`,
+              icon: <Globe className="w-3 h-3 text-stone-500" />,
+              menuItems: worlds.map((w) => ({
+                label: w.label || w.slug || w.id,
+                href: `/organizations/${orgSlug}/worlds/${w.slug || w.id}`,
+                icon: <Globe className="w-4 h-4" />,
+              })),
+              resourceType: "World",
+              createHref: `/organizations/${orgSlug}?create=world`,
+            },
+          ]}
           tabs={tabs}
         />
         {children}

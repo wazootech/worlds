@@ -4,11 +4,26 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { CreateWorldDialog } from "./create-world-dialog";
 
-export function CreateWorldButton() {
+export function CreateWorldButton({
+  isOpen: controlledIsOpen,
+  onOpenChange,
+}: {
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+} = {}) {
   const { organization: organizationId } = useParams() as {
     organization: string;
   };
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+
+  const isOpen = controlledIsOpen ?? internalIsOpen;
+  const setIsOpen = (open: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(open);
+    } else {
+      setInternalIsOpen(open);
+    }
+  };
 
   return (
     <>

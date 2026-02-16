@@ -5,6 +5,7 @@ import { ConnectSdkButton } from "@/components/connect-sdk";
 import { CreateWorldButton } from "@/components/create-world-button";
 import { WorldList } from "@/components/world-list";
 import type { World } from "@wazoo/sdk";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 export function OrganizationDashboardContent({
   worlds,
@@ -18,6 +19,21 @@ export function OrganizationDashboardContent({
   const { organization, codeSnippet, maskedCodeSnippetHtml } =
     useOrganization();
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const createMode = searchParams.get("create");
+  const isCreateOpen = createMode === "world";
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      router.push(`${pathname}?create=world`, { scroll: false });
+    } else {
+      router.replace(pathname, { scroll: false });
+    }
+  };
+
   return (
     <main>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
@@ -30,7 +46,10 @@ export function OrganizationDashboardContent({
               codeSnippet={codeSnippet}
               maskedCodeSnippetHtml={maskedCodeSnippetHtml}
             />
-            <CreateWorldButton />
+            <CreateWorldButton
+              isOpen={isCreateOpen}
+              onOpenChange={handleOpenChange}
+            />
           </div>
         </div>
 

@@ -3,8 +3,8 @@
 import { ServiceAccount } from "@wazoo/sdk";
 import { ResourceTable, Column } from "./resource-table";
 import { parseAsInteger, useQueryState } from "nuqs";
+import { useRouter } from "next/navigation";
 import { Key, Eye } from "lucide-react";
-import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 
 export function ServiceAccountList({

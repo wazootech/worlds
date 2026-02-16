@@ -1,9 +1,7 @@
 import { OrganizationProvider } from "@/components/organization-context";
 import { OrganizationHeader } from "@/components/organization-header";
-import { PageHeader } from "@/components/page-header";
 import * as authkit from "@/lib/auth";
 import { sdk } from "@/lib/sdk";
-import { BarChart3, LayoutGrid, Settings, ShieldCheck } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { codeToHtml } from "shiki";
 import type { Metadata } from "next";
@@ -60,7 +58,6 @@ export default async function OrganizationLayout({
   }
 
   const actualOrgId = organization.id;
-  const orgSlug = organization.slug || organization.id;
 
   // Generate general SDK snippets for the account
   const apiKey = (user?.metadata?.testApiKey as string) || "YOUR_API_KEY";

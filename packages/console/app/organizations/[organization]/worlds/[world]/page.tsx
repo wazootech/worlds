@@ -25,7 +25,7 @@ export async function generateMetadata(props: {
         absolute: `${worldSlugTitle} | ${orgSlug} | Wazoo`,
       },
     };
-  } catch (e) {
+  } catch {
     return { title: "World Overview" };
   }
 }
