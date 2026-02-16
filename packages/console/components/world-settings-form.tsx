@@ -52,7 +52,7 @@ export function WorldSettingsForm({
     description !== (initialDescription || "");
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-xl space-y-6">
+    <form onSubmit={handleSubmit} className="max-w-md space-y-4">
       <div className="space-y-4">
         <div>
           <label

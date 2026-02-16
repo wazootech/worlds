@@ -30,7 +30,7 @@ export function DeleteWorldSection({
 
   if (!isOpen) {
     return (
-      <div className="mt-8 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/10 p-6">
+      <div className="mt-12 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/10 p-6">
         <h3 className="text-lg font-medium text-red-900 dark:text-red-200">
           Danger Zone
         </h3>
@@ -51,7 +51,7 @@ export function DeleteWorldSection({
   }
 
   return (
-    <div className="mt-8 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/10 p-6">
+    <div className="mt-12 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/10 p-6">
       <h3 className="text-lg font-medium text-red-900 dark:text-red-200">
         Confirm World Deletion
       </h3>
