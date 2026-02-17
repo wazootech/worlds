@@ -50,14 +50,6 @@ export function PageHeader({
             <OrganizationSwitcher resource={resource} />
           </div>
           <div className="flex items-center space-x-4">
-            {user?.id && (
-              <Link
-                href={`/users/${user.id}#api-keys`}
-                className="text-xs font-medium px-2.5 py-1 rounded-md border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all"
-              >
-                API Key
-              </Link>
-            )}
             <UserMenu user={user} onSignOut={signOutAction} isAdmin={isAdmin} />
           </div>
         </div>

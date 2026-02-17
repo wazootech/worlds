@@ -2,18 +2,22 @@
 
 import { useState } from "react";
 import type { ServiceAccount } from "@wazoo/sdk";
-import { ShieldCheck, Copy, Check } from "lucide-react";
+import { ShieldCheck, Copy, Check, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export function ServiceAccountDetails({
   serviceAccount,
   organizationId,
+  backUrl,
 }: {
   serviceAccount: ServiceAccount;
   organizationId: string;
+  backUrl?: string;
 }) {
   const [isCopied, setIsCopied] = useState(false);
   const [isOrgCopied, setIsOrgCopied] = useState(false);
   const [isKeyCopied, setIsKeyCopied] = useState(false);
+  const [showKey, setShowKey] = useState(false);
 
   const copyToClipboard = (text: string, setter: (v: boolean) => void) => {
     navigator.clipboard.writeText(text);
@@ -25,6 +29,17 @@ export function ServiceAccountDetails({
     <div className="space-y-6">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row items-start gap-5">
+        {backUrl && (
+          <div className="mt-2 hidden md:block">
+            <Link
+              href={backUrl}
+              className="inline-flex items-center justify-center p-2 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-all"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+          </div>
+        )}
+
         {/* Icon */}
         <div className="flex-shrink-0 h-20 w-20 md:h-24 md:w-24 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center border-2 border-white dark:border-stone-800 shadow-sm">
           <ShieldCheck className="w-10 h-10 text-stone-400" />
@@ -120,27 +135,47 @@ export function ServiceAccountDetails({
                 API Key
               </span>
               <div className="flex items-center gap-2">
-                <code className="text-sm font-mono bg-stone-100 dark:bg-stone-800 px-2 py-1 rounded text-stone-700 dark:text-stone-300 break-all">
-                  {(serviceAccount as ServiceAccount & { apiKey?: string })
-                    .apiKey || "••••••••••••••••"}
-                </code>
-                <button
-                  onClick={() =>
-                    copyToClipboard(
-                      (serviceAccount as ServiceAccount & { apiKey?: string })
-                        .apiKey || "",
-                      setIsKeyCopied,
-                    )
-                  }
-                  className="p-1.5 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
-                  title="Copy API Key"
-                >
-                  {isKeyCopied ? (
-                    <Check className="w-4 h-4 text-green-600 dark:text-green-500" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </button>
+                <div className="inline-flex items-center gap-2 px-1.5 py-0.5 -ml-1.5 rounded-md text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 transition-colors w-fit group/key">
+                  <span className="text-sm font-mono">
+                    {showKey
+                      ? (serviceAccount as ServiceAccount & { apiKey?: string })
+                          .apiKey || "No API key found"
+                      : "••••••••••••••••••••••••••••••••"}
+                  </span>
+                  <div className="flex items-center gap-1 opacity-0 group-hover/key:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => setShowKey(!showKey)}
+                      className="p-1 hover:text-stone-700 dark:hover:text-stone-200 transition-colors cursor-pointer"
+                      title={showKey ? "Hide API Key" : "Show API Key"}
+                    >
+                      {showKey ? (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Eye className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() =>
+                        copyToClipboard(
+                          (
+                            serviceAccount as ServiceAccount & {
+                              apiKey?: string;
+                            }
+                          ).apiKey || "",
+                          setIsKeyCopied,
+                        )
+                      }
+                      className="p-1 hover:text-stone-700 dark:hover:text-stone-200 transition-colors cursor-pointer"
+                      title="Copy API Key"
+                    >
+                      {isKeyCopied ? (
+                        <Check className="w-3.5 h-3.5 text-green-600 dark:text-green-500" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -2,8 +2,6 @@ import * as authkit from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import { sdk } from "@/lib/sdk";
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/page-header";
-import { ShieldCheck, LayoutGrid, BarChart3, Settings } from "lucide-react";
 import { ServiceAccountSettings } from "@/components/service-account-settings";
 
 type Params = { organization: string; serviceAccountId: string };
@@ -71,75 +69,17 @@ export default async function ServiceAccountSettingsPage(props: {
   }
 
   const orgSlug = organization.slug || organization.id;
-
-  const resourceMenuItems = [
-    {
-      label: "Worlds",
-      href: `/organizations/${orgSlug}`,
-      icon: <LayoutGrid className="w-4 h-4" />,
-    },
-    {
-      label: "Service Accounts",
-      href: `/organizations/${orgSlug}/service-accounts`,
-      icon: <ShieldCheck className="w-4 h-4" />,
-    },
-    {
-      label: "Metrics",
-      href: `/organizations/${orgSlug}/metrics`,
-      icon: <BarChart3 className="w-4 h-4" />,
-    },
-    {
-      label: "Settings",
-      href: `/organizations/${orgSlug}/settings`,
-      icon: <Settings className="w-4 h-4" />,
-    },
-  ];
-
-  const breadcrumbs = [
-    {
-      label: "Service Accounts",
-      href: `/organizations/${orgSlug}/service-accounts`,
-      icon: <ShieldCheck className="w-3 h-3 text-stone-500" />,
-      menuItems: resourceMenuItems,
-    },
-    {
-      label: sa.label || sa.id,
-      href: `/organizations/${orgSlug}/service-accounts/${serviceAccountId}`,
-      icon: <ShieldCheck className="w-3 h-3 text-stone-500" />,
-    },
-    {
-      label: "Settings",
-      href: `/organizations/${orgSlug}/service-accounts/${serviceAccountId}/settings`,
-      icon: <Settings className="w-3 h-3 text-stone-500" />,
-    },
-  ];
-
-  const tabs = [
-    {
-      label: "Overview",
-      href: `/organizations/${orgSlug}/service-accounts/${serviceAccountId}`,
-    },
-    {
-      label: "Settings",
-      href: `/organizations/${orgSlug}/service-accounts/${serviceAccountId}/settings`,
-    },
-  ];
+  const serviceAccounts = await sdk.organizations.serviceAccounts
+    .list(organization.id, { page: 1, pageSize: 100 })
+    .catch(() => []);
 
   return (
-    <>
-      <PageHeader
-        user={user}
-        isAdmin={isAdmin}
-        resource={breadcrumbs}
-        tabs={tabs}
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <ServiceAccountSettings
+        serviceAccount={sa}
+        organizationId={organization.id}
+        organizationSlug={orgSlug}
       />
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <ServiceAccountSettings
-          serviceAccount={sa}
-          organizationId={organization.id}
-          organizationSlug={orgSlug}
-        />
-      </main>
-    </>
+    </main>
   );
 }
