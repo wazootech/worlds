@@ -1,13 +1,7 @@
 "use client";
 
 import { useSelectedLayoutSegment, usePathname } from "next/navigation";
-import {
-  Globe,
-  Settings,
-  ShieldCheck,
-  BarChart3,
-  LayoutGrid,
-} from "lucide-react";
+import { Globe, Settings, ShieldCheck, LayoutGrid } from "lucide-react";
 import { useOrganization } from "@/components/organization-context";
 import { PageHeader } from "@/components/page-header";
 
@@ -32,9 +26,6 @@ export function OrganizationHeader() {
   if (segment === "service-accounts") {
     currentLabel = "Service Accounts";
     currentIcon = <ShieldCheck className="w-3 h-3 text-stone-500" />;
-  } else if (segment === "metrics") {
-    currentLabel = "Metrics";
-    currentIcon = <BarChart3 className="w-3 h-3 text-stone-500" />;
   } else if (segment === "settings") {
     currentLabel = "Settings";
     currentIcon = <Settings className="w-3 h-3 text-stone-500" />;
@@ -53,11 +44,6 @@ export function OrganizationHeader() {
       label: "Service Accounts",
       href: `/organizations/${orgSlug}/service-accounts`,
       icon: <ShieldCheck className="w-4 h-4" />,
-    },
-    {
-      label: "Metrics",
-      href: `/organizations/${orgSlug}/metrics`,
-      icon: <BarChart3 className="w-4 h-4" />,
     },
     {
       label: "Settings",
@@ -82,7 +68,6 @@ export function OrganizationHeader() {
           label: "Service Accounts",
           href: `/organizations/${orgSlug}/service-accounts`,
         },
-        { label: "Metrics", href: `/organizations/${orgSlug}/metrics` },
         { label: "Settings", href: `/organizations/${orgSlug}/settings` },
       ]}
     />

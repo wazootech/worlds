@@ -48,8 +48,6 @@ export default async function ServiceAccountSettingsPage(props: {
     redirect(signInUrl);
   }
 
-  const isAdmin = !!user?.metadata?.admin;
-
   // Fetch data
   // Fetch data
   const organization = await sdk.organizations
@@ -69,9 +67,6 @@ export default async function ServiceAccountSettingsPage(props: {
   }
 
   const orgSlug = organization.slug || organization.id;
-  const serviceAccounts = await sdk.organizations.serviceAccounts
-    .list(organization.id, { page: 1, pageSize: 100 })
-    .catch(() => []);
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">

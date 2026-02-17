@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { AuthUser } from "@/lib/auth";
 import {
@@ -19,8 +20,21 @@ export function UserMenu({
   onSignOut: () => Promise<void>;
   isAdmin?: boolean;
 }) {
-  const accountId = user?.id;
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHasMounted(true);
+  }, []);
+
   const email = user?.email;
+
+  if (!hasMounted) {
+    return (
+      <div className="p-2">
+        <div className="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <DropdownMenu>

@@ -42,6 +42,7 @@ export function OrganizationSwitcher({
   };
   const router = useRouter();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [hasMounted, setHasMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
 
@@ -52,6 +53,7 @@ export function OrganizationSwitcher({
       : [];
 
   useEffect(() => {
+    setHasMounted(true);
     async function loadOrganizations() {
       try {
         const orgs = await listOrganizations();
@@ -64,6 +66,17 @@ export function OrganizationSwitcher({
     }
     loadOrganizations();
   }, []);
+
+  if (!hasMounted) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="text-stone-300 dark:text-stone-700 font-light text-xl select-none">
+          /
+        </div>
+        <div className="w-24 h-8 animate-pulse bg-stone-100 dark:bg-stone-800 rounded-md" />
+      </div>
+    );
+  }
 
   const currentOrg = organizations.find(
     (o) =>
