@@ -30,11 +30,7 @@ export function PageHeader({
           <div className="flex items-center space-x-2">
             {children}
             <Link
-              href={
-                (user?.metadata?.organizationId as string)
-                  ? `/organizations/${user?.metadata?.organizationId}`
-                  : "/"
-              }
+              href="/"
               className="flex items-center py-1.5 group transition-all"
             >
               <div className="relative w-6 h-6 rounded-full overflow-hidden shadow-sm transition-colors">

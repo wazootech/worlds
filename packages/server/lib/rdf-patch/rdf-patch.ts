@@ -45,9 +45,20 @@ export async function handlePatch(
             // For now, only embed string literals
             // TODO: filter by datatype (string, langString, etc.)
             if (object.length > 0) {
-              vector = await embeddings.embed(object);
+              try {
+                vector = await embeddings.embed(object);
+              } catch (error) {
+                console.warn(
+                  `Failed to generate embedding for object "${
+                    object.slice(0, 50)
+                  }...":`,
+                  error,
+                );
+                // Continue without vector - triples will be stored but not searchable via semantic search
+              }
             }
           }
+
 
           // Upsert triple
           await triplesService.upsert({
@@ -73,8 +84,19 @@ export async function handlePatch(
 
               // If multiple chunks, re-embed each chunk
               if (chunks.length > 1) {
-                chunkVector = await embeddings.embed(chunkText);
+                try {
+                  chunkVector = await embeddings.embed(chunkText);
+                } catch (error) {
+                  console.warn(
+                    `Failed to generate embedding for chunk "${
+                      chunkText.slice(0, 50)
+                    }...":`,
+                    error,
+                  );
+                  // Use the original vector if re-embedding fails, or continue without vector if original failed too
+                }
               }
+
 
               const chunkId = await hash(
                 `${tripleId}:chunk:${i}`,
