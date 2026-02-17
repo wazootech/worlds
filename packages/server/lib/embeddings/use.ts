@@ -29,33 +29,23 @@ export class UniversalSentenceEncoderEmbeddings implements Embeddings {
     await tf.setBackend("wasm");
     await tf.ready();
 
-    // Load the Universal Sentence Encoder model with retries to handle transient network issues
-    let lastError: unknown;
-    const maxAttempts = 3;
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        this.model = await use.load();
-        return;
-      } catch (error) {
-        lastError = error;
-        console.warn(
-          `Failed to load Universal Sentence Encoder model (attempt ${attempt}/${maxAttempts}):`,
-          error,
-        );
-        if (attempt < maxAttempts) {
-          // Exponential backoff
-          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
-        }
-      }
+    // Load the Universal Sentence Encoder model from local files
+    const modelUrl = import.meta.resolve("../../models/use/model.json");
+    const vocabUrl = import.meta.resolve("../../models/use/vocab.json");
+
+    try {
+      this.model = await use.load({
+        modelUrl,
+        vocabUrl,
+      });
+    } catch (error) {
+      throw new Error(
+        `Failed to load local Universal Sentence Encoder model: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
-
-    throw new Error(
-      `Failed to load Universal Sentence Encoder model after ${maxAttempts} attempts: ${
-        lastError instanceof Error ? lastError.message : String(lastError)
-      }`,
-    );
   }
-
 
   /**
    * embed generates a vector embedding for a given text.

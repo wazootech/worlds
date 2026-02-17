@@ -59,7 +59,6 @@ export async function handlePatch(
             }
           }
 
-
           // Upsert triple
           await triplesService.upsert({
             id: tripleId,
@@ -96,7 +95,6 @@ export async function handlePatch(
                   // Use the original vector if re-embedding fails, or continue without vector if original failed too
                 }
               }
-
 
               const chunkId = await hash(
                 `${tripleId}:chunk:${i}`,
