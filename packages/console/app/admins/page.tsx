@@ -2,8 +2,6 @@ import * as authkit from "@/lib/auth";
 import { AdminList } from "./admin-list";
 import { Metadata } from "next";
 import { Suspense } from "react";
-import { sdk } from "@/lib/sdk";
-import type { Organization } from "@wazoo/sdk";
 
 export const metadata: Metadata = {
   title: "Manage Admins",
@@ -50,14 +48,15 @@ export default async function AdminsPage({
   // Fetch organizations for each user concurrently.
   const organizationsWithUsers = await Promise.all(
     paginatedOrganizations.map(async (user) => {
-      let organization: Organization | null = null;
+      let organization: import("@/lib/auth").AuthOrganization | null = null;
       try {
         const organizationId = user.metadata?.organizationId as
           | string
           | undefined;
-        organization = organizationId
-          ? await sdk.organizations.get(organizationId)
-          : null;
+        if (organizationId) {
+          const orgMgmt = await authkit.getOrganizationManagement();
+          organization = await orgMgmt.getOrganization(organizationId);
+        }
       } catch (error) {
         // Log error but continue - some organizations may not be initialized
         console.error(

@@ -24,7 +24,9 @@ export default async function ServiceAccountsPage(props: {
   // Fetch organization (verify organization existence)
   let organization;
   try {
-    organization = await sdk.organizations.get(organizationId);
+    const { getOrganizationManagement } = await import("@/lib/auth");
+    const orgMgmt = await getOrganizationManagement();
+    organization = await orgMgmt.getOrganization(organizationId);
   } catch (error) {
     console.error("Failed to fetch organization:", error);
     notFound();
@@ -38,13 +40,10 @@ export default async function ServiceAccountsPage(props: {
 
   let serviceAccounts: ServiceAccount[] = [];
   try {
-    serviceAccounts = await sdk.organizations.serviceAccounts.list(
-      actualOrgId,
-      {
-        page,
-        pageSize,
-      },
-    );
+    serviceAccounts = await sdk.serviceAccounts.list(actualOrgId, {
+      page,
+      pageSize,
+    });
   } catch (error) {
     console.error("Failed to list service accounts:", error);
   }

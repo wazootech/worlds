@@ -15,7 +15,9 @@ export async function generateMetadata(props: {
   const { organization: organizationSlug, world: worldSlug } =
     await props.params;
   try {
-    const organization = await sdk.organizations.get(organizationSlug);
+    const { getOrganizationManagement } = await import("@/lib/auth");
+    const orgMgmt = await getOrganizationManagement();
+    const organization = await orgMgmt.getOrganization(organizationSlug);
     if (!organization) return { title: "World" };
 
     const world = await sdk.worlds.get(worldSlug, {
@@ -56,7 +58,9 @@ export default async function WorldLayout({
   // Fetch organization
   let organization;
   try {
-    organization = await sdk.organizations.get(organizationId);
+    const { getOrganizationManagement } = await import("@/lib/auth");
+    const orgMgmt = await getOrganizationManagement();
+    organization = await orgMgmt.getOrganization(organizationId);
   } catch {
     notFound();
   }
@@ -66,7 +70,7 @@ export default async function WorldLayout({
   }
 
   const actualOrgId = organization.id;
-  const orgSlug = organization.slug || organization.id;
+  const orgSlug = organization.metadata.slug || organization.id;
 
   // Fetch world and list
   let world;
@@ -91,8 +95,8 @@ export default async function WorldLayout({
   // Canonical redirect
   if (
     (organizationId === organization.id &&
-      organization.slug &&
-      organization.slug !== organization.id) ||
+      organization.metadata.slug &&
+      organization.metadata.slug !== organization.id) ||
     (worldId === world.id && world.slug && world.slug !== world.id)
   ) {
     redirect(`/organizations/${orgSlug}/worlds/${worldSlug}`);

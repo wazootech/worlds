@@ -18,7 +18,9 @@ export default async function OrganizationDashboard(props: {
   // Fetch organization (verify organization existence)
   let organization;
   try {
-    organization = await sdk.organizations.get(organizationId);
+    const { getOrganizationManagement } = await import("@/lib/auth");
+    const orgMgmt = await getOrganizationManagement();
+    organization = await orgMgmt.getOrganization(organizationId);
   } catch (error) {
     console.error("Failed to fetch organization:", error);
     notFound();

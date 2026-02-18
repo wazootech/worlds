@@ -130,3 +130,29 @@ export async function handleAuth(opts?: any): Promise<any> {
     );
   };
 }
+
+// ---------------------------------------------------------------------------
+// Organization management (polymorphic: local JSON vs WorkOS)
+// ---------------------------------------------------------------------------
+
+export type { AuthOrganization } from "./organization-management";
+
+let _orgManagement:
+  | import("./organization-management").OrganizationManagement
+  | null = null;
+
+export async function getOrganizationManagement() {
+  if (_orgManagement) return _orgManagement;
+
+  if (isLocalDev) {
+    const { LocalOrganizationManagement } =
+      await import("./org-managers/local-org-management");
+    _orgManagement = new LocalOrganizationManagement();
+  } else {
+    const { WorkOSOrganizationManagement } =
+      await import("./org-managers/workos-org-management");
+    _orgManagement = new WorkOSOrganizationManagement();
+  }
+
+  return _orgManagement;
+}

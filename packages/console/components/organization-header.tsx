@@ -9,7 +9,7 @@ export function OrganizationHeader() {
   const { organization, user, isAdmin } = useOrganization();
   const pathname = usePathname();
   const segment = useSelectedLayoutSegment();
-  const orgSlug = organization.slug || organization.id;
+  const orgSlug = organization.metadata.slug || organization.id;
 
   // Check if we are on a world-specific page
   // Pattern: /organizations/[org]/worlds/[world]...

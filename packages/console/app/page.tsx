@@ -3,7 +3,6 @@ import { PageHeader } from "@/components/page-header";
 
 import { redirect } from "next/navigation";
 
-import { sdk } from "@/lib/sdk";
 import { CreateOrganizationForm } from "@/components/create-organization-form";
 import { Metadata } from "next";
 
@@ -24,9 +23,16 @@ export default async function Home(props: {
       | string
       | undefined;
     if (organizationId) {
-      const organization = await sdk.organizations.get(organizationId);
-      if (organization) {
-        redirect(`/organizations/${organization.slug || organization.id}`);
+      try {
+        const orgMgmt = await authkit.getOrganizationManagement();
+        const organization = await orgMgmt.getOrganization(organizationId);
+        if (organization) {
+          redirect(
+            `/organizations/${organization.metadata.slug || organization.id}`,
+          );
+        }
+      } catch (e) {
+        console.error("Failed to redirect to organization:", e);
       }
     }
   }
@@ -189,9 +195,10 @@ export default async function Home(props: {
       const organizationId = userInfo.user.metadata?.organizationId as
         | string
         | undefined;
-      organization = organizationId
-        ? await sdk.organizations.get(organizationId)
-        : null;
+      if (organizationId) {
+        const orgMgmt = await authkit.getOrganizationManagement();
+        organization = await orgMgmt.getOrganization(organizationId);
+      }
     } catch (error) {
       console.error("Failed to fetch organization:", error);
     }
@@ -207,7 +214,7 @@ export default async function Home(props: {
   }
 
   // Redirect to the actual organization dashboard using slug
-  redirect(`/organizations/${organization.slug || organization.id}`);
+  redirect(`/organizations/${organization.metadata.slug || organization.id}`);
 }
 
 function ErrorState({

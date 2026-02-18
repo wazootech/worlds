@@ -9,7 +9,9 @@ export async function generateMetadata(props: {
     await props.params;
 
   try {
-    const organization = await sdk.organizations.get(organizationSlug);
+    const { getOrganizationManagement } = await import("@/lib/auth");
+    const orgMgmt = await getOrganizationManagement();
+    const organization = await orgMgmt.getOrganization(organizationSlug);
     if (!organization) return { title: "World Overview" };
 
     const world = await sdk.worlds.get(worldSlug, {
@@ -17,7 +19,7 @@ export async function generateMetadata(props: {
     });
     if (!world) return { title: "World Overview" };
 
-    const orgSlug = organization.slug || organization.id;
+    const orgSlug = organization.metadata.slug || organization.id;
     const worldSlugTitle = world.slug || world.id;
 
     return {

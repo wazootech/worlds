@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { deleteUserAction, toggleAdminAction } from "./actions";
-import type { Organization } from "@wazoo/sdk";
+import type { AuthOrganization } from "@/lib/auth";
 import type { WorkOSUser } from "./types";
 import { MoreVertical, Trash2, UserMinus, UserPlus } from "lucide-react";
 import {
@@ -28,11 +28,14 @@ import { ResourceTable, Column } from "@/components/resource-table";
 type AdminItem = {
   id: string; // for ResourceTable key
   user: WorkOSUser;
-  organization: Organization | null;
+  organization: AuthOrganization | null;
 };
 
 type AdminListProps = {
-  organizations: Array<{ user: WorkOSUser; organization: Organization | null }>;
+  organizations: Array<{
+    user: WorkOSUser;
+    organization: AuthOrganization | null;
+  }>;
   pageSize: number;
   nextCursor?: string;
   hasMore: boolean;
@@ -106,7 +109,7 @@ export function AdminList({
       render: (item) => (
         <div className="flex flex-col">
           <span className="text-stone-900 dark:text-white">
-            {item.organization?.label || "No organization"}
+            {item.organization?.name || "No organization"}
           </span>
           {item.organization && (
             <span className="font-mono text-[10px] text-stone-500">
@@ -114,13 +117,6 @@ export function AdminList({
             </span>
           )}
         </div>
-      ),
-    },
-    {
-      key: "plan",
-      label: "Plan",
-      render: (item) => (
-        <span className="capitalize">{item.organization?.plan || "Free"}</span>
       ),
     },
     {

@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import * as authkit from "@/lib/auth";
 import { sdk } from "@/lib/sdk";
-import { ulid } from "ulid";
 
 async function getActiveOrgId(user: authkit.AuthUser) {
   // Always prefer metadata.organizationId if it exists
@@ -32,13 +31,14 @@ export async function updateWorld(
 
   await sdk.worlds.update(world.id, updates);
 
+  const orgMgmt = await authkit.getOrganizationManagement();
   const [resolvedWorld, organization] = await Promise.all([
     sdk.worlds.get(world.id, { organizationId }),
-    sdk.organizations.get(organizationId),
+    orgMgmt.getOrganization(organizationId),
   ]);
 
   if (resolvedWorld && organization) {
-    const orgSlug = organization.slug || organization.id;
+    const orgSlug = organization.metadata.slug || organization.id;
     const worldSlug = resolvedWorld.slug || resolvedWorld.id;
     revalidatePath(`/organizations/${orgSlug}`);
     revalidatePath(`/organizations/${orgSlug}/worlds/${worldSlug}`);
@@ -58,9 +58,10 @@ export async function deleteWorld(organizationId: string, worldId: string) {
   }
 
   await sdk.worlds.delete(world.id);
-  const organization = await sdk.organizations.get(organizationId);
+  const orgMgmt = await authkit.getOrganizationManagement();
+  const organization = await orgMgmt.getOrganization(organizationId);
   if (organization) {
-    const orgSlug = organization.slug || organization.id;
+    const orgSlug = organization.metadata.slug || organization.id;
     revalidatePath(`/organizations/${orgSlug}`);
   }
 }
@@ -76,14 +77,15 @@ export async function createWorld(
       throw new Error("Unauthorized");
     }
 
-    // Resolve organization to get actual ID and slug
-    const organization = await sdk.organizations.get(organizationId);
+    // Resolve organization via OrganizationManagement
+    const orgMgmt = await authkit.getOrganizationManagement();
+    const organization = await orgMgmt.getOrganization(organizationId);
     if (!organization) {
       throw new Error("Organization not found");
     }
 
     const actualOrgId = organization.id;
-    const orgSlug = organization.slug || organization.id;
+    const orgSlug = organization.metadata.slug || organization.id;
 
     console.log("Creating new world...", {
       organizationId: actualOrgId,
@@ -140,16 +142,13 @@ export async function deleteOrganization(organizationId: string) {
 
   // 2. Cleanup all service accounts in this organization (best effort)
   try {
-    const serviceAccounts = await sdk.organizations.serviceAccounts.list(
-      organizationId,
-      {
-        page: 1,
-        pageSize: 100,
-      },
-    );
+    const serviceAccounts = await sdk.serviceAccounts.list(organizationId, {
+      page: 1,
+      pageSize: 100,
+    });
     for (const sa of serviceAccounts) {
       try {
-        await sdk.organizations.serviceAccounts.delete(organizationId, sa.id);
+        await sdk.serviceAccounts.delete(organizationId, sa.id);
       } catch (e) {
         console.error(`Failed to cleanup service account ${sa.id}:`, e);
       }
@@ -161,25 +160,24 @@ export async function deleteOrganization(organizationId: string) {
     );
   }
 
-  // 3. Remove the organization from the database
-  // Resolve organization to get actual ID
-  const organization = await sdk.organizations.get(organizationId);
+  // 3. Remove the organization via OrganizationManagement
+  const orgMgmt = await authkit.getOrganizationManagement();
+  const organization = await orgMgmt.getOrganization(organizationId);
   if (!organization) {
     throw new Error("Organization not found");
   }
-  await sdk.organizations.delete(organization.id);
+  await orgMgmt.deleteOrganization(organization.id);
 
   revalidatePath("/");
 
-  // 4. If this was the active organization, we should probably clear it from metadata
-  // or just sign out. In local dev, sign out is a no-op currently.
+  // 4. If this was the active organization, clear it from metadata
   const activeOrgId = await getActiveOrgId(user);
   if (activeOrgId === organizationId) {
     const workos = await authkit.getWorkOS();
     await workos.userManagement.updateUser({
       userId: user.id,
       metadata: {
-        ...user.metadata,
+        ...(user.metadata as unknown as Record<string, string | null>),
         organizationId: "",
         testApiKey: "",
       },
@@ -196,50 +194,39 @@ export async function rotateApiKey(organizationId: string) {
     throw new Error("Unauthorized");
   }
 
-  const serviceAccounts =
-    await sdk.organizations.serviceAccounts.list(organizationId);
+  // Service accounts still go through the SDK (server-managed)
+  const serviceAccounts = await sdk.serviceAccounts.list(organizationId);
   await Promise.all(
     serviceAccounts.map((sa) =>
-      sdk.organizations.serviceAccounts.delete(organizationId, sa.id),
+      sdk.serviceAccounts.delete(organizationId, sa.id),
     ),
   );
 
-  const newServiceAccount = await sdk.organizations.serviceAccounts.create(
-    organizationId,
-    {
-      label: "Default",
-    },
-  );
+  const newServiceAccount = await sdk.serviceAccounts.create(organizationId, {
+    label: "Default",
+  });
 
   const workos = await authkit.getWorkOS();
-
-  // Use the correct update signature: { userId, metadata: ... }
-  // Wait, I need to check if user.id is correct. Yes.
-  // And merge with existing metadata? The API merges at top level but replaces nested?
-  // WorkOS metadata is key-value strings.
-  // I should probably fetch existing metadata first to be safe, like admin actions.
-  // But strictly for testApiKey, I can just upsert.
-  // Actually, let's just do a direct update for now as we did in callback/route.ts (Wait, callback used the new signature).
-  // The signature issue in route.ts was `updateUser(id, { ... })` -> `updateUser({ userId: id, ... })`.
 
   const activeOrgId = await getActiveOrgId(user);
   if (activeOrgId === organizationId) {
     await workos.userManagement.updateUser({
       userId: user.id,
       metadata: {
-        ...user.metadata,
-        testApiKey: newServiceAccount.apiKey,
+        ...(user.metadata as unknown as Record<string, string | null>),
+        testApiKey: newServiceAccount.apiKey || "",
       },
     });
   }
 
   revalidatePath(`/organizations/${organizationId}`);
-  const organization = await sdk.organizations.get(organizationId);
+  const orgMgmt = await authkit.getOrganizationManagement();
+  const organization = await orgMgmt.getOrganization(organizationId);
   if (organization) {
-    const orgSlug = organization.slug || organization.id;
+    const orgSlug = organization.metadata.slug || organization.id;
     revalidatePath(`/organizations/${orgSlug}`);
   }
-  return newServiceAccount.apiKey;
+  return newServiceAccount.apiKey || "";
 }
 
 export async function createOrganization(label: string, slug: string) {
@@ -249,24 +236,20 @@ export async function createOrganization(label: string, slug: string) {
   }
 
   try {
-    // Generate a unique organization ID
-    const organizationId = ulid();
-
-    // 1. Create the organization in Worlds API.
-    await sdk.organizations.create({
-      id: organizationId,
+    // 1. Create the organization via OrganizationManagement
+    const orgMgmt = await authkit.getOrganizationManagement();
+    const organization = await orgMgmt.createOrganization({
+      name: label,
       slug,
-      label,
     });
 
+    const organizationId = organization.id;
+
     // 2. Create a default service account and get its API key.
-    const serviceAccount = await sdk.organizations.serviceAccounts.create(
-      organizationId,
-      {
-        label: "Default",
-        description: "Auto-generated for testing",
-      },
-    );
+    const serviceAccount = await sdk.serviceAccounts.create(organizationId, {
+      label: "Default",
+      description: "Auto-generated for testing",
+    });
 
     // 3. Update local user metadata with the NEW organizationId and testApiKey.
     const workos = await authkit.getWorkOS();
@@ -275,9 +258,9 @@ export async function createOrganization(label: string, slug: string) {
     await workos.userManagement.updateUser({
       userId: user.id,
       metadata: {
-        ...targetUser.metadata,
+        ...(targetUser.metadata as unknown as Record<string, string | null>),
         organizationId: organizationId,
-        testApiKey: serviceAccount.apiKey,
+        testApiKey: serviceAccount.apiKey || "",
       },
     });
 
@@ -302,17 +285,21 @@ export async function updateOrganization(
     throw new Error("Unauthorized");
   }
 
-  // Resolve organization to get actual ID
-  const organization = await sdk.organizations.get(organizationId);
+  const orgMgmt = await authkit.getOrganizationManagement();
+  const organization = await orgMgmt.getOrganization(organizationId);
   if (!organization) {
     throw new Error("Organization not found");
   }
 
-  await sdk.organizations.update(organization.id, updates);
+  await orgMgmt.updateOrganization(organization.id, {
+    name: updates.label,
+    slug: updates.slug,
+  });
 
-  const resolvedOrganization = await sdk.organizations.get(organization.id);
+  const resolvedOrganization = await orgMgmt.getOrganization(organization.id);
   if (resolvedOrganization) {
-    const orgSlug = resolvedOrganization.slug || resolvedOrganization.id;
+    const orgSlug =
+      resolvedOrganization.metadata.slug || resolvedOrganization.id;
     revalidatePath(`/organizations/${orgSlug}/settings`);
     revalidatePath(`/organizations/${orgSlug}`);
   }
@@ -327,9 +314,8 @@ export async function listOrganizations() {
   }
 
   try {
-    // In local dev, we can just list all organizations from the mock DB
-    // In production, this would be filtered to the user's memberships
-    const organizations = await sdk.organizations.list();
+    const orgMgmt = await authkit.getOrganizationManagement();
+    const organizations = await orgMgmt.listOrganizations();
     return organizations;
   } catch (error) {
     console.error("Failed to list organizations:", error);
@@ -397,15 +383,12 @@ export async function updateServiceAccount(
     throw new Error("Unauthorized");
   }
 
-  await sdk.organizations.serviceAccounts.update(
-    organizationId,
-    serviceAccountId,
-    updates,
-  );
+  await sdk.serviceAccounts.update(organizationId, serviceAccountId, updates);
 
-  const organization = await sdk.organizations.get(organizationId);
+  const orgMgmt = await authkit.getOrganizationManagement();
+  const organization = await orgMgmt.getOrganization(organizationId);
   if (organization) {
-    const orgSlug = organization.slug || organization.id;
+    const orgSlug = organization.metadata.slug || organization.id;
     revalidatePath(
       `/organizations/${orgSlug}/service-accounts/${serviceAccountId}`,
     );
@@ -424,14 +407,15 @@ export async function rotateServiceAccountKey(
     throw new Error("Unauthorized");
   }
 
-  const result = await sdk.organizations.serviceAccounts.rotateKey(
+  const result = await sdk.serviceAccounts.rotateKey(
     organizationId,
     serviceAccountId,
   );
 
-  const organization = await sdk.organizations.get(organizationId);
+  const orgMgmt = await authkit.getOrganizationManagement();
+  const organization = await orgMgmt.getOrganization(organizationId);
   if (organization) {
-    const orgSlug = organization.slug || organization.id;
+    const orgSlug = organization.metadata.slug || organization.id;
     revalidatePath(`/organizations/${orgSlug}/service-accounts`);
     revalidatePath(
       `/organizations/${orgSlug}/service-accounts/${serviceAccountId}`,
@@ -453,13 +437,11 @@ export async function deleteServiceAccount(
     throw new Error("Unauthorized");
   }
 
-  await sdk.organizations.serviceAccounts.delete(
-    organizationId,
-    serviceAccountId,
-  );
-  const organization = await sdk.organizations.get(organizationId);
+  await sdk.serviceAccounts.delete(organizationId, serviceAccountId);
+  const orgMgmt = await authkit.getOrganizationManagement();
+  const organization = await orgMgmt.getOrganization(organizationId);
   if (organization) {
-    const orgSlug = organization.slug || organization.id;
+    const orgSlug = organization.metadata.slug || organization.id;
     revalidatePath(`/organizations/${orgSlug}/service-accounts`);
   }
 }

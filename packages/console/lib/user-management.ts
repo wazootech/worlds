@@ -8,9 +8,9 @@ export interface AuthUser {
   lastName: string | null;
   profilePictureUrl?: string | null;
   metadata?: {
-    organizationId?: string;
-    testApiKey?: string;
-    admin?: string;
+    organizationId?: string | null;
+    testApiKey?: string | null;
+    admin?: string | null;
     // [key: string]: string | undefined;
   };
 }

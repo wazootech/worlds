@@ -1,7 +1,6 @@
 import { OrganizationProvider } from "@/components/organization-context";
 import { OrganizationHeader } from "@/components/organization-header";
 import * as authkit from "@/lib/auth";
-import { sdk } from "@/lib/sdk";
 import { notFound, redirect } from "next/navigation";
 import { codeToHtml } from "shiki";
 import type { Metadata } from "next";
@@ -13,11 +12,12 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { organization: organizationId } = await props.params;
   try {
-    const organization = await sdk.organizations.get(organizationId);
+    const orgMgmt = await authkit.getOrganizationManagement();
+    const organization = await orgMgmt.getOrganization(organizationId);
     return {
       title: {
-        template: `%s | ${organization?.label || "Organization"}`,
-        default: organization?.label || "Organization",
+        template: `%s | ${organization?.name || "Organization"}`,
+        default: organization?.name || "Organization",
       },
     };
   } catch {
@@ -44,10 +44,11 @@ export default async function OrganizationLayout({
 
   const isAdmin = !!user?.metadata?.admin;
 
-  // Fetch organization (verify organization existence)
+  // Fetch organization via OrganizationManagement
+  const orgMgmt = await authkit.getOrganizationManagement();
   let organization;
   try {
-    organization = await sdk.organizations.get(organizationId);
+    organization = await orgMgmt.getOrganization(organizationId);
   } catch (error) {
     console.error("Failed to fetch organization:", error);
     notFound();

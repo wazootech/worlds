@@ -24,40 +24,43 @@ export async function GET(request: NextRequest) {
         }
 
         try {
+          const orgMgmt = await authkit.getOrganizationManagement();
+
           // Skip if user already has an organization.
-          const existingOrganization = await sdk.organizations.get(
-            data.user.id,
-          );
-          if (existingOrganization) {
-            return;
+          try {
+            const existingOrganization = await orgMgmt.getOrganization(
+              data.user.id,
+            );
+            if (existingOrganization) {
+              return;
+            }
+          } catch {
+            // Organization not found, proceed to create
           }
 
-          // Create the organization in Worlds API.
+          // Create the organization.
           const slug = data.user.firstName
             ? data.user.firstName.toLowerCase().replace(/\s+/g, "-")
-            : data.user.id;
-          await sdk.organizations.create({
-            id: data.user.id, // Associate WorkOS ID with organization ID.
+            : data.user.id; // Fallback to ID if no name
+
+          const newOrg = await orgMgmt.createOrganization({
+            name: `${data.user.firstName || "User"}'s Org`,
             slug: slug,
-            label: `${data.user.firstName}'s Org`, // Default label
           });
 
           // Create a default service account for the organization.
-          const serviceAccount = await sdk.organizations.serviceAccounts.create(
-            data.user.id,
-            {
-              label: "Default",
-              description: "Auto-generated for testing",
-            },
-          );
+          const serviceAccount = await sdk.serviceAccounts.create(newOrg.id, {
+            label: "Default",
+            description: "Auto-generated for testing",
+          });
 
           // Update WorkOS user metadata.
           const workos = await authkit.getWorkOS();
           await workos.userManagement.updateUser({
             userId: data.user.id,
             metadata: {
-              organizationId: data.user.id,
-              testApiKey: serviceAccount.apiKey,
+              organizationId: newOrg.id,
+              testApiKey: serviceAccount.apiKey || null, // Ensure string or null
             },
           });
         } catch (error) {

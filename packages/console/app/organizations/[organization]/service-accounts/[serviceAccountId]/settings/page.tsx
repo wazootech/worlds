@@ -13,13 +13,12 @@ export async function generateMetadata(props: {
     await props.params;
 
   try {
-    const organization = await sdk.organizations.get(organizationSlug);
+    const { getOrganizationManagement } = await import("@/lib/auth");
+    const orgMgmt = await getOrganizationManagement();
+    const organization = await orgMgmt.getOrganization(organizationSlug);
     if (!organization) return { title: "Settings | Service Account" };
 
-    const sa = await sdk.organizations.serviceAccounts.get(
-      organization.id,
-      serviceAccountId,
-    );
+    const sa = await sdk.serviceAccounts.get(organization.id, serviceAccountId);
 
     if (!sa) {
       return { title: "Settings | Service Account" };
@@ -49,16 +48,18 @@ export default async function ServiceAccountSettingsPage(props: {
   }
 
   // Fetch data
-  // Fetch data
-  const organization = await sdk.organizations
-    .get(organizationSlug)
+  const { getOrganizationManagement } = await import("@/lib/auth");
+  const orgMgmt = await getOrganizationManagement();
+
+  const organization = await orgMgmt
+    .getOrganization(organizationSlug)
     .catch(() => null);
 
   if (!organization) {
     notFound();
   }
 
-  const sa = await sdk.organizations.serviceAccounts
+  const sa = await sdk.serviceAccounts
     .get(organization.id, serviceAccountId)
     .catch(() => null);
 
@@ -66,7 +67,7 @@ export default async function ServiceAccountSettingsPage(props: {
     notFound();
   }
 
-  const orgSlug = organization.slug || organization.id;
+  const orgSlug = organization.metadata.slug || organization.id;
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">

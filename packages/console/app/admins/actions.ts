@@ -98,24 +98,23 @@ export async function deleteUserAction(userId: string) {
   }
 
   try {
-    const { sdk } = await import("@/lib/sdk");
-
     // Get the target user to find their associated organization
     const targetUser = await workos.userManagement.getUser(userId);
     const organizationId = targetUser.metadata?.organizationId as
       | string
       | undefined;
 
-    // 1. Delete associated organization from Worlds API if it exists
+    // 1. Delete associated organization if it exists
     if (organizationId) {
       try {
-        await sdk.organizations.delete(organizationId);
+        const orgMgmt = await authkit.getOrganizationManagement();
+        await orgMgmt.deleteOrganization(organizationId);
       } catch (error) {
         console.error(
-          `Failed to delete organization ${organizationId} for user ${userId} from Worlds API:`,
+          `Failed to delete organization ${organizationId} for user ${userId}:`,
           error,
         );
-        // We continue even if Worlds API delete fails
+        // We continue even if org delete fails
       }
     }
 

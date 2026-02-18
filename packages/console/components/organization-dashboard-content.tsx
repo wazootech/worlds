@@ -54,7 +54,7 @@ export function OrganizationDashboardContent({
         </div>
 
         <WorldList
-          organizationSlug={organization.slug || organization.id}
+          organizationSlug={organization.metadata.slug || organization.id}
           initialData={worlds}
           initialPage={page}
           initialPageSize={pageSize}

@@ -24,7 +24,7 @@ export interface ResourceBreadcrumb {
   createHref?: string;
 }
 import { listOrganizations } from "@/app/actions";
-import type { Organization } from "@wazoo/sdk";
+import type { AuthOrganization } from "@/lib/auth";
 
 export interface ResourceMenuItem {
   label: string;
@@ -43,7 +43,7 @@ export function OrganizationSwitcher({
     organization?: string;
   };
   const router = useRouter();
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [organizations, setOrganizations] = useState<AuthOrganization[]>([]);
   const [hasMounted, setHasMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
@@ -96,9 +96,7 @@ export function OrganizationSwitcher({
 
   const currentOrg = organizationId
     ? organizations.find(
-        (o) =>
-          o.id === organizationId ||
-          (o as Organization & { slug?: string }).slug === organizationId,
+        (o) => o.id === organizationId || o.metadata.slug === organizationId,
       )
     : organizations[0];
 
@@ -136,7 +134,7 @@ export function OrganizationSwitcher({
             </div>
 
             <span className="text-sm font-semibold text-stone-900 dark:text-stone-100 truncate max-w-[120px]">
-              {isLoading ? "Loading..." : currentOrg?.label || "Select Org"}
+              {isLoading ? "Loading..." : currentOrg?.name || "Select Org"}
             </span>
 
             <div className="flex flex-col ml-1 shrink-0">
@@ -154,15 +152,12 @@ export function OrganizationSwitcher({
             <DropdownMenuItem
               className="flex items-center justify-between group"
               onClick={() =>
-                handleSelect(
-                  (currentOrg as Organization & { slug?: string }).slug ||
-                    currentOrg.id,
-                )
+                handleSelect(currentOrg.metadata.slug || currentOrg.id)
               }
             >
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-stone-400" />
-                <span className="font-medium">{currentOrg.label}</span>
+                <span className="font-medium">{currentOrg.name}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 rounded text-stone-500">
@@ -185,17 +180,13 @@ export function OrganizationSwitcher({
               .map((org) => (
                 <DropdownMenuItem
                   key={org.id}
-                  onClick={() =>
-                    handleSelect(
-                      (org as Organization & { slug?: string }).slug || org.id,
-                    )
-                  }
+                  onClick={() => handleSelect(org.metadata.slug || org.id)}
                   className="flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-stone-400 group-hover:text-stone-600 dark:group-hover:text-stone-200" />
                     <span className="text-stone-700 dark:text-stone-300 group-hover:text-stone-950 dark:group-hover:text-stone-50 transition-colors">
-                      {org.label}
+                      {org.name}
                     </span>
                   </div>
                   <span className="text-[10px] bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 rounded text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity">
