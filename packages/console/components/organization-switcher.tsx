@@ -32,12 +32,14 @@ export interface ResourceMenuItem {
   icon?: React.ReactNode;
 }
 
+const LAST_ORG_KEY = "wazoo:lastOrgId";
+
 export function OrganizationSwitcher({
   resource,
 }: {
   resource?: ResourceBreadcrumb | ResourceBreadcrumb[];
 }) {
-  const { organization: organizationId } = useParams() as {
+  const { organization: paramOrgId } = useParams() as {
     organization?: string;
   };
   const router = useRouter();
@@ -45,6 +47,7 @@ export function OrganizationSwitcher({
   const [hasMounted, setHasMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
+  const [lastOrgId, setLastOrgId] = useState<string | null>(null);
 
   const resources = Array.isArray(resource)
     ? resource
@@ -54,6 +57,9 @@ export function OrganizationSwitcher({
 
   useEffect(() => {
     setHasMounted(true);
+    // Read last org from localStorage on mount
+    setLastOrgId(localStorage.getItem(LAST_ORG_KEY));
+
     async function loadOrganizations() {
       try {
         const orgs = await listOrganizations();
@@ -67,6 +73,14 @@ export function OrganizationSwitcher({
     loadOrganizations();
   }, []);
 
+  // When on an org page, persist the current org to localStorage
+  useEffect(() => {
+    if (paramOrgId) {
+      localStorage.setItem(LAST_ORG_KEY, paramOrgId);
+      setLastOrgId(paramOrgId);
+    }
+  }, [paramOrgId]);
+
   if (!hasMounted) {
     return (
       <div className="flex items-center gap-2">
@@ -78,13 +92,19 @@ export function OrganizationSwitcher({
     );
   }
 
-  const currentOrg = organizations.find(
-    (o) =>
-      o.id === organizationId ||
-      (o as Organization & { slug?: string }).slug === organizationId,
-  );
+  const organizationId = paramOrgId || lastOrgId;
+
+  const currentOrg = organizationId
+    ? organizations.find(
+        (o) =>
+          o.id === organizationId ||
+          (o as Organization & { slug?: string }).slug === organizationId,
+      )
+    : organizations[0];
 
   const handleSelect = (idOrSlug: string) => {
+    localStorage.setItem(LAST_ORG_KEY, idOrSlug);
+    setLastOrgId(idOrSlug);
     startTransition(() => {
       router.push(`/organizations/${idOrSlug}`);
     });

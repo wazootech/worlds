@@ -1,56 +1,127 @@
-import { LocalUserManagement } from "./user-managers/local-user-management";
-import { AuthUser, UserManagement } from "./user-management";
 import { NextResponse } from "next/server";
 
-// Lazy singleton instance of UserManagement
-let _userManagement: UserManagement | null = null;
-async function getUserManagement(): Promise<UserManagement> {
-  if (_userManagement) return _userManagement;
-  _userManagement = new LocalUserManagement();
-  return _userManagement;
+// ---------------------------------------------------------------------------
+// Detect mode: use WorkOS when credentials are present and not in local mode
+// ---------------------------------------------------------------------------
+const isLocalDev = !process.env.WORKOS_CLIENT_ID;
+
+// ---------------------------------------------------------------------------
+// Local-only imports (lazy)
+// ---------------------------------------------------------------------------
+let _localUserManagement: import("./user-management").UserManagement | null =
+  null;
+
+async function getLocalUserManagement() {
+  if (_localUserManagement) return _localUserManagement;
+  const { LocalUserManagement } =
+    await import("./user-managers/local-user-management");
+  _localUserManagement = new LocalUserManagement();
+  return _localUserManagement;
 }
 
+// ---------------------------------------------------------------------------
 // Re-export AuthUser for convenience
-export type { AuthUser };
+// ---------------------------------------------------------------------------
+export type { AuthUser } from "./user-management";
 
-interface WithAuthResult {
-  user: AuthUser | null;
+// ---------------------------------------------------------------------------
+// withAuth – returns the current user session
+// ---------------------------------------------------------------------------
+
+interface LocalWithAuthResult {
+  user: import("./user-management").AuthUser | null;
 }
 
-// ---------------------------------------------------------------------------
-// Public API – local implementation
-// ---------------------------------------------------------------------------
+export async function withAuth(): Promise<LocalWithAuthResult> {
+  if (!isLocalDev) {
+    const workos = await import("@workos-inc/authkit-nextjs");
+    return workos.withAuth();
+  }
 
-export async function withAuth(): Promise<WithAuthResult> {
-  const userManagement = await getUserManagement();
+  const userManagement = await getLocalUserManagement();
   return { user: await userManagement.getUser("local-dev") };
 }
 
-export async function getSignInUrl(): Promise<string> {
+// ---------------------------------------------------------------------------
+// getInitialAuth – for passing server-side auth data to AuthKitProvider
+// ---------------------------------------------------------------------------
+
+export async function getInitialAuth() {
+  if (!isLocalDev) {
+    try {
+      const workos = await import("@workos-inc/authkit-nextjs");
+      const auth = await workos.withAuth();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { accessToken, ...initialAuth } = auth;
+      return initialAuth;
+    } catch {
+      // withAuth may fail if middleware hasn't processed the request yet
+      return undefined;
+    }
+  }
+
+  // In local mode, return undefined – AuthKitProvider won't render
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// getSignInUrl / getSignUpUrl
+// ---------------------------------------------------------------------------
+
+export async function getSignInUrl(opts?: { state?: string }): Promise<string> {
+  if (!isLocalDev) {
+    const workos = await import("@workos-inc/authkit-nextjs");
+    return workos.getSignInUrl(opts);
+  }
   return "/"; // just redirect home
 }
 
 export async function getSignUpUrl(): Promise<string> {
+  if (!isLocalDev) {
+    const workos = await import("@workos-inc/authkit-nextjs");
+    return workos.getSignUpUrl();
+  }
   return "/"; // just redirect home
 }
 
-/**
- * getWorkOS returns an object containing the userManagement instance.
- * (Kept for compatibility with existing code)
- */
-export async function getWorkOS(): Promise<{ userManagement: UserManagement }> {
+// ---------------------------------------------------------------------------
+// getWorkOS
+// ---------------------------------------------------------------------------
+
+export async function getWorkOS() {
+  if (!isLocalDev) {
+    const workos = await import("@workos-inc/authkit-nextjs");
+    return workos.getWorkOS();
+  }
+
   return {
-    userManagement: await getUserManagement(),
+    userManagement: await getLocalUserManagement(),
   };
 }
 
+// ---------------------------------------------------------------------------
+// signOut
+// ---------------------------------------------------------------------------
+
 export async function signOut(): Promise<void> {
+  if (!isLocalDev) {
+    const workos = await import("@workos-inc/authkit-nextjs");
+    return workos.signOut();
+  }
   // In local mode, sign-out is a no-op.
-  return;
 }
+
+// ---------------------------------------------------------------------------
+// handleAuth
+// ---------------------------------------------------------------------------
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function handleAuth(opts?: any): Promise<any> {
+  if (!isLocalDev) {
+    const workos = await import("@workos-inc/authkit-nextjs");
+    return workos.handleAuth(opts);
+  }
+
   // Return a handler that just redirects to the return path
   return () => {
     const returnPathname = opts?.returnPathname || "/";
