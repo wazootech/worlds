@@ -3,7 +3,7 @@ import { ulid } from "@std/ulid/ulid";
 import { initializeDatabase } from "#/lib/database/init.ts";
 import { MemoryDatabaseManager } from "#/lib/database/managers/memory.ts";
 import type { Embeddings } from "#/lib/embeddings/embeddings.ts";
-import { ServiceAccountsService } from "#/lib/database/tables/service-accounts/service.ts";
+
 import type { ServerContext } from "#/context.ts";
 
 /**
@@ -49,30 +49,4 @@ export function createTestOrganization(
   const id = ulid();
   // Return the admin API key for authentication, as org keys are no longer valid
   return Promise.resolve({ id, apiKey: context.admin!.apiKey });
-}
-
-/**
- * createTestServiceAccount creates a test service account for a specific
- * organization and returns its ID and API key.
- */
-export async function createTestServiceAccount(
-  context: ServerContext,
-  organizationId: string,
-): Promise<{ id: string; apiKey: string }> {
-  const serviceAccountsService = new ServiceAccountsService(
-    context.libsql.database,
-  );
-  const accountId = ulid();
-  const apiKey = ulid();
-  const now = Date.now();
-  await serviceAccountsService.add({
-    id: accountId,
-    organization_id: organizationId,
-    label: "Test Service Account",
-    description: null,
-    api_key: apiKey,
-    created_at: now,
-    updated_at: now,
-  });
-  return { id: accountId, apiKey };
 }

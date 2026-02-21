@@ -1,25 +1,20 @@
 import type { ServerContext } from "#/context.ts";
-import { ServiceAccountsService } from "#/lib/database/tables/service-accounts/service.ts";
 
 /**
  * AuthorizedRequest is the result of a successful authentication.
  */
 export interface AuthorizedRequest {
   admin: boolean;
-  /** Set when the request is authenticated as a service account (Bearer token matched a service account). Undefined for admin or unauthenticated. */
-  serviceAccountId?: string;
-  /** Set when the request is authenticated as a service account. The organization ID the account belongs to. */
-  organizationId?: string;
 }
 
 /**
  * authorizeRequest authorizes a request using Bearer token.
- * Accepts either the admin API key or a service account API key.
+ * Accepts only the admin API key.
  */
-export async function authorizeRequest(
+export function authorizeRequest(
   appContext: ServerContext,
   request: Request,
-): Promise<AuthorizedRequest> {
+): AuthorizedRequest {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return { admin: false };
@@ -29,18 +24,6 @@ export async function authorizeRequest(
 
   if (apiKey === appContext.admin?.apiKey) {
     return { admin: true };
-  }
-
-  const serviceAccountsService = new ServiceAccountsService(
-    appContext.libsql.database,
-  );
-  const serviceAccount = await serviceAccountsService.getByApiKey(apiKey);
-  if (serviceAccount != null) {
-    return {
-      admin: false,
-      serviceAccountId: serviceAccount.id,
-      organizationId: serviceAccount.organization_id,
-    };
   }
 
   return { admin: false };

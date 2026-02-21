@@ -1,5 +1,5 @@
 export * from "./clients/worlds/mod.ts";
-export * from "./clients/service-accounts/mod.ts";
+
 export * from "./options.ts";
 export * from "./schema.ts";
 export * from "./utils.ts";

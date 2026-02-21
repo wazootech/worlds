@@ -1,6 +1,6 @@
 import { Router } from "@fartlabs/rt";
 import { ulid } from "@std/ulid/ulid";
-import { authorizeRequest } from "#/middleware/auth.ts";
+import { type AuthorizedRequest, authorizeRequest } from "#/middleware/auth.ts";
 
 import type { ServerContext } from "#/context.ts";
 import {
@@ -34,56 +34,57 @@ const DEFAULT_SERIALIZATION = SERIALIZATIONS["n-quads"];
 export default (appContext: ServerContext) => {
   const worldsService = new WorldsService(appContext.libsql.database);
 
+  /**
+   * resolveWorld resolves a world by ID or slug and checks authorization.
+   * Returns the world row if successful, or a Response if an error occurs.
+   */
+  async function resolveWorld(
+    worldIdOrSlug: string,
+    authorized: AuthorizedRequest,
+  ): Promise<WorldRow | Response> {
+    // Resolve world by ID first
+    let world = await worldsService.getById(worldIdOrSlug);
+
+    if (!world) {
+      // If not found by ID, try finding by slug
+      // We pass null for organizationId because slugs are now globally unique
+      world = await worldsService.getBySlug(worldIdOrSlug);
+    }
+
+    if (!world || world.deleted_at != null) {
+      return ErrorResponse.NotFound("World not found");
+    }
+
+    // Authorization check
+    if (!authorized.admin) {
+      // Return 404 to hide existence
+      return ErrorResponse.NotFound("World not found");
+    }
+
+    return world;
+  }
+
   return new Router()
     .get(
       "/v1/worlds/:world",
       async (ctx) => {
-        const worldId = ctx.params?.pathname.groups.world;
-        if (!worldId) {
+        const worldParam = ctx.params?.pathname.groups.world;
+        if (!worldParam) {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.admin && !authorized.organizationId) {
-          console.warn("[DEBUG] Unauthorized in worlds/route.ts:", authorized);
+        const authorized = authorizeRequest(appContext, ctx.request);
+        if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
 
-        // Resolve world by ID or slug
-        let world = await worldsService.getById(worldId);
-
-        const url = new URL(ctx.request.url);
-        const organizationId = url.searchParams.get("organizationId") ??
-          authorized.organizationId;
-
-        if (!world && organizationId) {
-          world = await worldsService.getBySlug(
-            organizationId,
-            worldId,
-          );
-        }
-
-        if (!world || world.deleted_at != null) {
-          return ErrorResponse.NotFound("World not found");
-        }
-
-        if (
-          !authorized.admin &&
-          authorized.organizationId !== world.organization_id
-        ) {
-          return ErrorResponse.Forbidden();
-        }
-
-        // Validate SQL result before returning
-        // Check if deleted_at is null (service handles this but double checking)
-        if (world.deleted_at != null) {
-          return ErrorResponse.NotFound("World not found");
-        }
+        const world = await resolveWorld(worldParam, authorized);
+        if (world instanceof Response) return world;
 
         // Map to SDK record and validate against SDK schema
         const record = worldSchema.parse({
           id: world.id,
-          organizationId: world.organization_id,
+          organizationId: null,
           slug: world.slug,
           label: world.label,
           description: world.description,
@@ -98,280 +99,283 @@ export default (appContext: ServerContext) => {
     .get(
       "/v1/worlds/:world/export",
       async (ctx) => {
-        const worldId = ctx.params?.pathname.groups.world;
-        if (!worldId) {
+        const worldParam = ctx.params?.pathname.groups.world;
+        if (!worldParam) {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.admin && !authorized.organizationId) {
-          console.warn("[DEBUG] Unauthorized in worlds/route.ts:", authorized);
+        const authorized = authorizeRequest(appContext, ctx.request);
+        if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
 
-        // Resolve world by ID only
-        const rawWorld = await worldsService.getById(worldId);
+        const world = await resolveWorld(worldParam, authorized);
+        if (world instanceof Response) return world;
 
-        if (!rawWorld || rawWorld.deleted_at != null) {
-          return ErrorResponse.NotFound("World not found");
+        const url = new URL(ctx.request.url);
+        const formatParam = url.searchParams.get("format")?.toLowerCase();
+        const serialization = (formatParam && SERIALIZATIONS[formatParam]) ||
+          DEFAULT_SERIALIZATION;
+
+        if (formatParam && !SERIALIZATIONS[formatParam]) {
+          return ErrorResponse.BadRequest(
+            `Unsupported format: ${formatParam}. Supported: ${
+              Object.keys(SERIALIZATIONS).join(", ")
+            }`,
+          );
         }
 
-        if (
-          !authorized.admin &&
-          authorized.organizationId !== rawWorld.organization_id
-        ) {
-          return ErrorResponse.Forbidden();
-        }
-
-        const actualId = rawWorld.id;
-
-        const managed = await appContext.libsql.manager.get(actualId);
-        const logsService = new LogsService(managed.database);
-        await logsService.add({
-          id: ulid(),
-          world_id: actualId,
-          timestamp: Date.now(),
-          level: "info",
-          message: "World exported",
-          metadata: null,
-        });
-
+        const managed = await appContext.libsql.manager.get(world.id);
         const blobsService = new BlobsService(managed.database);
         const worldData = await blobsService.get();
 
-        const _world = rawWorld; // Just to ensure it's not null, which we checked above
-
-        const url = new URL(ctx.request.url);
-        const formatParam = url.searchParams.get("format");
-        const acceptHeader = ctx.request.headers.get("Accept");
-
-        let serialization = DEFAULT_SERIALIZATION;
-        if (formatParam && SERIALIZATIONS[formatParam]) {
-          serialization = SERIALIZATIONS[formatParam];
-        } else if (acceptHeader) {
-          const match = Object.values(SERIALIZATIONS).find((s) =>
-            acceptHeader.includes(s.contentType)
-          );
-          if (match) {
-            serialization = match;
-          }
-        }
-
-        // worldData.blob is used to get the world record
-        if (!worldData || !worldData.blob) {
-          return ErrorResponse.NotFound("World data not found");
+        if (!worldData) {
+          return new Response("", {
+            headers: { "Content-Type": serialization.contentType },
+          });
         }
 
         const blobData = worldData.blob as unknown as ArrayBuffer;
-        const worldString = new TextDecoder().decode(new Uint8Array(blobData));
-
-        // If requested format is already N-Quads (our internal storage format), return as is
-        if (serialization.format === "N-Quads") {
-          return new Response(worldString, {
+        if (serialization.format === DEFAULT_SERIALIZATION.format) {
+          return new Response(blobData, {
             headers: { "Content-Type": serialization.contentType },
           });
         }
 
-        // Otherwise, re-serialize using n3
-        try {
-          const parser = new Parser({ format: "N-Quads" });
-          const quads = parser.parse(worldString);
-          const store = new Store();
-          store.addQuads(quads);
+        const quads = new TextDecoder().decode(blobData);
+        const parser = new Parser({ format: "N-Quads" });
+        const store = new Store();
+        store.addQuads(parser.parse(quads));
 
-          const writer = new Writer({ format: serialization.format });
-          writer.addQuads(store.getQuads(null, null, null, null));
-          const result = await new Promise<string>((resolve, reject) => {
-            writer.end((error: Error | null, result: string | undefined) => {
-              if (error) {
-                reject(error);
-              } else {
-                resolve(result as string);
-              }
-            });
-          });
+        const writer = new Writer({ format: serialization.format });
+        writer.addQuads(store.getQuads(null, null, null, null));
 
-          return new Response(result, {
-            headers: { "Content-Type": serialization.contentType },
+        return new Promise((resolve, reject) => {
+          writer.end((error, result) => {
+            if (error) reject(error);
+            else {
+              resolve(
+                new Response(result, {
+                  headers: { "Content-Type": serialization.contentType },
+                }),
+              );
+            }
           });
-        } catch (error) {
-          console.error("Serialization error:", error);
-          return ErrorResponse.InternalServerError(
-            "Failed to serialize world data",
-          );
-        }
+        });
       },
     )
     .post(
       "/v1/worlds/:world/import",
       async (ctx) => {
-        const worldId = ctx.params?.pathname.groups.world;
-        if (!worldId) {
+        const worldParam = ctx.params?.pathname.groups.world;
+        if (!worldParam) {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.admin && !authorized.organizationId) {
-          console.warn("[DEBUG] Unauthorized in worlds/route.ts:", authorized);
+        const authorized = authorizeRequest(appContext, ctx.request);
+        if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
 
-        // Resolve world by ID only
-        const rawWorld = await worldsService.getById(worldId);
+        const world = await resolveWorld(worldParam, authorized);
+        if (world instanceof Response) return world;
 
-        if (!rawWorld || rawWorld.deleted_at != null) {
-          return ErrorResponse.NotFound("World not found");
-        }
-
-        if (
-          !authorized.admin &&
-          authorized.organizationId !== rawWorld.organization_id
-        ) {
-          return ErrorResponse.Forbidden();
-        }
-
-        const actualId = rawWorld.id;
-
-        const contentType = ctx.request.headers.get("content-type") ||
-          "application/n-quads";
+        const contentType = ctx.request.headers.get("Content-Type") || "";
         let format = "N-Quads";
-        if (contentType.includes("text/turtle")) {
-          format = "Turtle";
-        } else if (contentType.includes("application/n-triples")) {
-          format = "N-Triples";
-        } else if (contentType.includes("text/n3")) {
-          format = "N3";
+        for (const s of Object.values(SERIALIZATIONS)) {
+          if (contentType.includes(s.contentType)) {
+            format = s.format;
+            break;
+          }
         }
 
-        const bodyText = await ctx.request.text();
+        const body = await ctx.request.text();
         const parser = new Parser({ format });
-        const quads = parser.parse(bodyText);
-
-        const managed = await appContext.libsql.manager.get(actualId);
-        const blobsService = new BlobsService(managed.database);
-        const worldData = await blobsService.get();
-
         const store = new Store();
-        if (worldData && worldData.blob) {
-          const blobData = worldData.blob as unknown as ArrayBuffer;
-          const worldString = new TextDecoder().decode(
-            new Uint8Array(blobData),
+        try {
+          store.addQuads(parser.parse(body));
+        } catch (error) {
+          return ErrorResponse.BadRequest(
+            `Invalid RDF data: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
           );
-          const existingQuads = new Parser({ format: "N-Quads" }).parse(
-            worldString,
-          );
-          store.addQuads(existingQuads);
         }
-
-        store.addQuads(quads);
 
         const writer = new Writer({ format: "N-Quads" });
         writer.addQuads(store.getQuads(null, null, null, null));
-        const newWorldString = await new Promise<string>((resolve, reject) => {
-          writer.end((error: Error | null, result: string | undefined) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(result as string);
+
+        return new Promise((resolve, reject) => {
+          writer.end(async (error, result) => {
+            if (error) reject(error);
+            else {
+              try {
+                const managed = await appContext.libsql.manager.get(world.id);
+                const blobsService = new BlobsService(managed.database);
+                const now = Date.now();
+
+                // Generate and commit patches for the search index
+                await handlePatch(
+                  managed.database,
+                  appContext.embeddings,
+                  [{
+                    insertions: store.getQuads(null, null, null, null),
+                    deletions: [],
+                  }],
+                );
+
+                await blobsService.set(new TextEncoder().encode(result), now);
+                await worldsService.update(world.id, { updated_at: now });
+
+                const logsService = new LogsService(managed.database);
+                await logsService.add({
+                  id: ulid(),
+                  world_id: world.id,
+                  timestamp: now,
+                  level: "info",
+                  message: "World data imported",
+                  metadata: { triples: store.size },
+                });
+
+                resolve(new Response(null, { status: 204 }));
+              } catch (e) {
+                reject(e);
+              }
             }
           });
         });
+      },
+    )
+    .get(
+      "/v1/worlds",
+      async (ctx) => {
+        const authorized = authorizeRequest(appContext, ctx.request);
+        if (!authorized.admin) {
+          return ErrorResponse.Unauthorized();
+        }
 
-        const now = Date.now();
-        await blobsService.set(
-          new TextEncoder().encode(newWorldString),
-          now,
-        );
-
-        // Index new triples for semantic search
-        await handlePatch(managed.database, appContext.embeddings, [
-          { insertions: quads, deletions: [] },
-        ]);
-
-        const logsService = new LogsService(managed.database);
-        await logsService.add({
-          id: ulid(),
-          world_id: worldId,
-          timestamp: Date.now(),
-          level: "info",
-          message: "World data imported",
-          metadata: {
-            format,
-            tripleCount: quads.length,
-          },
+        const url = new URL(ctx.request.url);
+        const pageString = url.searchParams.get("page") ?? "1";
+        const pageSizeString = url.searchParams.get("pageSize") ?? "20";
+        const paginationResult = paginationParamsSchema.safeParse({
+          page: parseInt(pageString),
+          pageSize: parseInt(pageSizeString),
         });
 
-        return new Response(null, { status: 204 });
+        if (!paginationResult.success) {
+          return ErrorResponse.BadRequest("Invalid pagination parameters");
+        }
+
+        const { page, pageSize } = paginationResult.data;
+        const offset = (page - 1) * pageSize;
+
+        const rows = await worldsService.listAll(pageSize, offset);
+
+        return Response.json(
+          rows.map((world: WorldRow) => ({
+            id: world.id,
+            organizationId: null,
+            slug: world.slug,
+            label: world.label,
+            description: world.description,
+            createdAt: world.created_at,
+            updatedAt: world.updated_at,
+            deletedAt: world.deleted_at,
+          })),
+        );
+      },
+    )
+    .post(
+      "/v1/worlds",
+      async (ctx) => {
+        const authorized = authorizeRequest(appContext, ctx.request);
+        if (!authorized.admin) {
+          return ErrorResponse.Forbidden("Only admins can create worlds");
+        }
+
+        const body = await ctx.request.json();
+        const parseResult = createWorldParamsSchema.safeParse(body);
+        if (!parseResult.success) {
+          return ErrorResponse.BadRequest("Invalid parameters");
+        }
+
+        const data = parseResult.data;
+        const id = (body as { id?: string }).id ?? ulid();
+        const { slug, label, description } = data;
+
+        // Check if slug already exists globally
+        const existingBySlug = await worldsService.getBySlug(slug);
+        if (existingBySlug) {
+          return ErrorResponse.Conflict("World slug already exists");
+        }
+
+        const now = Date.now();
+        const world: WorldTable = {
+          id,
+          slug,
+          label,
+          description: description ?? null,
+          db_hostname: null,
+          db_token: null,
+          created_at: now,
+          updated_at: now,
+          deleted_at: null,
+        };
+
+        await worldsService.insert(world);
+        await appContext.libsql.manager.create(id);
+
+        return Response.json(
+          worldSchema.parse({
+            id: world.id,
+            organizationId: null,
+            slug: world.slug,
+            label: world.label,
+            description: world.description,
+            createdAt: world.created_at,
+            updatedAt: world.updated_at,
+            deletedAt: world.deleted_at,
+          }),
+          { status: 201 },
+        );
       },
     )
     .put(
       "/v1/worlds/:world",
       async (ctx) => {
-        const worldId = ctx.params?.pathname.groups.world;
-        if (!worldId) {
+        const worldParam = ctx.params?.pathname.groups.world;
+        if (!worldParam) {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.admin && !authorized.organizationId) {
-          console.warn("[DEBUG] Unauthorized in worlds/route.ts:", authorized);
+        const authorized = authorizeRequest(appContext, ctx.request);
+        if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
 
-        // Resolve world by ID only
-        const rawWorld = await worldsService.getById(worldId);
+        const world = await resolveWorld(worldParam, authorized);
+        if (world instanceof Response) return world;
 
-        if (!rawWorld || rawWorld.deleted_at != null) {
-          return ErrorResponse.NotFound("World not found");
-        }
-
-        if (
-          !authorized.admin &&
-          authorized.organizationId !== rawWorld.organization_id
-        ) {
-          return ErrorResponse.Forbidden();
-        }
-
-        const actualId = rawWorld.id;
-
-        let body;
+        let body: unknown;
         try {
           body = await ctx.request.json();
         } catch {
           return ErrorResponse.BadRequest("Invalid JSON");
         }
 
-        const parseResult = updateWorldParamsSchema.safeParse(body);
-        if (!parseResult.success) {
-          return ErrorResponse.BadRequest(
-            "Invalid parameters: " +
-              parseResult.error.issues.map((e: { message: string }) =>
-                e.message
-              ).join(", "),
-          );
+        const updateResult = updateWorldParamsSchema.safeParse(body);
+        if (!updateResult.success) {
+          return ErrorResponse.BadRequest("Invalid parameters");
         }
-        const data = parseResult.data;
 
-        const updatedAt = Date.now();
-        await worldsService.update(actualId, {
-          slug: data.slug,
-          label: data.label,
-          description: data.description,
-          updated_at: updatedAt,
-        });
-
-        const managed = await appContext.libsql.manager.get(actualId);
-        const logsService = new LogsService(managed.database);
-        await logsService.add({
-          id: ulid(),
-          world_id: actualId,
-          timestamp: Date.now(),
-          level: "info",
-          message: "World updated",
-          metadata: {
-            label: data.label,
-            description: data.description,
-          },
+        const data = updateResult.data;
+        await worldsService.update(world.id, {
+          slug: data.slug ?? world.slug,
+          label: data.label ?? world.label,
+          description: data.description !== undefined
+            ? data.description
+            : world.description,
+          updated_at: Date.now(),
         });
 
         return new Response(null, { status: 204 });
@@ -380,261 +384,25 @@ export default (appContext: ServerContext) => {
     .delete(
       "/v1/worlds/:world",
       async (ctx) => {
-        const worldId = ctx.params?.pathname.groups.world;
-        if (!worldId) {
+        const worldParam = ctx.params?.pathname.groups.world;
+        if (!worldParam) {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.admin && !authorized.organizationId) {
-          console.warn("[DEBUG] Unauthorized in worlds/route.ts:", authorized);
+        const authorized = authorizeRequest(appContext, ctx.request);
+        if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
 
-        // Resolve world by ID only
-        const rawWorld = await worldsService.getById(worldId);
+        const world = await resolveWorld(worldParam, authorized);
+        if (world instanceof Response) return world;
 
-        if (!rawWorld || rawWorld.deleted_at != null) {
-          return ErrorResponse.NotFound("World not found");
-        }
-
-        if (
-          !authorized.admin &&
-          authorized.organizationId !== rawWorld.organization_id
-        ) {
-          return ErrorResponse.Forbidden();
-        }
-
-        const actualId = rawWorld.id;
-
-        try {
-          const managed = await appContext.libsql.manager.get(actualId);
-          const logsService = new LogsService(managed.database);
-          await logsService.add({
-            id: ulid(),
-            world_id: actualId,
-            timestamp: Date.now(),
-            level: "info",
-            message: "World deleted",
-            metadata: null,
-          });
-        } catch (error) {
-          console.error("Failed to log world deletion:", error);
-        }
-
-        if (appContext.libsql.manager) {
-          try {
-            // Database ID is the same as World ID
-            await appContext.libsql.manager.delete(actualId);
-          } catch (error) {
-            console.error("Failed to delete Turso database:", error);
-          }
-        }
-
-        try {
-          // Delete world
-          await worldsService.delete(actualId);
-
-          return new Response(null, { status: 204 });
-        } catch (error) {
-          console.error("Failed to delete world metadata:", error);
-          return ErrorResponse.InternalServerError();
-        }
-      },
-    )
-    .get(
-      "/v1/worlds",
-      async (ctx) => {
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.admin && !authorized.organizationId) {
-          console.warn("[DEBUG] Unauthorized in worlds/route.ts:", authorized);
-          return ErrorResponse.Unauthorized();
-        }
-
-        const url = new URL(ctx.request.url);
-        // Admin must specify organizationId, service account uses its own
-        let organizationId = url.searchParams.get("organizationId");
-        if (!authorized.admin && authorized.organizationId) {
-          organizationId = authorized.organizationId;
-        }
-
-        const pageString = url.searchParams.get("page") ?? "1";
-        const pageSizeString = url.searchParams.get("pageSize") ?? "20";
-
-        // Validate pagination parameters
-        const paginationResult = paginationParamsSchema.safeParse({
-          page: parseInt(pageString),
-          pageSize: parseInt(pageSizeString),
+        // Perform soft delete
+        await worldsService.update(world.id, {
+          deleted_at: Date.now(),
         });
 
-        if (!paginationResult.success) {
-          return ErrorResponse.BadRequest(
-            "Invalid pagination parameters: " +
-              paginationResult.error.issues.map((e: { message: string }) =>
-                e.message
-              ).join(", "),
-          );
-        }
-
-        const { page, pageSize } = paginationResult.data;
-        const offset = (page - 1) * pageSize;
-
-        const rows = organizationId
-          ? await worldsService.getByOrganizationId(
-            organizationId,
-            pageSize,
-            offset,
-          )
-          : await worldsService.listAll(pageSize, offset);
-
-        // Validate each SQL result row
-        const validatedRows = rows.map((row: WorldRow) => {
-          const validated = row;
-
-          return worldSchema.parse({
-            id: validated.id,
-            organizationId: validated.organization_id,
-            slug: validated.slug,
-            label: validated.label,
-            description: validated.description,
-            createdAt: validated.created_at,
-            updatedAt: validated.updated_at,
-            deletedAt: validated.deleted_at,
-          });
-        });
-
-        return Response.json(validatedRows);
-      },
-    )
-    .post(
-      "/v1/worlds",
-      async (ctx) => {
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.admin && !authorized.organizationId) {
-          console.warn("[DEBUG] Unauthorized in worlds/route.ts:", authorized);
-          return ErrorResponse.Unauthorized();
-        }
-
-        let body;
-        try {
-          body = await ctx.request.json();
-        } catch {
-          return ErrorResponse.BadRequest("Invalid JSON");
-        }
-
-        const result = createWorldParamsSchema.safeParse(body);
-        if (!result.success) {
-          console.warn(
-            "[DEBUG] Validation error in POST /v1/worlds:",
-            result.error.format(),
-          );
-          return ErrorResponse.BadRequest(
-            "Invalid request body: " + result.error.message,
-          );
-        }
-        const data = result.data;
-        const organizationId = data.organizationId ??
-          authorized.organizationId ?? null;
-
-        if (
-          !authorized.admin && organizationId !== authorized.organizationId
-        ) {
-          return ErrorResponse.Forbidden(
-            "Cannot create world for another organization",
-          );
-        }
-
-        if (!authorized.admin && !organizationId) {
-          return ErrorResponse.BadRequest("Organization ID required");
-        }
-
-        const now = Date.now();
-        const worldId = ulid();
-        const slug = data.slug;
-
-        // Validate slug
-        if (!/^[a-z0-9-]+$/.test(slug)) {
-          return ErrorResponse.BadRequest(
-            "Invalid slug: lowercase, numbers, and hyphens only",
-          );
-        }
-
-        // Check if slug already exists in this organization
-        const existingBySlug = await worldsService.getBySlug(
-          organizationId,
-          slug,
-        );
-        if (existingBySlug) {
-          return ErrorResponse.BadRequest(
-            "World slug already exists in this organization",
-          );
-        }
-
-        let _dbId: string | null = null;
-        const dbHostname: string | null = null; // Stored as null, use LibsqlManager.get()
-        const dbToken: string | null = null; // Stored as null, use LibsqlManager.get()
-
-        if (appContext.libsql.manager) {
-          try {
-            const { database: client } = await appContext.libsql.manager
-              .create(worldId);
-            _dbId = worldId; // The ID passed to create is the database ID
-
-            const { initializeWorldDatabase } = await import(
-              "#/lib/database/init.ts"
-            );
-            await initializeWorldDatabase(
-              client,
-              appContext.embeddings.dimensions,
-            );
-          } catch (error) {
-            console.error("Failed to provision Turso database:", error);
-            return ErrorResponse.InternalServerError(
-              "Failed to provision world database",
-            );
-          }
-        }
-
-        const world: WorldTable = {
-          id: worldId,
-          organization_id: organizationId ?? null,
-          slug,
-          label: data.label,
-          description: data.description ?? null,
-          db_hostname: dbHostname,
-          db_token: dbToken,
-          created_at: now,
-          updated_at: now,
-          deleted_at: null,
-        };
-
-        await worldsService.insert(world);
-
-        const managed = await appContext.libsql.manager.get(worldId);
-        const logsService = new LogsService(managed.database);
-        await logsService.add({
-          id: ulid(),
-          world_id: worldId,
-          timestamp: Date.now(),
-          level: "info",
-          message: "World created",
-          metadata: {
-            label: world.label,
-          },
-        });
-
-        const record = worldSchema.parse({
-          id: world.id,
-          organizationId: world.organization_id,
-          slug: world.slug,
-          label: world.label,
-          description: world.description,
-          createdAt: world.created_at,
-          updatedAt: world.updated_at,
-          deletedAt: world.deleted_at,
-        });
-
-        return Response.json(record, { status: 201 });
+        return new Response(null, { status: 204 });
       },
     );
 };

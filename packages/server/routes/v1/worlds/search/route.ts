@@ -19,8 +19,8 @@ export default (appContext: ServerContext) => {
         return ErrorResponse.BadRequest("World ID required");
       }
 
-      const authorized = await authorizeRequest(appContext, ctx.request);
-      if (!authorized.admin && !authorized.organizationId) {
+      const authorized = authorizeRequest(appContext, ctx.request);
+      if (!authorized.admin) {
         return ErrorResponse.Unauthorized();
       }
 
@@ -30,9 +30,7 @@ export default (appContext: ServerContext) => {
         return ErrorResponse.NotFound("World not found");
       }
 
-      if (
-        !authorized.admin && authorized.organizationId !== world.organization_id
-      ) {
+      if (!authorized.admin) {
         return ErrorResponse.Forbidden();
       }
 

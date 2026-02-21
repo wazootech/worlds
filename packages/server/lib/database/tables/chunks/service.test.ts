@@ -14,7 +14,7 @@ Deno.test("ChunksService", async (t) => {
   const worldsService = new WorldsService(testContext.libsql.database);
   const chunksService = new ChunksService(testContext, worldsService);
 
-  const { id: organizationId } = await createTestOrganization(testContext, {
+  await createTestOrganization(testContext, {
     plan: "free",
   });
 
@@ -22,7 +22,6 @@ Deno.test("ChunksService", async (t) => {
   const now = Date.now();
   await worldsService.insert({
     id: worldId,
-    organization_id: organizationId,
     slug: "test-world",
     label: "Test World",
     description: "Test Description",

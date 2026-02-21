@@ -6,7 +6,6 @@ import { z } from "zod";
  */
 const worldTableShape = z.object({
   id: z.string(),
-  organization_id: z.string().nullable(),
   slug: z.string(),
   label: z.string(),
   description: z.string().nullable(),
@@ -24,7 +23,6 @@ export const worldTableSchema: z.ZodType<WorldTable> = worldTableShape;
  */
 export interface WorldTable {
   id: string;
-  organization_id: string | null;
   slug: string;
   label: string;
   description: string | null;
@@ -65,7 +63,6 @@ export const worldTableUpdateSchema: z.ZodType<
 > = worldTableShape
   .omit({
     id: true,
-    organization_id: true,
     created_at: true,
   })
   .partial();
@@ -74,5 +71,5 @@ export const worldTableUpdateSchema: z.ZodType<
  * WorldTableUpdate represents the data needed to update a world.
  */
 export type WorldTableUpdate = Partial<
-  Omit<WorldTable, "id" | "organization_id" | "created_at">
+  Omit<WorldTable, "id" | "created_at">
 >;

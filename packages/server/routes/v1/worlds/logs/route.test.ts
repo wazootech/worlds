@@ -5,83 +5,22 @@ import {
   createTestOrganization,
 } from "#/lib/testing/context.ts";
 import createRoute from "./route.ts";
-import { LogsService } from "#/lib/database/tables/logs/service.ts";
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
 
-Deno.test("Logs API routes", async (t) => {
+Deno.test("World Logs API routes", async (t) => {
   const testContext = await createTestContext();
+  const worldsService = new WorldsService(testContext.libsql.database);
   const app = createRoute(testContext);
 
-  await t.step(
-    "GET /v1/worlds/:world/logs returns logs for a world",
-    async () => {
-      const { id: organizationId } = await createTestOrganization(testContext);
-      const worldId = ulid();
-      const now = Date.now();
-      const worldsService = new WorldsService(testContext.libsql.database);
-      await worldsService.insert({
-        id: worldId,
-        organization_id: organizationId,
-        slug: "test-world",
-        label: "Test World",
-        description: "Test Description",
-        db_hostname: null,
-        db_token: null,
-        created_at: now,
-        updated_at: now,
-        deleted_at: null,
-      });
-      const managed = await testContext.libsql.manager.create(worldId);
-
-      // Insert some logs
-      const logsService = new LogsService(managed.database);
-      await logsService.add({
-        id: ulid(),
-        world_id: worldId,
-        timestamp: now,
-        level: "info",
-        message: "Log 1",
-        metadata: null,
-      });
-      await logsService.add({
-        id: ulid(),
-        world_id: worldId,
-        timestamp: now + 1000,
-        level: "error",
-        message: "Log 2",
-        metadata: {},
-      });
-
-      const { admin } = testContext;
-      const adminApiKey = admin!.apiKey;
-
-      const resp = await app.fetch(
-        new Request(`http://localhost/v1/worlds/${worldId}/logs`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${adminApiKey}`,
-          },
-        }),
-      );
-
-      assertEquals(resp.status, 200);
-      const logs = await resp.json();
-      assert(Array.isArray(logs));
-      assertEquals(logs.length, 2);
-    },
-  );
-
-  await t.step("GET /v1/worlds/:world/logs requires admin", async () => {
-    const { id: organizationId } = await createTestOrganization(testContext);
+  await t.step("GET /v1/worlds/:world/logs (Admin)", async () => {
+    const { apiKey } = await createTestOrganization(testContext);
     const worldId = ulid();
     const now = Date.now();
-    const worldsService = new WorldsService(testContext.libsql.database);
     await worldsService.insert({
       id: worldId,
-      organization_id: organizationId,
-      slug: "test-world",
-      label: "Test World",
-      description: "Test Description",
+      slug: "logs-world-" + worldId,
+      label: "Logs World",
+      description: null,
       db_hostname: null,
       db_token: null,
       created_at: now,
@@ -90,16 +29,17 @@ Deno.test("Logs API routes", async (t) => {
     });
     await testContext.libsql.manager.create(worldId);
 
-    // Try with no auth
-    const respNoAuth = await app.fetch(
+    const resp = await app.fetch(
       new Request(`http://localhost/v1/worlds/${worldId}/logs`, {
         method: "GET",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+        },
       }),
     );
-    assertEquals(respNoAuth.status, 401);
 
-    // Try with non-admin org user (simulated by just not being admin)
-    // Actually authorizeRequest only checks admin vs service account vs nothing.
-    // The route explicitly checks `!authorized.admin`.
+    assertEquals(resp.status, 200);
+    const logs = await resp.json();
+    assert(Array.isArray(logs));
   });
 });

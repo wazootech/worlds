@@ -1,7 +1,6 @@
 -- worldsTable initializes the worlds table.
 CREATE TABLE IF NOT EXISTS worlds (
   id TEXT PRIMARY KEY NOT NULL,
-  organization_id TEXT,
   slug TEXT NOT NULL,
   label TEXT NOT NULL,
   description TEXT,
@@ -10,17 +9,13 @@ CREATE TABLE IF NOT EXISTS worlds (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
-  UNIQUE(organization_id, slug)
+  UNIQUE(slug)
 );
 
--- worldsOrganizationIdIndex is an index on organization_id for secondary lookups.
-CREATE INDEX IF NOT EXISTS idx_worlds_organization_id ON worlds(organization_id);
-
 -- selectWorldById is a query that finds a world by ID
--- (used in GET /v1/worlds/:world and SPARQL routes).
+-- (used in GET /v1/worlds/:world).
 SELECT
   id,
-  organization_id,
   slug,
   label,
   description,
@@ -35,10 +30,9 @@ WHERE
   id = ?
   AND deleted_at IS NULL;
 
--- selectWorldBySlug is a query that finds a world by organization ID and slug.
+-- selectWorldBySlug is a query that finds a world by slug.
 SELECT
   id,
-  organization_id,
   slug,
   label,
   description,
@@ -50,37 +44,12 @@ SELECT
 FROM
   worlds
 WHERE
-  organization_id = ?
-  AND slug = ?
+  slug = ?
   AND deleted_at IS NULL;
-
--- selectWorldsByOrganizationId is a query that finds worlds by organization ID with
--- pagination (used in GET /v1/worlds).
-SELECT
-  id,
-  organization_id,
-  slug,
-  label,
-  description,
-  db_hostname,
-  db_token,
-  created_at,
-  updated_at,
-  deleted_at
-FROM
-  worlds
-WHERE
-  organization_id = ?
-  AND deleted_at IS NULL
-ORDER BY
-  created_at DESC
-LIMIT
-  ? OFFSET ?;
 
 -- selectAllWorlds is a query that finds worlds without organization filtering.
 SELECT
   id,
-  organization_id,
   slug,
   label,
   description,
@@ -102,7 +71,6 @@ LIMIT
 INSERT INTO
   worlds (
     id,
-    organization_id,
     slug,
     label,
     description,
@@ -113,7 +81,7 @@ INSERT INTO
     deleted_at
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+  (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- updateWorld is a query that updates world fields
 -- (used in PUT /v1/worlds/:world).

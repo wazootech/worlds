@@ -4,45 +4,32 @@
  * worldsTable initializes the worlds table.
  */
 export const worldsTable =
-  "CREATE TABLE IF NOT EXISTS worlds (\r\n  id TEXT PRIMARY KEY NOT NULL,\r\n  organization_id TEXT,\r\n  slug TEXT NOT NULL,\r\n  label TEXT NOT NULL,\r\n  description TEXT,\r\n  db_hostname TEXT,\r\n  db_token TEXT,\r\n  created_at INTEGER NOT NULL,\r\n  updated_at INTEGER NOT NULL,\r\n  deleted_at INTEGER,\r\n  UNIQUE(organization_id, slug)\r\n);";
-
-/**
- * worldsOrganizationIdIndex is an index on organization_id for secondary lookups.
- */
-export const worldsOrganizationIdIndex =
-  "CREATE INDEX IF NOT EXISTS idx_worlds_organization_id ON worlds(organization_id);";
+  "CREATE TABLE IF NOT EXISTS worlds (\r\n  id TEXT PRIMARY KEY NOT NULL,\r\n  slug TEXT NOT NULL,\r\n  label TEXT NOT NULL,\r\n  description TEXT,\r\n  db_hostname TEXT,\r\n  db_token TEXT,\r\n  created_at INTEGER NOT NULL,\r\n  updated_at INTEGER NOT NULL,\r\n  deleted_at INTEGER,\r\n  UNIQUE(slug)\r\n);";
 
 /**
  * selectWorldById is a query that finds a world by ID
  * (used in GET /v1/worlds/:world and SPARQL routes).
  */
 export const selectWorldById =
-  "SELECT\r\n  id,\r\n  organization_id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  id = ?\r\n  AND deleted_at IS NULL;";
+  "SELECT\r\n  id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  id = ?\r\n  AND deleted_at IS NULL;";
 
 /**
- * selectWorldBySlug is a query that finds a world by organization ID and slug.
+ * selectWorldBySlug is a query that finds a world by slug.
  */
 export const selectWorldBySlug =
-  "SELECT\r\n  id,\r\n  organization_id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  organization_id = ?\r\n  AND slug = ?\r\n  AND deleted_at IS NULL;";
-
-/**
- * selectWorldsByOrganizationId is a query that finds worlds by organization ID with
- * pagination (used in GET /v1/worlds).
- */
-export const selectWorldsByOrganizationId =
-  "SELECT\r\n  id,\r\n  organization_id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  organization_id = ?\r\n  AND deleted_at IS NULL\r\nORDER BY\r\n  created_at DESC\r\nLIMIT\r\n  ? OFFSET ?;";
+  "SELECT\r\n  id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  slug = ?\r\n  AND deleted_at IS NULL;";
 
 /**
  * selectAllWorlds is a query that finds worlds without organization filtering.
  */
 export const selectAllWorlds =
-  "SELECT\r\n  id,\r\n  organization_id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  deleted_at IS NULL\r\nORDER BY\r\n  created_at DESC\r\nLIMIT\r\n  ? OFFSET ?;";
+  "SELECT\r\n  id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  deleted_at IS NULL\r\nORDER BY\r\n  created_at DESC\r\nLIMIT\r\n  ? OFFSET ?;";
 
 /**
  * insertWorld is a query that inserts a new world (used in POST /v1/worlds).
  */
 export const insertWorld =
-  "INSERT INTO\r\n  worlds (\r\n    id,\r\n    organization_id,\r\n    slug,\r\n    label,\r\n    description,\r\n    db_hostname,\r\n    db_token,\r\n    created_at,\r\n    updated_at,\r\n    deleted_at\r\n  )\r\nVALUES\r\n  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+  "INSERT INTO\r\n  worlds (\r\n    id,\r\n    slug,\r\n    label,\r\n    description,\r\n    db_hostname,\r\n    db_token,\r\n    created_at,\r\n    updated_at,\r\n    deleted_at\r\n  )\r\nVALUES\r\n  (?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
 /**
  * updateWorld is a query that updates world fields

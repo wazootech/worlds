@@ -5,7 +5,6 @@ import {
   selectAllWorlds,
   selectWorldById,
   selectWorldBySlug,
-  selectWorldsByOrganizationId,
   updateWorld,
 } from "./queries.sql.ts";
 import type { WorldRow, WorldTableInsert, WorldTableUpdate } from "./schema.ts";
@@ -22,7 +21,6 @@ export class WorldsService {
     if (!row) return null;
     return {
       id: row.id as string,
-      organization_id: row.organization_id as string,
       slug: row.slug as string,
       label: row.label as string,
       description: row.description as string | null,
@@ -35,18 +33,16 @@ export class WorldsService {
   }
 
   async getBySlug(
-    organizationId: string | null,
     slug: string,
   ): Promise<WorldRow | null> {
     const result = await this.db.execute({
       sql: selectWorldBySlug,
-      args: [organizationId, slug],
+      args: [slug],
     });
     const row = result.rows[0] as Record<string, unknown> | undefined;
     if (!row) return null;
     return {
       id: row.id as string,
-      organization_id: row.organization_id as string,
       slug: row.slug as string,
       label: row.label as string,
       description: row.description as string | null,
@@ -56,29 +52,6 @@ export class WorldsService {
       updated_at: row.updated_at as number,
       deleted_at: row.deleted_at as number | null,
     };
-  }
-
-  async getByOrganizationId(
-    organizationId: string | null,
-    limit: number,
-    offset: number,
-  ): Promise<WorldRow[]> {
-    const result = await this.db.execute({
-      sql: selectWorldsByOrganizationId,
-      args: [organizationId, limit, offset],
-    });
-    return (result.rows as Record<string, unknown>[]).map((row) => ({
-      id: row.id as string,
-      organization_id: row.organization_id as string,
-      slug: row.slug as string,
-      label: row.label as string,
-      description: row.description as string | null,
-      db_hostname: row.db_hostname as string | null,
-      db_token: row.db_token as string | null,
-      created_at: row.created_at as number,
-      updated_at: row.updated_at as number,
-      deleted_at: row.deleted_at as number | null,
-    }));
   }
 
   async listAll(
@@ -91,7 +64,6 @@ export class WorldsService {
     });
     return (result.rows as Record<string, unknown>[]).map((row) => ({
       id: row.id as string,
-      organization_id: row.organization_id as string | null,
       slug: row.slug as string,
       label: row.label as string,
       description: row.description as string | null,
@@ -108,7 +80,6 @@ export class WorldsService {
       sql: insertWorld,
       args: [
         world.id,
-        world.organization_id,
         world.slug,
         world.label,
         world.description,

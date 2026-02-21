@@ -179,8 +179,6 @@ async function executeSparqlRequest(
   }
 
   // Execute query or update using centralized function
-  // Resolve organizationId for the search store (always use the world's owner)
-  // Also get the world to use its organizationId for plan policy checks
   const worldsService = new WorldsService(appContext.libsql.database);
   const world = await worldsService.getById(worldId);
 
@@ -188,26 +186,9 @@ async function executeSparqlRequest(
     return ErrorResponse.NotFound("World not found");
   }
 
-  if (
-    !authorized.admin &&
-    authorized.organizationId !== world.organization_id
-  ) {
+  if (!authorized.admin) {
     return ErrorResponse.Forbidden();
   }
-
-  const _searchOrganizationId = world?.organization_id as string | undefined;
-
-  /*
-  // Create world-specific client if available
-  let worldClient = appContext.libsqlClient;
-  if (world?.db_hostname && world?.db_token) {
-    const { createClient } = await import("@libsql/client");
-    worldClient = createClient({
-      url: `libsql://${world.db_hostname}`,
-      authToken: world.db_token,
-    });
-  }
-  */
 
   // Get the world-specific client using DatabaseManager
   // This ensures we are connected to the correct database for this world
@@ -341,8 +322,8 @@ export default (appContext: ServerContext) => {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.admin && !authorized.organizationId) {
+        const authorized = authorizeRequest(appContext, ctx.request);
+        if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
 
@@ -379,8 +360,8 @@ export default (appContext: ServerContext) => {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = await authorizeRequest(appContext, ctx.request);
-        if (!authorized.admin && !authorized.organizationId) {
+        const authorized = authorizeRequest(appContext, ctx.request);
+        if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
 

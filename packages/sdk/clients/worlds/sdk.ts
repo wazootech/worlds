@@ -29,16 +29,11 @@ export class Worlds {
     options?: {
       page?: number;
       pageSize?: number;
-      organizationId?: string;
     },
   ): Promise<World[]> {
     const page = options?.page ?? 1;
     const pageSize = options?.pageSize ?? 20;
     const url = new URL(`${this.options.baseUrl}/v1/worlds`);
-    const organizationId = options?.organizationId;
-    if (organizationId) {
-      url.searchParams.set("organizationId", organizationId);
-    }
 
     url.searchParams.set("page", page.toString());
     url.searchParams.set("pageSize", pageSize.toString());
@@ -60,12 +55,8 @@ export class Worlds {
    */
   public async get(
     idOrSlug: string,
-    options?: { organizationId?: string },
   ): Promise<World | null> {
     const url = new URL(`${this.options.baseUrl}/v1/worlds/${idOrSlug}`);
-    if (options?.organizationId) {
-      url.searchParams.set("organizationId", options.organizationId);
-    }
 
     const response = await this.fetch(
       url,
@@ -170,10 +161,26 @@ export class Worlds {
   public async sparql(
     worldId: string,
     query: string,
+    options?: {
+      defaultGraphUris?: string[];
+      namedGraphUris?: string[];
+    },
   ): Promise<ExecuteSparqlOutput> {
     const url = new URL(
       `${this.options.baseUrl}/v1/worlds/${worldId}/sparql`,
     );
+
+    if (options?.defaultGraphUris) {
+      for (const uri of options.defaultGraphUris) {
+        url.searchParams.append("default-graph-uri", uri);
+      }
+    }
+
+    if (options?.namedGraphUris) {
+      for (const uri of options.namedGraphUris) {
+        url.searchParams.append("named-graph-uri", uri);
+      }
+    }
 
     const response = await this.fetch(
       url,

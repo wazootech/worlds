@@ -1,0 +1,622 @@
+openapi: 3.0.0
+info:
+  title: Worlds API
+  version: 1.0.0
+  description: API for managing and querying RDF-based "worlds".
+
+servers:
+  - url: /v1
+    description: V1 API
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    World:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+          nullable: true
+        organizationId:
+          type: string
+          nullable: true
+        createdAt:
+          type: number
+        updatedAt:
+          type: number
+        deletedAt:
+          type: number
+          nullable: true
+      required:
+        - id
+        - slug
+        - label
+        - createdAt
+        - updatedAt
+
+    CreateWorldParams:
+      type: object
+      properties:
+        slug:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+          nullable: true
+        organizationId:
+          type: string
+      required:
+        - slug
+        - label
+
+    UpdateWorldParams:
+      type: object
+      properties:
+        slug:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+          nullable: true
+
+    Log:
+      type: object
+      properties:
+        id:
+          type: string
+        worldId:
+          type: string
+        timestamp:
+          type: number
+        level:
+          type: string
+          enum: [info, warn, error, debug]
+        message:
+          type: string
+        metadata:
+          type: object
+          nullable: true
+      required:
+        - id
+        - worldId
+        - timestamp
+        - level
+        - message
+
+    TripleSearchResult:
+      type: object
+      properties:
+        subject:
+          type: string
+        predicate:
+          type: string
+        object:
+          type: string
+        vecRank:
+          type: number
+          nullable: true
+        ftsRank:
+          type: number
+          nullable: true
+        score:
+          type: number
+        worldId:
+          type: string
+        organizationId:
+          type: string
+      required:
+        - subject
+        - predicate
+        - object
+        - score
+
+    SparqlResults:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/SparqlSelectResults'
+        - $ref: '#/components/schemas/SparqlAskResults'
+        - $ref: '#/components/schemas/SparqlQuadsResults'
+
+    SparqlSelectResults:
+      type: object
+      properties:
+        head:
+          type: object
+          properties:
+            vars:
+              type: array
+              items:
+                type: string
+            link:
+              type: array
+              items:
+                type: string
+              nullable: true
+        results:
+          type: object
+          properties:
+            bindings:
+              type: array
+              items:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/SparqlValue'
+
+    SparqlAskResults:
+      type: object
+      properties:
+        head:
+          type: object
+          properties:
+            link:
+              type: array
+              items:
+                type: string
+              nullable: true
+        boolean:
+          type: boolean
+
+    SparqlQuadsResults:
+      type: object
+      properties:
+        head:
+          type: object
+          properties:
+            link:
+              type: array
+              items:
+                type: string
+              nullable: true
+        results:
+          type: object
+          properties:
+            quads:
+              type: array
+              items:
+                $ref: '#/components/schemas/SparqlQuad'
+
+    SparqlValue:
+      type: object
+      discriminator:
+        propertyName: type
+      properties:
+        type:
+          type: string
+          enum: [uri, bnode, literal]
+        value:
+          type: string
+      required:
+        - type
+        - value
+      oneOf:
+        - properties:
+            type:
+              const: uri
+        - properties:
+            type:
+              const: bnode
+        - properties:
+            type:
+              const: literal
+            xml:lang:
+              type: string
+            datatype:
+              type: string
+
+    SparqlQuad:
+      type: object
+      properties:
+        subject:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [uri, bnode]
+            value:
+              type: string
+        predicate:
+          type: object
+          properties:
+            type:
+              type: string
+              const: uri
+            value:
+              type: string
+        object:
+          $ref: '#/components/schemas/SparqlValue'
+        graph:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [default, uri]
+            value:
+              type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+      required:
+        - error
+
+security:
+  - bearerAuth: []
+
+paths:
+  /worlds:
+    get:
+      summary: List worlds
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: A list of worlds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/World'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create a world
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorldParams'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/World'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /worlds/{world}:
+    parameters:
+      - name: world
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get a world
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/World'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Update a world
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorldParams'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete a world
+      responses:
+        '204':
+          description: No Content
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /worlds/{world}/export:
+    get:
+      summary: Export world data
+      parameters:
+        - name: world
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [turtle, n-quads, n-triples, n3]
+            default: n-quads
+      responses:
+        '200':
+          description: Exported data
+          content:
+            text/turtle:
+              schema: { type: string }
+            application/n-quads:
+              schema: { type: string }
+            application/n-triples:
+              schema: { type: string }
+            text/n3:
+              schema: { type: string }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /worlds/{world}/import:
+    post:
+      summary: Import world data
+      parameters:
+        - name: world
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          text/turtle:
+            schema: { type: string }
+          application/n-quads:
+            schema: { type: string }
+          application/n-triples:
+            schema: { type: string }
+          text/n3:
+            schema: { type: string }
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /worlds/{world}/logs:
+    get:
+      summary: List world logs
+      parameters:
+        - name: world
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: level
+          in: query
+          schema:
+            type: string
+            enum: [info, warn, error, debug]
+      responses:
+        '200':
+          description: A list of logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Log'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /worlds/{world}/search:
+    get:
+      summary: Semantic search
+      parameters:
+        - name: world
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: subjects
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: predicates
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TripleSearchResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /worlds/{world}/sparql:
+    get:
+      summary: Execute SPARQL query or get service description
+      parameters:
+        - name: world
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: query
+          in: query
+          schema:
+            type: string
+        - name: default-graph-uri
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: named-graph-uri
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/sparql-results+json:
+              schema:
+                $ref: '#/components/schemas/SparqlResults'
+            text/turtle:
+              description: SPARQL Service Description
+              schema: { type: string }
+            application/rdf+xml:
+              description: SPARQL Service Description
+              schema: { type: string }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      summary: Execute SPARQL query or update
+      parameters:
+        - name: world
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                default-graph-uri:
+                  type: array
+                  items:
+                    type: string
+                named-graph-uri:
+                  type: array
+                  items:
+                    type: string
+          application/sparql-query:
+            schema: { type: string }
+          application/sparql-update:
+            schema: { type: string }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/sparql-results+json:
+              schema:
+                $ref: '#/components/schemas/SparqlResults'
+        '204':
+          description: Update success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

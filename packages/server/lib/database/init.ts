@@ -1,13 +1,6 @@
 import type { Client } from "@libsql/client";
-import {
-  worldsOrganizationIdIndex,
-  worldsTable,
-} from "#/lib/database/tables/worlds/queries.sql.ts";
-import {
-  serviceAccountsApiKeyIndex,
-  serviceAccountsOrganizationIdIndex,
-  serviceAccountsTable,
-} from "#/lib/database/tables/service-accounts/queries.sql.ts";
+import { worldsTable } from "#/lib/database/tables/worlds/queries.sql.ts";
+
 import {
   chunksFtsDeleteTrigger,
   chunksFtsInsertTrigger,
@@ -33,12 +26,8 @@ import {
 export async function initializeDatabase(client: Client): Promise<void> {
   // Create tables
   await client.execute(worldsTable);
-  await client.execute(serviceAccountsTable);
 
   // Create indexes
-  await client.execute(worldsOrganizationIdIndex);
-  await client.execute(serviceAccountsOrganizationIdIndex);
-  await client.execute(serviceAccountsApiKeyIndex);
 }
 
 /**
