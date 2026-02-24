@@ -13,7 +13,7 @@ architecture, layering, and conventions.
 
 ## 1. Repository layout
 
-```
+```text
 src/
 ├── ai-sdk/           # AI SDK integration (tools, interfaces)
 ├── cli/              # CLI entrypoint (example.ts, main.ts)
@@ -108,8 +108,7 @@ Defined in **server/app-context.ts**:
 - **embeddings: Embeddings** — Interface with
   `embed(text: string) => Promise<number[]>` and `dimensions: number`. Used by
   ChunksService (search) and rdf-patch (chunk embeddings).
-- **admin?: { apiKey: string }** — Required for production; used by
-  **authorizeRequest** to allow access to all v1 routes.
+- **admin?**: `{ apiKey: string }` — Required for production; used by authorizeRequest to allow access to all v1 routes.
 
 ---
 
@@ -135,14 +134,14 @@ Defined in **server/app-context.ts**:
 
 Defined in **server/database/manager.ts**:
 
-- **create(id: string): Promise<ManagedDatabase>** — Create a new world DB, run
+- `create(id: string): Promise<ManagedDatabase>` — Create a new world DB, run
   **initializeWorldDatabase** on its client, then return a **ManagedDatabase**
   (**.database** client, optional **.url**, **.authToken** for persisting in
   `worlds.db_hostname` / `db_auth_token`).
-- **get(id: string): Promise<ManagedDatabase>** — Return a **ManagedDatabase**
+- `get(id: string): Promise<ManagedDatabase>` — Return a **ManagedDatabase**
   for the world `id`. Implementations may use `worlds` table (db_hostname,
   db_auth_token) to reconnect, or a local cache/keyed by id.
-- **delete(id: string): Promise<void>** — Remove the world DB (e.g. delete file
+- `delete(id: string): Promise<void>` — Remove the world DB (e.g. delete file
   or Turso database).
 
 Implementations:
@@ -276,7 +275,7 @@ specific Service Account permissions. Rate limits are defined in **Section 11**.
 ## 6. Middleware and errors
 
 - **auth.ts:** **authorizeRequest(appContext, request)** — Bearer token vs
-  **appContext.admin?.apiKey**; returns **{ admin: boolean }**.
+  `appContext.admin?.apiKey`; returns `{ admin: boolean }`.
 - **rate-limit.ts:** **checkRateLimit(appContext, authorized, featureId)** —
   Checks usage against the **POLICY_LIMITS** constant (see Section 11). Returns
   **ErrorResponse.RateLimitExceeded** if limit reached. Used in every route
@@ -284,7 +283,7 @@ specific Service Account permissions. Rate limits are defined in **Section 11**.
 - **errors.ts:** **ErrorResponse** extends Response; static helpers
   **BadRequest**, **Unauthorized**, **NotFound**, **InternalServerError**, etc.,
   each return a JSON `{ error: { code, message } }` with the correct status and
-  **Content-Type: application/json**.
+  `Content-Type: application/json`.
 
 ---
 
@@ -311,8 +310,7 @@ specific Service Account permissions. Rate limits are defined in **Section 11**.
 
 ## 8. Embeddings and search
 
-- **embeddings/embeddings.ts:** Interface **Embeddings** — **embed(text:
-  string): Promise<number[]>**, **dimensions: number**.
+- **embeddings/embeddings.ts:** Interface **Embeddings** — `embed(text: string): Promise<number[]>`, **dimensions: number**.
 - **embeddings/gemini.ts:** **GeminiEmbeddings** implementation using
   **@google/genai** (model e.g. `models/gemini-embedding-001`).
 - **Search route:** Uses **ChunksService** (world client, embeddings,
@@ -400,8 +398,8 @@ Events below should trigger an insert into the log (world-scoped; each entry has
 
 ## 13. Implementation checklist (for new features)
 
-- **New resource (table):** Add **databases/core/<name>/** or
-  **databases/world/<name>/** with **queries.sql**, run **deno task generate**,
+- **New resource (table):** Add `databases/core/<name>/` or
+  `databases/world/<name>/` with **queries.sql**, run **deno task generate**,
   add **schema.ts** and **service.ts**; add table (and indexes) to
   **initializeDatabase** in **core/init.ts**; add **service.test.ts**.
 - **New route:** Add a new **routes/v1/.../route.ts** that **default** exports

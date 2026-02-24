@@ -27,6 +27,12 @@ Run the development server:
 mint dev
 ```
 
+**Alternative:**
+
+```bash
+npx mintlify dev
+```
+
 View your local preview at `http://localhost:3000`.
 
 ## Deployment

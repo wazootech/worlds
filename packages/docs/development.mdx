@@ -1,94 +1,116 @@
 ---
-title: 'Development'
-description: 'Preview changes locally to update your docs'
+title: "Development"
+description: "Run the entire Worlds Platform™ ecosystem locally on your machine."
 ---
 
+The Worlds Platform™ is designed with a **local-first** philosophy. You can boot the entire ecosystem—including the Management Console and any number of World API instances—using only your local filesystem and Deno runtime.
+
 <Info>
-  **Prerequisites**:
-  - Node.js version 19 or higher
-  - A docs repository with a `docs.json` file
+  **Architecture Overview**: For a deep dive into how the platform swaps between
+  local and remote managers, see the [Comprehensive Mental Model](/hosting).
 </Info>
 
-Follow these steps to install and run Mintlify on your operating system.
+## Prerequisites
+
+To develop on the Worlds Platform™, you'll need the following tools:
+
+- **Deno** (latest) for the Server, SDK, and CLI.
+- **Node.js** (v20+) for the Console and Documentation.
+- **Git** for version control.
+
+## 1. Setup the Console
+
+The Console orchestrates all other resources. In local mode, it uses `data/workos.json` as a mock identity provider.
 
 <Steps>
-<Step title="Install the Mintlify CLI">
+<Step title="Clone & Install">
 
 ```bash
-npm i -g mint
+git clone https://github.com/wazootech/worlds.git
+cd worlds/packages/console
+npm install
 ```
+
 </Step>
+<Step title="Environment Configuration">
 
-<Step title="Preview locally">
-
-Navigate to your docs directory where your `docs.json` file is located, and run the following command:
+Copy the example environment file. **Skip the WorkOS variables**, to trigger Local Dev Mode.
 
 ```bash
-mint dev
+cp .env.example .env
 ```
 
-A local preview of your documentation will be available at `http://localhost:3000`.
+</Step>
+<Step title="Run the Console">
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 </Step>
 </Steps>
 
-## Custom ports
+## 2. Booting World Instances
 
-By default, Mintlify uses port 3000. You can customize the port Mintlify runs on by using the `--port` flag. For example, to run Mintlify on port 3333, use this command:
+Once the Console is running, it will automatically manage local World API processes.
 
-```bash
-mint dev --port 3333
+- **Automatic Boot**: On startup, the Console checks `data/workos.json` and spawns a `deno serve` process for every local organization found.
+- **Dynamic Provisioning**: When you create a new Organization in the Console UI, it will:
+  1. Generate a local API Key.
+  2. Create a local SQLite database in `data/{org_id}/worlds.db`.
+  3. Spawn a new World API server on an available local port.
+
+## 3. Local Resource Persistence
+
+During local development, all state is stored in the `packages/console/data` directory. This directory mirrors the resource hierarchy (Organizations > Worlds) using the local filesystem.
+
+```text
+packages/console/data/
+├── workos.json           # Mock database for Organizations and Users
+└── {org_id}/             # Root directory for a specific Organization
+    ├── worlds.db         # Primary libSQL DB (registry of worlds for the org)
+    └── worlds/           # Directory for individual World databases
+        └── {world_id}.db # Secondary libSQL DB (triples & embeddings for a world)
 ```
 
-If you attempt to run Mintlify on a port that's already in use, it will use the next available port:
+---
 
-```md
-Port 3000 is already in use. Trying 3001 instead.
-```
+## Monorepo Structure
 
-## Mintlify versions
+| Package           | Description                               |
+| :---------------- | :---------------------------------------- |
+| `packages/server` | The core REST API implementation.         |
+| `packages/sdk`    | Official TypeScript/Deno client.          |
+| `packages/cli`    | Command-line tool for managing instances. |
+| `packages/docs`   | This documentation site (Mintlify).       |
 
-Please note that each CLI release is associated with a specific version of Mintlify. If your local preview does not align with the production version, please update the CLI:
+## Global Tasks
 
-```bash
-npm mint update
-```
+Common tasks can be run from the root of the repository:
 
-## Validating links
-
-The CLI can assist with validating links in your documentation. To identify any broken links, use the following command:
-
-```bash
-mint broken-links
-```
-
-## Deployment
-
-If the deployment is successful, you should see the following:
-
-<Frame>
-  <img src="/images/checks-passed.png" alt="Screenshot of a deployment confirmation message that says All checks have passed." style={{ borderRadius: '0.5rem' }} />
-</Frame>
-
-## Code formatting
-
-We suggest using extensions on your IDE to recognize and format MDX. If you're a VSCode user, consider the [MDX VSCode extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx) for syntax highlighting, and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for code formatting.
+- **Format code**: `deno task fmt`
+- **Lint code**: `deno task lint`
+- **Run tests**: `deno task test`
+- **Pre-commit check**: `deno task precommit`
 
 ## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title='Error: Could not load the "sharp" module using the darwin-arm64 runtime'>
+  <Accordion title="Ports already in use">
+    The Console attempts to allocate ports starting from `8001`. If you have
+    conflicting services or lingering processes, you can run:
 
-    This may be due to an outdated version of node. Try the following:
-    1. Remove the currently-installed version of the CLI: `npm remove -g mint`
-    2. Upgrade to Node v19 or higher.
-    3. Reinstall the CLI: `npm i -g mint`
+    ```bash
+    npm run nuke
+    ```
+
+    This will kill all local Deno processes and reset the development lock. Alternatively, you can manually adjust the `apiBaseUrl` in `data/workos.json` and restart the console.
+
   </Accordion>
-
-  <Accordion title="Issue: Encountering an unknown error">
-  
-    Solution: Go to the root of your device and delete the `~/.mintlify` folder. Then run `mint dev` again.
+  <Accordion title="Resetting local state">
+    To wipe all local data and start fresh, simply delete the contents of the
+    `packages/console/data` directory.
   </Accordion>
 </AccordionGroup>
-
-Curious about what changed in the latest CLI version? Check out the [CLI changelog](https://www.npmjs.com/package/mintlify?activeTab=versions).

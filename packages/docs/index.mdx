@@ -16,39 +16,33 @@ description: "Welcome to Worlds API™"
 
 ## Overview
 
-**Worlds API™** is a REST API designed to manage, query, update, and reason over [SPARQL 1.1](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge bases at the edge. It places malleable knowledge within arm's reach of your AI agent.
+**Worlds API™** is a REST API designed to manage, query, update, and reason over [SPARQL](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge bases at the edge. It places malleable knowledge within arm's reach of your AI agent.
 
 We operate on the concept of **Worlds**—isolated, queryable knowledge bases that your agents can interact with.
+
+## Modular
+
+The Worlds Platform™ is highly modularized to support everything from **local-first** development to **cloud-native** production environments. This is achieved through a **hot-swappable architecture** using **polymorphism** for dependency injection, ensuring that you can pivot between deployment strategies without changing your application logic.
+
+- **Local-First**: Run the API Server and Console entirely on your machine with SQLite for zero-latency development.
+- **Hybrid**: Mix and match components, like using a local Console with a remote Turso-backed API.
+- **Cloud-Native**: Deploy to the edge with Deno Deploy and Turso for a globally distributed, scalable intelligence layer.
+
+This modularity cultivates a rich technical ecosystem that serves as the foundation for powerful AI-driven features.
 
 ## Key Features
 
 <CardGroup cols={2}>
-  <Card
-    title="SPARQL 1.1 Support"
-    icon="database"
-    href="/concepts/sparql"
-  >
+  <Card title="SPARQL Support" icon="database" href="/concepts/sparql">
     Full support for standard SPARQL queries and updates, powered by N3.
   </Card>
-  <Card
-    title="Vector Search"
-    icon="magnifying-glass"
-    href="/concepts/search"
-  >
+  <Card title="Vector Search" icon="magnifying-glass" href="/concepts/search">
     Semantic search over your knowledge base using Google Gemini embeddings.
   </Card>
-  <Card
-    title="Edge Native"
-    icon="bolt"
-    href="/concepts/worlds"
-  >
+  <Card title="Edge Native" icon="bolt" href="/concepts/worlds">
     Designed for high-performance edge environments.
   </Card>
-  <Card
-    title="TypeScript SDK"
-    icon="code"
-    href="/sdk/overview"
-  >
+  <Card title="TypeScript SDK" icon="code" href="/sdk/overview">
     Fully typed SDK for easy integration into your applications.
   </Card>
 </CardGroup>
@@ -58,18 +52,10 @@ We operate on the concept of **Worlds**—isolated, queryable knowledge bases th
 To get started with Worlds API, you'll need an API key. You can generate one in the [Console](https://console.wazoo.dev).
 
 <CardGroup cols={2}>
-  <Card
-    title="Quickstart"
-    icon="rocket"
-    href="/quickstart"
-  >
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
     Create your first World and run a query in under 5 minutes.
   </Card>
-  <Card
-    title="Authentication"
-    icon="key"
-    href="/authentication"
-  >
+  <Card title="Authentication" icon="key" href="/authentication">
     Learn how to authenticate your requests.
   </Card>
 </CardGroup>

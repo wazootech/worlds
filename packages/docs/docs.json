@@ -7,7 +7,7 @@
     "light": "#F59E0B",
     "dark": "#78350F"
   },
-  "favicon": "/images/favicon.svg",
+  "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
@@ -30,8 +30,10 @@
             ]
           },
           {
-            "group": "Internal",
+            "group": "Development",
             "pages": [
+              "hosting",
+              "development",
               "design",
               "paper"
             ]
@@ -62,12 +64,6 @@
             "group": "Search",
             "pages": [
               "api-reference/search/search"
-            ]
-          },
-          {
-            "group": "Usage",
-            "pages": [
-              "api-reference/usage/get"
             ]
           }
         ]
