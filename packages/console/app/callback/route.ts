@@ -55,8 +55,7 @@ export async function GET(request: NextRequest) {
           }
 
           // Update WorkOS user metadata.
-          await workos.updateUser({
-            userId: data.user.id,
+          await workos.updateUser(data.user.id, {
             metadata: {
               activeOrganizationId: newOrg.id,
             },

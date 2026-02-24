@@ -1,7 +1,7 @@
 import { getWorkOS } from "@/lib/platform";
 import { WorldOverviewContent } from "@/components/world-overview-content";
 import type { Metadata } from "next";
-import { getSdkForOrg } from "@/lib/org-sdk";
+import { getSdkForOrg } from "@/lib/sdk";
 
 export async function generateMetadata(props: {
   params: Promise<{ organization: string; world: string }>;

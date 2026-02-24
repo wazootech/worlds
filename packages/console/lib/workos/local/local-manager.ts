@@ -3,8 +3,8 @@ import path from "path";
 import type {
   AuthUser,
   AuthOrganization,
-  WorkOSManagement,
-} from "../workos-management";
+  WorkOSManager,
+} from "../workos-manager";
 
 const STATE_FILE = path.join(process.cwd(), "data", "workos.json");
 
@@ -28,7 +28,7 @@ function slugify(name: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
-export class LocalWorkOSManagement implements WorkOSManagement {
+export class LocalWorkOSManager implements WorkOSManager {
   private async ensureStateFile() {
     try {
       await fs.access(STATE_FILE);
@@ -71,22 +71,24 @@ export class LocalWorkOSManagement implements WorkOSManagement {
     return state.user;
   }
 
-  async updateUser(opts: {
-    userId: string;
-    metadata?: AuthUser["metadata"];
-  }): Promise<AuthUser> {
+  async updateUser(
+    userId: string,
+    data: {
+      metadata?: AuthUser["metadata"];
+    },
+  ): Promise<AuthUser> {
     const state = await this.readState();
     const user = state.user;
     const updatedUser: AuthUser = {
       ...user,
-      metadata: { ...(user.metadata || {}), ...opts.metadata },
+      metadata: { ...(user.metadata || {}), ...data.metadata },
     };
     state.user = updatedUser;
     await this.writeState(state);
     return updatedUser;
   }
 
-  async deleteUser(): Promise<void> {
+  async deleteUser(_userId: string): Promise<void> {
     // In local mode, we don't really delete the user, just reset it
     const state = await this.readState();
     state.user = { ...DEFAULT_USER };
@@ -95,10 +97,13 @@ export class LocalWorkOSManagement implements WorkOSManagement {
 
   async listUsers(): Promise<{
     data: AuthUser[];
-    listMetadata?: { after?: string };
+    listMetadata?: { before?: string; after?: string };
   }> {
     const state = await this.readState();
-    return { data: [state.user], listMetadata: {} };
+    return {
+      data: [state.user],
+      listMetadata: { before: undefined, after: undefined },
+    };
   }
 
   // --- Organization Management ---
@@ -239,3 +244,5 @@ export class LocalWorkOSManagement implements WorkOSManagement {
     await this.writeState(state);
   }
 }
+
+export const localWorkOSManager = new LocalWorkOSManager();

@@ -2,7 +2,7 @@ import { withAuth, getSignInUrl } from "@/lib/auth";
 import { getWorkOS } from "@/lib/platform";
 import { codeToHtml } from "shiki";
 import { notFound, redirect } from "next/navigation";
-import { getSdkForOrg } from "@/lib/org-sdk";
+import { getSdkForOrg } from "@/lib/sdk";
 import { PageHeader } from "@/components/page-header";
 import { Globe, Settings, LayoutGrid } from "lucide-react";
 import { WorldProvider } from "@/components/world-context";

@@ -4,14 +4,14 @@ import { isLocalDev, getWorkOS } from "./platform";
 // ---------------------------------------------------------------------------
 // Re-export AuthUser & AuthOrganization for convenience
 // ---------------------------------------------------------------------------
-export type { AuthUser, AuthOrganization } from "./workos/workos-management";
+export type { AuthUser, AuthOrganization } from "./workos/workos-manager";
 
 // ---------------------------------------------------------------------------
 // withAuth – returns the current user session
 // ---------------------------------------------------------------------------
 
 interface LocalWithAuthResult {
-  user: import("./workos/workos-management").AuthUser | null;
+  user: import("./workos/workos-manager").AuthUser | null;
 }
 
 export async function withAuth(): Promise<LocalWithAuthResult> {

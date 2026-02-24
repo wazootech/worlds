@@ -1,7 +1,7 @@
 import { Sandbox, Client } from "@deno/sandbox";
-import type { ManagedApp, AppManagement } from "./app-management";
+import type { ManagedApp, AppManager } from "./app-manager";
 
-export class DenoAppManagement implements AppManagement {
+export class DenoAppManager implements AppManager {
   private client: Client;
 
   constructor() {

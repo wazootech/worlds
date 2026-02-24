@@ -1,6 +1,6 @@
 import { getWorkOS } from "@/lib/platform";
 import { OrganizationDashboardContent } from "@/components/organization-dashboard-content";
-import { getSdkForOrg } from "@/lib/org-sdk";
+import { getSdkForOrg } from "@/lib/sdk";
 import type { World } from "@wazoo/sdk";
 import { notFound } from "next/navigation";
 

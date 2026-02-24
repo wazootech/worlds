@@ -17,13 +17,13 @@ export async function register() {
   // Only run on the Node.js runtime (not Edge)
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
-  const { LocalAppManagement } =
-    await import("./lib/apps/local/local-app-management");
-  const { LocalWorkOSManagement } =
-    await import("./lib/workos/local/local-management");
+  const { localAppManager } =
+    await import("./lib/apps/local/local-app-manager");
+  const { localWorkOSManager } =
+    await import("./lib/workos/local/local-manager");
 
-  const appManager = LocalAppManagement.getInstance();
-  const orgManager = new LocalWorkOSManagement();
+  const appManager = localAppManager;
+  const orgManager = localWorkOSManager;
   const { data: orgs } = await orgManager.listOrganizations();
 
   if (orgs.length > 0) {

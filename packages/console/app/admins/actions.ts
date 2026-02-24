@@ -54,8 +54,7 @@ export async function toggleAdminAction(userId: string, isAdmin: boolean) {
     }
     // If setting to false, we don't include the admin key, effectively removing it
 
-    await workos.updateUser({
-      userId,
+    await workos.updateUser(userId, {
       metadata: updatedMetadata,
     });
 

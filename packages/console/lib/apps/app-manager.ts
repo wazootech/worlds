@@ -7,7 +7,7 @@ export interface ManagedApp {
   updatedAt: string;
 }
 
-export interface AppManagement {
+export interface AppManager {
   /**
    * Provisions a new app resource and performs the initial code deployment.
    */

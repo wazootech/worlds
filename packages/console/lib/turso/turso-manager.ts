@@ -21,11 +21,11 @@ export interface TursoDatabase {
 // ── Interface ──────────────────────────────────────────────────────────────
 
 /**
- * TursoManagement provides lifecycle management for Turso/libSQL databases
+ * TursoManager provides lifecycle management for Turso/libSQL databases
  * via the Turso Platform API. Used by the console to provision per-organization
  * databases before deployments.
  */
-export interface TursoManagement {
+export interface TursoManager {
   /**
    * Provision a new libSQL database and generate an auth token.
    * @param name - Unique database name (typically the organization ID).
@@ -50,18 +50,13 @@ export interface TursoManagement {
    * Delete a database by name.
    */
   deleteDatabase(name: string): Promise<void>;
-
-  /**
-   * Convenience: returns the libsql:// connection URL for a database.
-   */
-  getDatabaseUrl(name: string): string;
 }
 
 // ── Implementation ─────────────────────────────────────────────────────────
 
 type TursoClient = ReturnType<typeof createTursoClient>;
 
-export class RemoteTursoManagement implements TursoManagement {
+export class RemoteTursoManager implements TursoManager {
   private readonly client: TursoClient;
 
   constructor(private readonly config: { token: string; org: string }) {

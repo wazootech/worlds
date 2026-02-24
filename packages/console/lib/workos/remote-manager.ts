@@ -2,8 +2,8 @@ import { WorkOS, Organization } from "@workos-inc/node";
 import type {
   AuthUser,
   AuthOrganization,
-  WorkOSManagement,
-} from "./workos-management";
+  WorkOSManager,
+} from "./workos-manager";
 
 function mapWorkOSOrg(org: Organization): AuthOrganization {
   if (!org.externalId) {
@@ -20,7 +20,7 @@ function mapWorkOSOrg(org: Organization): AuthOrganization {
   };
 }
 
-export class RemoteWorkOSManagement implements WorkOSManagement {
+export class RemoteWorkOSManager implements WorkOSManager {
   private readonly workos: WorkOS;
 
   constructor() {
@@ -36,13 +36,16 @@ export class RemoteWorkOSManagement implements WorkOSManagement {
     return this.workos.userManagement.getUser(userId);
   }
 
-  async updateUser(opts: {
-    userId: string;
-    metadata?: AuthUser["metadata"];
-  }): Promise<AuthUser> {
-    return this.workos.userManagement.updateUser(
-      opts as { userId: string; metadata?: Record<string, string | null> },
-    );
+  async updateUser(
+    userId: string,
+    data: {
+      metadata?: AuthUser["metadata"];
+    },
+  ): Promise<AuthUser> {
+    return this.workos.userManagement.updateUser({
+      userId,
+      metadata: data.metadata as Record<string, string | null>,
+    });
   }
 
   async deleteUser(userId: string): Promise<void> {
@@ -56,7 +59,7 @@ export class RemoteWorkOSManagement implements WorkOSManagement {
     order?: "asc" | "desc";
   }): Promise<{
     data: AuthUser[];
-    listMetadata?: { after?: string };
+    listMetadata?: { before?: string; after?: string };
   }> {
     return this.workos.userManagement.listUsers(opts);
   }

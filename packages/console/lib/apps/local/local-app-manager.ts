@@ -1,7 +1,7 @@
 import { spawn, type ChildProcess } from "child_process";
 import path from "path";
-import type { ManagedApp, AppManagement } from "../app-management";
-import type { AuthOrganization } from "../../workos/workos-management";
+import type { ManagedApp, AppManager } from "../app-manager";
+import type { AuthOrganization } from "../../workos/workos-manager";
 
 const PROCESS_PREFIX = "worlds";
 
@@ -9,17 +9,9 @@ function processName(appId: string) {
   return `${PROCESS_PREFIX}-${appId}`;
 }
 
-export class LocalAppManagement implements AppManagement {
-  private static instance: LocalAppManagement | null = null;
+export class LocalAppManager implements AppManager {
   private processes = new Map<string, ChildProcess>();
   private ports = new Map<string, string>();
-
-  static getInstance(): LocalAppManagement {
-    if (!LocalAppManagement.instance) {
-      LocalAppManagement.instance = new LocalAppManagement();
-    }
-    return LocalAppManagement.instance;
-  }
 
   async createApp(
     appId: string,
@@ -193,3 +185,5 @@ export class LocalAppManagement implements AppManagement {
     process.on("SIGTERM", shutdown);
   }
 }
+
+export const localAppManager = new LocalAppManager();

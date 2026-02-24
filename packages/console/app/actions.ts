@@ -8,7 +8,7 @@ import {
   teardownOrganization,
 } from "@/lib/platform";
 
-import { getSdkForOrg } from "@/lib/org-sdk";
+import { getSdkForOrg } from "@/lib/sdk";
 
 async function getActiveOrgId(user: AuthUser) {
   return user.metadata?.activeOrganizationId as string | undefined;
@@ -87,7 +87,7 @@ export async function createWorld(
       throw new Error("Unauthorized");
     }
 
-    // Resolve organization via OrganizationManagement
+    // Resolve organization via WorkOSManager
     const workos = await getWorkOS();
 
     // The frontend might pass either an internal ID or an external slug
@@ -213,8 +213,7 @@ export async function deleteOrganization(organizationId: string) {
   // 4. If this was the active organization, clear it from metadata
   const activeOrgId = await getActiveOrgId(user);
   if (activeOrgId === organizationId) {
-    await workos.updateUser({
-      userId: user.id,
+    await workos.updateUser(user.id, {
       metadata: {
         ...user.metadata,
         activeOrganizationId: "",
@@ -278,8 +277,7 @@ export async function createOrganization(label: string, slug: string) {
     // 3. Update local user metadata with the new activeOrganizationId
     const targetUser = await workos.getUser(user.id);
 
-    await workos.updateUser({
-      userId: user.id,
+    await workos.updateUser(user.id, {
       metadata: {
         ...targetUser.metadata,
         activeOrganizationId: organizationId,
@@ -340,8 +338,7 @@ export async function selectOrganizationAction(organizationId: string) {
     throw new Error("Organization not found");
   }
 
-  await workos.updateUser({
-    userId: user.id,
+  await workos.updateUser(user.id, {
     metadata: {
       ...user.metadata,
       activeOrganizationId: organization.id,

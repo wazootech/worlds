@@ -45,7 +45,7 @@ export default async function OrganizationLayout({
 
   const isAdmin = !!user?.metadata?.admin;
 
-  // Fetch organization via OrganizationManagement
+  // Fetch organization via WorkOSManager
   const workos = await getWorkOS();
   let organization;
   try {

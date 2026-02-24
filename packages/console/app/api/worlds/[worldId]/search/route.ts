@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getSdkForOrg } from "@/lib/org-sdk";
+import { getSdkForOrg } from "@/lib/sdk";
 import { withAuth } from "@/lib/auth";
 import { getWorkOS } from "@/lib/platform";
 

@@ -1,9 +1,22 @@
-import type {
-  AuthOrganization,
-  WorkOSManagement,
-} from "./workos/workos-management";
-import type { AppManagement } from "./apps/app-management";
-import type { TursoManagement } from "./turso/turso-management";
+import type { AuthOrganization, WorkOSManager } from "./workos/workos-manager";
+import type { AppManager } from "./apps/app-manager";
+import type { TursoManager } from "./turso/turso-manager";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Platform Access
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const platform = {
+  get workos() {
+    return getWorkOS();
+  },
+  get apps() {
+    return getApps();
+  },
+  get turso() {
+    return getTurso();
+  },
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Mode Detection
@@ -13,59 +26,55 @@ import type { TursoManagement } from "./turso/turso-management";
 export const isLocalDev = !process.env.WORKOS_CLIENT_ID;
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Singleton Managers (lazy-initialized)
+// Singleton Accessors (self-initializing)
 // ═══════════════════════════════════════════════════════════════════════════
 
-let _workos: WorkOSManagement | null = null;
-let _appManager: AppManagement | null = null;
-let _turso: TursoManagement | null = null;
-let _initialized = false;
+let _workos: WorkOSManager | null = null;
+let _appManager: AppManager | null = null;
+let _turso: TursoManager | null = null;
 
-async function ensureManagers() {
-  if (_initialized) return;
+export async function getWorkOS(): Promise<WorkOSManager> {
+  if (_workos) return _workos;
 
-  // Turso – only when remote credentials are provided
+  if (isLocalDev) {
+    const { localWorkOSManager } = await import("./workos/local/local-manager");
+    _workos = localWorkOSManager;
+  } else {
+    const { RemoteWorkOSManager } = await import("./workos/remote-manager");
+    _workos = new RemoteWorkOSManager();
+  }
+
+  return _workos;
+}
+
+export async function getApps(): Promise<AppManager> {
+  if (_appManager) return _appManager;
+
+  if (isLocalDev) {
+    const { localAppManager } = await import("./apps/local/local-app-manager");
+    _appManager = localAppManager;
+  } else if (process.env.DENO_DEPLOY_TOKEN) {
+    const { DenoAppManager } = await import("./apps/deno-app-manager");
+    _appManager = new DenoAppManager();
+  } else {
+    throw new Error("App management not configured");
+  }
+
+  return _appManager;
+}
+
+export async function getTurso(): Promise<TursoManager | null> {
+  if (_turso) return _turso;
+
   if (process.env.TURSO_API_TOKEN && process.env.TURSO_ORG) {
-    const { RemoteTursoManagement } = await import("./turso/turso-management");
-    _turso = new RemoteTursoManagement({
+    const { RemoteTursoManager } = await import("./turso/turso-manager");
+    _turso = new RemoteTursoManager({
       token: process.env.TURSO_API_TOKEN,
       org: process.env.TURSO_ORG,
     });
   }
 
-  // Apps – local Deno serve by default, remote Deno Deploy when token is set
-  if (isLocalDev) {
-    const { LocalAppManagement } =
-      await import("./apps/local/local-app-management");
-    _appManager = LocalAppManagement.getInstance();
-  } else if (process.env.DENO_DEPLOY_TOKEN) {
-    const { DenoAppManagement } = await import("./apps/deno-app-management");
-    _appManager = new DenoAppManagement();
-  }
-
-  _initialized = true;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// getWorkOS – Core Singleton Accessor
-// ═══════════════════════════════════════════════════════════════════════════
-
-export async function getWorkOS(
-  opts: { skipCache?: boolean } = {},
-): Promise<WorkOSManagement> {
-  if (_workos && !opts.skipCache) return _workos;
-
-  if (isLocalDev) {
-    const { LocalWorkOSManagement } =
-      await import("./workos/local/local-management");
-    _workos = new LocalWorkOSManagement();
-  } else {
-    const { RemoteWorkOSManagement } =
-      await import("./workos/remote-management");
-    _workos = new RemoteWorkOSManagement();
-  }
-
-  return _workos;
+  return _turso;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -84,7 +93,6 @@ export async function getWorkOS(
 export async function provisionOrganization(
   orgId: string,
 ): Promise<{ url: string; apiKey: string }> {
-  await ensureManagers();
   const workos = await getWorkOS();
 
   // 1. Generate an API key
@@ -99,8 +107,7 @@ export async function provisionOrganization(
   await workos.updateOrganization(orgId, { metadata: org.metadata });
 
   // 3. Provision App (includes code deployment)
-  if (!_appManager) throw new Error("App management not configured");
-  const { url } = await provisionAppInternal(org, workos, _appManager, _turso);
+  const { url } = await provisionAppInternal(org);
 
   return { url, apiKey };
 }
@@ -118,25 +125,28 @@ export async function provisionOrganization(
  * Local SQLite files in the data/ directory are preserved.
  */
 export async function teardownOrganization(orgId: string): Promise<void> {
-  await ensureManagers();
+  const [workos, appManager, turso] = await Promise.all([
+    getWorkOS(),
+    getApps(),
+    getTurso(),
+  ]);
 
-  const workos = await getWorkOS();
   const org = await workos.getOrganization(orgId);
 
-  if (_appManager && org) {
+  if (appManager && org) {
     try {
       const appId = org.metadata?.denoDeployAppId || org.id;
       if (appId) {
-        await _appManager.deleteApp(appId as string);
+        await appManager.deleteApp(appId as string);
       }
     } catch (error) {
       console.error(`[platform] Failed to delete app for org ${orgId}:`, error);
     }
   }
 
-  if (_turso) {
+  if (turso) {
     try {
-      await _turso.deleteDatabase(orgId);
+      await turso.deleteDatabase(orgId);
     } catch (error) {
       console.error(
         `[platform] Failed to delete Turso database for org ${orgId}:`,
@@ -187,8 +197,8 @@ function buildDeployEnvVars(opts: {
  */
 async function provisionTursoIfNeeded(
   org: AuthOrganization,
-  workos: WorkOSManagement,
-  turso: TursoManagement | null | undefined,
+  workos: WorkOSManager,
+  turso: TursoManager | null | undefined,
 ): Promise<void> {
   if (!turso || org.metadata?.libsqlUrl) return;
 
@@ -220,10 +230,13 @@ async function provisionTursoIfNeeded(
  */
 async function provisionAppInternal(
   org: AuthOrganization,
-  workos: WorkOSManagement,
-  appManager: AppManagement,
-  turso?: TursoManagement | null,
 ): Promise<{ url: string }> {
+  const [workos, appManager, turso] = await Promise.all([
+    getWorkOS(),
+    getApps(),
+    getTurso(),
+  ]);
+
   // Auto-provision Turso database if available
   await provisionTursoIfNeeded(org, workos, turso);
 

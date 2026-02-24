@@ -19,7 +19,7 @@ export interface AuthOrganization {
   updatedAt: string;
   slug: string;
   metadata?: {
-    // Safe for user visibility.
+    // Safe for members to see.
     apiBaseUrl?: string;
     apiKey?: string;
 
@@ -32,15 +32,17 @@ export interface AuthOrganization {
   };
 }
 
-// ── WorkOSManagement Interface ─────────────────────────────────────────────
+// ── WorkOSManager Interface ─────────────────────────────────────────────
 
-export interface WorkOSManagement {
+export interface WorkOSManager {
   // User Management
   getUser(userId: string): Promise<AuthUser>;
-  updateUser(opts: {
-    userId: string;
-    metadata?: AuthUser["metadata"];
-  }): Promise<AuthUser>;
+  updateUser(
+    userId: string,
+    data: {
+      metadata?: AuthUser["metadata"];
+    },
+  ): Promise<AuthUser>;
   deleteUser(userId: string): Promise<void>;
   listUsers(opts?: {
     limit?: number;
@@ -49,7 +51,7 @@ export interface WorkOSManagement {
     order?: "asc" | "desc";
   }): Promise<{
     data: AuthUser[];
-    listMetadata?: { after?: string };
+    listMetadata?: { before?: string; after?: string };
   }>;
 
   // Organization Management
