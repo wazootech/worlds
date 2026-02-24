@@ -283,8 +283,8 @@ async function provisionAppInternal(
 
   if (!appId) {
     const slug = isLocalDev
-      ? org.id
-      : `worlds-api-${Math.random().toString(36).slice(2, 6)}`;
+      ? org.slug
+      : `${org.slug}-${Math.random().toString(36).slice(2, 6)}`;
     const app = await appManager.createApp(slug, envVars);
     appId = app.id;
     url = app.url;

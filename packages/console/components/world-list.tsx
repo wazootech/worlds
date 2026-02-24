@@ -30,17 +30,12 @@ export function WorldList({
     parseAsInteger.withDefault(initialPageSize).withOptions({ shallow: false }),
   );
 
-  const handlePlanetClick = (
-    e: React.MouseEvent,
-    worldId: string,
-    slug?: string,
-  ) => {
+  const handlePlanetClick = (e: React.MouseEvent, slug?: string) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const worldSlug = slug;
-    if (!worldSlug) throw new Error("World is missing a slug");
-    const targetUrl = `/${organizationSlug}/${worldSlug}?lounge=true`;
+    if (!slug) throw new Error("World is missing a slug");
+    const targetUrl = `/${organizationSlug}/${slug}?lounge=true`;
 
     if (typeof document !== "undefined" && "startViewTransition" in document) {
       document.startViewTransition(() => {
@@ -64,7 +59,7 @@ export function WorldList({
         const seed = getSeedFromId(world.id);
         return (
           <button
-            onClick={(e) => handlePlanetClick(e, world.id, world.slug)}
+            onClick={(e) => handlePlanetClick(e, world.slug)}
             className="h-8 w-8 overflow-hidden rounded-full bg-black/5 dark:bg-black/40 flex items-center justify-center relative hover:scale-110 transition-transform cursor-pointer border border-stone-200 dark:border-stone-700 shadow-sm"
             title="View Planet"
           >

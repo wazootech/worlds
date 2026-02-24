@@ -61,7 +61,10 @@ export function OrgList({
     <ResourceTable
       columns={columns}
       data={organizations}
-      onRowClick={(org) => router.push(`/organizations/${org.slug || org.id}`)}
+      onRowClick={(org) => {
+        if (!org.slug) throw new Error("Organization is missing a slug");
+        router.push(`/${org.slug}`);
+      }}
       pagination={{
         hasMore,
         hasPrevious,

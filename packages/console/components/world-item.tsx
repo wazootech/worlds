@@ -21,8 +21,8 @@ export function WorldItem({
     e.preventDefault();
     e.stopPropagation();
 
-    const worldSlug = world.slug || world.id;
-    const targetUrl = `/organizations/${organizationId}/worlds/${worldSlug}?lounge=true`;
+    if (!world.slug) throw new Error("World is missing a slug");
+    const targetUrl = `/${organizationId}/${world.slug}?lounge=true`;
 
     // Use View Transition API if available
     if (typeof document !== "undefined" && "startViewTransition" in document) {
@@ -58,7 +58,7 @@ export function WorldItem({
                 title={world.label || world.id}
               >
                 <Link
-                  href={`/organizations/${organizationId}/worlds/${world.slug || world.id}`}
+                  href={`/${organizationId}/${world.slug}`}
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {world.label || world.id}
@@ -84,7 +84,7 @@ export function WorldItem({
         </div>
         <div className="text-sm text-stone-500 dark:text-stone-400">
           <Link
-            href={`/worlds/${world.id}`}
+            href={`/${organizationId}/${world.slug}`}
             className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center"
           >
             View details

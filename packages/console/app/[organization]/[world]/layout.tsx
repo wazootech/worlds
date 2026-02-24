@@ -73,8 +73,7 @@ export default async function WorldLayout({
     notFound();
   }
 
-  const orgSlug = organization.slug;
-  if (!orgSlug) notFound();
+  if (!organization.slug) notFound();
 
   // Fetch world and list
   let world;
@@ -95,8 +94,7 @@ export default async function WorldLayout({
     notFound();
   }
 
-  const worldSlug = world.slug;
-  if (!worldSlug) notFound();
+  if (!world.slug) notFound();
 
   // Canonical redirect
   if (
@@ -105,29 +103,29 @@ export default async function WorldLayout({
       organization.slug !== organization.id) ||
     (worldId === world.id && world.slug && world.slug !== world.id)
   ) {
-    redirect(`/${orgSlug}/${worldSlug}`);
+    redirect(`/${organization.slug}/${world.slug}`);
   }
 
   const tabs = [
     {
       label: "Overview",
-      href: `/${orgSlug}/${worldSlug}`,
+      href: `/${organization.slug}/${world.slug}`,
     },
     {
       label: "SPARQL",
-      href: `/${orgSlug}/${worldSlug}/sparql`,
+      href: `/${organization.slug}/${world.slug}/sparql`,
     },
     {
       label: "Search",
-      href: `/${orgSlug}/${worldSlug}/search`,
+      href: `/${organization.slug}/${world.slug}/search`,
     },
     {
       label: "Logs",
-      href: `/${orgSlug}/${worldSlug}/logs`,
+      href: `/${organization.slug}/${world.slug}/logs`,
     },
     {
       label: "Settings",
-      href: `/${orgSlug}/${worldSlug}/settings`,
+      href: `/${organization.slug}/${world.slug}/settings`,
     },
   ];
 
@@ -189,37 +187,37 @@ console.log("Connected to world:", world.label);`;
           resource={[
             {
               label: "Worlds",
-              href: `/${orgSlug}`,
+              href: `/${organization.slug}`,
               icon: <LayoutGrid className="w-3 h-3 text-stone-500" />,
               menuItems: [
                 {
                   label: "Worlds",
-                  href: `/${orgSlug}`,
+                  href: `/${organization.slug}`,
                   icon: <Globe className="w-4 h-4" />,
                 },
                 {
                   label: "Settings",
-                  href: `/${orgSlug}/~/settings`,
+                  href: `/${organization.slug}/~/settings`,
                   icon: <Settings className="w-4 h-4" />,
                 },
               ],
             },
             {
               label: world.label,
-              href: `/${orgSlug}/${worldSlug}`,
+              href: `/${organization.slug}/${world.slug}`,
               icon: <Globe className="w-3 h-3 text-stone-500" />,
               menuItems: worlds
                 .map((w) => {
                   if (!w.slug) return null;
                   return {
                     label: w.label || w.slug,
-                    href: `/${orgSlug}/${w.slug}`,
+                    href: `/${organization.slug}/${w.slug}`,
                     icon: <Globe className="w-4 h-4" />,
                   };
                 })
                 .filter((i): i is NonNullable<typeof i> => i !== null),
               resourceType: "World",
-              createHref: `/${orgSlug}?create=world`,
+              createHref: `/${organization.slug}?create=world`,
             },
           ]}
           tabs={tabs}

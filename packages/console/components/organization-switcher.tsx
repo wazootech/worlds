@@ -95,9 +95,7 @@ export function OrganizationSwitcher({
   const organizationId = paramOrgId || lastOrgId;
 
   const currentOrg = organizationId
-    ? organizations.find(
-        (o) => o.id === organizationId || o.slug === organizationId,
-      )
+    ? organizations.find((o) => o.slug === organizationId)
     : organizations[0];
 
   const handleSelect = (slug: string) => {
@@ -105,9 +103,7 @@ export function OrganizationSwitcher({
     setLastOrgId(slug);
 
     // Find the org id to update user metadata if needed
-    const selectedOrg = organizations.find(
-      (o) => o.id === slug || o.slug === slug,
-    );
+    const selectedOrg = organizations.find((o) => o.slug === slug);
 
     startTransition(async () => {
       // Proactively update the user's active organization in local dev

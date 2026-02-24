@@ -88,7 +88,8 @@ export class LocalWorkOSManager implements WorkOSManager {
     return updatedUser;
   }
 
-  async deleteUser(_userId: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async deleteUser(userId: string): Promise<void> {
     // In local mode, we don't really delete the user, just reset it
     const state = await this.readState();
     state.user = { ...DEFAULT_USER };

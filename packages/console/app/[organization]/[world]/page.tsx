@@ -23,12 +23,9 @@ export async function generateMetadata(props: {
     const world = await sdk.worlds.get(worldSlug);
     if (!world) return { title: "World Overview" };
 
-    const orgSlug = organization.slug;
-    const worldSlugTitle = world.slug;
-
     return {
       title: {
-        absolute: `${worldSlugTitle || "World"} | ${orgSlug || "Org"} | Wazoo`,
+        absolute: `${world.slug || "World"} | ${organization.slug || "Org"} | Wazoo`,
       },
     };
   } catch {

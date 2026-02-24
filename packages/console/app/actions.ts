@@ -41,16 +41,14 @@ export async function updateWorld(
 
   await sdk.worlds.update(world.id, updates);
 
-  const [resolvedWorld] = await Promise.all([sdk.worlds.get(world.id)]);
-
-  if (resolvedWorld && organization) {
-    const orgSlug = organization.slug;
-    const worldSlug = resolvedWorld.slug;
-    if (!orgSlug || !worldSlug) {
+  if (organization) {
+    const finalWorldSlug = updates.slug ?? world.slug;
+    if (!organization.slug || !finalWorldSlug) {
       throw new Error("Organization or World is missing a slug");
     }
-    revalidatePath(`/${orgSlug}`);
-    revalidatePath(`/${orgSlug}/${worldSlug}`);
+
+    revalidatePath(`/${organization.slug}`);
+    revalidatePath(`/${organization.slug}/${finalWorldSlug}`);
   }
 }
 
@@ -74,9 +72,8 @@ export async function deleteWorld(organizationId: string, worldId: string) {
   await sdk.worlds.delete(world.id);
   // Re-fetch organization to ensure we have the slug (since we might have just used ID above? No, we have the object)
   if (organization) {
-    const orgSlug = organization.slug;
-    if (!orgSlug) throw new Error("Organization is missing a slug");
-    revalidatePath(`/${orgSlug}`);
+    if (!organization.slug) throw new Error("Organization is missing a slug");
+    revalidatePath(`/${organization.slug}`);
   }
 }
 
@@ -144,8 +141,7 @@ export async function createWorld(
     const sdk = getSdkForOrg(organization);
 
     const actualOrgId = organization.id;
-    const orgSlug = organization.slug;
-    if (!orgSlug) throw new Error("Organization is missing a slug");
+    if (!organization.slug) throw new Error("Organization is missing a slug");
 
     console.log("Creating new world...", {
       organizationId: actualOrgId,
@@ -162,8 +158,8 @@ export async function createWorld(
     // Artificial delay to allow for eventual consistency in DB
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    revalidatePath(`/${actualOrgId}`);
-    revalidatePath(`/${orgSlug}`);
+    revalidatePath(`/${organization.id}`);
+    revalidatePath(`/${organization.slug}`);
 
     return { success: true, worldId: world.id, slug: world.slug };
   } catch (error) {
@@ -253,10 +249,9 @@ export async function rotateApiKey(organizationId: string) {
 
   revalidatePath(`/${organizationId}`);
   if (organization) {
-    const orgSlug = organization.slug;
-    if (!orgSlug) throw new Error("Organization is missing a slug");
-    revalidatePath(`/${orgSlug}`);
-    revalidatePath(`/${orgSlug}/~/settings`);
+    if (!organization.slug) throw new Error("Organization is missing a slug");
+    revalidatePath(`/${organization.slug}`);
+    revalidatePath(`/${organization.slug}/~/settings`);
   }
   return newApiKey;
 }
@@ -324,10 +319,10 @@ export async function updateOrganization(
 
   const resolvedOrganization = await workos.getOrganization(organization.id);
   if (resolvedOrganization) {
-    const orgSlug = resolvedOrganization.slug;
-    if (!orgSlug) throw new Error("Organization is missing a slug");
-    revalidatePath(`/${orgSlug}/~/settings`);
-    revalidatePath(`/${orgSlug}`);
+    if (!resolvedOrganization.slug)
+      throw new Error("Organization is missing a slug");
+    revalidatePath(`/${resolvedOrganization.slug}/~/settings`);
+    revalidatePath(`/${resolvedOrganization.slug}`);
   }
 
   revalidatePath(`/`);
@@ -353,9 +348,8 @@ export async function selectOrganizationAction(organizationId: string) {
   });
 
   revalidatePath("/");
-  const orgSlug = organization.slug;
-  if (!orgSlug) throw new Error("Organization is missing a slug");
-  revalidatePath(`/${orgSlug}`);
+  if (!organization.slug) throw new Error("Organization is missing a slug");
+  revalidatePath(`/${organization.slug}`);
 }
 
 export async function listOrganizations() {

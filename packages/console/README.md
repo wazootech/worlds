@@ -34,7 +34,7 @@ experience:
 
    ```bash
    git clone https://github.com/EthanThatOneKid/worlds.git
-   cd worlds
+   cd ./packages/console
    ```
 
 2. Install dependencies:

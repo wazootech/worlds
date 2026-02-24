@@ -42,7 +42,7 @@ export function CreateWorldDialog({
       const result = await createWorld(organizationSlug, label, slug);
       if (result.success && result.slug) {
         onClose();
-        router.push(`/organizations/${organizationSlug}/worlds/${result.slug}`);
+        router.push(`/${organizationSlug}/${result.slug}`);
       } else {
         alert(`Failed to create world: ${result.error}`);
       }

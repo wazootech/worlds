@@ -32,7 +32,7 @@ export default async function Home(props: {
         console.error("Failed to fetch organization for early redirect:", e);
       }
       if (organizationToRedirect) {
-        redirect(`/organizations/${organizationToRedirect.slug}`);
+        redirect(`/${organizationToRedirect.slug}`);
       }
     }
   }
