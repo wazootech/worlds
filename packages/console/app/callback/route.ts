@@ -1,9 +1,5 @@
-import {
-  handleAuth,
-  getWorkOS,
-  deployWorldApi,
-  type AuthUser,
-} from "@/lib/auth";
+import { handleAuth, type AuthUser } from "@/lib/auth";
+import { getWorkOS, provisionOrganization } from "@/lib/platform";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
@@ -51,41 +47,11 @@ export async function GET(request: NextRequest) {
             slug: slug,
           });
 
-          // Create a default service account for the organization using Admin SDK
-          const ADMIN_KEY = process.env.ADMIN_API_KEY;
-          let apiKey = "";
-
-          if (ADMIN_KEY) {
-            const DEFAULT_URL =
-              process.env.DEFAULT_API_URL || "http://localhost:8000";
-            const { WorldsSdk } = await import("@wazoo/sdk");
-            const adminSdk = new WorldsSdk({
-              baseUrl: DEFAULT_URL,
-              apiKey: ADMIN_KEY,
-            });
-
-            const serviceAccount = await adminSdk.serviceAccounts.create(
-              newOrg.id,
-              {
-                label: "Default",
-                description: "Auto-generated for testing",
-              },
-            );
-            apiKey = serviceAccount.apiKey || "";
-
-            // Update org metadata
-            await workos.updateOrganization(newOrg.id, {
-              metadata: {
-                apiBaseUrl: DEFAULT_URL,
-                apiKey: apiKey,
-              },
-            });
-
-            try {
-              await deployWorldApi(newOrg.id);
-            } catch (e) {
-              console.error("Failed to deploy newly created organization", e);
-            }
+          // Provision platform resources (API key, Turso DB, deployment)
+          try {
+            await provisionOrganization(newOrg.id);
+          } catch (e) {
+            console.error("Failed to provision newly created organization", e);
           }
 
           // Update WorkOS user metadata.

@@ -1,4 +1,5 @@
-import { withAuth, getWorkOS, getSignInUrl } from "@/lib/auth";
+import { withAuth, getSignInUrl } from "@/lib/auth";
+import { getWorkOS } from "@/lib/platform";
 import { codeToHtml } from "shiki";
 import { notFound, redirect } from "next/navigation";
 import { getSdkForOrg } from "@/lib/org-sdk";

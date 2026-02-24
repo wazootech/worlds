@@ -25,6 +25,8 @@ export interface AuthOrganization {
     libsqlAuthToken?: string;
     tursoApiToken?: string;
     tursoOrg?: string;
+    denoDeployAppId?: string;
+    denoDeployAppSlug?: string;
   };
 }
 

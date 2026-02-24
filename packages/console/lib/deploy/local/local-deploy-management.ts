@@ -14,6 +14,7 @@ function processName(orgId: string) {
 export class LocalDeployManagement implements DeployManagement {
   private static instance: LocalDeployManagement | null = null;
   private processes = new Map<string, ChildProcess>();
+  private ports = new Map<string, string>();
 
   static getInstance(): LocalDeployManagement {
     if (!LocalDeployManagement.instance) {
@@ -68,9 +69,11 @@ export class LocalDeployManagement implements DeployManagement {
     child.on("exit", (code) => {
       console.log(`[local-deploy] ${name} exited with code ${code}`);
       this.processes.delete(name);
+      this.ports.delete(orgId);
     });
 
     this.processes.set(name, child);
+    this.ports.set(orgId, port);
 
     const url = `http://localhost:${port}`;
     const now = new Date().toISOString();
@@ -91,14 +94,28 @@ export class LocalDeployManagement implements DeployManagement {
     if (!child || child.exitCode !== null) return null;
 
     const now = new Date().toISOString();
+    const port = this.ports.get(orgId) || "80";
+    const url = `http://localhost:${port}`;
+
     return {
       id: name,
       orgId,
-      url: "",
+      url,
       status: "running",
       createdAt: now,
       updatedAt: now,
     };
+  }
+
+  async stop(orgId: string): Promise<void> {
+    const name = processName(orgId);
+    const child = this.processes.get(name);
+    if (child) {
+      console.log(`[local-deploy] Stopping ${name}...`);
+      child.kill("SIGTERM");
+      this.processes.delete(name);
+      this.ports.delete(orgId);
+    }
   }
 
   /**
@@ -189,6 +206,7 @@ export class LocalDeployManagement implements DeployManagement {
       child.kill("SIGTERM");
     }
     this.processes.clear();
+    this.ports.clear();
     console.log("[local-deploy] Shutdown complete.");
   }
 

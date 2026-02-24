@@ -18,4 +18,9 @@ export interface DeployManagement {
    * Retrieves the current deployment for the given organization.
    */
   getDeployment(orgId: string): Promise<Deploy | null>;
+
+  /**
+   * Stops the deployment for the given organization.
+   */
+  stop(orgId: string): Promise<void>;
 }

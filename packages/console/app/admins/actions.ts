@@ -1,6 +1,7 @@
 "use server";
 
-import { withAuth, getWorkOS } from "@/lib/auth";
+import { withAuth } from "@/lib/auth";
+import { getWorkOS, teardownOrganization } from "@/lib/platform";
 import { revalidatePath } from "next/cache";
 
 export async function toggleAdminAction(userId: string, isAdmin: boolean) {
@@ -104,7 +105,19 @@ export async function deleteUserAction(userId: string) {
       | string
       | undefined;
 
-    // 1. Delete associated organization if it exists
+    // 1. Tear down platform resources (deployment, Turso DB)
+    if (organizationId) {
+      try {
+        await teardownOrganization(organizationId);
+      } catch (error) {
+        console.error(
+          `Failed to stop World API for org ${organizationId}:`,
+          error,
+        );
+      }
+    }
+
+    // 2. Delete associated organization if it exists
     if (organizationId) {
       try {
         const workos = await getWorkOS();

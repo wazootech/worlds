@@ -1,4 +1,5 @@
-import { withAuth, getWorkOS } from "@/lib/auth";
+import { withAuth } from "@/lib/auth";
+import { getWorkOS } from "@/lib/platform";
 import { AdminList } from "./admin-list";
 import { Metadata } from "next";
 import { Suspense } from "react";

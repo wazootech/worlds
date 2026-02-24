@@ -1,4 +1,4 @@
-import { getWorkOS } from "@/lib/auth";
+import { getWorkOS } from "@/lib/platform";
 import { OrganizationSettingsContent } from "@/components/organization-settings-content";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";

@@ -1,13 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { withAuth, signOut, type AuthUser } from "@/lib/auth";
 import {
-  withAuth,
   getWorkOS,
-  signOut,
+  provisionOrganization,
+  teardownOrganization,
   deployWorldApi,
-  type AuthUser,
-} from "@/lib/auth";
+} from "@/lib/platform";
 
 import { getSdkForOrg } from "@/lib/org-sdk";
 
@@ -203,9 +203,10 @@ export async function deleteOrganization(organizationId: string) {
     console.warn("Failed to list worlds for cleanup (ignoring):", error);
   }
 
-  // 2. Organization cleanup (service accounts no longer exist)
+  // 2. Tear down platform resources (deployment, Turso DB)
+  await teardownOrganization(organization.id);
 
-  // 3. Remove the organization via OrganizationManagement
+  // 3. Remove the organization via WorkOS
   await workos.deleteOrganization(organization.id);
 
   revalidatePath("/");
@@ -263,7 +264,7 @@ export async function createOrganization(label: string, slug: string) {
   }
 
   try {
-    // 1. Create the organization via OrganizationManagement
+    // 1. Create the organization via WorkOS
     const workos = await getWorkOS();
     const organization = await workos.createOrganization({
       name: label,
@@ -272,50 +273,10 @@ export async function createOrganization(label: string, slug: string) {
 
     const organizationId = organization.id;
 
-    // 2. Create a default service account and get its API key.
-    // We need to bootstrap the organization with an API connection first.
+    // 2. Provision platform resources (API key, Turso DB, deployment)
+    await provisionOrganization(organizationId);
 
-    let apiKey = "";
-    const isLocalDev = !process.env.WORKOS_CLIENT_ID;
-
-    if (isLocalDev) {
-      apiKey = `sk_local_${Math.random().toString(36).substring(2, 15)}`;
-
-      // Strictly allocate deployment (fails if port allocation fails)
-      const deployment = await deployWorldApi(organization.id);
-      const apiBaseUrl = deployment.url;
-
-      await workos.updateOrganization(organization.id, {
-        metadata: {
-          apiBaseUrl: apiBaseUrl,
-          apiKey: apiKey,
-        },
-      });
-    } else {
-      const ADMIN_KEY = process.env.ADMIN_API_KEY;
-      if (ADMIN_KEY) {
-        const DEFAULT_URL =
-          process.env.DEFAULT_API_URL || "http://localhost:8000";
-
-        apiKey = `sk_live_${Math.random().toString(36).substring(2, 15)}`;
-
-        // Save metadata to organization
-        await workos.updateOrganization(organization.id, {
-          metadata: {
-            apiBaseUrl: DEFAULT_URL,
-            apiKey: apiKey,
-          },
-        });
-
-        try {
-          await deployWorldApi(organization.id);
-        } catch (error) {
-          console.error("Failed to deploy newly created organization", error);
-        }
-      }
-    }
-
-    // 3. Update local user metadata with the new activeOrganizationId.
+    // 3. Update local user metadata with the new activeOrganizationId
     const targetUser = await workos.getUser(user.id);
 
     await workos.updateUser({

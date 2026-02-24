@@ -1,4 +1,5 @@
-import { withAuth, getWorkOS } from "@/lib/auth";
+import { withAuth } from "@/lib/auth";
+import { getWorkOS } from "@/lib/platform";
 import { notFound } from "next/navigation";
 import React from "react";
 

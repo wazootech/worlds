@@ -1,4 +1,5 @@
-import { withAuth, getWorkOS, getSignInUrl, getSignUpUrl } from "@/lib/auth";
+import { withAuth, getSignInUrl, getSignUpUrl } from "@/lib/auth";
+import { getWorkOS } from "@/lib/platform";
 import { PageHeader } from "@/components/page-header";
 
 import { redirect } from "next/navigation";

@@ -1,4 +1,4 @@
-import { getWorkOS } from "@/lib/auth";
+import { getWorkOS } from "@/lib/platform";
 import { WorldOverviewContent } from "@/components/world-overview-content";
 import type { Metadata } from "next";
 import { getSdkForOrg } from "@/lib/org-sdk";

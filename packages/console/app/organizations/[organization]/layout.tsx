@@ -1,6 +1,7 @@
 import { OrganizationProvider } from "@/components/organization-context";
 import { OrganizationHeader } from "@/components/organization-header";
-import { withAuth, getWorkOS, getSignInUrl } from "@/lib/auth";
+import { withAuth, getSignInUrl } from "@/lib/auth";
+import { getWorkOS } from "@/lib/platform";
 import { notFound, redirect } from "next/navigation";
 import { codeToHtml } from "shiki";
 import type { Metadata } from "next";

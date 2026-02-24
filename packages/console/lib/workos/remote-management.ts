@@ -122,6 +122,8 @@ export class RemoteWorkOSManagement implements WorkOSManagement {
     const org = await this.workos.organizations.updateOrganization({
       organization: orgId,
       name: data.name,
+      externalId: data.slug,
+      metadata: data.metadata as Record<string, string>,
     });
     return mapWorkOSOrg(org);
   }

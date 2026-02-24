@@ -1,96 +1,10 @@
 import { NextResponse } from "next/server";
-import type { WorkOSManagement } from "./workos/workos-management";
-import type { DeployManagement } from "./deno-deploy/deploy-management";
-import type { TursoManagement } from "./turso/turso-management";
-
-// ---------------------------------------------------------------------------
-// Detect mode: use WorkOS when credentials are present and not in local mode
-// ---------------------------------------------------------------------------
-const isLocalDev = !process.env.WORKOS_CLIENT_ID;
-
-// ---------------------------------------------------------------------------
-// Cached Management Instance
-// ---------------------------------------------------------------------------
-let _workosManagement: WorkOSManagement | null = null;
-
-// ---------------------------------------------------------------------------
-// Lazy singletons for deploy + turso managers
-// ---------------------------------------------------------------------------
-
-let _deployManager: DeployManagement | null = null;
-let _tursoManager: TursoManagement | null = null;
-let _managersInitialized = false;
-
-async function ensureManagers() {
-  if (_managersInitialized) return;
-
-  // Turso
-  if (process.env.TURSO_API_TOKEN && process.env.TURSO_ORG) {
-    const { RemoteTursoManagement } = await import("./turso/turso-management");
-    _tursoManager = new RemoteTursoManagement({
-      token: process.env.TURSO_API_TOKEN,
-      org: process.env.TURSO_ORG,
-    });
-  }
-
-  // Deploy
-  if (isLocalDev) {
-    const { LocalDeployManagement } =
-      await import("./deno-deploy/local/local-deploy-management");
-    _deployManager = LocalDeployManagement.getInstance();
-  } else if (process.env.DENO_DEPLOY_TOKEN) {
-    const { DenoDeployManagement } =
-      await import("./deno-deploy/deno-deploy-management");
-    _deployManager = new DenoDeployManagement();
-  }
-
-  _managersInitialized = true;
-}
+import { isLocalDev, getWorkOS } from "./platform";
 
 // ---------------------------------------------------------------------------
 // Re-export AuthUser & AuthOrganization for convenience
 // ---------------------------------------------------------------------------
 export type { AuthUser, AuthOrganization } from "./workos/workos-management";
-
-// ---------------------------------------------------------------------------
-// getWorkOS – Core Singleton Accessor
-// ---------------------------------------------------------------------------
-
-export async function getWorkOS(
-  opts: { skipCache?: boolean } = {},
-): Promise<WorkOSManagement> {
-  if (_workosManagement && !opts.skipCache) {
-    return _workosManagement;
-  }
-
-  if (isLocalDev) {
-    const { LocalWorkOSManagement } =
-      await import("./workos/local/local-management");
-    _workosManagement = new LocalWorkOSManagement();
-  } else {
-    const { RemoteWorkOSManagement } =
-      await import("./workos/remote-management");
-    _workosManagement = new RemoteWorkOSManagement();
-  }
-
-  return _workosManagement;
-}
-
-// ---------------------------------------------------------------------------
-// deployWorldApi – Deploys an organization's server
-// ---------------------------------------------------------------------------
-
-export async function deployWorldApi(orgId: string): Promise<{ url: string }> {
-  await ensureManagers();
-  const workos = await getWorkOS();
-
-  if (!_deployManager) {
-    throw new Error("Deployment management not configured");
-  }
-
-  const { deployOrganization } = await import("./deploy");
-  return deployOrganization(orgId, workos, _deployManager, _tursoManager);
-}
 
 // ---------------------------------------------------------------------------
 // withAuth – returns the current user session

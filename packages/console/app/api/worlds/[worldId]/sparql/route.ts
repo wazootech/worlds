@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAuth, getWorkOS } from "@/lib/auth";
+import { withAuth } from "@/lib/auth";
+import { getWorkOS } from "@/lib/platform";
 import { getSdkForOrg } from "@/lib/org-sdk";
 
 export async function POST(

@@ -1,4 +1,5 @@
-import { withAuth, getWorkOS, type AuthOrganization } from "@/lib/auth";
+import { withAuth, type AuthOrganization } from "@/lib/auth";
+import { getWorkOS } from "@/lib/platform";
 import { OrgList } from "./org-list";
 import { Metadata } from "next";
 import { Suspense } from "react";

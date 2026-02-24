@@ -18,7 +18,7 @@ export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
   const { LocalDeployManagement } =
-    await import("./lib/deno-deploy/local/local-deploy-management");
+    await import("./lib/deploy/local/local-deploy-management");
   const { LocalWorkOSManagement } =
     await import("./lib/workos/local/local-management");
 
