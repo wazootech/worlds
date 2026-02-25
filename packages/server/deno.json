@@ -1,5 +1,5 @@
 {
-  "name": "@wazoo/server",
+  "name": "@wazoo/worlds-server",
   "version": "0.0.6",
   "exports": {
     ".": "./mod.ts",

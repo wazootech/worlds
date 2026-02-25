@@ -7,7 +7,7 @@ import type {
   SparqlBinding,
   SparqlQuad,
   SparqlValue,
-} from "@wazoo/sdk";
+} from "@wazoo/worlds-sdk";
 
 /**
  * DatasetParams are the parameters for a SPARQL query.

@@ -2,7 +2,7 @@ import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 
 import type { ServerContext } from "#/context.ts";
-import { limitParamSchema } from "@wazoo/sdk";
+import { limitParamSchema } from "@wazoo/worlds-sdk";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
 

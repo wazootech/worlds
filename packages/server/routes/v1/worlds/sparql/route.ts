@@ -8,7 +8,7 @@ import { negotiateSerialization } from "#/lib/rdf/serialization.ts";
 import type { ServerContext } from "#/context.ts";
 import type { DatasetParams } from "#/lib/blob/sparql.ts";
 import { sparql } from "#/lib/blob/sparql.ts";
-import { executeSparqlOutputSchema, isSparqlUpdate } from "@wazoo/sdk";
+import { executeSparqlOutputSchema, isSparqlUpdate } from "@wazoo/worlds-sdk";
 import {
   BufferedPatchHandler,
   handlePatch,

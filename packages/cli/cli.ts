@@ -5,8 +5,8 @@ import type { LanguageModel, ModelMessage } from "ai";
 import { stepCountIs, streamText } from "ai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { createTools } from "@wazoo/ai-sdk";
-import type { RdfFormat, WorldsSdk } from "@wazoo/sdk";
+import { createTools } from "@wazoo/worlds-ai-sdk";
+import type { RdfFormat, WorldsSdk } from "@wazoo/worlds-sdk";
 
 /**
  * WorldsCli is a command line application for the Worlds API.

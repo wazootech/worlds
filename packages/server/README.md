@@ -1,6 +1,6 @@
 # Worlds Platform™ Server
 
-[![JSR](https://jsr.io/badges/@wazoo/server)](https://jsr.io/@wazoo/server)
+[![JSR](https://jsr.io/badges/@wazoo/worlds-server)](https://jsr.io/@wazoo/worlds-server)
 
 **Worlds Platform™ Server** is the core REST API implementation for managing,
 querying, and reasoning over context graphs. It is built with
@@ -65,7 +65,7 @@ cp .env.example .env
 ## Usage
 
 ```sh
-deno -A jsr:@wazoo/server [command]
+deno -A jsr:@wazoo/worlds-server [command]
 ```
 
 ### Tasks

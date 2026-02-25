@@ -1,7 +1,7 @@
 import type { Client } from "@libsql/client";
 import type { ServerContext } from "#/context.ts";
 import { searchChunks, upsertChunks } from "./queries.sql.ts";
-import type { TripleSearchResult } from "@wazoo/sdk";
+import type { TripleSearchResult } from "@wazoo/worlds-sdk";
 import type { WorldRow } from "#/lib/database/tables/worlds/schema.ts";
 import type { WorldsService } from "#/lib/database/tables/worlds/service.ts";
 import {

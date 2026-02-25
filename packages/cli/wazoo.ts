@@ -1,6 +1,6 @@
 import { promptSecret } from "@std/cli/prompt-secret";
-import { WorldsSdk } from "@wazoo/sdk";
-import { createServer, createServerContext } from "@wazoo/server";
+import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { createServer, createServerContext } from "@wazoo/worlds-server";
 
 /**
  * CreateWazooOptions are options for creating a new Wazoo SDK.

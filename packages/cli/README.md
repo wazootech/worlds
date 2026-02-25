@@ -1,6 +1,6 @@
 # Worlds Platform™ CLI
 
-[![JSR](https://jsr.io/badges/@wazoo/cli)](https://jsr.io/@wazoo/cli)
+[![JSR](https://jsr.io/badges/@wazoo/worlds-cli)](https://jsr.io/@wazoo/worlds-cli)
 
 **Worlds Platform™ CLI** is a command-line tool for managing your Worlds
 Platform™ instances. It provides a convenient way to interact with worlds,
@@ -9,7 +9,7 @@ organizations, and invites directly from your terminal.
 ## Usage
 
 ```sh
-deno -A jsr:@wazoo/cli [command] [options]
+deno -A jsr:@wazoo/worlds-cli [command] [options]
 ```
 
 ### Commands

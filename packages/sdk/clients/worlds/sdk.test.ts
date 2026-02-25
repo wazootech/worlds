@@ -1,6 +1,6 @@
 import { assert, assertEquals, assertExists } from "@std/assert";
-import { createServer } from "@wazoo/server";
-import { createTestContext } from "@wazoo/server/testing";
+import { createServer } from "@wazoo/worlds-server";
+import { createTestContext } from "@wazoo/worlds-server/testing";
 import type { SparqlSelectResults } from "./schema.ts";
 import { WorldsSdk } from "#/sdk.ts";
 

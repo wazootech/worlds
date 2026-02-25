@@ -9,7 +9,7 @@ import {
   paginationParamsSchema,
   updateWorldParamsSchema,
   worldSchema,
-} from "@wazoo/sdk";
+} from "@wazoo/worlds-sdk";
 import { Parser, Store, Writer } from "n3";
 import {
   DEFAULT_SERIALIZATION,
