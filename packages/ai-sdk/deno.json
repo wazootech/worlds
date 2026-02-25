@@ -11,7 +11,7 @@
   },
   "imports": {
     "#/": "./",
-    "ai": "npm:ai@^6.0.77"
+    "ai": "npm:ai@^6.0.99"
   },
   "tasks": {
     "test": "deno test -A"

@@ -14,13 +14,13 @@
   "imports": {
     "#/": "./",
     "@fartlabs/rt": "jsr:@fartlabs/rt@^0.0.11",
-    "@google/genai": "npm:@google/genai@^1.41.0",
+    "@google/genai": "npm:@google/genai@^1.42.0",
     "@langchain/textsplitters": "npm:@langchain/textsplitters@^1.0.1",
     "@fartlabs/search-store": "jsr:@fartlabs/search-store@^0.0.2",
     "@comunica/query-sparql-rdfjs-lite": "npm:@comunica/query-sparql-rdfjs-lite@^5.1.3",
     "n3": "npm:n3@^2.0.1",
     "@types/n3": "npm:@types/n3@^1.26.1",
-    "@std/http": "jsr:@std/http@^1.0.12"
+    "@std/http": "jsr:@std/http@^1.0.25"
   },
   "tasks": {
     "start": "deno serve -A --env ./main.ts",
