@@ -9,10 +9,10 @@ import type {
 const STATE_FILE = path.join(process.cwd(), "data", "workos.json");
 
 const DEFAULT_USER: AuthUser = {
-  id: process.env.LOCAL_USER_ID || "local-dev-user",
-  email: process.env.LOCAL_USER_EMAIL || "dev@localhost",
-  firstName: process.env.LOCAL_USER_FIRST_NAME || "Local",
-  lastName: process.env.LOCAL_USER_LAST_NAME || "Developer",
+  id: process.env.LOCAL_USER_ID || "admin",
+  email: process.env.LOCAL_USER_EMAIL || "admin@wazoo.dev",
+  firstName: process.env.LOCAL_USER_FIRST_NAME || "System",
+  lastName: process.env.LOCAL_USER_LAST_NAME || "Admin",
   profilePictureUrl: null,
   metadata: { admin: "true" },
 };
@@ -66,7 +66,8 @@ export class LocalWorkOSManager implements WorkOSManager {
 
   // --- User Management ---
 
-  async getUser(): Promise<AuthUser> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getUser(userId?: string): Promise<AuthUser> {
     const state = await this.readState();
     return state.user;
   }

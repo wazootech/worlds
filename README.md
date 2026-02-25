@@ -118,8 +118,8 @@ graphs:
 - [World Models (Ha & Schmidhuber)](https://worldmodels.github.io/)
 - [MemGPT: Towards LLMs as Operating Systems (Arxiv)](https://arxiv.org/abs/2310.08560)
 
-For further information, please refer to our [whitepaper](packages/docs/paper.mdx).
-
+For further information, please refer to our
+[whitepaper](packages/docs/paper.mdx).
 
 ## Glossary
 

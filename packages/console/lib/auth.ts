@@ -21,7 +21,7 @@ export async function withAuth(): Promise<LocalWithAuthResult> {
   }
 
   const workos = await getWorkOS();
-  return { user: await workos.getUser("local-dev") };
+  return { user: await workos.getUser() };
 }
 
 // ---------------------------------------------------------------------------
