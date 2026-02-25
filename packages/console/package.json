@@ -3,8 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "nuke": "taskkill /F /IM deno.exe /T & rimraf .next/dev/lock",
-    "predev": "rimraf .next/dev/lock",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -12,7 +10,9 @@
     "format": "prettier --write .",
     "check": "tsc --noEmit",
     "precommit": "npm run lint && npm run format && npm run check",
-    "update:sdk": "npx jsr add @wazoo/sdk"
+    "update:sdk": "npx jsr add @wazoo/worlds-sdk",
+    "nuke": "taskkill /F /IM deno.exe /T & rimraf .next/dev/lock",
+    "predev": "rimraf .next/dev/lock"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.23",
