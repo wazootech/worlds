@@ -1,3 +1,4 @@
+import { STATUS_CODE } from "@std/http/status";
 import { Router } from "@fartlabs/rt";
 import { ulid } from "@std/ulid/ulid";
 import { type AuthorizedRequest, authorizeRequest } from "#/middleware/auth.ts";
@@ -27,6 +28,7 @@ import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { LogsService } from "#/lib/database/tables/logs/service.ts";
 import { BlobsService } from "#/lib/database/tables/blobs/service.ts";
 import { handlePatch } from "#/lib/rdf-patch/rdf-patch.ts";
+import { handleETagRequest } from "#/lib/http/etag.ts";
 
 export default (appContext: ServerContext) => {
   const worldsService = new WorldsService(appContext.libsql.database);
@@ -90,7 +92,7 @@ export default (appContext: ServerContext) => {
           deletedAt: world.deleted_at,
         });
 
-        return Response.json(record);
+        return await handleETagRequest(ctx.request, Response.json(record));
       },
     )
     .get(
@@ -154,14 +156,13 @@ export default (appContext: ServerContext) => {
         writer.addQuads(store.getQuads(null, null, null, null));
 
         return new Promise((resolve, reject) => {
-          writer.end((error, result) => {
+          writer.end(async (error, result) => {
             if (error) reject(error);
             else {
-              resolve(
-                new Response(result, {
-                  headers: { "Content-Type": serialization.contentType },
-                }),
-              );
+              const response = new Response(result, {
+                headers: { "Content-Type": serialization.contentType },
+              });
+              resolve(await handleETagRequest(ctx.request, response));
             }
           });
         });
@@ -236,7 +237,7 @@ export default (appContext: ServerContext) => {
                   metadata: { triples: store.size },
                 });
 
-                resolve(new Response(null, { status: 204 }));
+                resolve(new Response(null, { status: STATUS_CODE.NoContent }));
               } catch (e) {
                 reject(e);
               }
@@ -270,7 +271,7 @@ export default (appContext: ServerContext) => {
 
         const rows = await worldsService.listAll(pageSize, offset);
 
-        return Response.json(
+        const response = Response.json(
           rows.map((world: WorldRow) => ({
             id: world.id,
             organizationId: null,
@@ -282,6 +283,8 @@ export default (appContext: ServerContext) => {
             deletedAt: world.deleted_at,
           })),
         );
+
+        return await handleETagRequest(ctx.request, response);
       },
     )
     .post(
@@ -335,7 +338,7 @@ export default (appContext: ServerContext) => {
             updatedAt: world.updated_at,
             deletedAt: world.deleted_at,
           }),
-          { status: 201 },
+          { status: STATUS_CODE.Created },
         );
       },
     )
@@ -377,7 +380,7 @@ export default (appContext: ServerContext) => {
           updated_at: Date.now(),
         });
 
-        return new Response(null, { status: 204 });
+        return new Response(null, { status: STATUS_CODE.NoContent });
       },
     )
     .delete(
@@ -401,7 +404,7 @@ export default (appContext: ServerContext) => {
           deleted_at: Date.now(),
         });
 
-        return new Response(null, { status: 204 });
+        return new Response(null, { status: STATUS_CODE.NoContent });
       },
     );
 };

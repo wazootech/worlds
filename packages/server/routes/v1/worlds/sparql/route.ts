@@ -1,7 +1,8 @@
 // @deno-types="@types/n3"
 import { DataFactory, Writer } from "n3";
-import { ulid } from "@std/ulid/ulid";
+import { STATUS_CODE } from "@std/http/status";
 import { Router } from "@fartlabs/rt";
+import { ulid } from "@std/ulid/ulid";
 import { type AuthorizedRequest, authorizeRequest } from "#/middleware/auth.ts";
 import { negotiateSerialization } from "#/lib/rdf/serialization.ts";
 import type { ServerContext } from "#/context.ts";
@@ -305,7 +306,7 @@ async function executeSparqlRequest(
     });
 
     return new Response(null, {
-      status: 204,
+      status: STATUS_CODE.NoContent,
     });
   }
 
@@ -362,11 +363,8 @@ export default (appContext: ServerContext) => {
           );
         } catch (error) {
           console.error("SPARQL query error:", error);
-          return Response.json(
-            {
-              error: error instanceof Error ? error.message : "Query failed",
-            },
-            { status: 400 },
+          return ErrorResponse.BadRequest(
+            error instanceof Error ? error.message : "Query failed",
           );
         }
       },
@@ -412,13 +410,8 @@ export default (appContext: ServerContext) => {
           );
         } catch (error) {
           console.error("SPARQL query/update error:", error);
-          return Response.json(
-            {
-              error: error instanceof Error
-                ? error.message
-                : "Query/update failed",
-            },
-            { status: 400 },
+          return ErrorResponse.BadRequest(
+            error instanceof Error ? error.message : "Query/update failed",
           );
         }
       },

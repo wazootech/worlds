@@ -1,9 +1,11 @@
+import { STATUS_CODE, STATUS_TEXT, type StatusCode } from "@std/http/status";
+
 /**
  * ErrorResponseInit is the initialization options for ErrorResponse.
  */
 export interface ErrorResponseInit {
   message: string;
-  code: number;
+  code: StatusCode;
   headers?: Headers | HeadersInit;
 }
 
@@ -23,6 +25,7 @@ export class ErrorResponse extends Response {
         error: {
           code,
           message,
+          statusText: STATUS_TEXT[code],
         },
       }),
       {
@@ -39,7 +42,11 @@ export class ErrorResponse extends Response {
     message: string,
     headers: Headers | HeadersInit = {},
   ): ErrorResponse {
-    return new ErrorResponse({ message, code: 400, headers });
+    return new ErrorResponse({
+      message,
+      code: STATUS_CODE.BadRequest,
+      headers,
+    });
   }
 
   /**
@@ -49,7 +56,11 @@ export class ErrorResponse extends Response {
     message = "Unauthorized",
     headers: Headers | HeadersInit = {},
   ): ErrorResponse {
-    return new ErrorResponse({ message, code: 401, headers });
+    return new ErrorResponse({
+      message,
+      code: STATUS_CODE.Unauthorized,
+      headers,
+    });
   }
 
   /**
@@ -59,7 +70,11 @@ export class ErrorResponse extends Response {
     message = "Forbidden",
     headers: Headers | HeadersInit = {},
   ): ErrorResponse {
-    return new ErrorResponse({ message, code: 403, headers });
+    return new ErrorResponse({
+      message,
+      code: STATUS_CODE.Forbidden,
+      headers,
+    });
   }
 
   /**
@@ -69,7 +84,11 @@ export class ErrorResponse extends Response {
     message = "Not found",
     headers: Headers | HeadersInit = {},
   ): ErrorResponse {
-    return new ErrorResponse({ message, code: 404, headers });
+    return new ErrorResponse({
+      message,
+      code: STATUS_CODE.NotFound,
+      headers,
+    });
   }
 
   /**
@@ -79,7 +98,11 @@ export class ErrorResponse extends Response {
     message = "Method Not Allowed",
     headers: Headers | HeadersInit = {},
   ): ErrorResponse {
-    return new ErrorResponse({ message, code: 405, headers });
+    return new ErrorResponse({
+      message,
+      code: STATUS_CODE.MethodNotAllowed,
+      headers,
+    });
   }
 
   /**
@@ -89,7 +112,11 @@ export class ErrorResponse extends Response {
     message: string,
     headers: Headers | HeadersInit = {},
   ): ErrorResponse {
-    return new ErrorResponse({ message, code: 409, headers });
+    return new ErrorResponse({
+      message,
+      code: STATUS_CODE.Conflict,
+      headers,
+    });
   }
 
   /**
@@ -99,7 +126,11 @@ export class ErrorResponse extends Response {
     message = "Payload Too Large",
     headers: Headers | HeadersInit = {},
   ): ErrorResponse {
-    return new ErrorResponse({ message, code: 413, headers });
+    return new ErrorResponse({
+      message,
+      code: STATUS_CODE.ContentTooLarge,
+      headers,
+    });
   }
 
   /**
@@ -109,7 +140,11 @@ export class ErrorResponse extends Response {
     message = "Unsupported Media Type",
     headers: Headers | HeadersInit = {},
   ): ErrorResponse {
-    return new ErrorResponse({ message, code: 415, headers });
+    return new ErrorResponse({
+      message,
+      code: STATUS_CODE.UnsupportedMediaType,
+      headers,
+    });
   }
 
   /**
@@ -119,7 +154,11 @@ export class ErrorResponse extends Response {
     message = "Rate limit exceeded",
     headers: Headers | HeadersInit = {},
   ): ErrorResponse {
-    return new ErrorResponse({ message, code: 429, headers });
+    return new ErrorResponse({
+      message,
+      code: STATUS_CODE.TooManyRequests,
+      headers,
+    });
   }
 
   /**
@@ -129,6 +168,10 @@ export class ErrorResponse extends Response {
     message = "Internal Server Error",
     headers: Headers | HeadersInit = {},
   ): ErrorResponse {
-    return new ErrorResponse({ message, code: 500, headers });
+    return new ErrorResponse({
+      message,
+      code: STATUS_CODE.InternalServerError,
+      headers,
+    });
   }
 }
