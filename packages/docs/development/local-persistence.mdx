@@ -14,6 +14,28 @@ packages/console/data/
         └── {world_id}.db # Secondary libSQL DB (triples & embeddings for a world)
 ```
 
-## Resetting State
+## Resetting state
 
 To wipe all local data and start fresh, simply delete the contents of the `packages/console/data` directory.
+
+## Modifying existing user data
+
+If you want to change the identity of your local user _after_ the initial setup, you can directly edit `packages/console/data/workos.json`.
+
+```json
+{
+  "user": {
+    "id": "admin",
+    "email": "admin@wazoo.dev",
+    "firstName": "System",
+    "lastName": "Admin",
+    "profilePictureUrl": null,
+    "metadata": {
+      "admin": "true"
+    }
+  },
+  "organizations": []
+}
+```
+
+Changes made to this file will be reflected in the Console upon the next request.

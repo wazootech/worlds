@@ -13,7 +13,7 @@ To develop on the Worlds Platform™, you'll need the following tools:
 - **Node.js** (v20+) for the Console and Documentation.
 - **Git** for version control.
 
-## Setup the Console
+## Setup the console
 
 The Console orchestrates all other resources. In local mode, it uses `data/workos.json` as a mock identity provider.
 
@@ -47,7 +47,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 </Step>
 </Steps>
 
-## Booting World Instances
+## Booting world instances
 
 Once the Console is running, it will automatically manage local World API processes.
 
@@ -56,3 +56,16 @@ Once the Console is running, it will automatically manage local World API proces
   1. Generate a local API Key.
   2. Create a local SQLite database in `data/{org_id}/worlds.db`.
   3. Spawn a new World API server on an available local port.
+
+## Customizing the local user
+
+In Local Dev Mode, you can customize the identity of the mock user session by setting environment variables in `packages/console/.env`:
+
+```dotenv
+LOCAL_USER_ID="admin"
+LOCAL_USER_EMAIL="admin@wazoo.dev"
+LOCAL_USER_FIRST_NAME="System"
+LOCAL_USER_LAST_NAME="Admin"
+```
+
+These values are used to initialize the `data/workos.json` file if it doesn't already exist.
