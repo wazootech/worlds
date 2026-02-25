@@ -1,0 +1,34 @@
+---
+title: "Database layer"
+description: "Main and World database scopes, management, and codegen."
+---
+
+## Two database scopes
+
+- **Main database** (single instance):
+  - Tables: `organizations`, `worlds`, `service_accounts`, `invites`, `rate_limits`, `usage`.
+  - Created by `initializeDatabase(client)` in `lib/database/init.ts`.
+- **World databases** (one per world):
+  - Tables: `chunks` (with FTS and vector index), `triples`, `logs`.
+  - Created by `initializeDatabase(client)` in `lib/database/init.ts`.
+  - When a new world DB is created, the implementation **must** initialize the schema.
+
+## DatabaseManager interface
+
+Defined in **packages/server/lib/database/manager.ts**:
+
+- `create(id: string): Promise<ManagedDatabase>` — Create a new world DB and initialize its schema.
+- `get(id: string): Promise<ManagedDatabase>` — Retrieve a `ManagedDatabase` for the world.
+- `delete(id: string): Promise<void>` — Remove the world DB resources.
+
+### Implementations:
+
+- **FileDatabaseManager**: Stores each world as `{id}.db` in the `WORLDS_BASE_DIR` (defaults to `./worlds`).
+- **TursoDatabaseManager**: Uses Turso API to manage remote databases and tokens.
+- **MemoryDatabaseManager**: In-memory clients for testing.
+
+## SQL and code generation
+
+- **Queries** live in `.sql` files under each resource.
+- **sql-embedder** generates `queries.sql.ts` files: run `deno task generate`.
+- `core/init.ts` imports table and index names from generated files to run DDL in order.

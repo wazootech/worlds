@@ -1,0 +1,28 @@
+---
+title: "RDF & SPARQL"
+description: "How the platform handles RDF blobs, N3 stores, and SPARQL queries."
+---
+
+## RDF blob handling
+
+- **lib/blob/n3.ts:** Provides utilities to convert between RDF blobs (e.g., N-Quads strings) and N3 Stores (parsing and serialization).
+- **lib/blob/sparql.ts:** `sparql(blob, query, handler)` runs queries using Comunica over an N3 store. It wires a `PatchHandler` for updates.
+
+## RDF patching
+
+Defined in **lib/rdf-patch/mod.ts**:
+
+The `handlePatch(client, embeddings, patches)` function applies `Patch` insertions and deletions to the **world** database. For each quad, it:
+
+1. Skolemizes the quad.
+2. Hashes it to a unique triple ID.
+3. Performs `upsertTriples` or `deleteTriples`.
+4. Performs `upsertChunks` with embeddings and text splitting.
+
+## SPARQL route execution
+
+1. Loads the world (with its blob) from the main DB.
+2. Resolves the world client via `databaseManager.get(worldId)`.
+3. Runs `handlePatch` with a handler that applies updates to the world client.
+4. Executes the SPARQL query over the blob.
+5. If the blob changed (on update), the main DB's world row is updated.

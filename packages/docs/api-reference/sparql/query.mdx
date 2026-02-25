@@ -1,5 +1,5 @@
 ---
-title: "SPARQL Query"
+title: "SPARQL query"
 api: "POST https://api.wazoo.dev/v1/worlds/{worldId}/sparql"
 description: "Execute a SPARQL query against a world."
 ---
@@ -25,6 +25,7 @@ description: "Execute a SPARQL query against a world."
 The body should contain the raw SPARQL query string.
 
 Example:
+
 ```sparql
 SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10
 ```

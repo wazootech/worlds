@@ -1,0 +1,39 @@
+---
+title: "AI SDK tools"
+description: "Reference for the neuro-symbolic tools provided in @wazoo/ai-sdk."
+---
+
+The `@wazoo/ai-sdk` package provides a set of tools designed to bridge the gap between Large Language Models (LLMs) and structured RDF knowledge. These tools are located in `packages/ai-sdk/tools`.
+
+## Core tools
+
+### `discover-schema`
+
+Introspects a world's graph to identify available classes, properties, and their relationships. This is essential for providing agents with the "vocabulary" of a specific world before they attempt to query it.
+
+- **Usage**: Typically called during the agent's initialization or first-encounter with a world.
+- **Benefit**: Redues hallucinations by grounding the agent in the actual schema of the graph.
+
+### `execute-sparql`
+
+Provides a safe interface for agents to execute SPARQL `SELECT` and `ASK` queries.
+
+- **Usage**: The agent generates a SPARQL query based on the user's intent and executes it via this tool.
+- **Safety**: Restricts query types and prevents unauthorized access to the underlying database.
+
+### `generate-iri`
+
+A utility for generating semantically meaningful Internationalized Resource Identifiers (IRIs).
+
+- **Usage**: Used when creating new entities or properties within a world to ensure consistency and adherence to RDF standards.
+
+### `search-entities`
+
+Integrates the hybrid search (Vector + FTS) capabilities of the Worlds API.
+
+- **Usage**: Allows agents to perform semantic search across triples and chunks.
+- **Precision**: Returns a ranked list of entities that match the semantic or keyword criteria.
+
+## Integration
+
+These tools are designed to be compatible with popular agent frameworks like the **Vercel AI SDK**, allowing you to expose them as standard "tools" that the model can call autonomously.

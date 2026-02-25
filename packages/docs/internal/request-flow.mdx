@@ -1,0 +1,67 @@
+---
+title: "Request flow"
+description: "Startup process and per-request handling logic."
+---
+
+## Startup process
+
+<Steps>
+  <Step title="Environment setup">
+    **main.ts** reads environment variables (e.g., `LIBSQL_URL`, `ADMIN_API_KEY`, `TURSO_*`, `GOOGLE_*`) and calls `createServerContext(config)`.
+  </Step>
+
+<Step title="Context creation">
+  **createServerContext** (in `server.ts`): - Creates a single LibSQL **main
+  client**. - Calls **initializeDatabase(mainClient)** to create all main-DB
+  tables and indexes. - Builds **embeddings** (e.g., `GeminiEmbeddings`). -
+  Instantiates **WorldsService** and chooses a **DatabaseManager**. - Returns
+  **ServerContext**.
+</Step>
+
+<Step title="Router configuration">
+  **createServer(serverContext)** builds a single **Router** (`@fartlabs/rt`),
+  then for each path in the `routes` array, it dynamically registers the route
+  handler.
+</Step>
+
+  <Step title="Server initialization">
+    **main.ts** exports `{ fetch: (request) => app.fetch(request) }` for `Deno.serve`.
+  </Step>
+</Steps>
+
+## Per-request flow
+
+<Steps>
+  <Step title="Routing">
+    **Router** matches the request URL/method and invokes the handler.
+  </Step>
+
+<Step title="Context injection">
+  Handlers receive a **context** object with `request` and `params`.
+</Step>
+
+<Step title="Authorization">
+  Handlers that require auth call **authorizeRequest(serverContext, request)**.
+  It checks the Bearer token.
+</Step>
+
+<Step title="Business logic execution">
+  Handlers use **ServerContext** and instantiate needed resource services. For
+  world-scoped operations, they call
+  `serverContext.libsql.manager.get(worldId)`.
+</Step>
+
+  <Step title="Response generation">
+    Success responses use `Response.json(...)`. Errors use **ErrorResponse** static methods.
+  </Step>
+</Steps>
+
+## ServerContext
+
+Defined in **packages/server/context.ts**:
+
+- **embeddings: Embeddings** — Interface for generating text embeddings.
+- **libsql**:
+  - **database: Client** — Single LibSQL client for the **main** database.
+  - **manager: DatabaseManager** — Creates/gets/deletes **per-world** databases.
+- **admin?**: `{ apiKey: string }` — Required for production admin access.

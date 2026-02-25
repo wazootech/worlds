@@ -3,11 +3,16 @@ title: "Quickstart"
 description: "Start building with Worlds API in under 5 minutes"
 ---
 
-## Setup
+## Get started
 
-To get started, you'll need an API key and a World ID. You can get these from the [Worlds Console](https://console.wazoo.dev).
+Follow these steps to create your first world and run a query in under 5 minutes.
 
-### 1. Install the SDK
+<Steps>
+  <Step title="Setup credentials">
+    To get started, you'll need an API key and a world ID. You can generate these in the [dashboard](https://console.wazoo.dev).
+  </Step>
+
+  <Step title="Install the SDK">
 
 <CodeGroup>
 
@@ -21,7 +26,10 @@ deno add jsr:@wazoo/sdk
 
 </CodeGroup>
 
-### 2. Initialize the Client
+  </Step>
+
+  <Step title="Initialize the client">
+    Create a new client instance using your API key.
 
 ```typescript
 import { WorldsSdk } from "@wazoo/sdk";
@@ -34,7 +42,10 @@ const sdk = new WorldsSdk({
 const worldId = "YOUR_WORLD_ID";
 ```
 
-### 3. Add Knowledge
+  </Step>
+
+  <Step title="Add knowledge">
+    Insert data into your world using SPARQL. This example adds a person and their job title.
 
 Insert some data into your world using SPARQL.
 
@@ -50,7 +61,10 @@ await sdk.worlds.sparql(
 );
 ```
 
-### 4. Query Knowledge
+  </Step>
+
+  <Step title="Query knowledge">
+    Retrieve the data you just added to verify the insertion was successful.
 
 Retrieve the data you just added.
 
@@ -68,7 +82,14 @@ const result = await sdk.worlds.sparql(
 console.log(result);
 ```
 
-### 5. Search
+    <Check>
+      Verify that the `result` contains the name "Ethan" and the title "Software Engineer".
+    </Check>
+
+  </Step>
+
+  <Step title="Search">
+    Perform a semantic search to find information based on meaning rather than exact keywords.
 
 Perform a semantic search.
 
@@ -79,3 +100,10 @@ const searchResults = await sdk.worlds.search(
 );
 console.log(searchResults);
 ```
+
+  </Step>
+</Steps>
+
+## Next steps
+
+Now that you've run your first query, explore the [core concepts](/concepts/worlds) or dive into the [API reference](/api-reference/worlds/list).

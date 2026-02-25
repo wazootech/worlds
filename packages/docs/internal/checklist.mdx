@@ -1,0 +1,36 @@
+---
+title: "Implementation checklist"
+description: "A guide for developers implementing new features."
+---
+
+Follow this checklist when adding new resources or routes to the platform.
+
+### New resource (main database)
+
+- [ ] Create `databases/core/<name>/` directory.
+- [ ] Add `queries.sql` with DDL and CRUD.
+- [ ] Run `deno task generate`.
+- [ ] Add `schema.ts` and `service.ts`.
+- [ ] Register table in `initializeDatabase` in `core/init.ts`.
+- [ ] Add `service.test.ts`.
+
+### New world database table
+
+- [ ] Add DDL to the resource’s `queries.sql`.
+- [ ] Register it in the world-scope portion of `initializeDatabase` in `core/init.ts`.
+- [ ] Verify `DatabaseManager` implementations run this for new creates.
+
+### New route
+
+- [ ] Create `routes/v1/.../route.ts`.
+- [ ] Implement a default export `(appContext) => Router`.
+- [ ] Register the module path in `server.ts`.
+- [ ] Implement auth, validation, and error handling.
+- [ ] Add `route.test.ts`.
+
+### Rate limits
+
+- [ ] Define the `featureId` and limit.
+- [ ] Add the limit to `POLICY_LIMITS` in `rate-limit.ts`.
+- [ ] Call `checkRateLimit` in the handler.
+- [ ] Update the documentation reference.

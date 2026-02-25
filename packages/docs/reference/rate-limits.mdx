@@ -1,0 +1,44 @@
+---
+title: "Rate Limits"
+description: "Detailed policy for service account rate limiting."
+---
+
+Rate limits are enforced **per service account** using a **token bucket** algorithm. Admin requests are exempt.
+
+### Mechanism
+
+- **Algorithm:** Token bucket (stored in `rate_limits` table).
+- **Period:** 60,000 ms (1 minute).
+- **Identification:**
+  - **Admin:** Exempt.
+  - **Service Account:** Limited per account.
+  - **Unauthenticated:** Rejected (401).
+
+### Limits by Resource
+
+All limits are **requests per minute**.
+
+| Resource            | Feature ID             | Limit | Notes                         |
+| ------------------- | ---------------------- | ----- | ----------------------------- |
+| **Organizations**   |                        |       |                               |
+| List organizations  | `organizations_list`   | 120   | Paginated list.               |
+| Create organization | `organizations_create` | 20    |                               |
+| Get organization    | `organizations_get`    | 120   |                               |
+| Update organization | `organizations_update` | 30    |                               |
+| Delete organization | `organizations_delete` | 20    |                               |
+| **Invites**         |                        |       |                               |
+| List invites        | `invites_list`         | 120   |                               |
+| Create invite       | `invites_create`       | 30    |                               |
+| Get invite          | `invites_get`          | 120   |                               |
+| **Worlds**          |                        |       |                               |
+| List worlds         | `worlds_list`          | 120   | Scoped by organization.       |
+| Create world        | `worlds_create`        | 20    | Allocates resources.          |
+| Get world           | `worlds_get`           | 120   |                               |
+| Download world      | `worlds_download`      | 60    | Larger responses.             |
+| **SPARQL**          |                        |       |                               |
+| SPARQL query        | `sparql_query`         | 60    | Read-only.                    |
+| SPARQL update       | `sparql_update`        | 30    | Writes.                       |
+| **Search**          |                        |       |                               |
+| Semantic search     | `semantic_search`      | 30    | Hybrid search via embeddings. |
+| **Logs**            |                        |       |                               |
+| List logs           | `logs_list`            | 120   | Scoped by world.              |

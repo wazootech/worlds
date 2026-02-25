@@ -3,8 +3,6 @@ title: "Whitepaper"
 description: "Malleable Knowledge at the Edge for Neuro-Symbolic Agents."
 ---
 
-# Worlds API: Malleable Knowledge at the Edge for Neuro-Symbolic Agents
-
 **Author**: Ethan Davidson (Founder, Wazoo Technologies) **Date**: January 2026
 
 ---
@@ -31,9 +29,9 @@ proprietary AI silos.
 
 ---
 
-## 1. Introduction
+## Introduction
 
-### 1.1 The Context: The Ephemeral Nature of LLMs
+### 1.1 The context: The ephemeral nature of LLMs
 
 The rise of Transformer-based models has revolutionized artificial intelligence,
 providing agents with fluent communication skills and broad "world knowledge"
@@ -42,7 +40,7 @@ a context window closes, the "thought" is lost. For an AI agent to operate
 autonomously over long periods, it requires persistent memory that is both
 accessible and mutable.
 
-### 1.2 The Problem: The Reasoning Gap
+### 1.2 The problem: The reasoning gap
 
 Current industry standards rely heavily on **Vector Databases** to provide
 long-term memory. This approach converts text into high-dimensional embedding
@@ -57,7 +55,7 @@ vectors. While effective for semantic similarity (finding documents _about_
 3. **Data Silos**: Information remains trapped in proprietary "walled gardens,"
    hindering the interoperability required for a truly personal AI assistant.
 
-### 1.3 The Solution: Worlds API
+### 1.3 The solution: Worlds API
 
 We propose **Worlds API**, a system designated to provide **Malleable
 Knowledge** within arm's reach of the AI agent. Unlike static knowledge bases,
@@ -87,12 +85,12 @@ We adhere to core philosophical pillars to guide technical decisions:
 
 ---
 
-## 2. System Architecture
+## System architecture
 
-### 2.1 High-Level Overview
+### 2.1 High-level overview
 
 The system follows a segregated Client-Server architecture designed for edge
-deployment. It unifies a Control Plane (Dashboard) with a high-performance Data
+deployment. It unifies a Control Plane (Console) with a high-performance Data
 Plane (API).
 
 ```mermaid
@@ -105,7 +103,7 @@ graph LR
 
     subgraph Control ["Control Plane"]
         direction TB
-        Dashboard[Dashboard]
+        Console[Console]
         Auth[Auth Service]
     end
 
@@ -122,8 +120,8 @@ graph LR
     end
 
     %% Human/Control Flow
-    Dev ==>|HTTPS| Dashboard
-    Dashboard <==>|Mgmt API| Guard
+    Dev ==>|HTTPS| Console
+    Console <==>|Mgmt API| Guard
 
     %% Agent/Data Flow
     Agent <==>|HTTPS / SDK| Guard
@@ -141,7 +139,7 @@ graph LR
 - **FartLabs**: The R&D division (Subsidiary) focused on neuro-symbolic research
   and the development of the Worlds API.
 
-### 2.3 Component Breakdown
+### 2.3 Component breakdown
 
 1. **The SDK**: A canonical TypeScript client that handles authentication and
    type-safe API requests. It acts as the bridge between "neural" code (LLMs)
@@ -154,12 +152,12 @@ graph LR
 
 ---
 
-## 3. Storage Engine
+## Storage engine
 
 To achieve both semantic flexibility and structural precision, we employ a
 hybrid storage strategy.
 
-### 3.1 n3 (Hot Memory)
+### 3.1 n3 (hot memory)
 
 An in-memory, WASM-compiled RDF store that supports SPARQL. This allows for
 complex graph pattern matching (e.g., recursive queries, property paths) that
@@ -171,7 +169,7 @@ SQL and Vectors cannot easily handle.
 - **Edge Cache**: Hot state persists in the Edge Cache between requests for
   millisecond read latency.
 
-### 3.2 Normalized SQLite (Cold Storage)
+### 3.2 Normalized SQLite (cold storage)
 
 We utilize a **Normalized Schema** for persistence to avoid the overhead of
 general-purpose SPARQL engines on disk while maintaining semantic integrity.
@@ -182,14 +180,14 @@ general-purpose SPARQL engines on disk while maintaining semantic integrity.
 - **`chunks` Table**: The source of truth for text segments, optimized for
   search.
 
-### 3.3 Hexastore Indexing
+### 3.3 Hexastore indexing
 
 To ensure O(log N) performance for any RDF triple pattern, we implement a
 **Hexastore** strategy using SQLite's "covered indices". We maintain three
 permutation tables (`spo`, `pos`, `osp`) to ensure that queries matching any
 pattern (Subject, Predicate, or Object) can leverage an optimal index.
 
-### 3.4 Hybrid Search & RRF
+### 3.4 Hybrid search & RRF
 
 We utilize **Reciprocal Rank Fusion (RRF)** to combine results from distinct
 indices:
@@ -204,12 +202,12 @@ located in New York (Graph) that are 'cozy' (Vector/FTS)"_.
 
 ---
 
-## 4. The "Invisible" Agent & SDK
+## The "invisible" agent & SDK
 
 Our goal is to make the "World" seamlessly available to AI agents without
 requiring developers to write raw SPARQL.
 
-### 4.1 The Detachable Hippocampus
+### 4.1 The detachable hippocampus
 
 The SDK provides drop-in tools for the Vercel AI SDK and other agent frameworks:
 
@@ -217,7 +215,7 @@ The SDK provides drop-in tools for the Vercel AI SDK and other agent frameworks:
 - **`recall`**: Searches the World using Hybrid Search.
 - **`forget`**: Removes specific knowledge via cascading deletes.
 
-### 4.2 The Invisible SPARQL Agent
+### 4.2 The invisible SPARQL agent
 
 We implement a sophisticated translator agent that sits between the developer's
 natural language request and the database. This "Invisible Agent" generates
@@ -228,7 +226,7 @@ of a chat interface.
 
 ---
 
-## 5. API & Control Plane
+## API & control plane
 
 The platform exposes a comprehensive REST API organized into Control Plane
 (Management) and Data Plane (Graph) operations.
@@ -243,16 +241,16 @@ The platform exposes a comprehensive REST API organized into Control Plane
 - **Search**: Dedicated endpoints for searching Statements and Text Chunks via
   full-text or semantic query parameters.
 
-### 5.2 Access Control & Multi-tenancy
+### 5.2 Access control & multi-tenancy
 
 - **Dynamic Access**: Runtime enforcement of plan limits (e.g., Free vs. Pro
   tiers) without code deployment.
 - **Metering**: Asynchronous usage tracking aggregated by API Key and time
   bucket, supporting finer-grained "Pay-as-you-go" billing.
-- **Auth**: Dual-strategy authentication using WorkOS (for Humans/Dashboard) and
+- **Auth**: Dual-strategy authentication using WorkOS (for Humans/Console) and
   Scoped API Keys (for Agents).
 
-### 5.3 The Dashboard
+### 5.3 The console
 
 A Next.js-based control plane allows humans to oversee their agents' memories.
 Users can visualize their Worlds, manage API keys, and monitor usage, ensuring
@@ -262,11 +260,16 @@ A worlds grid
 ([animated procedural planets](https://github.com/Deep-Fold/PixelPlanets)) where
 a user may navigate to a specific world.
 
-[![Clancy's Multiverse Simulator](/images/multiverse-simulator.png)](https://themidnightgospel.fandom.com/wiki/Multiverse_Simulator)
+<Frame caption="Clancy's Multiverse Simulator serves as a metaphor for navigating isolated knowledge worlds.">
+  <img
+    src="/images/multiverse-simulator.png"
+    alt="Clancy's Multiverse Simulator"
+  />
+</Frame>
 
 ---
 
-## 6. Glossary
+## Glossary
 
 | Term               | Definition                                                                                  |
 | :----------------- | :------------------------------------------------------------------------------------------ |
@@ -278,16 +281,18 @@ a user may navigate to a specific world.
 | **SPARQL**         | The W3C standard query language for RDF graphs.                                             |
 | **Neuro-symbolic** | An AI system that combines the strengths of neural networks and structured data.            |
 
-<img
-  width="1024"
-  height="559"
-  alt="Molecules are to RDF Statements as Atoms are to RDF Terms."
-  src="https://github.com/user-attachments/assets/4371ca21-a2dc-486d-90cc-2dc386179f65"
-/>
+<Frame caption="Molecules are to RDF statements as atoms are to RDF terms.">
+  <img
+    width="1024"
+    height="559"
+    alt="Molecules are to RDF Statements as Atoms are to RDF Terms."
+    src="https://github.com/user-attachments/assets/4371ca21-a2dc-486d-90cc-2dc386179f65"
+  />
+</Frame>
 
 ---
 
-## 7. References
+## References
 
 1. **Oxigraph**. (n.d.). Oxigraph: SPARQL graph database. GitHub.
    https://github.com/oxigraph/oxigraph

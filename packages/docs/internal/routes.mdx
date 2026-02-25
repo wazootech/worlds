@@ -1,0 +1,35 @@
+---
+title: "Routes & API"
+description: "API route registration, handler patterns, and endpoint reference."
+---
+
+## Registration
+
+In `server.ts`, the `routes` array lists module paths relative to `server/`. Each module default exports a function `(serverContext: ServerContext) => Router`.
+
+Example registration:
+
+```typescript
+import worldsRouter from "./routes/v1/worlds/route.ts";
+
+const routes = [
+  worldsRouter,
+  // ...
+];
+```
+
+## Route handler pattern
+
+1. **Path Params:** Read from `ctx.params?.pathname.groups`.
+2. **Auth:** Call `authorizeRequest(serverContext, ctx.request)` (from `middleware/auth.ts`).
+3. **Query/Body:** Parse URL for query params or `ctx.request.json()` for the body. Validate with Zod.
+4. **Lookup:** Use the appropriate service with `serverContext.libsql.database` or resolve a world DB client.
+5. **Response:** Return `Response.json(record)` or an `ErrorResponse`.
+
+## Endpoints reference
+
+- **Organizations:** GET/POST `/v1/organizations`, GET/PUT/DELETE `/v1/organizations/:organization`
+- **Invites:** GET/POST `/v1/invites`, GET/DELETE `/v1/invites/:code`
+- **Worlds:** GET/POST `/v1/worlds`, GET/PUT/DELETE `/v1/worlds/:world`, GET `/v1/worlds/:world/download`, GET `/v1/worlds/:world/logs`
+- **SPARQL:** GET/POST `/v1/worlds/:world/sparql`
+- **Search:** GET `/v1/search`

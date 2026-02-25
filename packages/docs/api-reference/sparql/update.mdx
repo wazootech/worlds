@@ -1,5 +1,5 @@
 ---
-title: "SPARQL Update"
+title: "SPARQL update"
 api: "POST https://api.wazoo.dev/v1/worlds/{worldId}/sparql"
 description: "Execute a SPARQL update against a world."
 ---
@@ -21,6 +21,7 @@ description: "Execute a SPARQL update against a world."
 The body should contain the raw SPARQL update string.
 
 Example:
+
 ```sparql
 INSERT DATA {
   <http://example.org/subject> <http://example.org/predicate> "object" .

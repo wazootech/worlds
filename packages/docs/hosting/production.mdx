@@ -1,0 +1,36 @@
+---
+title: "Production Deployment"
+description: "A guide to deploying the Worlds Platform™ to the cloud."
+---
+
+To run a full production-grade instance of the Worlds Platform™, follow these steps:
+
+### Provision Infrastructure
+
+- **Identity (WorkOS)**:
+  - Create a project in [WorkOS](https://workos.com) and set up AuthKit.
+  - **Retrieve**: `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, and `WORKOS_COOKIE_PASSWORD`.
+- **Compute (Deno Deploy)**:
+  - Generate a personal access token in [Deno Deploy](https://dash.deno.com).
+  - **Retrieve**: `DENO_DEPLOY_TOKEN`.
+- **Storage (Turso)**:
+  - Create a [Turso](https://turso.tech) account and generate an API token.
+  - **Retrieve**: `TURSO_API_TOKEN` and `TURSO_ORG`.
+
+### Deploy the Console
+
+The Console is a standard Next.js application. You can deploy it to Vercel, Netlify, or a VPS.
+
+- Set the environment variables retrieved in **Step 1** in your deployment settings.
+- Ensure `NEXT_PUBLIC_WORKOS_REDIRECT_URI` matches your deployment callback URL.
+
+### Orchestrate Worlds
+
+Once the Console is running:
+
+1. Log in via AuthKit.
+2. Create an **Organization**.
+3. The platform will automatically:
+   - Provision a new **Turso Database**.
+   - Deploy a new **Deno Deploy App** running `packages/server`.
+   - Link them together via metadata.

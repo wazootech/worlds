@@ -1,0 +1,40 @@
+---
+title: "Project Tasks"
+description: "Monorepo structure and common development tasks."
+---
+
+## Monorepo Structure
+
+| Package           | Description                               |
+| :---------------- | :---------------------------------------- |
+| `packages/server` | The core REST API implementation.         |
+| `packages/sdk`    | Official TypeScript/Deno client.          |
+| `packages/cli`    | Command-line tool for managing instances. |
+| `packages/docs`   | This documentation site (Mintlify).       |
+
+## Global Tasks
+
+Common tasks can be run from the root of the repository:
+
+- **Start CLI**: `deno task start:cli`
+- **Start Server**: `deno task start:server`
+- **Format code**: `deno task fmt`
+- **Lint code**: `deno task lint`
+- **Run tests**: `deno task test`
+- **Pre-commit check**: `deno task precommit`
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Ports already in use">
+    The Console attempts to allocate ports starting from `8001`. If you have
+    conflicting services or lingering processes, you can run:
+
+    ```bash
+    npm run nuke
+    ```
+
+    This will kill all local Deno processes and reset the development lock. Alternatively, you can manually adjust the `apiBaseUrl` in `data/workos.json` and restart the console.
+
+  </Accordion>
+</AccordionGroup>

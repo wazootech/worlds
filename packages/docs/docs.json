@@ -7,7 +7,7 @@
     "light": "#F59E0B",
     "dark": "#78350F"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/images/wazoo.svg",
   "navigation": {
     "tabs": [
       {
@@ -22,20 +22,66 @@
             ]
           },
           {
+            "group": "Architecture",
+            "pages": [
+              "architecture/overview",
+              "architecture/resource-hierarchy",
+              "paper"
+            ]
+          },
+          {
+            "group": "Hosting",
+            "pages": [
+              "hosting/production",
+              "hosting/configuration"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "development/local-setup",
+              "development/local-persistence",
+              "development/tasks"
+            ]
+          },
+          {
             "group": "Core Concepts",
             "pages": [
               "concepts/worlds",
               "concepts/sparql",
               "concepts/search"
             ]
+          }
+        ]
+      },
+      {
+        "tab": "Internal",
+        "groups": [
+          {
+            "group": "System Design",
+            "pages": [
+              "internal/design",
+              "internal/request-flow",
+              "internal/database-layer",
+              "internal/resource-pattern"
+            ]
           },
           {
-            "group": "Development",
+            "group": "Implementation",
             "pages": [
-              "hosting",
-              "development",
-              "design",
-              "paper"
+              "internal/routes",
+              "internal/ai-sdk",
+              "internal/rdf-sparql",
+              "internal/embeddings-search",
+              "internal/logging"
+            ]
+          },
+
+          {
+            "group": "Maintenance",
+            "pages": [
+              "internal/testing",
+              "internal/checklist"
             ]
           }
         ]
@@ -65,6 +111,12 @@
             "pages": [
               "api-reference/search/search"
             ]
+          },
+          {
+            "group": "Policy",
+            "pages": [
+              "reference/rate-limits"
+            ]
           }
         ]
       },
@@ -84,7 +136,7 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Dashboard",
+          "anchor": "Console",
           "href": "https://console.wazoo.dev",
           "icon": "globe"
         }
@@ -92,8 +144,8 @@
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/images/wazoo.svg",
+    "dark": "/images/wazoo.svg"
   },
   "navbar": {
     "links": [

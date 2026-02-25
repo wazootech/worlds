@@ -1,0 +1,27 @@
+---
+title: "Logging system"
+description: "How the platform handles world-scoped logs and triggers."
+---
+
+## Logs service
+
+The `LogsService` manages logs within a world's database. It is defined in `lib/database/world/logs/service.ts`. It provides:
+
+- `listByWorld(worldId, limit)` (descending order).
+- `listSince(sinceTimestamp, limit)` (ascending order).
+
+## Log levels
+
+The platform uses standard log levels: `info`, `warn`, `error`, and `debug`.
+
+## Log triggers
+
+Certain platform events automatically trigger log entries in the world-scoped database:
+
+| Event         | World ID source | Level | Notes                                    |
+| ------------- | --------------- | ----- | ---------------------------------------- |
+| World created | New world `id`  | info  | Includes label in metadata.              |
+| World updated | `:world`        | info  | Includes changed fields in metadata.     |
+| World deleted | `:world`        | info  | Created before deletion for audit trail. |
+| SPARQL query  | `:world`        | info  | Includes query type or size.             |
+| SPARQL update | `:world`        | info  | Includes update type.                    |

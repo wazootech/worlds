@@ -1,0 +1,24 @@
+---
+title: "Embeddings & search"
+description: "Implementation details for semantic search and vector embeddings."
+---
+
+## Embeddings interface
+
+Defined in **lib/embeddings/embeddings.ts**:
+
+A simple interface for generating vector representations of text:
+
+- `embed(text: string): Promise<number[]>`
+- `dimensions: number`
+
+The **GeminiEmbeddings** implementation uses `@google/genai` with model `models/gemini-embedding-001`.
+
+## Hybrid search implementation
+
+The Search route uses **ChunksService** to run a hybrid search across one or more worlds:
+
+1. **Resolution:** Resolves world IDs via `WorldsService`.
+2. **Execution:** Gets each world client via `serverContext.libsql.manager.get(worldId)`.
+3. **Hybrid Search:** Combines vector similarity (using the embeddings interface) with FTS (Full Text Search) results.
+4. **Metering:** Records usage via `UsageService`.

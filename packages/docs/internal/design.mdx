@@ -1,0 +1,31 @@
+---
+title: "Internal design"
+description: "Structure, architecture, and conventions of the Worlds API."
+---
+
+## Introduction
+
+This section describes the structure of the application so it can be implemented and extended consistently. It is the source of truth for architecture, layering, and conventions.
+
+## Repository Layout
+
+```text
+packages/server/
+├── context.ts         # ServerContext shared by every route
+├── lib/               # Shared logic and utilities
+│   ├── ai-sdk/        # AI SDK integration
+│   ├── blob/          # RDF/SPARQL blob and store handling
+│   ├── database/      # Database layer and managers
+│   ├── embeddings/    # Embeddings interface and implementations
+│   ├── errors/        # ErrorResponse helpers
+│   ├── rdf-patch/     # RDF patch application logic
+│   └── testing/       # TestContext and testing utilities
+├── main.ts            # Deno serve entrypoint
+├── middleware/        # auth.ts, rate-limit.ts
+├── models/            # Open API models and shared types
+├── routes/            # v1 API routes
+└── server.ts          # createServer, createServerContext
+```
+
+- **Entrypoints:** `packages/server/main.ts` (server), `packages/cli/main.ts` (CLI).
+- **Import alias:** `#/` maps to `./` within each package; use `#/lib/...`, `#/routes/...` for internal imports.

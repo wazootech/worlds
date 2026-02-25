@@ -1,0 +1,19 @@
+---
+title: "Local Persistence"
+description: "How state is stored on your local filesystem."
+---
+
+During local development, all state is stored in the `packages/console/data` directory. This directory mirrors the resource hierarchy (Organizations > Worlds) using the local filesystem.
+
+```text
+packages/console/data/
+├── workos.json           # Mock database for Organizations and Users
+└── {org_id}/             # Root directory for a specific Organization
+    ├── worlds.db         # Primary libSQL DB (registry of worlds for the org)
+    └── worlds/           # Directory for individual World databases
+        └── {world_id}.db # Secondary libSQL DB (triples & embeddings for a world)
+```
+
+## Resetting State
+
+To wipe all local data and start fresh, simply delete the contents of the `packages/console/data` directory.
