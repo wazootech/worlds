@@ -3,7 +3,7 @@
  */
 export interface WorldsSdkOptions {
   /**
-   * baseUrl is the base URL of the Worlds API.
+   * baseUrl is the base URL of the Worlds API. It should not include the /v1 suffix.
    */
   baseUrl: string;
 
