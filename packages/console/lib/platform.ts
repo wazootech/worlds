@@ -1,9 +1,6 @@
 import { retry } from "@std/async/retry";
-import type {
-  WorkOSOrganization,
-  WorkOSManager,
-} from "./workos/workos-manager";
-import type { AppManager } from "./apps/app-manager";
+import type { WorkOSOrganization, WorkOSManager } from "./workos/workos-manager";
+import { type AppManager, buildWorldsEnvs } from "./apps/app-manager";
 import type { TursoManager } from "./turso/turso-manager";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -172,31 +169,22 @@ export async function teardownOrganization(orgId: string): Promise<void> {
  * Builds the environment variables for a world-api server deployment.
  * Used by both local (deno serve) and remote (Deno Deploy) environments.
  */
-function buildDeployEnvVars(opts: {
+function buildDeployEnvs(opts: {
   org: WorkOSOrganization;
   port?: string;
   libsqlUrl?: string;
 }): Record<string, string> {
   const { org, port, libsqlUrl } = opts;
-  const envVars: Record<string, string> = {
-    ADMIN_API_KEY: org.metadata?.apiKey || "",
-    LIBSQL_URL: libsqlUrl || org.metadata?.libsqlUrl || "",
-    LIBSQL_AUTH_TOKEN: org.metadata?.libsqlAuthToken || "",
-  };
-
-  if (port) envVars.PORT = port;
-
-  if (org.metadata?.tursoApiToken)
-    envVars.TURSO_API_TOKEN = org.metadata.tursoApiToken;
-  if (org.metadata?.tursoOrg) envVars.TURSO_ORG = org.metadata.tursoOrg;
-
-  // Pass along server-side secrets
-  if (process.env.GOOGLE_API_KEY)
-    envVars.GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-  if (process.env.GOOGLE_EMBEDDINGS_MODEL)
-    envVars.GOOGLE_EMBEDDINGS_MODEL = process.env.GOOGLE_EMBEDDINGS_MODEL;
-
-  return envVars;
+  return buildWorldsEnvs({
+    apiKey: org.metadata?.apiKey || "",
+    libsqlUrl: libsqlUrl || org.metadata?.libsqlUrl || "",
+    libsqlAuthToken: org.metadata?.libsqlAuthToken || "",
+    port,
+    tursoApiToken: org.metadata?.tursoApiToken,
+    tursoOrg: org.metadata?.tursoOrg,
+    googleApiKey: process.env.GOOGLE_API_KEY,
+    googleEmbeddingsModel: process.env.GOOGLE_EMBEDDINGS_MODEL,
+  });
 }
 
 /**
@@ -283,7 +271,7 @@ async function provisionAppInternal(
     port = allocatedPort.toString();
   }
 
-  const envVars = buildDeployEnvVars({ org, port, libsqlUrl });
+  const envs = buildDeployEnvs({ org, port, libsqlUrl });
 
   // If app already exists, we skip creation logic per user preference
   let appId = org.metadata?.denoDeployAppId as string;
@@ -297,7 +285,7 @@ async function provisionAppInternal(
           : `${org.slug}-${Math.random().toString(36).slice(2, 6)}`;
 
         try {
-          return await appManager.createApp(slug, envVars);
+          return await appManager.createApp(slug, envs);
         } catch (error: any) {
           const isConflict =
             error?.status === 409 ||

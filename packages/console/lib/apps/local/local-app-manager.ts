@@ -1,6 +1,6 @@
-import { spawn, type ChildProcess } from "child_process";
+import { type ChildProcess } from "child_process";
 import path from "path";
-import type { ManagedApp, AppManager } from "../app-manager";
+import { type ManagedApp, type AppManager, buildWorldsEnvs } from "../app-manager";
 import type { WorkOSOrganization } from "../../workos/workos-manager";
 
 const PROCESS_PREFIX = "worlds";
@@ -15,19 +15,20 @@ export class LocalAppManager implements AppManager {
 
   async createApp(
     appId: string,
-    envVars: Record<string, string>,
+    envs: Record<string, string>,
   ): Promise<ManagedApp> {
     const name = processName(appId);
-    const port = envVars.PORT || "80";
+    const port = envs.PORT || "80";
     const serverDir = path.resolve(process.cwd(), "..", "server");
 
     console.log(`[local-app] Starting ${name} on port ${port}...`);
+    const { spawn } = await import("child_process");
     const child = spawn(
       "deno",
       ["serve", "-A", "--env", "--port", port, "main.ts"],
       {
         cwd: serverDir,
-        env: { ...process.env, ...envVars } as NodeJS.ProcessEnv,
+        env: { ...process.env, ...envs } as NodeJS.ProcessEnv,
         stdio: "pipe",
       },
     );
@@ -131,31 +132,20 @@ export class LocalAppManager implements AppManager {
 
         const dataDir = path.resolve(process.cwd(), "data", org.id);
 
-        const envVars: Record<string, string> = {
-          ADMIN_API_KEY:
-            (org.metadata?.apiKey as string) || "default-local-key",
-          PORT: port.toString(),
-          LIBSQL_URL:
+        const envs = buildWorldsEnvs({
+          apiKey: (org.metadata?.apiKey as string) || "default-local-key",
+          libsqlUrl:
             (org.metadata?.libsqlUrl as string) ||
             `file:${path.join(dataDir, "worlds.db")}`,
-          LIBSQL_AUTH_TOKEN: (org.metadata?.libsqlAuthToken as string) || "",
-          WORLDS_BASE_DIR: path.join(dataDir, "worlds"),
-        };
+          libsqlAuthToken: (org.metadata?.libsqlAuthToken as string) || "",
+          port: port.toString(),
+          tursoApiToken: org.metadata?.tursoApiToken as string,
+          tursoOrg: org.metadata?.tursoOrg as string,
+          googleApiKey: process.env.GOOGLE_API_KEY,
+          googleEmbeddingsModel: process.env.GOOGLE_EMBEDDINGS_MODEL,
+        });
 
-        if (org.metadata?.tursoApiToken) {
-          envVars.TURSO_API_TOKEN = org.metadata.tursoApiToken as string;
-        }
-        if (org.metadata?.tursoOrg) {
-          envVars.TURSO_ORG = org.metadata.tursoOrg as string;
-        }
-        if (process.env.GOOGLE_API_KEY) {
-          envVars.GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-        }
-        if (process.env.GOOGLE_EMBEDDINGS_MODEL) {
-          envVars.GOOGLE_EMBEDDINGS_MODEL = process.env.GOOGLE_EMBEDDINGS_MODEL;
-        }
-
-        await this.createApp(org.id, envVars);
+        await this.createApp(org.id, envs);
       } catch (e) {
         console.error(`[local-app] Failed to boot org ${org.id}:`, e);
       }

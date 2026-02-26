@@ -16,7 +16,7 @@ export class DenoAppManager implements AppManager {
 
   async createApp(
     slug: string,
-    envVars: Record<string, string>,
+    envs: Record<string, string>,
   ): Promise<ManagedApp> {
     const token = process.env.DENO_DEPLOY_TOKEN;
     if (!token) {
@@ -55,12 +55,12 @@ export class DenoAppManager implements AppManager {
       console.log(`[AppManager:Deno] Deployed revision successfully.`);
 
       // Inject environment variables into the app
-      if (Object.keys(envVars).length > 0) {
+      if (Object.keys(envs).length > 0) {
         console.log(
           `[AppManager:Deno] Injecting environment variables into ${app.slug}...`,
         );
         await this.client.apps.update(app.id, {
-          envs: envVars,
+          envs,
         } as DenoAppUpdate as any);
       }
 
