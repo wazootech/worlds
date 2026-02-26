@@ -7,6 +7,7 @@ import {
   validateRdf,
   type ValidateRdfInput,
   validateRdfInputSchema,
+  validateRdfOutputSchema,
   type ValidateRdfOutput,
 } from "#/validate.ts";
 
