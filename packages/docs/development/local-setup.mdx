@@ -80,7 +80,7 @@ Here's a list of environment variables you can set for local development:
 | `LOCAL_USER_EMAIL`        | (Optional) Email for the mock local user.                         |
 | `LOCAL_USER_FIRST_NAME`   | (Optional) First name for the mock local user.                    |
 | `LOCAL_USER_LAST_NAME`    | (Optional) Last name for the mock local user.                     |
-| `GOOGLE_API_KEY`          | (Optional) For high-quality Gemini embeddings.                    |
+| `OPENROUTER_API_KEY`      | (Optional) For cloud-based embeddings via OpenRouter.             |
 | `OLLAMA_BASE_URL`         | (Optional) Ollama API URL (defaults to `http://127.0.0.1:11434`). |
 | `OLLAMA_EMBEDDINGS_MODEL` | (Optional) Ollama model (defaults to `nomic-embed-text`).         |
 
@@ -89,7 +89,7 @@ Here's a list of environment variables you can set for local development:
 By default, the Worlds Platform™ uses **Ollama** for local embeddings. This ensures your data never leaves your machine.
 
 > [!TIP]
-> You can also use **Google Gemini** for embeddings in local development by adding a `GOOGLE_API_KEY` to your environment. See [Configuration Reference](/hosting/configuration) for details.
+> You can also use **OpenRouter** for embeddings in local development by adding an `OPENROUTER_API_KEY` to your environment. See [Configuration Reference](/hosting/configuration) for details.
 
 <Steps>
 <Step title="Install Ollama">

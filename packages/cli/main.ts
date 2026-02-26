@@ -3,9 +3,7 @@ import { WorldsCli } from "./cli.ts";
 import { createWazoo } from "./wazoo.ts";
 
 async function main() {
-  const isRemote = !!(Deno.env.get("WORLDS_BASE_URL") ||
-    Deno.env.get("WORLDS_API_KEY"));
-  const { sdk } = await createWazoo({ remote: isRemote });
+  const { sdk } = await createWazoo();
   const cli = new WorldsCli(sdk);
 
   if (Deno.args.length === 0) {
@@ -108,7 +106,6 @@ function showHelp() {
   console.log(
     "    LIBSQL_URL       Database connection URL (e.g., file:worlds.db)",
   );
-  console.log("    GOOGLE_API_KEY   API key for embeddings");
   console.log("");
   console.log("  AI Chat:");
   console.log("    OPENROUTER_API_KEY  OpenRouter API key");

@@ -1,56 +1,44 @@
-import { promptSecret } from "@std/cli/prompt-secret";
 import { WorldsSdk } from "@wazoo/worlds-sdk";
 import { createServer, createServerContext } from "@wazoo/worlds-server";
 
 /**
- * CreateWazooOptions are options for creating a new Wazoo SDK.
- */
-export interface CreateWazooOptions {
-  remote?: boolean;
-}
-
-/**
  * createWazoo creates a new Wazoo SDK.
  */
-export async function createWazoo(
-  options: CreateWazooOptions,
-): Promise<{ sdk: WorldsSdk }> {
-  if (options.remote) {
-    const baseUrl = Deno.env.get("WORLDS_BASE_URL") ??
-      "https://api.wazoo.dev";
-    const apiKey = Deno.env.get("WORLDS_API_KEY") ??
-      promptSecret("Worlds API key: ");
-    if (!apiKey) {
-      console.error(
-        "WORLDS_API_KEY is not set. This is required for remote mode.",
-      );
-      Deno.exit(1);
-    }
-
-    const sdk = new WorldsSdk({ apiKey, baseUrl });
+export async function createWazoo(): Promise<{ sdk: WorldsSdk }> {
+  const remoteBaseUrl = Deno.env.get("WORLDS_BASE_URL");
+  const remoteApiKey = Deno.env.get("WORLDS_API_KEY");
+  if (remoteBaseUrl && remoteApiKey) {
+    const sdk = new WorldsSdk({
+      apiKey: remoteApiKey,
+      baseUrl: remoteBaseUrl,
+    });
     return { sdk };
   }
 
-  const apiKey = Deno.env.get("ADMIN_API_KEY") ??
+  const localApiKey = Deno.env.get("ADMIN_API_KEY") ??
     crypto.randomUUID();
 
   const serverContext = await createServerContext({
     envs: {
-      ADMIN_API_KEY: apiKey,
+      ADMIN_API_KEY: localApiKey,
       LIBSQL_URL: Deno.env.get("LIBSQL_URL"),
       LIBSQL_AUTH_TOKEN: Deno.env.get("LIBSQL_AUTH_TOKEN"),
       TURSO_API_TOKEN: Deno.env.get("TURSO_API_TOKEN"),
       TURSO_ORG: Deno.env.get("TURSO_ORG"),
-      GOOGLE_API_KEY: Deno.env.get("GOOGLE_API_KEY"),
-      GOOGLE_EMBEDDINGS_MODEL: Deno.env.get("GOOGLE_EMBEDDINGS_MODEL"),
+      OPENROUTER_API_KEY: Deno.env.get("OPENROUTER_API_KEY"),
+      OPENROUTER_EMBEDDINGS_MODEL: Deno.env.get("OPENROUTER_EMBEDDINGS_MODEL"),
+      OPENROUTER_EMBEDDINGS_DIMENSIONS: Deno.env.get(
+        "OPENROUTER_EMBEDDINGS_DIMENSIONS",
+      ),
+      OLLAMA_BASE_URL: Deno.env.get("OLLAMA_BASE_URL"),
+      OLLAMA_EMBEDDINGS_MODEL: Deno.env.get("OLLAMA_EMBEDDINGS_MODEL"),
     },
   });
 
   const server = createServer(serverContext);
-  const baseUrl = "http://localhost";
   const sdk = new WorldsSdk({
-    apiKey,
-    baseUrl,
+    apiKey: localApiKey,
+    baseUrl: "http://localhost",
     fetch: (input, init) => server.fetch(new Request(input, init)),
   });
 
