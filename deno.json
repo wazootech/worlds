@@ -27,7 +27,8 @@
     "@tensorflow-models/universal-sentence-encoder": "npm:@tensorflow-models/universal-sentence-encoder@^1.3.3",
     "n3": "npm:n3@^2.0.1",
     "shacl-engine": "npm:shacl-engine@^1.1.0",
-    "ai": "npm:ai@^6.0.101"
+    "ai": "npm:ai@^6.0.101",
+    "@openrouter/ai-sdk-provider": "npm:@openrouter/ai-sdk-provider@^2.2.3"
   },
   "exclude": ["./packages/console", "./packages/docs"],
   "publish": {

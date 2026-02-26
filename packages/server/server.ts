@@ -2,11 +2,11 @@ import type { ServerContext } from "#/context.ts";
 import type { DatabaseManager } from "#/lib/database/manager.ts";
 import { Router } from "@fartlabs/rt";
 import { createClient } from "@libsql/client";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOllama } from "ollama-ai-provider";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import type { Embeddings } from "#/lib/embeddings/embeddings.ts";
-import { GeminiEmbeddings } from "#/lib/embeddings/gemini.ts";
 import { OllamaEmbeddings } from "#/lib/embeddings/ollama.ts";
+import { OpenRouterEmbeddings } from "#/lib/embeddings/openrouter.ts";
 import { initializeDatabase } from "#/lib/database/init.ts";
 import { createClient as createTursoClient } from "@tursodatabase/api";
 import { TursoDatabaseManager } from "#/lib/database/managers/api.ts";
@@ -42,13 +42,14 @@ export function createServer(appContext: ServerContext): Router {
  * ServerContextConfig is the configuration for an app context.
  */
 export interface ServerContextConfig {
-  env: {
+  envs: {
     LIBSQL_URL?: string;
     LIBSQL_AUTH_TOKEN?: string;
     TURSO_API_TOKEN?: string;
     TURSO_ORG?: string;
-    GOOGLE_API_KEY?: string;
-    GOOGLE_EMBEDDINGS_MODEL?: string;
+    OPENROUTER_API_KEY?: string;
+    OPENROUTER_EMBEDDINGS_MODEL?: string;
+    OPENROUTER_EMBEDDINGS_DIMENSIONS?: string;
     OLLAMA_BASE_URL?: string;
     OLLAMA_EMBEDDINGS_MODEL?: string;
     ADMIN_API_KEY?: string;
@@ -62,21 +63,21 @@ export interface ServerContextConfig {
 export async function createServerContext(
   config: ServerContextConfig,
 ): Promise<ServerContext> {
-  if (!config.env.ADMIN_API_KEY) {
+  if (!config.envs.ADMIN_API_KEY) {
     throw new Error("ADMIN_API_KEY is required");
   }
 
   // TODO: Set up Embedded Replicas config.
 
-  if (config.env.LIBSQL_URL?.startsWith("file:")) {
-    const dbPath = config.env.LIBSQL_URL.slice(5); // Remove "file:"
+  if (config.envs.LIBSQL_URL?.startsWith("file:")) {
+    const dbPath = config.envs.LIBSQL_URL.slice(5); // Remove "file:"
     await Deno.mkdir(dirname(dbPath), { recursive: true });
   }
 
   // Resolve database strategy based on environment variables.
   const database = createClient({
-    url: config.env.LIBSQL_URL!,
-    authToken: config.env.LIBSQL_AUTH_TOKEN,
+    url: config.envs.LIBSQL_URL!,
+    authToken: config.envs.LIBSQL_AUTH_TOKEN,
   });
 
   // Initialize database tables.
@@ -84,24 +85,27 @@ export async function createServerContext(
 
   // Resolve embeddings strategy based on environment variables.
   let embeddings: Embeddings;
-  if (config.env.GOOGLE_API_KEY) {
-    const google = createGoogleGenerativeAI({
-      apiKey: config.env.GOOGLE_API_KEY,
+  if (config.envs.OPENROUTER_API_KEY) {
+    const openrouter = createOpenRouter({
+      apiKey: config.envs.OPENROUTER_API_KEY,
     });
-    embeddings = new GeminiEmbeddings({
-      model: google.embedding(
-        config.env.GOOGLE_EMBEDDINGS_MODEL ?? "text-embedding-004",
-        { outputDimensionality: 768 },
+    const dimensions = parseInt(
+      config.envs.OPENROUTER_EMBEDDINGS_DIMENSIONS ?? "768",
+    );
+    embeddings = new OpenRouterEmbeddings({
+      model: openrouter.textEmbeddingModel(
+        config.envs.OPENROUTER_EMBEDDINGS_MODEL ??
+          "openai/text-embedding-3-small",
       ),
-      dimensions: 768,
+      dimensions,
     });
   } else {
     const ollama = createOllama({
-      baseURL: config.env.OLLAMA_BASE_URL,
+      baseURL: config.envs.OLLAMA_BASE_URL,
     });
     embeddings = new OllamaEmbeddings({
-      model: ollama.embedding(
-        config.env.OLLAMA_EMBEDDINGS_MODEL ?? "nomic-embed-text",
+      model: ollama.textEmbeddingModel(
+        config.envs.OLLAMA_EMBEDDINGS_MODEL ?? "nomic-embed-text",
       ),
       dimensions: 768,
     });
@@ -109,14 +113,14 @@ export async function createServerContext(
 
   // Resolve database manager strategy based on environment variables.
   let manager: DatabaseManager;
-  if (config.env.TURSO_API_TOKEN) {
-    if (!config.env.TURSO_ORG) {
+  if (config.envs.TURSO_API_TOKEN) {
+    if (!config.envs.TURSO_ORG) {
       throw new Error("TURSO_ORG is required when TURSO_API_TOKEN is set");
     }
 
     const tursoClient = createTursoClient({
-      token: config.env.TURSO_API_TOKEN,
-      org: config.env.TURSO_ORG,
+      token: config.envs.TURSO_API_TOKEN,
+      org: config.envs.TURSO_ORG,
     });
     manager = new TursoDatabaseManager(
       database,
@@ -126,7 +130,7 @@ export async function createServerContext(
   } else {
     manager = new FileDatabaseManager(
       database,
-      config.env.WORLDS_BASE_DIR ?? "./worlds",
+      config.envs.WORLDS_BASE_DIR ?? "./worlds",
       embeddings.dimensions,
     );
   }
@@ -135,7 +139,7 @@ export async function createServerContext(
     embeddings,
     libsql: { database, manager },
     admin: {
-      apiKey: config.env.ADMIN_API_KEY,
+      apiKey: config.envs.ADMIN_API_KEY,
     },
   };
 }

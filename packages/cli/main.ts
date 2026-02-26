@@ -3,7 +3,9 @@ import { WorldsCli } from "./cli.ts";
 import { createWazoo } from "./wazoo.ts";
 
 async function main() {
-  const { sdk } = await createWazoo({ remote: false });
+  const isRemote = !!(Deno.env.get("WORLDS_BASE_URL") ||
+    Deno.env.get("WORLDS_API_KEY"));
+  const { sdk } = await createWazoo({ remote: isRemote });
   const cli = new WorldsCli(sdk);
 
   if (Deno.args.length === 0) {
@@ -97,8 +99,22 @@ function showHelp() {
   console.log("  chat     Interactive AI chat with a world");
   console.log("");
   console.log("Environment Variables:");
-  console.log("  WORLDS_API_KEY   Your API key");
-  console.log("  WORLDS_BASE_URL  Optional API base URL");
+  console.log("  Remote Mode:");
+  console.log("    WORLDS_API_KEY   Your API key");
+  console.log(
+    "    WORLDS_BASE_URL  API base URL (e.g., https://api.wazoo.dev)",
+  );
+  console.log("  Local Mode (In-Process Server):");
+  console.log(
+    "    LIBSQL_URL       Database connection URL (e.g., file:worlds.db)",
+  );
+  console.log("    GOOGLE_API_KEY   API key for embeddings");
+  console.log("");
+  console.log("  AI Chat:");
+  console.log("    OPENROUTER_API_KEY  OpenRouter API key");
+  console.log(
+    "    OPENROUTER_MODEL    Optional model (default: google/gemini-2.0-flash-001)",
+  );
 }
 
 if (import.meta.main) {

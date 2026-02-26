@@ -2,9 +2,9 @@ import { embed } from "ai";
 import type { Embeddings } from "#/lib/embeddings/embeddings.ts";
 
 /**
- * GeminiEmbeddingsOptions are options for the GeminiEmbeddings.
+ * OpenRouterEmbeddingsOptions are options for the OpenRouterEmbeddings.
  */
-export interface GeminiEmbeddingsOptions {
+export interface OpenRouterEmbeddingsOptions {
   /**
    * model is the model to use for embedding.
    */
@@ -18,10 +18,10 @@ export interface GeminiEmbeddingsOptions {
 }
 
 /**
- * GeminiEmbeddings generates vector embeddings using Vercel AI SDK with Google provider.
+ * OpenRouterEmbeddings generates vector embeddings using OpenRouter via Vercel AI SDK.
  */
-export class GeminiEmbeddings implements Embeddings {
-  public constructor(private readonly options: GeminiEmbeddingsOptions) {}
+export class OpenRouterEmbeddings implements Embeddings {
+  public constructor(private readonly options: OpenRouterEmbeddingsOptions) {}
 
   /**
    * dimensions is the dimensionality of the vector embeddings.

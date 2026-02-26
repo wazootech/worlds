@@ -22,6 +22,35 @@ deno -A jsr:@wazoo/worlds-cli [command] [options]
 - **search**: Search for patterns within a world's knowledge graph.
 - **sparql**: Query a world using SPARQL.
 - **import/export**: Move data in and out of a world.
+- **chat**: Start an interactive chat with an AI assistant in a world.
+
+### Environment Variables
+
+The CLI can operate in two modes: **Remote** (connecting to an existing server)
+or **Local** (running an in-process server).
+
+#### Remote Mode
+
+Used when connecting to a hosted Worlds API instance.
+
+- **WORLDS_BASE_URL**: (Required) The base URL of the Worlds API (e.g.,
+  `https://api.wazoo.dev`).
+- **WORLDS_API_KEY**: (Required) Your Worlds API key.
+
+#### Local Mode
+
+Used to run a local, in-process server using your machine's resources.
+
+- **LIBSQL_URL**: (Required) Connection string for the local database (e.g.,
+  `file:./worlds.db`).
+- **GOOGLE_API_KEY**: (Required) API key for high-quality Gemini embeddings.
+- **ADMIN_API_KEY**: (Optional) API key for administrative access.
+
+#### AI Chat (Required for `chat` command)
+
+- **OPENROUTER_API_KEY**: (Required) Your OpenRouter API key.
+- **OPENROUTER_MODEL**: (Optional) The OpenRouter model ID to use (default:
+  `google/gemini-2.0-flash-001`).
 
 ### Examples
 

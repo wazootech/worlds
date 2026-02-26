@@ -3,14 +3,17 @@ import type { ServerContext } from "#/context.ts";
 import { createServer, createServerContext } from "#/server.ts";
 
 const serverContext: ServerContext = await createServerContext({
-  env: {
+  envs: {
     ADMIN_API_KEY: Deno.env.get("ADMIN_API_KEY")!,
     LIBSQL_URL: Deno.env.get("LIBSQL_URL")!,
     LIBSQL_AUTH_TOKEN: Deno.env.get("LIBSQL_AUTH_TOKEN")!,
     TURSO_API_TOKEN: Deno.env.get("TURSO_API_TOKEN"),
     TURSO_ORG: Deno.env.get("TURSO_ORG"),
-    GOOGLE_API_KEY: Deno.env.get("GOOGLE_API_KEY"),
-    GOOGLE_EMBEDDINGS_MODEL: Deno.env.get("GOOGLE_EMBEDDINGS_MODEL"),
+    OPENROUTER_API_KEY: Deno.env.get("OPENROUTER_API_KEY"),
+    OPENROUTER_EMBEDDINGS_MODEL: Deno.env.get("OPENROUTER_EMBEDDINGS_MODEL"),
+    OPENROUTER_EMBEDDINGS_DIMENSIONS: Deno.env.get(
+      "OPENROUTER_EMBEDDINGS_DIMENSIONS",
+    ),
     OLLAMA_BASE_URL: Deno.env.get("OLLAMA_BASE_URL"),
     OLLAMA_EMBEDDINGS_MODEL: Deno.env.get("OLLAMA_EMBEDDINGS_MODEL"),
     WORLDS_BASE_DIR: Deno.env.get("WORLDS_BASE_DIR"),

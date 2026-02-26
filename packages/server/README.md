@@ -14,7 +14,7 @@ operations and vector embeddings.
   [N3](https://github.com/rdfjs/N3.js).
 - **Vector Embeddings**: Intelligent search and reasoning powered by
   [TensorFlow.js](https://www.tensorflow.org/js) and
-  [Google Generative AI](https://ai.google.dev/).
+  [OpenRouter](https://openrouter.ai).
 - **Edge-Ready**: Designed to run efficiently at the edge.
 - **Persistence**: Backed by [LibSQL](https://github.com/libsql/libsql) for
   reliable data storage.

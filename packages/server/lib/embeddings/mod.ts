@@ -1,3 +1,3 @@
 export * from "./embeddings.ts";
-export * from "./gemini.ts";
 export * from "./ollama.ts";
+export * from "./openrouter.ts";

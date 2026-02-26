@@ -21,7 +21,9 @@ export async function createWazoo(
     const apiKey = Deno.env.get("WORLDS_API_KEY") ??
       promptSecret("Worlds API key: ");
     if (!apiKey) {
-      console.error("WORLDS_API_KEY environment variable is not set.");
+      console.error(
+        "WORLDS_API_KEY is not set. This is required for remote mode.",
+      );
       Deno.exit(1);
     }
 
@@ -33,10 +35,10 @@ export async function createWazoo(
     crypto.randomUUID();
 
   const serverContext = await createServerContext({
-    env: {
+    envs: {
       ADMIN_API_KEY: apiKey,
-      LIBSQL_URL: Deno.env.get("LIBSQL_URL")!,
-      LIBSQL_AUTH_TOKEN: Deno.env.get("LIBSQL_AUTH_TOKEN")!,
+      LIBSQL_URL: Deno.env.get("LIBSQL_URL"),
+      LIBSQL_AUTH_TOKEN: Deno.env.get("LIBSQL_AUTH_TOKEN"),
       TURSO_API_TOKEN: Deno.env.get("TURSO_API_TOKEN"),
       TURSO_ORG: Deno.env.get("TURSO_ORG"),
       GOOGLE_API_KEY: Deno.env.get("GOOGLE_API_KEY"),

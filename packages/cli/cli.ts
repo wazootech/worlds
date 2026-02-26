@@ -1,10 +1,9 @@
 import { parseArgs } from "@std/cli/parse-args";
 import { Spinner } from "@std/cli/unstable-spinner";
 import { render } from "cfonts";
-import type { LanguageModel, ModelMessage } from "ai";
+import type { ModelMessage } from "ai";
 import { stepCountIs, streamText } from "ai";
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createTools } from "@wazoo/worlds-ai-sdk";
 import type { RdfFormat, WorldsSdk } from "@wazoo/worlds-sdk";
 
@@ -312,10 +311,10 @@ export class WorldsCli {
       console.log("");
       console.log("Environment:");
       console.log(
-        "  GOOGLE_API_KEY      Use Google Gemini (gemini-2.5-flash)",
+        "  OPENROUTER_API_KEY  Your OpenRouter API key",
       );
       console.log(
-        "  ANTHROPIC_API_KEY   Use Anthropic Claude (claude-haiku-4-5)",
+        "  OPENROUTER_MODEL    OpenRouter model (default: google/gemini-2.0-flash-001)",
       );
       return;
     }
@@ -334,24 +333,17 @@ export class WorldsCli {
     }
 
     // Resolve AI model.
-    const googleKey = Deno.env.get("GOOGLE_API_KEY");
-    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
+    const apiKey = Deno.env.get("OPENROUTER_API_KEY");
+    const modelId = Deno.env.get("OPENROUTER_MODEL") ??
+      "google/gemini-2.0-flash-001";
 
-    let model: LanguageModel | undefined;
-    if (googleKey) {
-      const google = createGoogleGenerativeAI({ apiKey: googleKey });
-      model = google("gemini-3-flash-preview");
-    }
-    if (anthropicKey) {
-      const anthropic = createAnthropic({ apiKey: anthropicKey });
-      model = anthropic("claude-haiku-4-5");
-    }
-    if (!model) {
-      console.error(
-        "Neither GOOGLE_API_KEY nor ANTHROPIC_API_KEY is set.",
-      );
+    if (!apiKey) {
+      console.error("OPENROUTER_API_KEY is not set.");
       Deno.exit(1);
     }
+
+    const openrouter = createOpenRouter({ apiKey });
+    const model = openrouter(modelId);
 
     // Set up tools.
     const tools = createTools({
