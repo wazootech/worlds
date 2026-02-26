@@ -1,6 +1,6 @@
 import { QueryEngine } from "@comunica/query-sparql-rdfjs-lite";
-import type { PatchHandler } from "@fartlabs/search-store";
-import { connectSearchStoreToN3Store } from "@fartlabs/search-store/n3";
+import type { PatchHandler } from "#/lib/rdf-patch/mod.ts";
+import { connectSearchStoreToN3Store } from "#/lib/rdf-patch/mod.ts";
 import { generateBlobFromN3Store, generateN3StoreFromBlob } from "./n3.ts";
 import type {
   ExecuteSparqlOutput,
@@ -47,6 +47,7 @@ export async function sparql(
   if (queryType.resultType === "void") {
     await queryType.execute();
     await sync();
+
     const newBlob = await generateBlobFromN3Store(store);
     return { blob: newBlob, result: null };
   }

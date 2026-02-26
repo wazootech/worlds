@@ -13,6 +13,7 @@ import type { CreateToolsOptions } from "#/options.ts";
 export interface SearchEntitiesInput {
   source: string;
   query: string;
+  types?: string[];
   limit?: number;
 }
 
@@ -26,6 +27,9 @@ export const searchEntitiesInputSchema: z.ZodType<SearchEntitiesInput> = z
     ),
     query: z.string().describe(
       "The text of the associated entity as mentioned in the given text.",
+    ),
+    types: z.array(z.string()).optional().describe(
+      "Optional IRIs of the entity types to filter by.",
     ),
     limit: z.number().min(1).max(100).optional().describe(
       "Maximum number of entities to return (default: 10).",
@@ -68,11 +72,11 @@ export function createSearchEntitiesTool(
       "Search for entities in the knowledge base. Returns a list of candidates to help resolve ambiguities.",
     inputSchema: searchEntitiesInputSchema,
     outputSchema: searchEntitiesOutputSchema,
-    execute: async (
-      { source, query, limit = 10 }: SearchEntitiesInput,
-    ): Promise<SearchEntitiesOutput> => {
+    execute: async (input: SearchEntitiesInput) => {
+      const { source, query, types, limit = 10 } = input;
       const results = await sdk.worlds.search(source, query, {
         limit,
+        types,
       });
 
       return { results };

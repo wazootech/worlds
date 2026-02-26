@@ -4,14 +4,16 @@
 
   "exports": {
     ".": "./mod.ts",
+    "./discover-schema": "./discover-schema.ts",
     "./tools/discover-schema": "./tools/discover-schema.ts",
     "./tools/execute-sparql": "./tools/execute-sparql.ts",
     "./tools/generate-iri": "./tools/generate-iri.ts",
-    "./tools/search-entities": "./tools/search-entities.ts"
+    "./tools/search-entities": "./tools/search-entities.ts",
+    "./tools/disambiguate-entities": "./tools/disambiguate-entities.ts",
+    "./tools/validate-rdf": "./tools/validate-rdf.ts"
   },
   "imports": {
-    "#/": "./",
-    "ai": "npm:ai@^6.0.99"
+    "#/": "./"
   },
   "tasks": {
     "test": "deno test -A"

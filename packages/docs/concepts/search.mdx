@@ -1,17 +1,31 @@
 ---
-title: "Vector Search"
-description: "Semantic search over your knowledge graph"
+title: "Hybrid Search"
+description: "Semantic search and structural filtering over your knowledge graph"
 ---
 
-**Vector Search** allows you to find information in your world based on its *meaning*, rather than exact keyword matches.
+**Hybrid Search** combines semantic intuition (Vector Search) with keyword precision (FTS) and structural constraints (RDF filters) to provide a unified relevance ranking.
 
 ## How it Works
 
-1. **Ingestion**: When you insert triples into your world, the API automatically generates embeddings for the subject, predicate, and object.
-2. **Indexing**: These embeddings are stored in a vector index.
-3. **Querying**: When you perform a search, your query is embedded, and the API finds the semantically closest triples in the index.
+1. **Ingestion**: When you insert triples, the API automatically generates text chunks for semantic and full-text search.
+   > [!NOTE]
+   > To optimize index size at the edge, semantic indexing currently targets triples with string literal objects.
+2. **Indexing**:
+   - **Vector**: Embeddings are stored in a `libsql_vector_idx` for similarity matching.
+   - **Keyword**: Text is indexed in an FTS5 virtual table for term matching.
+   - **Structural**: `rdf:type` and IRIs are mirrored in secondary tables for efficient filtering.
+3. **Querying**: The system uses **Reciprocal Rank Fusion (RRF)** to combine rankings from all indices into a single result set.
+
+## Structural Filtering
+
+You can narrow down search results using the following filters:
+
+- **Subjects**: Limit search to specific entities.
+- **Predicates**: Limit search to specific relationship types.
+- **Types**: Limit search to entities of a certain `rdf:type`.
 
 ## Use Cases
 
-- **RAG (Retrieval Augmented Generation)**: Retrieve relevant context for an LLM based on a user's prompt.
-- **Fuzzy Finding**: Find entities even if the user doesn't know their exact URI or name.
+- **Semantic Retrieval**: Find context based on meaning rather than exact words.
+- **Discovery**: Use structural filters to find all entities of a certain class that match a conceptual query.
+- **Hybrid RAG**: Retrieve the most relevant facts using a combination of keywords, similarity, and graph constraints.

@@ -10,14 +10,16 @@ description: "How the platform handles RDF blobs, N3 stores, and SPARQL queries.
 
 ## RDF patching
 
-Defined in **lib/rdf-patch/mod.ts**:
+Centralized in **lib/rdf-patch/mod.ts**, this library provides a unified system for tracking and applying graph mutations.
 
-The `handlePatch(client, embeddings, patches)` function applies `Patch` insertions and deletions to the **world** database. For each quad, it:
+### Ingestion Flow (`handlePatch`)
 
-1. Skolemizes the quad.
-2. Hashes it to a unique triple ID.
-3. Performs `upsertTriples` or `deleteTriples`.
-4. Performs `upsertChunks` with embeddings and text splitting.
+The `handlePatch(client, embeddings, patches)` function in **rdf-patch.ts** processes mutations for the world database:
+
+1. **Deterministic Identification**: Each quad is skolemized and hashed to a unique triple ID.
+2. **Relational Storage**: Triples are upserted into the `triples` table.
+3. **Semantic Indexing**: For literal values, the text is split into chunks and embedded for hybrid search.
+4. **Triggers**: SQL triggers automatically sync `rdf:type` relations to the `entity_types` table for optimized structural filtering.
 
 ## SPARQL route execution
 

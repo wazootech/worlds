@@ -19,6 +19,12 @@ import {
   logsTimestampIndex,
   logsWorldIdIndex,
 } from "#/lib/database/tables/logs/queries.sql.ts";
+import {
+  entityTypesIndex,
+  entityTypesTable,
+  triplesTypeDeleteTrigger,
+  triplesTypeInsertTrigger,
+} from "#/lib/database/tables/entity_types/queries.sql.ts";
 
 /**
  * initializeDatabase creates all main tables and indexes if they don't exist.
@@ -48,6 +54,7 @@ export async function initializeWorldDatabase(
   await client.execute(blobsTable);
   await client.execute(triplesTable);
   await client.execute(logsTable);
+  await client.execute(entityTypesTable);
 
   // Create indexes
   await client.execute(chunksTripleIdIndex);
@@ -56,9 +63,12 @@ export async function initializeWorldDatabase(
   await client.execute(chunksVectorIndex);
   await client.execute(logsWorldIdIndex);
   await client.execute(logsTimestampIndex);
+  await client.execute(entityTypesIndex);
 
   // Create triggers
   await client.execute(chunksFtsInsertTrigger);
   await client.execute(chunksFtsDeleteTrigger);
   await client.execute(chunksFtsUpdateTrigger);
+  await client.execute(triplesTypeInsertTrigger);
+  await client.execute(triplesTypeDeleteTrigger);
 }

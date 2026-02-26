@@ -48,7 +48,8 @@ export function createExecuteSparqlTool(
       "Execute SPARQL queries and updates against a specific world knowledge base.",
     inputSchema: executeSparqlInputSchema,
     outputSchema: executeSparqlOutputSchema,
-    execute: async ({ sparql, source }: ExecuteSparqlInput) => {
+    execute: async (input: ExecuteSparqlInput) => {
+      const { sparql, source } = input;
       if (
         isSparqlUpdate(sparql) &&
         !(sources.find((s: Source) => s.id === source)?.write ??

@@ -43,13 +43,16 @@ worlds.sparql(worldId: string, query: string, options?: { abortSignal?: AbortSig
 
 #### `worlds.search`
 
-Performs a semantic search within a world.
+Performs a hybrid semantic search within a world.
 
 ```typescript
-worlds.search(worldId: string, query: string, options?: {
+worlds.search(worldId: string, query?: string, options?: {
+  subjects?: string[];
+  predicates?: string[];
+  types?: string[];
   limit?: number;
   offset?: number;
-}): Promise<SearchResult>
+}): Promise<SearchResult[]>
 ```
 
 #### `worlds.update`

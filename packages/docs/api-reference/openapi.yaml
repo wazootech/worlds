@@ -482,9 +482,10 @@ paths:
             type: string
         - name: query
           in: query
-          required: true
+          required: false
           schema:
             type: string
+          description: "The search query text. Optional if structural filters (subjects, predicates, types) are provided."
         - name: subjects
           in: query
           schema:
@@ -492,6 +493,12 @@ paths:
             items:
               type: string
         - name: predicates
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: types
           in: query
           schema:
             type: array

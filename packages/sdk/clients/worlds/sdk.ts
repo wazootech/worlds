@@ -216,6 +216,7 @@ export class Worlds {
       limit?: number;
       subjects?: string[];
       predicates?: string[];
+      types?: string[];
     },
   ): Promise<TripleSearchResult[]> {
     const url = new URL(
@@ -237,6 +238,12 @@ export class Worlds {
     if (options?.predicates) {
       for (const p of options.predicates) {
         url.searchParams.append("predicates", p);
+      }
+    }
+
+    if (options?.types) {
+      for (const t of options.types) {
+        url.searchParams.append("types", t);
       }
     }
 

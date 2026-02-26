@@ -52,11 +52,12 @@ export type GenerateIriTool = Tool<GenerateIriInput, GenerateIriOutput>;
  */
 export function createGenerateIriTool(
   { generateIri = () => `https://wazoo.dev/.well-known/genid/${ulid()}` }:
-    CreateToolsOptions,
+    Partial<CreateToolsOptions> = {},
 ): GenerateIriTool {
   return tool({
     description:
-      "Generate a unique IRI for a new entity when you need to insert a new node into the graph.",
+      "Generate a unique IRI for a new entity when you need to insert a new node into the graph. " +
+      "IMPORTANT: ALWAYS search for existing entities and disambiguate potential matches first to check if the entity already exists before generating a new IRI.",
     inputSchema: generateIriInputSchema,
     outputSchema: generateIriOutputSchema,
     execute: async () => {

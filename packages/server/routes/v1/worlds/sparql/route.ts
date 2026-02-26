@@ -9,11 +9,8 @@ import type { ServerContext } from "#/context.ts";
 import type { DatasetParams } from "#/lib/blob/sparql.ts";
 import { sparql } from "#/lib/blob/sparql.ts";
 import { executeSparqlOutputSchema, isSparqlUpdate } from "@wazoo/worlds-sdk";
-import {
-  BufferedPatchHandler,
-  handlePatch,
-} from "#/lib/rdf-patch/rdf-patch.ts";
-import type { Patch } from "#/lib/rdf-patch/rdf-patch.ts";
+import { BatchPatchHandler, handlePatch } from "#/lib/rdf-patch/mod.ts";
+import type { Patch } from "#/lib/rdf-patch/mod.ts";
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
 import { worldTableUpdateSchema } from "#/lib/database/tables/worlds/schema.ts";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
@@ -222,7 +219,7 @@ async function executeSparqlRequest(
   }
 
   const patchHandlerStart = performance.now();
-  const patchHandler = new BufferedPatchHandler(
+  const patchHandler = new BatchPatchHandler(
     managedWorld
       ? {
         patch: (patches: Patch[]) =>

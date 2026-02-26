@@ -24,7 +24,10 @@
     "@tursodatabase/api": "npm:@tursodatabase/api@^1.9.2",
     "@tensorflow/tfjs": "npm:@tensorflow/tfjs@^4.22.0",
     "@tensorflow/tfjs-backend-wasm": "npm:@tensorflow/tfjs-backend-wasm@^4.22.0",
-    "@tensorflow-models/universal-sentence-encoder": "npm:@tensorflow-models/universal-sentence-encoder@^1.3.3"
+    "@tensorflow-models/universal-sentence-encoder": "npm:@tensorflow-models/universal-sentence-encoder@^1.3.3",
+    "n3": "npm:n3@^2.0.1",
+    "shacl-engine": "npm:shacl-engine@^1.1.0",
+    "ai": "npm:ai@^6.0.101"
   },
   "exclude": ["./packages/console", "./packages/docs"],
   "publish": {

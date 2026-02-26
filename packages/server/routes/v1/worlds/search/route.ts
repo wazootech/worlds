@@ -38,10 +38,7 @@ export default (appContext: ServerContext) => {
       const query = url.searchParams.get("query");
       const subjects = url.searchParams.getAll("subjects");
       const predicates = url.searchParams.getAll("predicates");
-
-      if (!query) {
-        return ErrorResponse.BadRequest("Query required");
-      }
+      const types = url.searchParams.getAll("types");
 
       const limitParam = url.searchParams.get("limit");
       let limit = 20;
@@ -63,10 +60,11 @@ export default (appContext: ServerContext) => {
       try {
         const chunksService = new ChunksService(appContext, worldsService);
         const results = await chunksService.search({
-          query,
+          query: query ?? "",
           world,
           subjects,
           predicates,
+          types,
           limit,
         });
 
@@ -79,9 +77,10 @@ export default (appContext: ServerContext) => {
           level: "info",
           message: "Semantic search executed",
           metadata: {
-            query: query.slice(0, 500),
+            query: (query ?? "").slice(0, 500),
             subjects: subjects.length > 0 ? subjects : null,
             predicates: predicates.length > 0 ? predicates : null,
+            types: types.length > 0 ? types : null,
           },
         });
 

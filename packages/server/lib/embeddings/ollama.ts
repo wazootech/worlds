@@ -1,4 +1,4 @@
-import { embed, type EmbeddingModel } from "ai";
+import { embed } from "ai";
 import type { Embeddings } from "#/lib/embeddings/embeddings.ts";
 
 /**
@@ -8,7 +8,8 @@ export interface OllamaEmbeddingsOptions {
   /**
    * model is the model to use for embedding.
    */
-  model: EmbeddingModel<string>;
+  // deno-lint-ignore no-explicit-any
+  model: any;
 
   /**
    * dimensions is the dimensionality of the vector embeddings.

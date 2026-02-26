@@ -8,7 +8,7 @@ export const worldsTable =
 
 /**
  * selectWorldById is a query that finds a world by ID
- * (used in GET /v1/worlds/:world and SPARQL routes).
+ * (used in GET /v1/worlds/:world).
  */
 export const selectWorldById =
   "SELECT\r\n  id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  id = ?\r\n  AND deleted_at IS NULL;";

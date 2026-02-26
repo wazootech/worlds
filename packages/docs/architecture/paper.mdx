@@ -185,8 +185,8 @@ general-purpose SPARQL engines on disk while maintaining semantic integrity.
 
 - **`triples` Table**: Stores atomic units of knowledge (Subject, Predicate,
   Object).
-- **`chunks` Table**: Stores overlapping text segments with vector embeddings
-  derived from the triple data, optimized for semantic and full-text search.
+- **`chunks` Table**: Stores overlapping text segments with vector embeddings (targeting string literals) and ranks derived from triple data.
+- **`entity_types` Table**: An optimized table for mapping entities to their `rdf:type` IRIs, enabling rapid structural filtering.
 - **`blobs` Table**: Handles large-scale RDF data and file-based state.
 
 ### Efficient indexing
@@ -197,10 +197,9 @@ index research (maintaining optimal performance for any triple pattern):
 
 - **Graph Indexing**: Standard B-Tree indices on `subject` and `predicate` enable
   rapid pattern matching for search filters.
-- **Vector Indexing**: Use of `libsql_vector_idx` for 1536-dimensional
-  embeddings, enabling semantic similarity search at the edge.
-- **FTS5 Indexing**: native SQLite full-text search for fast keyword matching
-  and ranking.
+- **Vector Indexing**: Use of `libsql_vector_idx` for 1536-dimensional embeddings, enabling semantic similarity search at the edge.
+- **FTS5 Indexing**: Native SQLite full-text search for fast keyword matching and ranking.
+- **Entity Type Indexing**: Composite indexing on the `entity_types` table (`PRIMARY KEY (subject, type) WITHOUT ROWID`) for high-speed class-based filtering.
 
 ### Hybrid search & RRF
 
@@ -224,18 +223,20 @@ The following SQL snippet demonstrates this logic implemented within our SQLite 
 WITH vec_matches AS (
   SELECT id AS rowid, row_number() OVER (PARTITION BY NULL) AS rank_number
   FROM vector_top_k('idx_chunks_vector', vector32(?), ?)
+  WHERE ? != ''
 ),
 fts_matches AS (
   SELECT rowid, row_number() OVER (ORDER BY rank) AS rank_number
-  FROM chunks_fts WHERE chunks_fts MATCH ? LIMIT ?
+  FROM chunks_fts WHERE ? != '' AND chunks_fts MATCH ? LIMIT ?
 ), final AS (
   SELECT
-    chunks.*,
+    chunks.id,
     (COALESCE(1.0 / (60 + fts_matches.rank_number), 0.0) +
      COALESCE(1.0 / (60 + vec_matches.rank_number), 0.0)) AS combined_rank
-  FROM fts_matches
-  FULL OUTER JOIN vec_matches ON vec_matches.rowid = fts_matches.rowid
-  JOIN chunks ON chunks.rowid = COALESCE(fts_matches.rowid, vec_matches.rowid)
+  FROM chunks
+  LEFT JOIN fts_matches ON fts_matches.rowid = chunks.rowid
+  LEFT JOIN vec_matches ON vec_matches.rowid = chunks.rowid
+  WHERE (? = '' OR fts_matches.rowid IS NOT NULL OR vec_matches.rowid IS NOT NULL)
   ORDER BY combined_rank DESC LIMIT ?
 )
 SELECT * FROM final;

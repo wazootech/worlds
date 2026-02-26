@@ -6,6 +6,10 @@ import type { GenerateIriTool } from "./tools/generate-iri.ts";
 import { createGenerateIriTool } from "./tools/generate-iri.ts";
 import type { SearchEntitiesTool } from "./tools/search-entities.ts";
 import { createSearchEntitiesTool } from "./tools/search-entities.ts";
+import type { DisambiguateEntitiesTool } from "./tools/disambiguate-entities.ts";
+import { createDisambiguateEntitiesTool } from "./tools/disambiguate-entities.ts";
+import type { ValidateRdfTool } from "./tools/validate-rdf.ts";
+import { createValidateRdfTool } from "./tools/validate-rdf.ts";
 import type { CreateToolsOptions } from "./options.ts";
 
 /**
@@ -16,6 +20,8 @@ export function createTools(options: CreateToolsOptions): {
   executeSparql: ExecuteSparqlTool;
   generateIri: GenerateIriTool;
   searchEntities: SearchEntitiesTool;
+  disambiguateEntities: DisambiguateEntitiesTool;
+  validateRdf: ValidateRdfTool;
 } {
   validateCreateToolsOptions(options);
 
@@ -24,6 +30,8 @@ export function createTools(options: CreateToolsOptions): {
     executeSparql: createExecuteSparqlTool(options),
     generateIri: createGenerateIriTool(options),
     searchEntities: createSearchEntitiesTool(options),
+    disambiguateEntities: createDisambiguateEntitiesTool(options),
+    validateRdf: createValidateRdfTool(options),
   };
 }
 

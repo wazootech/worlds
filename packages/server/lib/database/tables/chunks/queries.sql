@@ -93,6 +93,8 @@ WITH vec_matches AS (
     row_number() OVER (PARTITION BY NULL) AS rank_number
   FROM
     vector_top_k('idx_chunks_vector', vector32(?), ?)
+  WHERE
+    ? != ''
 ),
 fts_matches AS (
   SELECT
@@ -105,10 +107,12 @@ fts_matches AS (
   FROM
     chunks_fts
   WHERE
-    chunks_fts MATCH ?
+    ? != ''
+    AND chunks_fts MATCH ?
   LIMIT
     ?
-), final AS (
+),
+final AS (
   SELECT
     chunks.id,
     chunks.triple_id,
@@ -122,12 +126,17 @@ fts_matches AS (
       COALESCE(1.0 / (60 + fts_matches.rank_number), 0.0) * 1.0 + COALESCE(1.0 / (60 + vec_matches.rank_number), 0.0) * 1.0
     ) AS combined_rank
   FROM
-    fts_matches
-    FULL OUTER JOIN vec_matches ON vec_matches.rowid = fts_matches.rowid
-    JOIN chunks ON chunks.rowid = COALESCE(fts_matches.rowid, vec_matches.rowid)
+    chunks
+    LEFT JOIN fts_matches ON fts_matches.rowid = chunks.rowid
+    LEFT JOIN vec_matches ON vec_matches.rowid = chunks.rowid
     JOIN triples ON triples.id = chunks.triple_id
   WHERE
     (
+      ? = ''
+      OR fts_matches.rowid IS NOT NULL
+      OR vec_matches.rowid IS NOT NULL
+    )
+    AND (
       ? IS NULL
       OR chunks.subject IN (
         SELECT
@@ -143,6 +152,23 @@ fts_matches AS (
           value
         FROM
           json_each(?)
+      )
+    )
+    AND (
+      ? IS NULL
+      OR EXISTS (
+        SELECT
+          1
+        FROM
+          entity_types
+        WHERE
+          entity_types.subject = chunks.subject
+          AND entity_types.type IN (
+            SELECT
+              value
+            FROM
+              json_each(?)
+          )
       )
     )
   ORDER BY

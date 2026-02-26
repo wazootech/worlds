@@ -27,7 +27,7 @@ import { ErrorResponse } from "#/lib/errors/errors.ts";
 
 import { LogsService } from "#/lib/database/tables/logs/service.ts";
 import { BlobsService } from "#/lib/database/tables/blobs/service.ts";
-import { handlePatch } from "#/lib/rdf-patch/rdf-patch.ts";
+import { handlePatch } from "#/lib/rdf-patch/mod.ts";
 import { handleETagRequest } from "#/lib/http/etag.ts";
 
 export default (appContext: ServerContext) => {

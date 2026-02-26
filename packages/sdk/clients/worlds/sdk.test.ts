@@ -95,10 +95,65 @@ Deno.test("WorldsSdk - Worlds", async (t) => {
   });
 
   await t.step("search world", async () => {
+    // Add more diverse data for testing search params
+    await sdk.worlds.sparql(
+      worldId,
+      `
+      INSERT DATA {
+        <http://example.org/alice> a <http://example.org/Person> ;
+                                    <http://example.org/name> "Alice" ;
+                                    <http://example.org/age> "25" ;
+                                    <http://example.org/knows> <http://example.org/bob> .
+        <http://example.org/bob> a <http://example.org/Person> ;
+                                  <http://example.org/name> "Bob" ;
+                                  <http://example.org/age> "30" .
+        <http://example.org/car> a <http://example.org/Vehicle> ;
+                                  <http://example.org/model> "Tesla" .
+      }
+    `,
+    );
+
+    // 1. Basic search
     const results = await sdk.worlds.search(worldId, "Update Object");
     assert(results.length > 0);
     assertEquals(results[0].object, "Update Object");
-    assertEquals(results[0].subject, "http://example.org/subject");
+
+    // 2. Search with limit
+    const limitResults = await sdk.worlds.search(worldId, "", { limit: 1 });
+    assertEquals(limitResults.length, 1);
+
+    // 3. Search with subjects filter
+    const subjectResults = await sdk.worlds.search(worldId, "", {
+      subjects: ["http://example.org/alice"],
+    });
+    assert(subjectResults.length > 0);
+    assert(
+      subjectResults.every((r) => r.subject === "http://example.org/alice"),
+    );
+
+    // 4. Search with predicates filter
+    const predicateResults = await sdk.worlds.search(worldId, "", {
+      predicates: ["http://example.org/name"],
+    });
+    assert(predicateResults.length > 0);
+    assert(
+      predicateResults.every((r) => r.predicate === "http://example.org/name"),
+    );
+
+    // 5. Search with types filter
+    const typeResults = await sdk.worlds.search(worldId, "", {
+      types: ["http://example.org/Vehicle"],
+    });
+    assert(typeResults.length > 0);
+    assert(typeResults.every((r) => r.subject === "http://example.org/car"));
+
+    // 6. Search with combined filters
+    const combinedResults = await sdk.worlds.search(worldId, "Tesla", {
+      types: ["http://example.org/Vehicle"],
+      predicates: ["http://example.org/model"],
+    });
+    assertEquals(combinedResults.length, 1);
+    assertEquals(combinedResults[0].object, "Tesla");
   });
 
   await t.step("export world", async () => {

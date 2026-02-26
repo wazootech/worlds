@@ -12,8 +12,20 @@ description: "Perform a semantic vector search on the world."
 
 ## Query Parameters
 
-<ParamField query="q" type="string" required>
-  The search query text.
+<ParamField query="query" type="string">
+  The search query text. Optional if structural filters are provided.
+</ParamField>
+
+<ParamField query="subjects" type="string[]">
+  Filter by one or more subject IRIs.
+</ParamField>
+
+<ParamField query="predicates" type="string[]">
+  Filter by one or more predicate IRIs.
+</ParamField>
+
+<ParamField query="types" type="string[]">
+  Filter by one or more entity type IRIs (e.g., `rdf:type`).
 </ParamField>
 
 <ParamField query="limit" type="number" default="10">

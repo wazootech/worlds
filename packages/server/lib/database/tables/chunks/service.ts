@@ -34,6 +34,7 @@ export interface SearchParams {
   world?: WorldRow;
   subjects?: string[];
   predicates?: string[];
+  types?: string[];
   limit?: number;
 }
 
@@ -49,11 +50,14 @@ export class ChunksService {
       worldId,
       subjects,
       predicates,
+      types,
       limit = 10,
     } = params;
 
     // 1. Generate Embeddings
-    const vector = await this.ctx.embeddings.embed(query);
+    const vector = query
+      ? await this.ctx.embeddings.embed(query)
+      : new Array(1536).fill(0);
 
     // 2. Procure world record if not provided
     let world = params.world;
@@ -79,15 +83,23 @@ export class ChunksService {
       const predicatesParam = predicates && predicates.length > 0
         ? JSON.stringify(predicates)
         : null;
+      const typesParam = types && types.length > 0
+        ? JSON.stringify(types)
+        : null;
       const args = [
         new Uint8Array(new Float32Array(vector).buffer),
         limit,
         query,
+        query,
+        query,
         limit,
+        query,
         subjectsParam,
         subjectsParam,
         predicatesParam,
         predicatesParam,
+        typesParam,
+        typesParam,
         limit,
       ];
 
