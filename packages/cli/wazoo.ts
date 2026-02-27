@@ -19,7 +19,7 @@ export async function createWazoo(): Promise<{ sdk: WorldsSdk }> {
     crypto.randomUUID();
   const serverContext = await createServerContext({
     envs: {
-      worldsApiKey: localApiKey,
+      WORLDS_API_KEY: localApiKey,
       LIBSQL_URL: Deno.env.get("LIBSQL_URL"),
       LIBSQL_AUTH_TOKEN: Deno.env.get("LIBSQL_AUTH_TOKEN"),
       TURSO_API_TOKEN: Deno.env.get("TURSO_API_TOKEN"),

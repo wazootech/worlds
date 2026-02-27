@@ -39,6 +39,20 @@ export function createServer(appContext: ServerContext): Router {
 }
 
 /**
+ * defaultServerContextConfig is the default server context configuration.
+ */
+export const defaultServerContextConfig: ServerContextConfig = {
+  envs: {
+    LIBSQL_URL: "file:./worlds.db",
+    WORLDS_BASE_DIR: "./worlds",
+    WORLDS_EMBEDDINGS_DIMENSIONS: "768",
+    OLLAMA_BASE_URL: "http://localhost:11434",
+    OLLAMA_EMBEDDINGS_MODEL: "nomic-embed-text",
+    OPENROUTER_EMBEDDINGS_MODEL: "openai/text-embedding-3-small",
+  },
+};
+
+/**
  * ServerContextConfig is the configuration for an app context.
  */
 export interface ServerContextConfig {
@@ -52,7 +66,7 @@ export interface ServerContextConfig {
     OLLAMA_BASE_URL?: string;
     OLLAMA_EMBEDDINGS_MODEL?: string;
     WORLDS_EMBEDDINGS_DIMENSIONS?: string;
-    worldsApiKey?: string;
+    WORLDS_API_KEY?: string;
     WORLDS_BASE_DIR?: string;
   };
 }
@@ -63,8 +77,32 @@ export interface ServerContextConfig {
 export async function createServerContext(
   config: ServerContextConfig,
 ): Promise<ServerContext> {
-  // Resolve database strategy based on environment variables.
+  // Merge config with defaults.
+  config = {
+    ...defaultServerContextConfig,
+    ...config,
+    envs: {
+      ...defaultServerContextConfig.envs,
+      ...config.envs,
+    },
+  };
 
+  // Validate required environment variables.
+  if (!config.envs.WORLDS_EMBEDDINGS_DIMENSIONS) {
+    throw new Error("WORLDS_EMBEDDINGS_DIMENSIONS is required");
+  }
+
+  const dimensions = parseInt(config.envs.WORLDS_EMBEDDINGS_DIMENSIONS);
+
+  if (!config.envs.LIBSQL_URL) {
+    throw new Error("LIBSQL_URL is required");
+  }
+
+  if (!config.envs.WORLDS_BASE_DIR) {
+    throw new Error("WORLDS_BASE_DIR is required");
+  }
+
+  // Resolve database strategy based on environment variables.
   if (config.envs.LIBSQL_URL?.startsWith("file:")) {
     const dbPath = config.envs.LIBSQL_URL.slice(5); // Remove "file:"
     await Deno.mkdir(dirname(dbPath), { recursive: true });
@@ -81,31 +119,26 @@ export async function createServerContext(
 
   // Resolve embeddings strategy based on environment variables.
   let embeddings: Embeddings;
-  if (config.envs.OPENROUTER_API_KEY) {
+  if (
+    config.envs.OPENROUTER_API_KEY && config.envs.OPENROUTER_EMBEDDINGS_MODEL
+  ) {
     const openrouter = createOpenRouter({
       apiKey: config.envs.OPENROUTER_API_KEY,
     });
-    const dimensions = parseInt(
-      config.envs.WORLDS_EMBEDDINGS_DIMENSIONS ?? "768",
-    );
+
     embeddings = new OpenRouterEmbeddings({
       model: openrouter.textEmbeddingModel(
-        config.envs.OPENROUTER_EMBEDDINGS_MODEL ??
-          "openai/text-embedding-3-small",
+        config.envs.OPENROUTER_EMBEDDINGS_MODEL,
       ),
       dimensions,
     });
   } else {
     const ollama = createOllama({
-      baseURL: config.envs.OLLAMA_BASE_URL,
+      baseURL: config.envs.OLLAMA_BASE_URL!,
     });
-    const dimensions = parseInt(
-      config.envs.WORLDS_EMBEDDINGS_DIMENSIONS ?? "768",
-    );
+
     embeddings = new OllamaEmbeddings({
-      model: ollama.textEmbeddingModel(
-        config.envs.OLLAMA_EMBEDDINGS_MODEL ?? "nomic-embed-text",
-      ),
+      model: ollama.textEmbeddingModel(config.envs.OLLAMA_EMBEDDINGS_MODEL!),
       dimensions,
     });
   }
@@ -129,7 +162,7 @@ export async function createServerContext(
   } else {
     manager = new FileDatabaseManager(
       database,
-      config.envs.WORLDS_BASE_DIR ?? "./worlds",
+      config.envs.WORLDS_BASE_DIR,
       embeddings.dimensions,
     );
   }
@@ -137,6 +170,6 @@ export async function createServerContext(
   return {
     embeddings,
     libsql: { database, manager },
-    apiKey: config.envs.worldsApiKey,
+    apiKey: config.envs.WORLDS_API_KEY,
   };
 }

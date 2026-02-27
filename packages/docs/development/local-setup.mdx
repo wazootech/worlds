@@ -76,15 +76,17 @@ Here's a list of environment variables you can set for local development:
 
 | Variable                       | Description                                                                |
 | :----------------------------- | :------------------------------------------------------------------------- |
-| `LOCAL_USER_ID`                | (Optional) User ID for the mock local user.                                |
+| `LIBSQL_URL`                   | (Optional) SQLite URL (defaults to `file:./worlds.db`).                    |
 | `LOCAL_USER_EMAIL`             | (Optional) Email for the mock local user.                                  |
 | `LOCAL_USER_FIRST_NAME`        | (Optional) First name for the mock local user.                             |
+| `LOCAL_USER_ID`                | (Optional) User ID for the mock local user.                                |
 | `LOCAL_USER_LAST_NAME`         | (Optional) Last name for the mock local user.                              |
+| `OLLAMA_BASE_URL`              | (Optional) Ollama API URL (defaults to `http://localhost:11434`).          |
+| `OLLAMA_EMBEDDINGS_MODEL`      | (Optional) Ollama model (defaults to `nomic-embed-text`).                  |
 | `OPENROUTER_API_KEY`           | (Optional) For cloud-based embeddings via OpenRouter.                      |
 | `OPENROUTER_EMBEDDINGS_MODEL`  | (Optional) OpenRouter model (defaults to `openai/text-embedding-3-small`). |
+| `WORLDS_BASE_DIR`              | (Optional) Base directory for world data (defaults to `./worlds`).         |
 | `WORLDS_EMBEDDINGS_DIMENSIONS` | (Optional) Unified vector dimensions for DB and AI (defaults to `768`).    |
-| `OLLAMA_BASE_URL`              | (Optional) Ollama API URL (defaults to `http://127.0.0.1:11434`).          |
-| `OLLAMA_EMBEDDINGS_MODEL`      | (Optional) Ollama model (defaults to `nomic-embed-text`).                  |
 
 ## Local embeddings with Ollama
 
