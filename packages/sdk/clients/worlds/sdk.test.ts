@@ -12,7 +12,7 @@ Deno.test("WorldsSdk - Worlds", async (t) => {
   // This shows how to use the server.fetch as a fetcher for the SDK
   const sdk = new WorldsSdk({
     baseUrl: "http://localhost",
-    apiKey: appContext.admin!.apiKey,
+    apiKey: appContext.apiKey!,
     fetch: (url: string | URL | Request, init?: RequestInit) =>
       server.fetch(new Request(url, init)),
   });

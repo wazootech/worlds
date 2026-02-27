@@ -15,6 +15,10 @@ export function authorizeRequest(
   appContext: ServerContext,
   request: Request,
 ): AuthorizedRequest {
+  if (!appContext.apiKey) {
+    return { admin: true };
+  }
+
   const authHeader = request.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return { admin: false };
@@ -22,7 +26,7 @@ export function authorizeRequest(
 
   const apiKey = authHeader.slice("Bearer ".length).trim();
 
-  if (apiKey === appContext.admin?.apiKey) {
+  if (apiKey === appContext.apiKey) {
     return { admin: true };
   }
 

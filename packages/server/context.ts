@@ -6,12 +6,10 @@ import type { DatabaseManager } from "#/lib/database/manager.ts";
  * ServerContext is shared by every route.
  */
 export interface ServerContext {
+  apiKey?: string;
   embeddings: Embeddings;
   libsql: {
     database: Client;
     manager: DatabaseManager;
-  };
-  admin?: {
-    apiKey: string;
   };
 }

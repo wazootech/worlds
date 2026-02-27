@@ -32,9 +32,7 @@ export async function createTestContext(): Promise<ServerContext> {
       database: client,
       manager: databaseManager,
     },
-    admin: {
-      apiKey: ulid(),
-    },
+    apiKey: ulid(),
   };
 }
 
@@ -45,8 +43,8 @@ export async function createTestContext(): Promise<ServerContext> {
 export function createTestOrganization(
   context: ServerContext,
   _options?: { plan?: string },
-): Promise<{ id: string; apiKey: string }> {
+): Promise<{ id: string; apiKey: string | undefined }> {
   const id = ulid();
   // Return the admin API key for authentication, as org keys are no longer valid
-  return Promise.resolve({ id, apiKey: context.admin!.apiKey });
+  return Promise.resolve({ id, apiKey: context.apiKey });
 }

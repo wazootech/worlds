@@ -39,7 +39,7 @@ export function buildWorldsEnvs(opts: {
   googleEmbeddingsModel?: string;
 }): Record<string, string> {
   const envs: Record<string, string> = {
-    ADMIN_API_KEY: opts.apiKey,
+    WORLDS_API_KEY: opts.apiKey,
     LIBSQL_URL: opts.libsqlUrl,
     LIBSQL_AUTH_TOKEN: opts.libsqlAuthToken || "",
   };

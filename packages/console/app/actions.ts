@@ -105,7 +105,7 @@ export async function createWorld(
     // Bootstrap: If no API config, try to provision one using Admin Key
     if (!organization.metadata?.apiBaseUrl || !organization.metadata?.apiKey) {
       // Only allowed if we have ADMIN_API_KEY
-      const ADMIN_KEY = process.env.ADMIN_API_KEY;
+      const ADMIN_KEY = process.env.WORLDS_API_KEY;
       if (!ADMIN_KEY) {
         throw new Error(
           "Organization has no API config and no Admin Key available to provision one.",

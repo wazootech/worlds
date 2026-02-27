@@ -12,7 +12,7 @@ The Worlds API uses **Bearer Token** authentication. You must include your API k
 </Note>
 
 - **Cloud**: Generate an API key in the [dashboard](https://console.wazoo.dev/settings).
-- **Self-hosted**: Use the `ADMIN_API_KEY` configured in your server's environment variables.
+- **Self-hosted**: Use the `WORLDS_API_KEY` configured in your server's environment variables.
 
 ## Usage
 
@@ -37,4 +37,4 @@ const sdk = new WorldsSdk({
 
 ## Admin access
 
-Certain endpoints, such as listing all worlds for an account, require an admin API key. If you are self-hosting, this is the same as your `ADMIN_API_KEY`.
+Certain endpoints, such as listing all worlds for an account, require an admin API key. If you are self-hosting, this is the same as your `WORLDS_API_KEY`.

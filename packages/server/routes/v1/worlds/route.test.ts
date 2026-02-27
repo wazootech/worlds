@@ -138,9 +138,44 @@ Deno.test("Worlds API routes", async (t) => {
           },
         }),
       );
-
       assertEquals(resp.status, 200);
       assertEquals(resp.headers.get("Content-Type"), "text/turtle");
+    },
+  );
+
+  await t.step(
+    "GET /v1/worlds/:world returns 200 without Auth if no apiKey is set",
+    async () => {
+      const unprotectedContext = await createTestContext();
+      unprotectedContext.apiKey = undefined;
+      const unprotectedApp = createRoute(unprotectedContext);
+      const worldId = ulid();
+      const now = Date.now();
+      const unprotectedWorldsService = new WorldsService(
+        unprotectedContext.libsql.database,
+      );
+      await unprotectedWorldsService.insert({
+        id: worldId,
+        slug: "unprotected-world-" + worldId,
+        label: "Unprotected World",
+        description: null,
+        db_hostname: null,
+        db_token: null,
+        created_at: now,
+        updated_at: now,
+        deleted_at: null,
+      });
+      await unprotectedContext.libsql.manager.create(worldId);
+
+      const resp = await unprotectedApp.fetch(
+        new Request(`http://localhost/v1/worlds/${worldId}`, {
+          method: "GET",
+        }),
+      );
+
+      assertEquals(resp.status, 200);
+      const world = await resp.json();
+      assertEquals(world.label, "Unprotected World");
     },
   );
 });

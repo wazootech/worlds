@@ -52,7 +52,7 @@ export interface ServerContextConfig {
     OPENROUTER_EMBEDDINGS_DIMENSIONS?: string;
     OLLAMA_BASE_URL?: string;
     OLLAMA_EMBEDDINGS_MODEL?: string;
-    ADMIN_API_KEY?: string;
+    worldsApiKey?: string;
     WORLDS_BASE_DIR?: string;
   };
 }
@@ -63,11 +63,7 @@ export interface ServerContextConfig {
 export async function createServerContext(
   config: ServerContextConfig,
 ): Promise<ServerContext> {
-  if (!config.envs.ADMIN_API_KEY) {
-    throw new Error("ADMIN_API_KEY is required");
-  }
-
-  // TODO: Set up Embedded Replicas config.
+  // Resolve database strategy based on environment variables.
 
   if (config.envs.LIBSQL_URL?.startsWith("file:")) {
     const dbPath = config.envs.LIBSQL_URL.slice(5); // Remove "file:"
@@ -138,8 +134,6 @@ export async function createServerContext(
   return {
     embeddings,
     libsql: { database, manager },
-    admin: {
-      apiKey: config.envs.ADMIN_API_KEY,
-    },
+    apiKey: config.envs.worldsApiKey,
   };
 }

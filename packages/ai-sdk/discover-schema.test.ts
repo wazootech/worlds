@@ -10,7 +10,7 @@ Deno.test("discoverSchema function - Class and Property Discovery", async () => 
 
   const sdk = new WorldsSdk({
     baseUrl: "http://localhost",
-    apiKey: appContext.admin!.apiKey,
+    apiKey: appContext.apiKey!,
     fetch: (url: string | URL | Request, init?: RequestInit) =>
       server.fetch(new Request(url, init)),
   });

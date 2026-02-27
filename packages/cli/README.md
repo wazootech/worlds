@@ -44,7 +44,7 @@ Used to run a local, in-process server using your machine's resources.
 - **LIBSQL_URL**: (Required) Connection string for the local database (e.g.,
   `file:./worlds.db`).
 - **GOOGLE_API_KEY**: (Required) API key for high-quality Gemini embeddings.
-- **ADMIN_API_KEY**: (Optional) API key for administrative access.
+- **WORLDS_API_KEY**: (Optional) API key for administrative access.
 
 #### AI Chat (Required for `chat` command)
 
