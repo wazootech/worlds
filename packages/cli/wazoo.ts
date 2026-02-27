@@ -26,8 +26,8 @@ export async function createWazoo(): Promise<{ sdk: WorldsSdk }> {
       TURSO_ORG: Deno.env.get("TURSO_ORG"),
       OPENROUTER_API_KEY: Deno.env.get("OPENROUTER_API_KEY"),
       OPENROUTER_EMBEDDINGS_MODEL: Deno.env.get("OPENROUTER_EMBEDDINGS_MODEL"),
-      OPENROUTER_EMBEDDINGS_DIMENSIONS: Deno.env.get(
-        "OPENROUTER_EMBEDDINGS_DIMENSIONS",
+      WORLDS_EMBEDDINGS_DIMENSIONS: Deno.env.get(
+        "WORLDS_EMBEDDINGS_DIMENSIONS",
       ),
       OLLAMA_BASE_URL: Deno.env.get("OLLAMA_BASE_URL"),
       OLLAMA_EMBEDDINGS_MODEL: Deno.env.get("OLLAMA_EMBEDDINGS_MODEL"),

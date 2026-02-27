@@ -16,6 +16,11 @@ To run a full production-grade instance of the Worlds Platform™, follow these 
 - **Storage (Turso)**:
   - Create a [Turso](https://turso.tech) account and generate an API token.
   - **Retrieve**: `TURSO_API_TOKEN` and `TURSO_ORG`.
+- **AI Models (OpenRouter)**:
+  - Create an account on [OpenRouter](https://openrouter.ai).
+  - **Retrieve**: `OPENROUTER_API_KEY` (Global fallback).
+  - **Management API (Advanced)**: Generate a Management API Key to enable automatic per-app key provisioning.
+  - **Retrieve**: `OPENROUTER_MANAGEMENT_KEY`.
 
 ### Deploy the Console
 
@@ -34,3 +39,32 @@ Once the Console is running:
    - Provision a new **Turso Database**.
    - Deploy a new **Deno Deploy App** running `packages/server`.
    - Link them together via metadata.
+
+### Cloud Embeddings with OpenRouter
+
+By default, the Worlds Platform™ is configured to use **OpenRouter** for cloud-based embeddings in production. This provides high-quality semantic search without requiring local GPU resources.
+
+> [!TIP]
+> You can customize the model and dimensions by setting `OPENROUTER_EMBEDDINGS_MODEL` and `WORLDS_EMBEDDINGS_DIMENSIONS` in your environment. See [Configuration Reference](/hosting/configuration) for details.
+
+<Steps>
+<Step title="Get an API Key">
+
+Visit [OpenRouter](https://openrouter.ai/keys) to create your API key.
+
+</Step>
+<Step title="Configure the Console">
+
+Add your key to the Console's environment variables:
+
+```dotenv
+OPENROUTER_API_KEY="your-api-key"
+```
+
+</Step>
+<Step title="Automatic Injection">
+
+The Console will automatically inject this key into every new World instance it provisions, enabling cloud embeddings by default.
+
+</Step>
+</Steps>

@@ -49,9 +49,9 @@ export interface ServerContextConfig {
     TURSO_ORG?: string;
     OPENROUTER_API_KEY?: string;
     OPENROUTER_EMBEDDINGS_MODEL?: string;
-    OPENROUTER_EMBEDDINGS_DIMENSIONS?: string;
     OLLAMA_BASE_URL?: string;
     OLLAMA_EMBEDDINGS_MODEL?: string;
+    WORLDS_EMBEDDINGS_DIMENSIONS?: string;
     worldsApiKey?: string;
     WORLDS_BASE_DIR?: string;
   };
@@ -86,7 +86,7 @@ export async function createServerContext(
       apiKey: config.envs.OPENROUTER_API_KEY,
     });
     const dimensions = parseInt(
-      config.envs.OPENROUTER_EMBEDDINGS_DIMENSIONS ?? "768",
+      config.envs.WORLDS_EMBEDDINGS_DIMENSIONS ?? "768",
     );
     embeddings = new OpenRouterEmbeddings({
       model: openrouter.textEmbeddingModel(
@@ -99,11 +99,14 @@ export async function createServerContext(
     const ollama = createOllama({
       baseURL: config.envs.OLLAMA_BASE_URL,
     });
+    const dimensions = parseInt(
+      config.envs.WORLDS_EMBEDDINGS_DIMENSIONS ?? "768",
+    );
     embeddings = new OllamaEmbeddings({
       model: ollama.textEmbeddingModel(
         config.envs.OLLAMA_EMBEDDINGS_MODEL ?? "nomic-embed-text",
       ),
-      dimensions: 768,
+      dimensions,
     });
   }
 

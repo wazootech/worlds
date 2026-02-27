@@ -74,15 +74,17 @@ These values are used to initialize the `data/workos.json` file if it doesn't al
 
 Here's a list of environment variables you can set for local development:
 
-| Variable                  | Description                                                       |
-| :------------------------ | :---------------------------------------------------------------- |
-| `LOCAL_USER_ID`           | (Optional) User ID for the mock local user.                       |
-| `LOCAL_USER_EMAIL`        | (Optional) Email for the mock local user.                         |
-| `LOCAL_USER_FIRST_NAME`   | (Optional) First name for the mock local user.                    |
-| `LOCAL_USER_LAST_NAME`    | (Optional) Last name for the mock local user.                     |
-| `OPENROUTER_API_KEY`      | (Optional) For cloud-based embeddings via OpenRouter.             |
-| `OLLAMA_BASE_URL`         | (Optional) Ollama API URL (defaults to `http://127.0.0.1:11434`). |
-| `OLLAMA_EMBEDDINGS_MODEL` | (Optional) Ollama model (defaults to `nomic-embed-text`).         |
+| Variable                       | Description                                                                |
+| :----------------------------- | :------------------------------------------------------------------------- |
+| `LOCAL_USER_ID`                | (Optional) User ID for the mock local user.                                |
+| `LOCAL_USER_EMAIL`             | (Optional) Email for the mock local user.                                  |
+| `LOCAL_USER_FIRST_NAME`        | (Optional) First name for the mock local user.                             |
+| `LOCAL_USER_LAST_NAME`         | (Optional) Last name for the mock local user.                              |
+| `OPENROUTER_API_KEY`           | (Optional) For cloud-based embeddings via OpenRouter.                      |
+| `OPENROUTER_EMBEDDINGS_MODEL`  | (Optional) OpenRouter model (defaults to `openai/text-embedding-3-small`). |
+| `WORLDS_EMBEDDINGS_DIMENSIONS` | (Optional) Unified vector dimensions for DB and AI (defaults to `768`).    |
+| `OLLAMA_BASE_URL`              | (Optional) Ollama API URL (defaults to `http://127.0.0.1:11434`).          |
+| `OLLAMA_EMBEDDINGS_MODEL`      | (Optional) Ollama model (defaults to `nomic-embed-text`).                  |
 
 ## Local embeddings with Ollama
 

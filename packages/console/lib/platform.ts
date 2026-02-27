@@ -182,8 +182,11 @@ function buildDeployEnvs(opts: {
     port,
     tursoApiToken: org.metadata?.tursoApiToken,
     tursoOrg: org.metadata?.tursoOrg,
-    googleApiKey: process.env.GOOGLE_API_KEY,
-    googleEmbeddingsModel: process.env.GOOGLE_EMBEDDINGS_MODEL,
+    openRouterApiKey:
+      org.metadata?.openRouterApiKey || process.env.OPENROUTER_API_KEY,
+    embeddingsDimensions: process.env.WORLDS_EMBEDDINGS_DIMENSIONS,
+    ollamaBaseUrl: process.env.OLLAMA_BASE_URL,
+    ollamaEmbeddingsModel: process.env.OLLAMA_EMBEDDINGS_MODEL,
   });
 }
 
@@ -218,6 +221,40 @@ async function provisionTursoIfNeeded(
 }
 
 /**
+ * Programmatically generates a new OpenRouter API key using the Management API.
+ * Requires OPENROUTER_MANAGEMENT_KEY to be set in the environment.
+ */
+async function generateOpenRouterKey(name: string): Promise<string> {
+  const managementKey = process.env.OPENROUTER_MANAGEMENT_KEY;
+  if (!managementKey) {
+    throw new Error("OPENROUTER_MANAGEMENT_KEY is not set");
+  }
+
+  console.log(`[Platform] Generating OpenRouter API key for: ${name}...`);
+  const response = await fetch("https://openrouter.ai/api/v1/keys", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${managementKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error(`[Platform] OpenRouter Key Generation Failed:`, errorBody);
+    throw new Error(
+      `Failed to generate OpenRouter key: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const data = await response.json();
+  return data.key;
+}
+
+/**
  * Core provisioning orchestration:
  *  1. Auto-provisions a Turso database if needed
  *  2. Allocates a local port (if local dev)
@@ -235,6 +272,28 @@ async function provisionAppInternal(
 
   // Auto-provision Turso database if available
   await provisionTursoIfNeeded(org, workos, turso);
+
+  // Auto-provision OpenRouter API key if management key exists and no key is set
+  if (
+    process.env.OPENROUTER_MANAGEMENT_KEY &&
+    !org.metadata?.openRouterApiKey
+  ) {
+    try {
+      const orKey = await generateOpenRouterKey(`Worlds App: ${org.name}`);
+      org.metadata = {
+        ...org.metadata,
+        openRouterApiKey: orKey,
+      };
+      await workos.updateOrganization(org.id, { metadata: org.metadata });
+      console.log(`[Platform] Provisioned per-app OpenRouter key for ${org.id}`);
+    } catch (error) {
+      console.error(
+        `[Platform] Failed to provision OpenRouter key for ${org.id}:`,
+        error,
+      );
+      // We don't throw here to allow deployment to proceed with fallback if possible
+    }
+  }
 
   // Determine local SQLite fallback if no remote DB exists
   const localDbUrl = `file:./data/${org.id}/worlds.db`;

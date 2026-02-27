@@ -35,8 +35,10 @@ export function buildWorldsEnvs(opts: {
   port?: string;
   tursoApiToken?: string;
   tursoOrg?: string;
-  googleApiKey?: string;
-  googleEmbeddingsModel?: string;
+  openRouterApiKey?: string;
+  embeddingsDimensions?: string;
+  ollamaBaseUrl?: string;
+  ollamaEmbeddingsModel?: string;
 }): Record<string, string> {
   const envs: Record<string, string> = {
     WORLDS_API_KEY: opts.apiKey,
@@ -47,9 +49,12 @@ export function buildWorldsEnvs(opts: {
   if (opts.port) envs.PORT = opts.port;
   if (opts.tursoApiToken) envs.TURSO_API_TOKEN = opts.tursoApiToken;
   if (opts.tursoOrg) envs.TURSO_ORG = opts.tursoOrg;
-  if (opts.googleApiKey) envs.GOOGLE_API_KEY = opts.googleApiKey;
-  if (opts.googleEmbeddingsModel)
-    envs.GOOGLE_EMBEDDINGS_MODEL = opts.googleEmbeddingsModel;
+  if (opts.openRouterApiKey) envs.OPENROUTER_API_KEY = opts.openRouterApiKey;
+  if (opts.embeddingsDimensions)
+    envs.WORLDS_EMBEDDINGS_DIMENSIONS = opts.embeddingsDimensions;
+  if (opts.ollamaBaseUrl) envs.OLLAMA_BASE_URL = opts.ollamaBaseUrl;
+  if (opts.ollamaEmbeddingsModel)
+    envs.OLLAMA_EMBEDDINGS_MODEL = opts.ollamaEmbeddingsModel;
 
   return envs;
 }
