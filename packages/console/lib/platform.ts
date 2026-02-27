@@ -90,7 +90,7 @@ export async function getTurso(): Promise<TursoManager | null> {
  * Provisions all platform resources for a newly created organization:
  *  1. Generates an API key
  *  2. Provisions a Turso database (if remote Turso credentials exist)
- *  3. Deploys the world API server (local deno serve or remote Deno Deploy)
+ *  3. Deploys the Worlds API Server (local deno serve or remote Deno Deploy)
  *  4. Persists apiBaseUrl, apiKey, and Turso URLs in org metadata
  *
  * Call after `workos.createOrganization()`.

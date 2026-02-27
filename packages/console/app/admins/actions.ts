@@ -110,7 +110,7 @@ export async function deleteUserAction(userId: string) {
         await teardownOrganization(organizationId);
       } catch (error) {
         console.error(
-          `Failed to stop World API for org ${organizationId}:`,
+          `Failed to stop Worlds API for org ${organizationId}:`,
           error,
         );
       }

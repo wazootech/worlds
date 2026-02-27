@@ -12,7 +12,14 @@ The Worlds API uses **Bearer Token** authentication. You must include your API k
 </Note>
 
 - **Cloud**: Generate an API key in the [dashboard](https://console.wazoo.dev/settings).
-- **Self-hosted**: Use the `WORLDS_API_KEY` configured in your server's environment variables.
+- **Self-hosted**: Use the `WORLDS_API_KEY` configured in your server's environment. This acts as the **Root Admin Key** for your instance and is typically generated and managed by your provisioner.
+
+### Unprotected mode
+
+To facilitate rapid prototyping and simplify local development, the `WORLDS_API_KEY` is **optional**.
+
+> [!WARNING]
+> If you do not provide a `WORLDS_API_KEY`, the server will run in **unprotected mode**, granting full administrative access to all requests without authentication. This state is strictly intended for local development and sandbox environments.
 
 ## Usage
 
