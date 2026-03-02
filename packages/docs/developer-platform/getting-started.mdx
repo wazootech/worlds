@@ -1,14 +1,25 @@
 ---
 title: "Introduction"
-description: "Manage, query, and reason over SPARQL-compatible knowledge bases at the edge."
+description: "Manage, query, and reason over SPARQL-compatible knowledge bases at the edge personalized to your users."
 ---
 
-## Documentation Index
+## AI Discovery & Context
 
-<Card title="llms.txt" icon="robot" href="/llms.txt">
-  Fetch the complete documentation index for AI discovery. Use this file to
-  provide broad context to your agents.
-</Card>
+The [llms.txt file](https://llmstxt.org) is an industry standard that helps LLM-based agents index content efficiently, acting as a "sitemap for AI." Worlds API automatically provides these discovery indices at the root of the project to help assistants find the most relevant context.
+
+<CardGroup cols={2}>
+  <Card title="llms.txt" icon="robot" href="/llms.txt">
+    A concise overview of all documentation pages. Use this to help agents
+    identify relevant files before deep-diving.
+  </Card>
+  <Card title="llms-full.txt" icon="file-lines" href="/llms-full.txt">
+    The complete documentation suite in a single Markdown file—ideal for
+    high-context reasoning and coding assistants.
+  </Card>
+</CardGroup>
+
+> [!TIP]
+> **Contextual Menu:** Use the "Copy page" or "three dots" menu in the top right to instantly generate LLM-ready Markdown or jump into ChatGPT/Claude with this page as context.
 
 ## Overview
 
@@ -76,7 +87,7 @@ Standard RAG relies on vector similarity, which often fails at logical consisten
 
 ## Foundational Interoperability
 
-Worlds API is "the abstraction that powers abstractions." It is an underlying engine designed to power personalized AI assistants, enterprise-grade reasoning engines, and consumer context platforms.
+Worlds API is an **Agentic Context Stack**, transforming raw data into persistent, logically-traceable memory. We provide the core primitives to build personalized assistants, enterprise-grade reasoning engines, and universal knowledge platforms.
 
 ## Explore by Ecosystem
 
@@ -95,11 +106,7 @@ Worlds API is "the abstraction that powers abstractions." It is an underlying en
 ## Next Steps
 
 <CardGroup cols={2}>
-  <Card
-    title="Quickstart"
-    icon="rocket"
-    href="/developer-platform/getting-started/quickstart"
-  >
+  <Card title="Quickstart" icon="rocket" href="/developer-platform/quickstart">
     Create your first World and run a query in under 5 minutes.
   </Card>
   <Card title="SDK Reference" icon="code" href="/api-integrations/sdk">

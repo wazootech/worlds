@@ -11,6 +11,13 @@
     "options": ["copy", "view", "chatgpt", "claude"]
   },
   "favicon": "/images/wazoo.svg",
+  "seo": {
+    "indexing": "all",
+    "metatags": {
+      "og:type": "website",
+      "og:site_name": "Worlds Docs"
+    }
+  },
   "navigation": {
     "tabs": [
       {
@@ -20,8 +27,8 @@
           {
             "group": "Getting Started",
             "pages": [
-              "developer-platform/getting-started/index",
-              "developer-platform/getting-started/quickstart"
+              "developer-platform/getting-started",
+              "developer-platform/quickstart"
             ]
           },
           {
