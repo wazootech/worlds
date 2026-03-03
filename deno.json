@@ -6,8 +6,10 @@
     "./packages/cli"
   ],
   "tasks": {
+    "install": "npm i --prefix ./packages/console && npm i --prefix ./packages/docs",
     "start": "npm run dev --prefix ./packages/console",
     "start:cli": "deno -A --env=./packages/cli/.env ./packages/cli/main.ts",
+    "start:docs": "npm run dev --prefix ./packages/docs",
     "start:server": "deno serve -A --env=./packages/server/.env ./packages/server/main.ts",
     "test": "deno test -A",
     "lint": "deno lint",
