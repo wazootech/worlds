@@ -1,19 +1,24 @@
 ---
 title: "Privacy and Evolution"
-description: "Transparency regarding data privacy and the evolution of the Worlds ecosystem."
+description:
+  "Transparency regarding data privacy and the evolution of the Worlds
+  ecosystem."
 ---
 
 ## The Local-First Manifesto
 
-Worlds is built on the **Local-First Manifesto**. We believe that personal and enterprise knowledge should be:
+Worlds is built on the **Local-First Manifesto**. We believe that personal and
+enterprise knowledge should be:
 
 - **Durable**: Your data persists independently of any cloud service.
-- **Private**: You own your markdown and RDF files; zero data tracking by default.
+- **Private**: You own your markdown and RDF files; zero data tracking by
+  default.
 - **Malleable**: Every triple is a surgical truth that you can edit or delete.
 
 ## Data Privacy & Residency
 
-We believe in data transparency. This guide explains exactly where your information lives depending on your deployment mode.
+We believe in data transparency. This guide explains exactly where your
+information lives depending on your deployment mode.
 
 ### Local Development (Ollama/SQLite)
 
@@ -31,36 +36,56 @@ We believe in data transparency. This guide explains exactly where your informat
 
 ### Managed Platform (Console)
 
-- Each world gets its own dedicated **Turso** database and **Deno Deploy** worker.
+- Each world gets its own dedicated **Turso** database and **Deno Deploy**
+  worker.
 - You can choose regions during setup to ensure data residency and proximity.
 
-- **Tenant Isolation**: API requests enforce strict routing protocols using tenant headers (e.g., `x-tenant-id`). Memory pools are fully isolated, ensuring an AI only retrieves context from the specific dataset assigned to that user.
+- **Tenant Isolation**: API requests enforce strict routing protocols using
+  tenant headers (e.g., `x-tenant-id`). Memory pools are fully isolated,
+  ensuring an AI only retrieves context from the specific dataset assigned to
+  that user.
 
-> [!IMPORTANT]
-> **Navigating Compliance**: As a symbiotic base layer, Worlds must safely bridge open-source, local-first environments with enterprise-SaaS systems. Because Worlds can operate entirely offline, it helps developers satisfy strict **SOC 2 Type I & II**, **GDPR**, and **HIPAA** constraints.
+> [!IMPORTANT] **Navigating Compliance**: As a symbiotic base layer, Worlds must
+> safely bridge open-source, local-first environments with enterprise-SaaS
+> systems. Because Worlds can operate entirely offline, it helps developers
+> satisfy strict **SOC 2 Type I & II**, **GDPR**, and **HIPAA** constraints.
 >
-> Unlike purely local note-taking tools that cannot sign Business Associate Agreements (BAAs) for custom sync endpoints, Worlds allows enterprises to maintain complete control over where data flows. By enforcing strict network security policies, isolated user profile engines, and secure disposal protocols for electronic media containing sensitive data (PII, ePHI), we ensure your proprietary intelligence never leaks into public model training sets.
+> Unlike purely local note-taking tools that cannot sign Business Associate
+> Agreements (BAAs) for custom sync endpoints, Worlds allows enterprises to
+> maintain complete control over where data flows. By enforcing strict network
+> security policies, isolated user profile engines, and secure disposal
+> protocols for electronic media containing sensitive data (PII, ePHI), we
+> ensure your proprietary intelligence never leaks into public model training
+> sets.
 
 ---
 
 ## Open Source & Licensing
 
-To encourage the broadest possible adoption of the symbiotic base layer, we are committed to highly permissive licensing. The core Worlds framework is distributed under the **Apache-2.0 License**, making it highly permissive for both personal tools and enterprise-scale commercial integration. Whether you are building local terminal agents or managed RAG pipelines, the base layer remains free and open.
+To encourage the broadest possible adoption of the symbiotic base layer, we are
+committed to highly permissive licensing. The core Worlds framework is
+distributed under the **Apache-2.0 License**, making it highly permissive for
+both personal tools and enterprise-scale commercial integration. Whether you are
+building local terminal agents or managed RAG pipelines, the base layer remains
+free and open.
 
 ---
 
 ## Future Roadmap
 
-Worlds is an evolving neuro-symbolic platform. The following "missing puzzle pieces" are targeted for future development:
+Worlds is an evolving neuro-symbolic platform. The following "missing puzzle
+pieces" are targeted for future development:
 
 ### Automated Lifecycle & Syncing
 
-- **Folder Watcher**: CLI mode that monitors local directories and automatically ingests changes.
+- **Folder Watcher**: CLI mode that monitors local directories and automatically
+  ingests changes.
 - **Scheduled Sync**: Automated periodic pulls from external REST APIs.
 
 ### Advanced Semantic Tagging
 
-- **Semantic Tagging Spec**: Standardized metadata for categorizing Worlds and Organizations.
+- **Semantic Tagging Spec**: Standardized metadata for categorizing Worlds and
+  Organizations.
 - **Inference Rules**: Automatic tagging of triples based on logical patterns.
 
 ### Ecosystem Expansion
@@ -68,5 +93,5 @@ Worlds is an evolving neuro-symbolic platform. The following "missing puzzle pie
 - **VS Code Extension**: Direct SPARQL editing and World management.
 - **Python SDK**: Broadening the toolchain for data science and AI research.
 
-> [!TIP]
-> Have a suggestion for the roadmap? Open an issue on our [GitHub repository](https://github.com/wazootech/worlds).
+> [!TIP] Have a suggestion for the roadmap? Open an issue on our
+> [GitHub repository](https://github.com/wazootech/worlds).

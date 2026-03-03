@@ -3,7 +3,9 @@ title: SDK Overview
 description: "Interact with Worlds using the official TypeScript SDK"
 ---
 
-The **Worlds SDK** is the most powerful way to interact with your knowledge graph. While the [Quickstart](/developer-platform/quickstart) covers the basics, the SDK provides advanced tools for semantic reasoning and agentic workflows.
+The **Worlds SDK** is the most powerful way to interact with your knowledge
+graph. While the [Quickstart](/developer-platform/quickstart) covers the basics,
+the SDK provides advanced tools for semantic reasoning and agentic workflows.
 
 <Card
   title="Generated Documentation"
@@ -18,7 +20,8 @@ The **Worlds SDK** is the most powerful way to interact with your knowledge grap
 
 ### Type-Safe SPARQL
 
-The SDK handles the plumbing of SPARQL requests, including authentication and response parsing, while keeping your queries type-safe.
+The SDK handles the plumbing of SPARQL requests, including authentication and
+response parsing, while keeping your queries type-safe.
 
 ```typescript
 const result = await sdk.worlds.sparql(
@@ -33,7 +36,8 @@ const result = await sdk.worlds.sparql(
 
 ### Hybrid Search
 
-Combine vector similarity with full-text search. This is ideal for finding information when you only have a vague concept or a natural language question.
+Combine vector similarity with full-text search. This is ideal for finding
+information when you only have a vague concept or a natural language question.
 
 ```typescript
 const searchResults = await sdk.worlds.search(worldId, "conceptual question");
@@ -41,11 +45,15 @@ const searchResults = await sdk.worlds.search(worldId, "conceptual question");
 
 ### AI Tool-Calling
 
-The SDK exposes your Worlds as tools that adhere to the standard [AI SDK tool interface](https://ai-sdk.dev/docs/foundations/tools), making them directly compatible with various LLM orchestrators (like Vercel AI SDK, LangChain, and others) to allow agents to "read and write" to the graph.
+The SDK exposes your Worlds as tools that adhere to the standard
+[AI SDK tool interface](https://ai-sdk.dev/docs/foundations/tools), making them
+directly compatible with various LLM orchestrators (like Vercel AI SDK,
+LangChain, and others) to allow agents to "read and write" to the graph.
 
 ## Configuration Options
 
-When initializing the client, you can customize retry logic, custom headers, and timeout behaviors:
+When initializing the client, you can customize retry logic, custom headers, and
+timeout behaviors:
 
 ```typescript
 const sdk = new WorldsSdk({
@@ -56,4 +64,5 @@ const sdk = new WorldsSdk({
 });
 ```
 
-For a complete list of methods and types, see the [Technical Reference](/api-integrations/sdk).
+For a complete list of methods and types, see the
+[Technical Reference](/api-integrations/sdk).

@@ -1,0 +1,17 @@
+{
+  "name": "@wazoo/worlds-docs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "This repository contains the official documentation for **Worlds** (the Agentic Context Stack),\r built with [Mintlify](https://mintlify.com).",
+  "scripts": {
+    "format": "prettier \"**/*.{md,mdx,json}\" --write",
+    "format:check": "prettier \"**/*.{md,mdx,json}\" --check"
+  },
+  "keywords": [],
+  "author": "Wazoo",
+  "license": "WTFPL",
+  "type": "commonjs",
+  "devDependencies": {
+    "prettier": "^3.8.1"
+  }
+}

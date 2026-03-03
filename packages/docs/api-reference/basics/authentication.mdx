@@ -3,7 +3,8 @@ title: "Authentication"
 description: "How to authenticate requests to the World Server"
 ---
 
-The World Server uses **Bearer Token** authentication. Include your API key in the `Authorization` header of every request.
+The World Server uses **Bearer Token** authentication. Include your API key in
+the `Authorization` header of every request.
 
 ## Generate an API key
 
@@ -22,10 +23,12 @@ The World Server uses **Bearer Token** authentication. Include your API key in t
 
 ### Use unprotected mode
 
-For rapid prototyping and local development, the `WORLDS_API_KEY` is **optional**.
+For rapid prototyping and local development, the `WORLDS_API_KEY` is
+**optional**.
 
-> [!WARNING]
-> If you do not provide a `WORLDS_API_KEY`, the server will run in **unprotected mode**, granting full administrative access to all requests. This state is strictly intended for local development.
+> [!WARNING] If you do not provide a `WORLDS_API_KEY`, the server will run in
+> **unprotected mode**, granting full administrative access to all requests.
+> This state is strictly intended for local development.
 
 ## Authenticate requests
 
@@ -50,4 +53,5 @@ const sdk = new WorldsSdk({
 
 ## Access Admin features
 
-Certain endpoints, such as listing all worlds for an account, require an admin API key. If you are self-hosting, this is your `WORLDS_API_KEY`.
+Certain endpoints, such as listing all worlds for an account, require an admin
+API key. If you are self-hosting, this is your `WORLDS_API_KEY`.

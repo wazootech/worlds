@@ -1,11 +1,14 @@
 ---
 title: "OpenAI"
-description: "Inject persistent World context into OpenAI Chat Completions using the standard SDK."
+description:
+  "Inject persistent World context into OpenAI Chat Completions using the
+  standard SDK."
 ---
 
 # OpenAI Integration
 
-Using Worlds with the standard OpenAI SDK is straightforward. You can use it either as a standalone context provider or as a function calling tool.
+Using Worlds with the standard OpenAI SDK is straightforward. You can use it
+either as a standalone context provider or as a function calling tool.
 
 ## Installation
 
@@ -48,7 +51,8 @@ const response = await openai.chat.completions.create({
 
 ## Option 2: Pre-fetch Context
 
-Perform a search before calling OpenAI to provide the model with "immediate" memory.
+Perform a search before calling OpenAI to provide the model with "immediate"
+memory.
 
 ```typescript
 const context = await worlds.search("my-world-id", { query: "project status" });
@@ -67,5 +71,7 @@ const response = await openai.chat.completions.create({
 
 ## Next Steps
 
-- Learn about [Data Privacy](/developer-platform/concepts/data-privacy) when using LLMs with your data.
-- See how to use [SPARQL](/api-reference/basics/sparql) for more complex graph queries.
+- Learn about [Data Privacy](/developer-platform/concepts/data-privacy) when
+  using LLMs with your data.
+- See how to use [SPARQL](/api-reference/basics/sparql) for more complex graph
+  queries.

@@ -3,7 +3,8 @@ title: "Configuration Reference"
 description: "Environment variables for the Console and World Server."
 ---
 
-The platform switches between modes based on the presence of specific environment variables.
+The platform switches between modes based on the presence of specific
+environment variables.
 
 ### Management Console Requirements
 
@@ -24,14 +25,18 @@ These variables are required in `packages/console/.env`.
 | `OLLAMA_EMBEDDINGS_MODEL`      | Both       | (Optional) Ollama model (defaults to `nomic-embed-text`).                       |
 | (None)                         | Local Dev  | If WorkOS keys are missing, the console defaults to file-backed mode.           |
 
-By default, the Worlds Platform uses **Ollama** for local embeddings. This ensures your data never leaves your machine.
+By default, the Worlds Platform uses **Ollama** for local embeddings. This
+ensures your data never leaves your machine.
 
-> [!TIP]
-> You can also use **OpenRouter** for embeddings in local development by adding an `OPENROUTER_API_KEY` to your environment. See [Configuration Reference](/developer-platform/infrastructure/configuration) for details.
+> [!TIP] You can also use **OpenRouter** for embeddings in local development by
+> adding an `OPENROUTER_API_KEY` to your environment. See
+> [Configuration Reference](/developer-platform/infrastructure/configuration)
+> for details.
 
 ### Embedding Provider Selection
 
-The platform picks an embedding provider based on the available environment variables.
+The platform picks an embedding provider based on the available environment
+variables.
 
 | Provider       | Trigger                          | Notes                                                                         |
 | :------------- | :------------------------------- | :---------------------------------------------------------------------------- |
@@ -40,7 +45,8 @@ The platform picks an embedding provider based on the available environment vari
 
 ### World Server Requirements
 
-These are automatically provisioned and injected by the Console during deployment, but required if self-hosting the server manually.
+These are automatically provisioned and injected by the Console during
+deployment, but required if self-hosting the server manually.
 
 | Variable                       | Purpose                                                                                                                          |
 | :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |

@@ -1,9 +1,13 @@
 ---
 title: "Server Self-Hosting"
-description: "Deploy a standalone instance of the World Server to any Deno-compatible environment."
+description:
+  "Deploy a standalone instance of the World Server to any Deno-compatible
+  environment."
 ---
 
-If you want to host a single World instance without the full Management Console, you can deploy the `packages/server` directly to any Deno-compatible environment.
+If you want to host a single World instance without the full Management Console,
+you can deploy the `packages/server` directly to any Deno-compatible
+environment.
 
 ### Prerequisites
 
@@ -31,5 +35,6 @@ deno task start
 | `OPENROUTER_API_KEY` | (Optional) For high-quality cloud embeddings.           |
 | `OLLAMA_BASE_URL`    | (Optional) For local/private embeddings.                |
 
-> [!NOTE]
-> Standalone servers do not support automatic multi-tenancy. For multi-org orchestration, use the [Management Console](/developer-platform/infrastructure/console-hosting).
+> [!NOTE] Standalone servers do not support automatic multi-tenancy. For
+> multi-org orchestration, use the
+> [Management Console](/developer-platform/infrastructure/console-hosting).

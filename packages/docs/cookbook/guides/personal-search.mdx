@@ -3,7 +3,9 @@ title: "Use Case: Personal Search"
 description: "Building a private, semantic search engine for your own data."
 ---
 
-Leverage the AI-SDK and Ollama to build a search engine that runs entirely on your local machine. This ensures your knowledge remains private and accessible even offline.
+Leverage the AI-SDK and Ollama to build a search engine that runs entirely on
+your local machine. This ensures your knowledge remains private and accessible
+even offline.
 
 ## Ingesting Data
 
@@ -16,14 +18,16 @@ worlds ingest ./notes --world my-notes
 
 ## Private Embeddings
 
-By default, the platform uses **Ollama** running locally. This means your text snippets are never sent to a third-party API for vectorization.
+By default, the platform uses **Ollama** running locally. This means your text
+snippets are never sent to a third-party API for vectorization.
 
 - **Model**: `nomic-embed-text` (default)
 - **Engine**: Local Ollama Server
 
 ## Querying your Knowledge
 
-Once ingested, you can perform semantic searches that understand context, rather than just keywords:
+Once ingested, you can perform semantic searches that understand context, rather
+than just keywords:
 
 ```typescript
 import { createWorldClient } from "@wazootech/worlds-sdk";
@@ -34,5 +38,5 @@ const results = await world.search("How do I set up a local database?");
 console.log(results);
 ```
 
-> [!TIP]
-> Learn more about how your data is protected in [Data Privacy](/developer-platform/concepts/data-privacy).
+> [!TIP] Learn more about how your data is protected in
+> [Data Privacy](/developer-platform/concepts/data-privacy).

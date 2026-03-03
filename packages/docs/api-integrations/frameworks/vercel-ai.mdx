@@ -1,11 +1,14 @@
 ---
 title: "Vercel AI SDK"
-description: "Use Worlds as a persistent memory layer for Vercel AI SDK applications."
+description:
+  "Use Worlds as a persistent memory layer for Vercel AI SDK applications."
 ---
 
 # Vercel AI SDK Integration
 
-The Vercel AI SDK is a powerful framework for building AI applications. You can use Worlds to provide persistent, semantic context to your `generateText` and `streamText` calls.
+The Vercel AI SDK is a powerful framework for building AI applications. You can
+use Worlds to provide persistent, semantic context to your `generateText` and
+`streamText` calls.
 
 ## Installation
 
@@ -15,7 +18,8 @@ npm install @wazootech/worlds ai
 
 ## Basic Usage
 
-The simplest way to integrate Worlds is to use it as a tool that the model can call to search for context.
+The simplest way to integrate Worlds is to use it as a tool that the model can
+call to search for context.
 
 ```typescript
 import { generateText, tool } from "ai";
@@ -46,7 +50,8 @@ const result = await generateText({
 
 ## Automatic Context Injection
 
-For a more seamless experience, you can inject World context into the system prompt automatically.
+For a more seamless experience, you can inject World context into the system
+prompt automatically.
 
 ```typescript
 const context = await worlds.search("your-world-id", {
@@ -64,4 +69,6 @@ const result = await generateText({
 ## Next Steps
 
 - Explore the [SDK Reference](/api-integrations/sdk) for more advanced usage.
-- Learn about [Malleable Knowledge](/developer-platform/concepts/malleable-knowledge) to understand how data is stored.
+- Learn about
+  [Malleable Knowledge](/developer-platform/concepts/malleable-knowledge) to
+  understand how data is stored.

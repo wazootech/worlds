@@ -3,13 +3,15 @@ title: "Console Self-Hosting"
 description: "How to deploy the full Worlds Platform Management Console."
 ---
 
-To run a full production-grade instance of the Worlds Platform Console, follow these steps:
+To run a full production-grade instance of the Worlds Platform Console, follow
+these steps:
 
 ### 1. Provision Infrastructure
 
 - **Identity (WorkOS)**:
   - Create a project in [WorkOS](https://workos.com) and set up AuthKit.
-  - **Retrieve**: `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, and `WORKOS_COOKIE_PASSWORD`.
+  - **Retrieve**: `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, and
+    `WORKOS_COOKIE_PASSWORD`.
 - **Compute (Deno Deploy)**:
   - Generate a personal access token in [Deno Deploy](https://dash.deno.com).
   - **Retrieve**: `DENO_DEPLOY_TOKEN`.
@@ -19,13 +21,16 @@ To run a full production-grade instance of the Worlds Platform Console, follow t
 - **AI Models (OpenRouter)**:
   - Create an account on [OpenRouter](https://openrouter.ai).
   - **Retrieve**: `OPENROUTER_API_KEY` (Global fallback).
-  - **Management API (Advanced)**: Generate a Management API Key to enable automatic per-app key provisioning.
+  - **Management API (Advanced)**: Generate a Management API Key to enable
+    automatic per-app key provisioning.
 
 ### 2. Deploy the Console
 
-The Console is a standard Next.js application. You can deploy it to Vercel, Netlify, or a VPS.
+The Console is a standard Next.js application. You can deploy it to Vercel,
+Netlify, or a VPS.
 
-- Set the environment variables retrieved in **Step 1** in your deployment settings.
+- Set the environment variables retrieved in **Step 1** in your deployment
+  settings.
 - Ensure `NEXT_PUBLIC_WORKOS_REDIRECT_URI` matches your deployment callback URL.
 
 ### 3. Orchestrate Worlds
@@ -36,5 +41,6 @@ Once the Console is running, it will automatically:
 - Deploy a new **Deno Deploy App** running `packages/server`.
 - Inject `OPENROUTER_API_KEY` into every new World instance.
 
-> [!TIP]
-> This is a high-friction deployment intended for platform operators. If you just want to run a single World instance, see [Server Self-Hosting](/developer-platform/infrastructure/server-hosting).
+> [!TIP] This is a high-friction deployment intended for platform operators. If
+> you just want to run a single World instance, see
+> [Server Self-Hosting](/developer-platform/infrastructure/server-hosting).

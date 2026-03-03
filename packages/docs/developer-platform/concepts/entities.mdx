@@ -5,50 +5,66 @@ description: "The core primitives for building high-precision knowledge bases."
 
 ## Worlds: Units of Organization
 
-A **World** is an isolated container for knowledge. It is the fundamental unit of organization in the ecosystem.
+A **World** is an isolated container for knowledge. It is the fundamental unit
+of organization in the ecosystem.
 
 ### Anatomy of a World
 
 Each World consists of:
 
 - **Metadata**: Name, description, and configuration.
-- **RDF Store**: A high-performance triple store containing the world's knowledge graph.
-- **Vector Store**: An embedding index that enables semantic search over the knowledge graph.
+- **RDF Store**: A high-performance triple store containing the world's
+  knowledge graph.
+- **Vector Store**: An embedding index that enables semantic search over the
+  knowledge graph.
 
 ### Strict Isolation
 
-Worlds are completely isolated. Data inserted into one world cannot be queried from another, ensuring strict data separation for different agents or contexts.
+Worlds are completely isolated. Data inserted into one world cannot be queried
+from another, ensuring strict data separation for different agents or contexts.
 
 ---
 
 ### The Universal Memory API
 
-Worlds provides a **universal memory API** that makes AI agents "unforgettable." By decoupling the memory layer from the compute layer, agents can maintain a persistent state across different sessions, models, and platforms.
+Worlds provides a **universal memory API** that makes AI agents "unforgettable."
+By decoupling the memory layer from the compute layer, agents can maintain a
+persistent state across different sessions, models, and platforms.
 
 ## The Connector Strategy
 
-In a traditional database, you "insert" data. In Worlds, you **connect** data. We treat ingestion as an ongoing stream of semantic state, forming a **continual learning loop** where agents self-improve through constant exposure to new domain knowledge.
+In a traditional database, you "insert" data. In Worlds, you **connect** data.
+We treat ingestion as an ongoing stream of semantic state, forming a **continual
+learning loop** where agents self-improve through constant exposure to new
+domain knowledge.
 
 ### The Semantic Bridge
 
 A "Connector" transforms raw data into a cohesive world model in three steps:
 
-1.  **Extraction**: Pulling raw data from an external source (GitHub, Notion, Slack).
-2.  **Triplification**: Mapping raw data to **RDF Triples** using an LLM or predefined schema (e.g., autonomously indexing SDK source code to eliminate hallucinations).
+1.  **Extraction**: Pulling raw data from an external source (GitHub, Notion,
+    Slack).
+2.  **Triplification**: Mapping raw data to **RDF Triples** using an LLM or
+    predefined schema (e.g., autonomously indexing SDK source code to eliminate
+    hallucinations).
 3.  **Ingestion**: Pushing the resulting triples to a specific World ID.
 
 ### Why use Connectors?
 
 - **Real-time Resonance**: Your agents react to real-world changes instantly.
 - **Interoperability**: Data from different silos lives in the same "World."
-- **Tenant Isolation**: In managed environments, memory pools are isolated using strict routing protocols (e.g., tenant headers like `x-world-org-id`), ensuring agents only retrieve context from their assigned dataset.
-- **Persistence**: Connected data is structured, allowing for complex relational queries.
+- **Tenant Isolation**: In managed environments, memory pools are isolated using
+  strict routing protocols (e.g., tenant headers like `x-world-org-id`),
+  ensuring agents only retrieve context from their assigned dataset.
+- **Persistence**: Connected data is structured, allowing for complex relational
+  queries.
 
 ---
 
 ## The Visualizer
 
-While Worlds is local-first and headless, visualizing the **Symbolic State** is critical for debugging agentic reasoning.
+While Worlds is local-first and headless, visualizing the **Symbolic State** is
+critical for debugging agentic reasoning.
 
 ### The Mental Model
 
@@ -60,7 +76,8 @@ In Worlds, your data isn't a table; it's a **Directed Graph**.
 ### Exploration Options
 
 - **Worlds Console**: Built-in Graph Explorer and Query Inspector.
-- **Custom UI**: Use the TypeScript SDK to feed graph data into libraries like **D3.js**, **React-Flow**, or **Kinopio**.
+- **Custom UI**: Use the TypeScript SDK to feed graph data into libraries like
+  **D3.js**, **React-Flow**, or **Kinopio**.
 
-> [!IMPORTANT]
-> Visualizing the "path" an agent took through the graph can reveal missing or incorrect triples, helping you eliminate hallucinations.
+> [!IMPORTANT] Visualizing the "path" an agent took through the graph can reveal
+> missing or incorrect triples, helping you eliminate hallucinations.

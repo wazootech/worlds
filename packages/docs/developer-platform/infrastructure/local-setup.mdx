@@ -1,9 +1,13 @@
 ---
 title: "Local Setup"
-description: "Run the entire Worlds Platform ecosystem—Console and World Server—locally using Deno and Node.js."
+description:
+  "Run the entire Worlds Platform ecosystem—Console and World Server—locally
+  using Deno and Node.js."
 ---
 
-The Worlds Platform is designed with a **local-first** philosophy. You can boot the entire ecosystem—including the Management Console and any number of World instances—using only your local filesystem and Deno runtime.
+The Worlds Platform is designed with a **local-first** philosophy. You can boot
+the entire ecosystem—including the Management Console and any number of World
+instances—using only your local filesystem and Deno runtime.
 
 ## Prerequisites
 
@@ -15,7 +19,8 @@ To develop on the Worlds Platform, you'll need the following tools:
 
 ## Setup the console
 
-The Console orchestrates all other resources. In local mode, it uses `data/workos.json` as a mock identity provider.
+The Console orchestrates all other resources. In local mode, it uses
+`data/workos.json` as a mock identity provider.
 
 <Steps>
 <Step title="Clone & Install">
@@ -29,7 +34,8 @@ npm install
 </Step>
 <Step title="Environment Configuration">
 
-Copy the example environment file. **Skip the WorkOS variables**, to trigger Local Dev Mode.
+Copy the example environment file. **Skip the WorkOS variables**, to trigger
+Local Dev Mode.
 
 ```bash
 cp .env.example .env
@@ -49,17 +55,21 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Booting world instances
 
-Once the Console is running, it will automatically manage local World Server processes.
+Once the Console is running, it will automatically manage local World Server
+processes.
 
-- **Automatic Boot**: On startup, the Console checks `data/workos.json` and spawns a `deno serve` process for every local organization found.
-- **Dynamic Provisioning**: When you create a new Organization in the Console UI, it will:
+- **Automatic Boot**: On startup, the Console checks `data/workos.json` and
+  spawns a `deno serve` process for every local organization found.
+- **Dynamic Provisioning**: When you create a new Organization in the Console
+  UI, it will:
   1. Generate a local API Key.
   2. Create a local SQLite database in `data/{org_id}/worlds.db`.
   3. Spawn a new World Server on an available local port.
 
 ## Customizing the local user
 
-In Local Dev Mode, you can customize the identity of the mock user session by setting environment variables in `packages/console/.env`:
+In Local Dev Mode, you can customize the identity of the mock user session by
+setting environment variables in `packages/console/.env`:
 
 ```dotenv
 LOCAL_USER_ID="admin"
@@ -68,7 +78,8 @@ LOCAL_USER_FIRST_NAME="System"
 LOCAL_USER_LAST_NAME="Admin"
 ```
 
-These values are used to initialize the `data/workos.json` file if it doesn't already exist.
+These values are used to initialize the `data/workos.json` file if it doesn't
+already exist.
 
 ## Configuration Reference
 
@@ -90,10 +101,13 @@ Here's a list of environment variables you can set for local development:
 
 ## Local embeddings with Ollama
 
-By default, the Worlds Platform uses **Ollama** for local embeddings. This ensures your data never leaves your machine.
+By default, the Worlds Platform uses **Ollama** for local embeddings. This
+ensures your data never leaves your machine.
 
-> [!TIP]
-> You can also use **OpenRouter** for embeddings in local development by adding an `OPENROUTER_API_KEY` to your environment. See [Configuration Reference](/developer-platform/infrastructure/configuration) for details.
+> [!TIP] You can also use **OpenRouter** for embeddings in local development by
+> adding an `OPENROUTER_API_KEY` to your environment. See
+> [Configuration Reference](/developer-platform/infrastructure/configuration)
+> for details.
 
 <Steps>
 <Step title="Install Ollama">
@@ -112,7 +126,8 @@ ollama pull nomic-embed-text
 </Step>
 <Step title="Configuration">
 
-The World Server will automatically attempt to connect to the local Ollama instance at `http://127.0.0.1:11434`. You can override this in your environment:
+The World Server will automatically attempt to connect to the local Ollama
+instance at `http://127.0.0.1:11434`. You can override this in your environment:
 
 ```dotenv
 OLLAMA_BASE_URL="http://your-ollama-host:11434"

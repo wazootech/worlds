@@ -1,13 +1,17 @@
 ---
 title: "Use Case: Social Graphs"
-description: "How to build and query social connections using Worlds and SPARQL."
+description:
+  "How to build and query social connections using Worlds and SPARQL."
 ---
 
-The Worlds Platform is ideal for modeling complex relationships. By using RDF triples, you can build social graphs that are more flexible than traditional SQL schemas.
+The Worlds Platform is ideal for modeling complex relationships. By using RDF
+triples, you can build social graphs that are more flexible than traditional SQL
+schemas.
 
 ## Modeling Connections
 
-In a World, you can represent users and their relationships as triples. For example, to say "Alice follows Bob":
+In a World, you can represent users and their relationships as triples. For
+example, to say "Alice follows Bob":
 
 ```turtle
 :alice :follows :bob .
@@ -17,7 +21,9 @@ In a World, you can represent users and their relationships as triples. For exam
 
 ## Finding "Friends of Friends"
 
-One of the strengths of SPARQL is the ability to perform complex graph traversals. Here is a query to find all people that Alice's friends follow, who Alice doesn't already follow:
+One of the strengths of SPARQL is the ability to perform complex graph
+traversals. Here is a query to find all people that Alice's friends follow, who
+Alice doesn't already follow:
 
 ```sparql
 PREFIX : <http://example.org/>
@@ -33,7 +39,9 @@ WHERE {
 
 ## Visualizing the Graph
 
-In the **Console**, you can use the **Graph Explorer** to see these connections visually. This helps in auditing relationships or identifying clusters of users in your network.
+In the **Console**, you can use the **Graph Explorer** to see these connections
+visually. This helps in auditing relationships or identifying clusters of users
+in your network.
 
-> [!TIP]
-> For more advanced queries, check out the [SPARQL Reference](/api-reference/basics/sparql).
+> [!TIP] For more advanced queries, check out the
+> [SPARQL Reference](/api-reference/basics/sparql).

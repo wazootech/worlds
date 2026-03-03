@@ -5,47 +5,59 @@ description: "How to use AI coding agents to build and manage your Worlds."
 
 # Vibe Coding with Worlds
 
-"Vibe Coding" is the practice of using AI agents (like Claude Code, Windsurf, or Cursor) to build applications through high-level intent rather than manual line-by-line coding. Worlds is uniquely suited for Vibe Coding because its state is semantic and malleable.
+"Vibe Coding" is the practice of using AI agents (like Claude Code, Windsurf, or
+Cursor) to build applications through high-level intent rather than manual
+line-by-line coding. Worlds is uniquely suited for Vibe Coding because its state
+is semantic and malleable.
 
 ## The Agent Prompt
 
-To help an AI agent integrate with Worlds, copy and paste the following "World-Aware" prompt into your agent's context:
+To help an AI agent integrate with Worlds, copy and paste the following
+"World-Aware" prompt into your agent's context:
 
 ```markdown
-I am building an application using Worlds.
-Worlds are persistent, semantic knowledge containers.
+I am building an application using Worlds. Worlds are persistent, semantic
+knowledge containers.
 
 - Use the `@wazootech/worlds` SDK to interact with them.
 - Every World has a `worldId`.
-- You can store data as "Malleable Knowledge" which is automatically indexed and searchable.
+- You can store data as "Malleable Knowledge" which is automatically indexed and
+  searchable.
 - Use the `search` endpoint to retrieve context from a World.
 
-When I ask you to "Remember X", call the Worlds SDK to store it.
-When I ask a question about X, search the World for context first.
+When I ask you to "Remember X", call the Worlds SDK to store it. When I ask a
+question about X, search the World for context first.
 ```
 
 ## Agent Integration Skills
 
-If you are using **Claude Code**, you can add Worlds as a custom skill by providing it the OpenAPI spec:
+If you are using **Claude Code**, you can add Worlds as a custom skill by
+providing it the OpenAPI spec:
 
 1.  **Get your API Key**: From the [Worlds Console](https://console.wazoo.dev).
-2.  **Mount the Spec**: Tell Claude to read `https://api.wazoo.dev/openapi.json`.
-3.  **Command**: `claude "Help me build a personal memory world for my project."`
+2.  **Mount the Spec**: Tell Claude to read
+    `https://api.wazoo.dev/openapi.json`.
+3.  **Command**:
+    `claude "Help me build a personal memory world for my project."`
 
 ## Best Practices
 
-- **Semantic Naming**: Give your Worlds descriptive names. The AI uses these names to choose the right container for context.
-- **Verbose Connectors**: When setting up connectors, let the AI agent handle the configuration logic. It can often find the right OAuth scopes automatically.
-- **Context Loops**: Always ask the agent to "check the world" at the start of a session.
+- **Semantic Naming**: Give your Worlds descriptive names. The AI uses these
+  names to choose the right container for context.
+- **Verbose Connectors**: When setting up connectors, let the AI agent handle
+  the configuration logic. It can often find the right OAuth scopes
+  automatically.
+- **Context Loops**: Always ask the agent to "check the world" at the start of a
+  session.
 
 ## Examples
 
 ### Storing a Fact
 
-"Hey Claude, remember that our project deadline is March 15th."
-_Result: Claude calls the SDK to update the World state._
+"Hey Claude, remember that our project deadline is March 15th." _Result: Claude
+calls the SDK to update the World state._
 
 ### Semantic Search
 
-"What's the status of our project?"
-_Result: Claude searches the World and retrieves the March 15th deadline._
+"What's the status of our project?" _Result: Claude searches the World and
+retrieves the March 15th deadline._
