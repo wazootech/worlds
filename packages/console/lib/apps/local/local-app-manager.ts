@@ -1,7 +1,11 @@
 import { type ChildProcess } from "child_process";
 import path from "path";
-import { type ManagedApp, type AppManager, buildWorldsEnvs } from "../app-manager";
-import type { WorkOSOrganization } from "../../workos/workos-manager";
+import {
+  type ManagedApp,
+  type AppManager,
+  buildWorldsEnvs,
+} from "@/lib/apps/app-manager";
+import type { WorkOSOrganization } from "@/lib/workos/workos-manager";
 
 const PROCESS_PREFIX = "worlds";
 
@@ -141,8 +145,6 @@ export class LocalAppManager implements AppManager {
           port: port.toString(),
           tursoApiToken: org.metadata?.tursoApiToken as string,
           tursoOrg: org.metadata?.tursoOrg as string,
-          googleApiKey: process.env.GOOGLE_API_KEY,
-          googleEmbeddingsModel: process.env.GOOGLE_EMBEDDINGS_MODEL,
         });
 
         await this.createApp(org.id, envs);

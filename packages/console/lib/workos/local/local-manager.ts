@@ -4,7 +4,7 @@ import type {
   WorkOSUser,
   WorkOSOrganization,
   WorkOSManager,
-} from "../workos-manager";
+} from "@/lib/workos/workos-manager";
 
 const STATE_FILE = path.join(process.cwd(), "data", "workos.json");
 

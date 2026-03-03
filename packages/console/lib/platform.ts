@@ -1,5 +1,8 @@
 import { retry } from "@std/async/retry";
-import type { WorkOSOrganization, WorkOSManager } from "./workos/workos-manager";
+import type {
+  WorkOSOrganization,
+  WorkOSManager,
+} from "./workos/workos-manager";
 import { type AppManager, buildWorldsEnvs } from "./apps/app-manager";
 import type { TursoManager } from "./turso/turso-manager";
 
@@ -285,7 +288,9 @@ async function provisionAppInternal(
         openRouterApiKey: orKey,
       };
       await workos.updateOrganization(org.id, { metadata: org.metadata });
-      console.log(`[Platform] Provisioned per-app OpenRouter key for ${org.id}`);
+      console.log(
+        `[Platform] Provisioned per-app OpenRouter key for ${org.id}`,
+      );
     } catch (error) {
       console.error(
         `[Platform] Failed to provision OpenRouter key for ${org.id}:`,
@@ -345,11 +350,15 @@ async function provisionAppInternal(
 
         try {
           return await appManager.createApp(slug, envs);
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as {
+            status?: number;
+            message?: string;
+          };
           const isConflict =
-            error?.status === 409 ||
-            error?.message?.includes("409") ||
-            error?.message?.includes("already exists");
+            err?.status === 409 ||
+            err?.message?.includes("409") ||
+            err?.message?.includes("already exists");
 
           if (isConflict) {
             console.warn(`[Platform] Slug collision for ${slug}, retrying...`);

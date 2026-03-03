@@ -29,6 +29,7 @@ export interface WorkOSOrganization {
     tursoApiToken?: string;
     tursoOrg?: string;
     denoDeployAppId?: string;
+    openRouterApiKey?: string;
   };
 }
 

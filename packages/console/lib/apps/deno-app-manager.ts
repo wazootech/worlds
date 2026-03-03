@@ -34,9 +34,7 @@ export class DenoAppManager implements AppManager {
         token,
       });
 
-      console.log(
-        `[AppManager:Deno] Deploying application to ${app.slug}...`,
-      );
+      console.log(`[AppManager:Deno] Deploying application to ${app.slug}...`);
       const build = await sandbox.deno.deploy(app.slug, {
         production: true,
         build: {
@@ -61,6 +59,7 @@ export class DenoAppManager implements AppManager {
         );
         await this.client.apps.update(app.id, {
           envs,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as DenoAppUpdate as any);
       }
 
@@ -78,7 +77,7 @@ export class DenoAppManager implements AppManager {
         `[AppManager:Deno] Failed to provision app ${slug} (ID: ${app.id}):`,
         error,
       );
-      
+
       // Clean up the partially created app to avoid "zombie" resources
       try {
         console.log(`[AppManager:Deno] Cleaning up failed app ${app.id}...`);
