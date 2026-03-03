@@ -13,6 +13,7 @@
     "fmt": "deno fmt",
     "check": "deno check --doc packages/server packages/cli packages/sdk packages/ai-sdk",
     "precommit:console": "npm run precommit --prefix packages/console",
+    "precommit:docs": "npm run precommit --prefix packages/docs",
     "precommit": {
       "dependencies": [
         "fmt",
@@ -20,6 +21,7 @@
         "check",
         "test",
         "precommit:console",
+        "precommit:docs",
         "publish:dry"
       ]
     },

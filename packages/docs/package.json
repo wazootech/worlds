@@ -5,7 +5,8 @@
   "description": "This repository contains the official documentation for **Worlds** (the Agentic Context Stack),\r built with [Mintlify](https://mintlify.com).",
   "scripts": {
     "format": "prettier \"**/*.{md,mdx,json}\" --write",
-    "format:check": "prettier \"**/*.{md,mdx,json}\" --check"
+    "format:check": "prettier \"**/*.{md,mdx,json}\" --check",
+    "precommit": "npm run format"
   },
   "keywords": [],
   "author": "Wazoo",
