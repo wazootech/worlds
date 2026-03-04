@@ -67,7 +67,6 @@ Deno.test("Worlds API routes", async (t) => {
 
     const world = await res.json();
     assertEquals(world.label, "New World");
-    assertEquals(world.organizationId, null);
   });
 
   await t.step(

@@ -47,9 +47,6 @@ components:
         description:
           type: string
           nullable: true
-        organizationId:
-          type: string
-          nullable: true
         createdAt:
           type: number
         updatedAt:
@@ -74,8 +71,6 @@ components:
         description:
           type: string
           nullable: true
-        organizationId:
-          type: string
       required:
         - slug
         - label
@@ -134,14 +129,12 @@ components:
           type: number
         worldId:
           type: string
-        organizationId:
-          type: string
-          nullable: true
       required:
         - subject
         - predicate
         - object
         - score
+        - worldId
 
     SparqlResults:
       type: object
@@ -330,6 +323,7 @@ paths:
           in: query
           schema:
             type: integer
+            maximum: 100
             default: 20
       responses:
         "200":
@@ -500,7 +494,8 @@ paths:
           in: query
           schema:
             type: integer
-            default: 50
+            maximum: 100
+            default: 20
         - name: level
           in: query
           schema:
@@ -541,6 +536,12 @@ paths:
             items:
               type: string
         - name: predicates
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: types
           in: query
           schema:
             type: array
