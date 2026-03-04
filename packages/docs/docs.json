@@ -26,10 +26,7 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": [
-              "developer-platform/getting-started/overview",
-              "developer-platform/getting-started/quickstart"
-            ]
+            "pages": ["overview", "quickstart", "vibe-coding"]
           },
           {
             "group": "Core Concepts",
@@ -116,8 +113,7 @@
             "pages": [
               "cookbook/guides/social-graphs",
               "cookbook/guides/personal-search",
-              "cookbook/guides/cli-tasks",
-              "cookbook/guides/vibe-coding"
+              "cookbook/guides/cli-tasks"
             ]
           }
         ]
