@@ -5,7 +5,7 @@ import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { LogsService } from "#/lib/database/tables/logs/service.ts";
 import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
 
-const DEFAULT_LIMIT = 50;
+const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
 export default (appContext: ServerContext) => {
@@ -64,6 +64,7 @@ export default (appContext: ServerContext) => {
         return Response.json(
           logs.map((log) => ({
             id: log.id,
+            worldId: log.world_id,
             timestamp: log.timestamp,
             level: log.level,
             message: log.message,

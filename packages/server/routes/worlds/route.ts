@@ -53,7 +53,6 @@ export default (appContext: ServerContext) => {
         // Map to SDK record and validate against SDK schema
         const record = worldSchema.parse({
           id: world.id,
-          organizationId: null,
           slug: world.slug,
           label: world.label,
           description: world.description,
@@ -248,7 +247,6 @@ export default (appContext: ServerContext) => {
         const response = Response.json(
           rows.map((world: WorldRow) => ({
             id: world.id,
-            organizationId: null,
             slug: world.slug,
             label: world.label,
             description: world.description,
@@ -304,7 +302,6 @@ export default (appContext: ServerContext) => {
         return Response.json(
           worldSchema.parse({
             id: world.id,
-            organizationId: null,
             slug: world.slug,
             label: world.label,
             description: world.description,
