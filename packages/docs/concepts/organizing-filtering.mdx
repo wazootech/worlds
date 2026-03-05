@@ -1,0 +1,68 @@
+---
+title: "Organizing & Filtering Data"
+description: "How to manage multi-tenant context using Worlds and Attributes."
+---
+
+# Organizing & Filtering Data
+
+When building agents for multiple users, teams, or projects, you need strict
+boundaries to ensure that data does not leak across contexts. Worlds handles
+multitenancy and isolation through its core container: **The World**.
+
+## Worlds: The Ultimate Boundary
+
+A **World** is a strictly isolated container for knowledge. If an entity or fact
+exists in `World A`, an agent querying `World B` will absolutely never see it.
+
+- **User Profiles:** Create one World per user (`world_usr_123`) to maintain a
+  deeply personalized, isolated memory of their preferences and history.
+- **Project Context:** Create a World per project (`world_prj_456`) to store
+  specialized codebase knowledge, design decisions, and team members.
+- **Organization Level:** Create a World for a company, allowing any authorized
+  employee's agent to query shared institutional knowledge.
+
+This physical separation at the database level guarantees privacy and
+significantly improves query performance by minimizing the search space.
+
+## Entities and Metadata Filtering
+
+Within a single World, you will still need to categorize and filter information.
+Worlds uses **Entities** and **Triples** to achieve hyper-granular filtering.
+
+Traditional vector databases use arbitrary JSON metadata tags
+(`{ "category": "engineering", "priority": 1 }`). In Worlds, **metadata is just
+more graph edges**.
+
+### The Graph Approach to Filtering
+
+If you want to find all "High Priority Engineering Tasks", you do not apply a
+JSON filter. Instead, you traverse the graph:
+
+1.  Find all entities of type `Task`.
+2.  Follow the edge `hasCategory` -> `Engineering`.
+3.  Follow the edge `hasPriority` -> `High`.
+
+Because these relationships are stored as formal Triples, you can perform
+infinitely complex logical filtering using **SPARQL Reasoning** or **Hybrid
+Search**, natively combining metadata constraints with semantic vector search.
+
+For example, finding knowledge connected to a specific slack channel simply
+means restricting your search path to entities connected via `extractedFrom` ->
+`SlackChannel_General`.
+
+<CardGroup cols={2}>
+  <Card
+    title="Knowledge Primitives"
+    icon="diagram-project"
+    href="/concepts/knowledge-primitives"
+  >
+    Learn exactly how to define Entities and Triples.
+  </Card>
+  <Card
+    title="Privacy and Evolution"
+    icon="shield-halved"
+    href="/concepts/privacy-and-evolution"
+  >
+    Understand how Worlds handles conflicting and evolving data over time.
+  </Card>
+</CardGroup>

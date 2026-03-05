@@ -1,50 +1,76 @@
 ---
-title: "Knowledge Primitives"
+title: "Knowledge Primitives & Entities"
 description: "The core primitives for building high-precision knowledge bases."
 ---
 
-# Knowledge Primitives
+# Knowledge Primitives & Entities
 
-The Worlds engine uses three fundamental primitives to structure knowledge for
-AI agents: **Worlds**, **Entities**, and **Triples**.
+To build applications with Worlds, you need to understand how the platform
+stores the "reality" it extracts from your unstructured data. The Worlds engine
+uses three fundamental primitives to structure knowledge: **Worlds**,
+**Entities**, and **Triples**.
 
-## 1. Worlds (Units of Organization)
+## 1. Worlds (The Container)
 
-A **World** is an isolated container for knowledge. It is the fundamental unit
-of multi-tenant isolation.
+A **World** is an isolated container for a knowledge graph. It is the
+fundamental unit of context and multi-tenant isolation.
 
-- **Isolation**: Data in one World is strictly invisible to others.
-- **Components**: Each World manages its own RDF Triplestore and Vector Index.
+- **Boundary:** Data in `World A` is strictly invisible to `World B`.
+- **Use Cases:** You typically create one World per end-user for personal
+  memory, or one World per team for organizational knowledge.
+- **Components:** Behind the scenes, each World is an isolated namespace
+  containing its own RDF Triplestore and Vector Index.
 
-## 2. Entities (Subjects and Objects)
+## 2. Entities (Nodes)
 
-Entities are the "things" in your World. They represent users, projects, code
-snippets, or abstract concepts.
+Entities are the subjects and objects in your World—the physical or conceptual
+"nodes" in the graph. An entity can be a `User`, a `Task`, a `CodeSnippet`, a
+`Repository`, or any abstract concept.
 
-- **IRIs**: Every entity has a unique Internationalized Resource Identifier
-  (IRI).
-- **Types**: Entities are categorized via `rdf:type` (e.g., this entity is a
-  `User`).
+- **IRIs:** Every entity is identified by a unique Internationalized Resource
+  Identifier (IRI).
+- **Types:** Entities are categorized by their type (e.g., this entity is a
+  `Company`, that entity is a `Person`).
 
-## 3. Triples (Surgical Truths)
+## 3. Triples (Edges & Relationships)
 
-The smallest unit of knowledge in the platform. A triple consists of a
-**Subject**, **Predicate**, and **Object**.
+A **Triple** is the smallest possible unit of knowledge, representing the
+connections ("edges") between entities. A triple acts as a surgically precise
+fact. It always consists of three parts:
 
-- **Subject**: The entity being described.
-- **Predicate**: The relationship (e.g., `hasDeadline`).
-- **Object**: The value or another entity.
+1.  **Subject:** The entity being described.
+2.  **Predicate:** The relationship verb.
+3.  **Object:** The target value or another connected entity.
+
+### Example
+
+If an agent reads the sentence: _"Ethan is working on the API redesign."_
+
+The Worlds engine extracts this as a Triple:
+
+- **Subject:** `User:Ethan`
+- **Predicate:** `isWorkingOn`
+- **Object:** `Task:API_Redesign`
+
+This structure ensures that the agent _knows_ this fact deterministically,
+rather than just having a text chunk that happens to contain those words.
 
 ## The Semantic Visualizer
 
-Because Worlds are graph-based, you can visualize the state of your agent's
-knowledge directly.
+Because Worlds are graph-based, they are fundamentally visual. Instead of
+looking at JSON logs, you can literally "see" what your agent knows by viewing
+its World.
 
-| Tool                | Focus                                                       |
-| :------------------ | :---------------------------------------------------------- |
-| **Worlds Console**  | Real-time graph exploration and SPARQL inspection.          |
-| **SDK Visualizers** | Building custom D3.js or Kinopio canvases from World state. |
+| Interface             | Purpose                                                                                                                                     |
+| :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Worlds Console**    | The dashboard provides real-time graph exploration and querying.                                                                            |
+| **SDK Extensibility** | You can use our SDK to easily export the graph to visualizers like D3.js, React Flow, or specialized UI components in your own application. |
 
-<Card title="SPARQL Reasoning" icon="bolt" href="/concepts/sparql-reasoning">
-  Learn how to query these primitives using relational logic.
+<Card
+  title="Reasoning & Inference"
+  icon="bolt"
+  href="/concepts/reasoning-inference"
+>
+  Learn how the engine uses these primitives to logically infer facts and
+  resolve contradictions.
 </Card>

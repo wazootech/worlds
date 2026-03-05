@@ -1,0 +1,76 @@
+---
+title: "Reasoning & Inference"
+description:
+  "How Worlds discovers non-obvious facts and resolves contradictions."
+---
+
+# Reasoning & Inference
+
+Standard AI memory relies purely on probabilities. If you embed a million chat
+logs into a vector database, an LLM retrieves chunks based on semantic
+similarity and _guesses_ the answer.
+
+Worlds, however, operates on a **Neuro-Symbolic Architecture**. It uses neural
+networks (LLMs) to understand human language, but it stores that understanding
+as pure, symbolic logic in a graph format. Because the graph operates on strict
+logic, the Worlds engine can perform **Reasoning & Inference**—it can discover
+facts that were never explicitly stated.
+
+## Finding Hidden Relationships
+
+Because knowledge is stored as connected Entities and Triples, Worlds excels at
+graph traversal.
+
+Imagine you give an agent two completely separate pieces of information:
+
+1.  _From a Slack message:_ "Alice manages the Frontend Team."
+2.  _From a GitHub commit:_ "Bob committed the new React navigation component
+    for the Frontend Team."
+
+When you ask the agent: _"Who does Bob report to regarding the navigation
+component?"_, a standard vector search might struggle because "Alice" and "Bob"
+were never mentioned in the same text chunk.
+
+With **Inference**, Worlds simply traverses the graph: `Bob` -> `belongsTo` ->
+`Frontend Team` -> `managedBy` -> `Alice`. The agent deterministically infers
+the relationship without hallucination.
+
+## Resolving Contradictions (SPARQL)
+
+Reasoning is also essential for maintaining the integrity of an agent's memory.
+When facts contradict, logic must dictate the outcome.
+
+If a user states: _"My favorite color is Blue"_ and weeks later states _"My
+favorite color is Red"_, Worlds uses its inference engine to analyze the
+incoming triple against the existing state. Depending on your rulesets and how
+the predicate `favoriteColor` is defined, the engine will override the old fact,
+maintaining a clean state, rather than forcing the LLM to choose between two
+conflicting text chunks during retrieval.
+
+### For Advanced Users: SPARQL
+
+Under the hood, this deterministic precision is powered by **SPARQL**, the query
+language for the Semantic Web. While Worlds abstracts much of this complexity
+away behind simple SDK methods, developers have full access to execute raw
+SPARQL queries against their agent's Worlds for complex logical traversal.
+
+```sparql
+# Example: Using SPARQL to forcefully find a deterministic fact
+PREFIX w: <https://wazoo.dev/schema#>
+
+SELECT ?project
+WHERE {
+  ?user w:name "Alice" ;
+        w:managerOf ?team .
+  ?team w:assignedTo ?project .
+}
+```
+
+<Card
+  title="Organizing & Filtering Data"
+  icon="filter"
+  href="/concepts/organizing-filtering"
+>
+  Learn how to use these logical relationships to filter access to information
+  across multiple users.
+</Card>

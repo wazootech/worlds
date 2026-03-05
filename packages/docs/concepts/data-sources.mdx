@@ -1,0 +1,73 @@
+---
+title: "Data Sources & Ingestion"
+description: "How to get external unstructured data into the Worlds Engine."
+---
+
+# Data Sources & Ingestion
+
+Worlds is designed to turn the chaos of unstructured real-world data into
+structured, queryable knowledge. The first step of this pipeline is
+**Ingestion**.
+
+We provide multiple ways to bridge the gap between your users' workflows and the
+Worlds Engine.
+
+## Supported Formats
+
+The Worlds ingestion pipeline natively supports extracting entities and
+relationships from a wide variety of content types.
+
+- **Text & Conversations:**
+  - Raw chat logs, Slack messages, or simple text strings.
+  - _Extraction Focus:_ Identifying conversational entities, user preferences,
+    and actionable tasks.
+- **Markdown & Documentation:**
+  - `.md` and `.mdx` files (like these docs!).
+  - _Extraction Focus:_ Headings, structural hierarchy, and core conceptual
+    definitions.
+- **Code:**
+  - Source code files across major languages.
+  - _Extraction Focus:_ Abstract Syntax Tree (AST) awareness, mapping functions,
+    classes, and their dependencies to the graph.
+
+## How Ingestion Works
+
+When you send raw data to a World, the system doesn't just store the text. It
+passes through our Neuro-Symbolic pipeline:
+
+1.  **Parsing:** The raw bytes are interpreted based on their content type
+    (e.g., parsing a Markdown table vs. a Python class).
+2.  **Semantic Chunking:** The data is broken down into logically coherent
+    pieces. Rather than splitting arbitrarily at 500 characters, Worlds splits
+    code by functions and text by paragraph breaks.
+3.  **Entity Extraction:** An LLM processes the chunks, identifying the core
+    _Subjects_, _Predicates_, and _Objects_ discussed.
+4.  **Triplification:** The extracted data is formally mapped to the RDF
+    standard and merged into the World's Knowledge Graph, while dense vectors
+    are calculated for Hybrid Retrieval.
+
+## Direct API Access
+
+For developers building custom integrations or uploading proprietary formats,
+the `POST /worlds/{world}/memory` endpoint (or its SDK equivalent) is the
+primary gateway.
+
+```typescript
+import { WorldsClient } from "@wazoo/worlds-sdk";
+
+const client = new WorldsClient({ apiKey: "YOUR_API_KEY" });
+
+// Ingesting a raw text memory
+const response = await client.worlds.addMemory("world_usr_123", {
+  content: "I am learning Rust but I prefer writing in TypeScript for the web.",
+  // The engine automatically builds the graph: User -> prefers -> TypeScript
+});
+```
+
+<Card
+  title="Hybrid Search"
+  icon="magnifying-glass"
+  href="/concepts/hybrid-search"
+>
+  Now that your data is ingested, learn how to retrieve it.
+</Card>

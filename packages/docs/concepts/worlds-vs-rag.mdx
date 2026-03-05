@@ -1,0 +1,83 @@
+---
+title: "Worlds vs. Traditional RAG"
+description:
+  "Why standard RAG fails for agent memory and how stateful, neuro-symbolic
+  memory fixes it."
+---
+
+# Worlds vs. Traditional RAG
+
+A common point of confusion for developers building agentic systems is the
+difference between standard Retrieval-Augmented Generation (RAG) and **Agent
+Memory**.
+
+Standard RAG answers the question: _"What is recorded in these documents?"_
+Agent Memory answers the question: _"What is the current, grounded truth about
+this entity or user?"_
+
+## The Limits of Stateless RAG
+
+In traditional RAG, you chunk text and embed it into a vector database. When a
+user asks a query, the system performs a semantic similarity search to retrieve
+the "closest" text chunks.
+
+This works perfectly for static, universal knowledge (like technical
+documentation or company policies). However, it breaks down completely when
+dealing with **stateful, personal facts that evolve over time.**
+
+### Scenario: The Evolving Fact
+
+1. **Monday:** The user says, "I am working on Project Apollo." (Stored as
+   vector chunk)
+2. **Wednesday:** The user says, "I am pausing Project Apollo to focus on
+   Project Hermes." (Stored as vector chunk)
+3. **Friday:** The agent is asked, "What project is the user working on?"
+
+A traditional RAG system will likely retrieve _both_ chunks because they are
+semantically similar to the query. The LLM must then guess the correct answer,
+often relying solely on timestamp heuristics. As the database grows, this
+retrieval becomes noisy, conflicting, and unreliable.
+
+## The Worlds Solution: Stateful Memory
+
+Worlds solves this by maintaining a **Living Knowledge Graph**.
+
+Instead of just storing the raw document chunk, Worlds uses LLMs to extract the
+_meaning_ and _entities_ from the text and structures them as **Triples**
+(Subject -> Predicate -> Object).
+
+When the user says they are focusing on Project Hermes, Worlds doesn't just
+store a new text chunk. It:
+
+1. Identifies the user entity.
+2. Identifies the project entity (Project Hermes).
+3. Updates the existing `workingOn` relationship, gracefully deprecating or
+   overriding the old `workingOn Project Apollo` edge.
+
+### RAG vs. Worlds Comparison
+
+| Feature              | Traditional RAG (Vector-only)         | Worlds (Neuro-Symbolic Memory)                       |
+| :------------------- | :------------------------------------ | :--------------------------------------------------- |
+| **Search Mechanism** | Semantic similarity (closest meaning) | Hybrid (Semantic + Relational Graph Traversal)       |
+| **State Awareness**  | None (Returns all matching chunks)    | Stateful (Resolves contradictions automatically)     |
+| **Inference**        | Hallucination-prone                   | Deterministic via SPARQL reasoning                   |
+| **Data Structure**   | Flat list of unstructured text chunks | Knowledge Primitives (Entities, Triples)             |
+| **Best Used For**    | Static knowledge bases, FAQs          | Dynamic agent memory, user profiles, complex systems |
+
+## Short-term vs. Long-term Memory
+
+To build effective agents, you need to understand the difference between the
+context window and the graph.
+
+- **Ephemeral Context (Short-term):** The volatile window of the current LLM
+  prompt. This is useful for following a conversation thread, but is lost once
+  the session ends.
+- **Persistent Graph (Long-term):** The state materialized into Worlds. This is
+  queryable, persistent, and evolves across sessions and platforms.
+
+By treating memory as a queryable, self-updating graph, Worlds enables agents to
+truly _learn_ over time, rather than just rereading their old chat logs.
+
+<Card title="How Worlds Work" icon="gears" href="/concepts/how-it-works">
+  Learn the step-by-step process of how Worlds extracts and stores knowledge.
+</Card>

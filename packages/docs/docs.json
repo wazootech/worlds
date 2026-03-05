@@ -8,14 +8,15 @@
     "dark": "#78350F"
   },
   "contextual": {
-    "options": ["copy", "view", "chatgpt", "claude"]
+    "options": ["copy", "view", "chatgpt", "claude", "cursor", "vscode"]
   },
   "favicon": "/images/wazoo.svg",
   "seo": {
     "indexing": "all",
     "metatags": {
       "og:type": "website",
-      "og:site_name": "Worlds Docs"
+      "og:site_name": "Worlds Docs",
+      "canonical": "https://docs.wazoo.dev"
     }
   },
   "navigation": {
@@ -24,24 +25,27 @@
         "tab": "Developer Platform",
         "icon": "code",
         "groups": [
-          "overview",
-          "quickstart",
-          "vibe-coding",
+          {
+            "group": "Getting Started",
+            "pages": ["overview", "quickstart", "vibe-coding"]
+          },
           {
             "group": "Concepts",
             "pages": [
               "concepts/how-it-works",
-              "concepts/neuro-symbolic",
-              "concepts/memory-systems",
-              "concepts/sparql-reasoning",
-              "concepts/hybrid-search",
+              "concepts/worlds-vs-rag",
               "concepts/knowledge-primitives",
+              "concepts/reasoning-inference",
+              "concepts/hybrid-search",
+              "concepts/organizing-filtering",
+              "concepts/data-sources",
               "concepts/privacy-and-evolution"
             ]
           },
           {
             "group": "Infrastructure",
             "pages": [
+              "infrastructure/neuro-symbolic",
               "infrastructure/edge-first",
               "infrastructure/server-hosting",
               "infrastructure/local-setup",
@@ -151,11 +155,55 @@
     }
   },
   "footer": {
-    "socials": {
-      "linkedin": "https://www.linkedin.com/company/wazootech/",
-      "x": "https://x.com/wazootech",
-      "github": "https://github.com/wazootech"
-    }
+    "links": [
+      {
+        "header": "Explore",
+        "items": [
+          {
+            "label": "Worlds Console",
+            "href": "https://console.wazoo.dev"
+          },
+          {
+            "label": "SDK (JSR)",
+            "href": "https://jsr.io/@wazoo/worlds-sdk"
+          },
+          {
+            "label": "Cookbooks",
+            "href": "/cookbook"
+          }
+        ]
+      },
+      {
+        "header": "Community",
+        "items": [
+          {
+            "label": "GitHub",
+            "href": "https://github.com/wazootech/worlds"
+          },
+          {
+            "label": "X (Twitter)",
+            "href": "https://x.com/wazootech"
+          },
+          {
+            "label": "LinkedIn",
+            "href": "https://www.linkedin.com/company/wazootech/"
+          }
+        ]
+      },
+      {
+        "header": "Resources",
+        "items": [
+          {
+            "label": "Blog",
+            "href": "https://wazoo.dev/blog"
+          },
+          {
+            "label": "Technical Specs",
+            "href": "/infrastructure/whitepaper"
+          }
+        ]
+      }
+    ]
   },
   "integrations": {
     "ga4": {
