@@ -42,10 +42,8 @@
           {
             "group": "Infrastructure",
             "pages": [
-              "infrastructure/philosophy",
               "infrastructure/deployment",
-              "infrastructure/configuration",
-              "infrastructure/whitepaper"
+              "infrastructure/configuration"
             ]
           },
           {
@@ -125,6 +123,24 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Contribute",
+        "icon": "users-gear",
+        "groups": [
+          {
+            "group": "General",
+            "pages": [
+              "contribute/introduction",
+              "contribute/audience",
+              "contribute/philosophy"
+            ]
+          },
+          {
+            "group": "Resources",
+            "pages": ["contribute/whitepaper"]
+          }
+        ]
       }
     ],
     "global": {
@@ -199,7 +215,7 @@
           },
           {
             "label": "Technical Specs",
-            "href": "/infrastructure/whitepaper"
+            "href": "/contribute/whitepaper"
           }
         ]
       }

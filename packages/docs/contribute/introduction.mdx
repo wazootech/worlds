@@ -1,0 +1,65 @@
+---
+title: "Contributing to Worlds"
+description:
+  "How to contribute to the Worlds Platform, from documentation to core code."
+---
+
+# Contributing to Worlds
+
+Welcome! We're excited that you want to contribute to the Worlds Platform.
+Whether you're fixing a bug, improving the documentation, or adding a new
+feature, your help is appreciated.
+
+## Development Setup
+
+The Worlds ecosystem is organized as a Deno workspace. To get started:
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/wazootech/worlds.git
+    cd worlds
+    ```
+
+2.  **Generate code:**
+
+    ```bash
+    deno task generate
+    ```
+
+3.  **Start the development server:**
+
+    ```bash
+    deno task start:server
+    ```
+
+4.  **Format, lint, and test before committing:**
+    ```bash
+    deno task precommit
+    ```
+
+## Documentation
+
+Our documentation is built with [Mintlify](https://mintlify.com).
+
+1.  **Install the Mintlify CLI:**
+
+    ```bash
+    npm i -g mint
+    ```
+
+2.  **Run the development server:**
+
+    ```bash
+    mint dev
+    ```
+
+3.  **Preview locally:** View your changes at `http://localhost:3000`.
+
+## Community
+
+- **GitHub:** [wazootech/worlds](https://github.com/wazootech/worlds)
+- **X (Twitter):** [@wazootech](https://x.com/wazootech)
+- **LinkedIn:** [Wazoo Tech](https://www.linkedin.com/company/wazootech/)
+
+Thank you for helping us build the memory layer for the AI era!
