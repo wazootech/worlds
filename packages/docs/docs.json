@@ -21,30 +21,39 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Developer Platform",
+        "tab": "Documentation",
         "icon": "book-open",
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["overview", "quickstart", "vibe-coding"]
+            "pages": [
+              "getting-started/overview",
+              "getting-started/quickstart",
+              "getting-started/vibe-coding"
+            ]
           },
           {
-            "group": "Core Concepts",
+            "group": "Concepts",
             "pages": [
-              "developer-platform/concepts/index",
-              "developer-platform/concepts/entities",
-              "developer-platform/concepts/trust-roadmap"
+              "concepts/how-it-works",
+              "concepts/neuro-symbolic",
+              "concepts/memory-systems",
+              "concepts/sparql-reasoning",
+              "concepts/hybrid-search",
+              "concepts/knowledge-primitives",
+              "concepts/privacy-and-evolution"
             ]
           },
           {
             "group": "Infrastructure",
             "pages": [
-              "developer-platform/infrastructure/server-hosting",
-              "developer-platform/infrastructure/local-setup",
-              "developer-platform/infrastructure/configuration",
-              "developer-platform/infrastructure/whitepaper",
-              "developer-platform/infrastructure/console-hosting",
-              "developer-platform/infrastructure/cli-persistence"
+              "infrastructure/edge-first",
+              "infrastructure/server-hosting",
+              "infrastructure/local-setup",
+              "infrastructure/configuration",
+              "infrastructure/whitepaper",
+              "infrastructure/console-hosting",
+              "infrastructure/cli-persistence"
             ]
           }
         ]

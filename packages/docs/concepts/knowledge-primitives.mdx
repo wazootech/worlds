@@ -1,0 +1,50 @@
+---
+title: "Knowledge Primitives"
+description: "The core primitives for building high-precision knowledge bases."
+---
+
+# Knowledge Primitives
+
+The Worlds engine uses three fundamental primitives to structure knowledge for
+AI agents: **Worlds**, **Entities**, and **Triples**.
+
+## 1. Worlds (Units of Organization)
+
+A **World** is an isolated container for knowledge. It is the fundamental unit
+of multi-tenant isolation.
+
+- **Isolation**: Data in one World is strictly invisible to others.
+- **Components**: Each World manages its own RDF Triplestore and Vector Index.
+
+## 2. Entities (Subjects and Objects)
+
+Entities are the "things" in your World. They represent users, projects, code
+snippets, or abstract concepts.
+
+- **IRIs**: Every entity has a unique Internationalized Resource Identifier
+  (IRI).
+- **Types**: Entities are categorized via `rdf:type` (e.g., this entity is a
+  `User`).
+
+## 3. Triples (Surgical Truths)
+
+The smallest unit of knowledge in the platform. A triple consists of a
+**Subject**, **Predicate**, and **Object**.
+
+- **Subject**: The entity being described.
+- **Predicate**: The relationship (e.g., `hasDeadline`).
+- **Object**: The value or another entity.
+
+## The Semantic Visualizer
+
+Because Worlds are graph-based, you can visualize the state of your agent's
+knowledge directly.
+
+| Tool                | Focus                                                       |
+| :------------------ | :---------------------------------------------------------- |
+| **Worlds Console**  | Real-time graph exploration and SPARQL inspection.          |
+| **SDK Visualizers** | Building custom D3.js or Kinopio canvases from World state. |
+
+<Card title="SPARQL Reasoning" icon="bolt" href="/concepts/sparql-reasoning">
+  Learn how to query these primitives using relational logic.
+</Card>

@@ -1,0 +1,44 @@
+---
+title: "Hybrid Search"
+description: "The ultimate retrieval engine for AI agents."
+---
+
+# Hybrid Search
+
+Worlds implements a high-performance **Hybrid Search** engine that ensures
+agents receive context that is both semantically relevant and structurally
+grounded.
+
+## The Three Pillars
+
+To eliminate hallucinations, Worlds queries three distinct indices
+simultaneously:
+
+1. **Semantic (Vector Index)**: Finds conceptual similarity, even when keywords
+   don't match. Best for: "What is the general sentiment of this project?"
+2. **Lexical (Keyword Index)**: Finds exact term matches (FTS5). Best for:
+   Unique IDs, proper nouns, or specific code snippets.
+3. **Relational (Graph Index)**: Uses the Knowledge Graph to expand the search
+   radius based on connections. Best for: "Find all entities related to the
+   primary search result."
+
+## Ranked Fusion (RRF)
+
+When a search is performed, Worlds doesn't just return a list. It uses
+**Reciprocal Rank Fusion** to synthesize results from all three indices. This
+ensures that a result appearing in both the Vector and Graph indices is boosted
+significantly.
+
+## Semantic Resonance
+
+The goal of Hybrid Search is **Semantic Resonance**. This is the state where an
+agent isn't just "finding text," but is viewing a high-fidelity slice of the
+World model perfectly tuned for its current task.
+
+<Card
+  title="Knowledge Primitives"
+  icon="diagram-project"
+  href="/concepts/knowledge-primitives"
+>
+  Deep dive into the Worlds, Entities, and Triples that fuel these indices.
+</Card>

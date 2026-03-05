@@ -1,0 +1,41 @@
+---
+title: "Neuro-Symbolic Architecture"
+description: "The hybrid core of the Worlds engine."
+---
+
+# Neuro-Symbolic Architecture
+
+Worlds is built on a neuro-symbolic foundation, combining the generative power
+of **Neural AI** (LLMs) with the precision and grounding of **Symbolic AI**
+(Knowledge Graphs).
+
+## The Neural Layer (Intuition)
+
+LLMs are incredible at processing natural language, identifying intent, and
+"vibing" through ambiguous tasks. However, they are probabilistic; they predict
+the next token, they do not "know" facts.
+
+## The Symbolic Layer (Truth)
+
+Worlds stores knowledge using the **Resource Description Framework (RDF)**. This
+is a deterministic, queryable graph where every relationship is a stated fact.
+
+## The Neuro-Symbolic Bridge
+
+The Worlds API acts as the synchronization layer. It performs three critical
+operations to bridge these two worlds:
+
+1. **Extraction**: Translating "fuzzy" human language into rigid triples.
+2. **Grounding**: Injecting structured triples into an LLM's prompt to eliminate
+   hallucinations.
+3. **Reasoning**: Using symbolic logic to guide neural generators through
+   complex state transitions.
+
+### Why this matters
+
+By decoupling **reasoning** (Neural) from **knowledge** (Symbolic), Worlds
+creates agents that are both creative and unfailingly accurate.
+
+<Card title="Memory Systems" icon="memory" href="/concepts/memory-systems">
+  See how this architecture enables persistent agent state.
+</Card>

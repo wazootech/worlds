@@ -1,0 +1,43 @@
+---
+title: "Edge-First Infrastructure"
+description: "Designing for autonomy and privacy at the edge."
+---
+
+# Edge-First Infrastructure
+
+Worlds is designed with an "Edge-First" philosophy, meaning the intelligence and
+memory of your agents live where you do.
+
+## Architectural Principles
+
+### 1. Local Autonomy
+
+Your agents should not depend on a central cloud for their memory. Worlds allows
+for localized deployment of the triplestore and API.
+
+### 2. Privacy by Design
+
+By keeping the Knowledge Graph on the edge, sensitive relationship data never
+has to leave your controlled environment.
+
+### 3. Low Latency
+
+Retrieving memory from a local or regional edge node is significantly faster
+than querying a centralized global database.
+
+## Deployment Models
+
+- **Standard Cloud**: Deploying a Worlds node on Vercel or Railway for ease of
+  use.
+- **Local Native**: Running the Worlds CLI and server on your local machine or
+  server.
+- **Hardware Edge**: Specialized deployments for robotics or local hardware
+  controllers.
+
+<Card
+  title="Server Hosting"
+  icon="server"
+  href="/infrastructure/server-hosting"
+>
+  Learn how to deploy your own edge-first node.
+</Card>
