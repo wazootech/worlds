@@ -5,37 +5,45 @@ description: "The hybrid core of the Worlds engine."
 
 # Neuro-Symbolic Architecture
 
-Worlds is built on a neuro-symbolic foundation, combining the generative power
-of **Neural AI** (LLMs) with the precision and grounding of **Symbolic AI**
-(Knowledge Graphs).
+At the heart of Worlds is a **Neuro-Symbolic Architecture**. This is our
+solution to the "vibe-based" nature of modern AI.
 
-## The Neural Layer (Intuition)
+While Large Language Models (LLMs) are exceptional at processing unstructured
+language (Neural), they are notoriously prone to hallucinations and lack strict
+logical structure. By marrying them with Symbolic Logic, we create a system that
+is both intuitive and deterministic.
 
-LLMs are incredible at processing natural language, identifying intent, and
-"vibing" through ambiguous tasks. However, they are probabilistic; they predict
-the next token, they do not "know" facts.
+## The Problem: The Reasoning Gap
 
-## The Symbolic Layer (Truth)
+Modern AI agents often fail when they need to perform structured reasoning.
+Vector search can find "similar" things, but it cannot reliably answer questions
+like _"Who is the manager of the person who committed this code?"_
 
-Worlds stores knowledge using the **Resource Description Framework (RDF)**. This
-is a deterministic, queryable graph where every relationship is a stated fact.
+This is the "Reasoning Gap."
 
-## The Neuro-Symbolic Bridge
+## The Solution: Neural + Symbolic
 
-The Worlds API acts as the synchronization layer. It performs three critical
-operations to bridge these two worlds:
+Worlds uses a hybrid model that provides the best of both worlds:
 
-1. **Extraction**: Translating "fuzzy" human language into rigid triples.
-2. **Grounding**: Injecting structured triples into an LLM's prompt to eliminate
-   hallucinations.
-3. **Reasoning**: Using symbolic logic to guide neural generators through
-   complex state transitions.
+1. **Neural (Neural Intuition)**: We use generative AI to extract meaning from
+   raw, unstructured data and to provide high-speed semantic search using vector
+   embeddings.
+2. **Symbolic (Ground Truth)**: We store that meaning as **RDF Triples** (atomic
+   facts) in a queryable graph. This allows for strict logical filtering and
+   verifiable reasoning using **SPARQL**.
 
-### Why this matters
+This architecture ensures that your agent isn't just "guessing" the next token
+based on patterns. Instead, it is navigating a **structured map of reality**.
 
-By decoupling **reasoning** (Neural) from **knowledge** (Symbolic), Worlds
-creates agents that are both creative and unfailingly accurate.
+By filling the **"Reasoning Gap"** with symbolic logic, we provide a perfect
+audit trail for every fact the agent retrieves. The agent uses neural intuition
+to find the general "area" of the knowledge, and symbolic logic to pinpoint the
+exact relationship.
 
-<Card title="Memory Systems" icon="memory" href="/concepts/memory-systems">
-  See how this architecture enables persistent agent state.
+<Card
+  title="Knowledge Primitives"
+  icon="diagram-project"
+  href="/concepts/knowledge-primitives"
+>
+  Learn how we structure these symbolic facts as **Items** and **Facts**.
 </Card>

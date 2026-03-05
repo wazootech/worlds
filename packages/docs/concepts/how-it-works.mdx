@@ -31,18 +31,27 @@ Once ingested, the Worlds Engine goes to work. An intelligent extraction layer
 relationships, and concepts being discussed. It breaks the text down into its
 semantic components, translating ambiguous human language into structured logic.
 
-### 3. Graph Evolution (The State)
+### 3. Graph Evolution (Continual Learning)
 
-The newly extracted knowledge is pushed into a **World** (an isolated container
-for knowledge).
+The newly extracted knowledge is pushed into a **World**, where it participates
+in a **Continual Learning Loop**. Instead of just stacking new data on top of
+old data, the graph evolves through three primary patterns:
 
-- **Resonance:** If the data describes something totally new, it is added to the
-  graph.
-- **Evolution:** If the data contradicts or updates an existing fact (e.g., "The
-  user moved from New York to London"), the system automatically deprecates the
-  old fact and creates the new connection. This continual learning loop means
-  the agent's memory is always up-to-date and accurate without manual
-  intervention.
+- **Update**: If new information contradicts an existing fact (e.g., "The user
+  moved from New York to London"), the system automatically deprecates the old
+  triple and creates the new connection. This ensures the agent is never
+  confused by stale data.
+- **Extend**: If the data provides new context for an existing entity (e.g.,
+  "The user also likes Sushi"), the graph grows broader. The engine uses entity
+  disambiguation to ensure new facts are connected to the correct existing
+  nodes.
+- **Infer (Derive)**: The engine uses symbolic reasoning to discover facts that
+  were never explicitly stated. For example, if Alice manages the Frontend Team
+  and Bob is in the Frontend Team, the engine can **infer** that Alice is Bob's
+  manager.
+
+This evolution ensures that the agent's memory is a living, self-correcting
+model of reality.
 
 ### 4. Retrieval (The Output)
 

@@ -1,38 +1,47 @@
 ---
 title: "Edge-First Infrastructure"
-description: "Designing for autonomy and privacy at the edge."
+description: "Designing for autonomy and privacy in the Small Web."
 ---
 
 # Edge-First Infrastructure
 
-Worlds is designed with an "Edge-First" philosophy, meaning the intelligence and
-memory of your agents live where you do.
+Worlds is designed with an **"Edge-First"** philosophy, part of our commitment
+to the **Small Web**—a future where users maintain autonomy, control their own
+data, and operate in an interoperable ecosystem.
 
-## Architectural Principles
+## Building for the Small Web
+
+We believe that the best place for an agent's memory is as close to the user as
+possible. Whether it's on a local machine, a private server, or at the network
+edge, Worlds ensures that intelligence and knowledge live where you do.
 
 ### 1. Local Autonomy
 
-Your agents should not depend on a central cloud for their memory. Worlds allows
-for localized deployment of the triplestore and API.
+Your agents should never depend on a central cloud for their memory. Worlds
+allows for localized deployment of the triplestore and API, ensuring that even
+if the internet goes down, your agent's memory remains intact and functional.
 
-### 2. Privacy by Design
+### 2. Privacy & Data Ownership
 
-By keeping the Knowledge Graph on the edge, sensitive relationship data never
-has to leave your controlled environment.
+By keeping the Knowledge Graph at the edge, sensitive relationship data and
+personal facts never have to leave your controlled environment. We treat memory
+as a private "Digital Garden" that you own and curate, rather than data points
+in a centralized silo.
 
-### 3. Low Latency
+### 3. Low Latency Reasoning
 
-Retrieving memory from a local or regional edge node is significantly faster
-than querying a centralized global database.
+Reasoning over a graph requires high-speed access to facts. Retrieving memory
+from a local or regional edge node is significantly faster than querying a
+centralized global database, enabling agents to respond in milliseconds.
 
 ## Deployment Models
 
 - **Standard Cloud**: Deploying a Worlds node on Vercel or Railway for ease of
   use.
-- **Local Native**: Running the Worlds CLI and server on your local machine or
-  server.
+- **Local Native**: Running the Worlds CLI and server on your local
+  machine—ideal for high-privacy "Digital Gardening."
 - **Hardware Edge**: Specialized deployments for robotics or local hardware
-  controllers.
+  controllers where autonomy is critical.
 
 <Card
   title="Server Hosting"

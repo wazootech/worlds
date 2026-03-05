@@ -1,14 +1,33 @@
 ---
-title: "Knowledge Primitives & Entities"
+title: "Knowledge Primitives & Items"
 description: "The core primitives for building high-precision knowledge bases."
 ---
 
-# Knowledge Primitives & Entities
+# Knowledge Primitives & Items
 
 To build applications with Worlds, you need to understand how the platform
 stores the "reality" it extracts from your unstructured data. The Worlds engine
-uses three fundamental primitives to structure knowledge: **Worlds**,
-**Entities**, and **Triples**.
+uses RDF triples as the fundamental primitive of knowledge in **Worlds**.
+
+## The Item Drive Metaphor
+
+To make these Semantic Web concepts intuitive, think of a World not as a
+database, but as an **Item Drive**—the next evolution of the hard drive.
+
+- **Items (The Nodes)**: An Item is synonymous with an **Entity**. These are the
+  distinct "things"—a person, a piece of code, or an identity. They are the
+  **Subjects** and **Objects** of your memory.
+- **Properties (The Connectors)**: These are the "ports" or "labels" that define
+  how Items relate (e.g., `worksOn`, `managerOf`). These are technically known
+  as **Predicates**.
+- **Facts (The Axioms)**: A **Fact** is created the moment you connect two Items
+  using a Property. This connection is an **RDF Triple** (Subject → Predicate →
+  Object)—the fundamental axiom of knowledge.
+
+| Storage Era          | Primitive       | How it Works                                                 |
+| :------------------- | :-------------- | :----------------------------------------------------------- |
+| **Traditional Disk** | File / Folder   | Hierarchical silos: You must know the path to find the data. |
+| **Item Drive**       | **Item / Fact** | Associative Graph: You follow the facts to find the items.   |
 
 ## 1. Worlds (The Container)
 
@@ -54,6 +73,26 @@ The Worlds engine extracts this as a Triple:
 
 This structure ensures that the agent _knows_ this fact deterministically,
 rather than just having a text chunk that happens to contain those words.
+
+This structure ensures that the agent _knows_ this fact deterministically,
+rather than just having a text chunk that happens to contain those words.
+
+## Memory Types & Patterns
+
+When designing your agent's memory, it is helpful to categorize information into
+three functional types:
+
+- **Facts (The Core)**: Stable, verifiable truths. These are long-lived and
+  rarely change (e.g., birth dates, company names, project IRIs).
+- **Preferences (The Vibe)**: Malleable traits that guide an agent's behavior.
+  These evolve as the agent learns more about the user (e.g., "Prefers concise
+  answers", "Likes TypeScript over Rust").
+- **Episodes (The History)**: Event-based memories tied to specific moments or
+  interactions (e.g., "The last time we discussed the API redesign", "The result
+  of the system test on Friday").
+
+By categorizing your triples into these patterns, you can build agents that are
+not only smart but also deeply personalized.
 
 ## The Semantic Visualizer
 

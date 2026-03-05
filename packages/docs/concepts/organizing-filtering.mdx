@@ -36,11 +36,11 @@ more graph edges**.
 ### The Graph Approach to Filtering
 
 If you want to find all "High Priority Engineering Tasks", you do not apply a
-JSON filter. Instead, you traverse the graph:
+JSON filter. Instead, you perform a **native graph traversal**:
 
-1.  Find all entities of type `Task`.
-2.  Follow the edge `hasCategory` -> `Engineering`.
-3.  Follow the edge `hasPriority` -> `High`.
+1. Find all entities of type `Task`.
+2. Follow the predicate `hasCategory` -> `Engineering`.
+3. Follow the predicate `hasPriority` -> `High`.
 
 Because these relationships are stored as formal Triples, you can perform
 infinitely complex logical filtering using **SPARQL Reasoning** or **Hybrid

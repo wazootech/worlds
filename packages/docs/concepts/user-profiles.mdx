@@ -1,0 +1,54 @@
+---
+title: "User Profiles & Identity"
+description: "How Worlds aggregate facts into a holistic digital identity."
+---
+
+# User Profiles & Identity
+
+While individual **Triples** are the technical implementation of memory, a
+**World** acts as the container for a unified **Identity**.
+
+When you ingest facts about a user—their favorite coding language, their current
+project, their manager, and their typical working hours—you aren't just filling
+a database. You are building a holistic **User Profile** that an agent can use
+to act on their behalf with high confidence.
+
+## Beyond Fragmented Facts
+
+In a traditional RAG system, "who the user is" is often scattered across
+hundreds of separate text chunks. When you ask an agent to "help me with my
+project," the agent has to search for relevant chunks and hope it finds the ones
+describing your current focus.
+
+In Worlds, the user is a central **Entity**. Every triple connected to that
+entity strengthens the agent's understanding of their identity:
+
+- `User:Ethan` -> `hasPreference` -> `TypeScript`
+- `User:Ethan` -> `isWorkingOn` -> `API_Redesign`
+- `User:Ethan` -> `hasRole` -> `Founder`
+
+## Holistic Retrieval
+
+Because these facts are connected to a single node, an agent can perform a
+**Graph Traversal** to pull the entire "Profile" into its context window in one
+operation. Instead of searching for keywords, it asks: _"Give me everything you
+know about Ethan."_
+
+This allows for a level of personalization that feels like a true human
+collaborator—no more repeating your preferences every time you start a new chat
+session.
+
+## Multi-Tenant Isolation
+
+Each user profile should live in its own dedicated **World**. This ensures that
+Ethan's preferences never leak into Alice's sessions, providing both privacy and
+precision.
+
+<Card
+  title="Organizing & Filtering"
+  icon="filter"
+  href="/concepts/organizing-filtering"
+>
+  Learn how to structure worlds to support thousands of individual user
+  profiles.
+</Card>

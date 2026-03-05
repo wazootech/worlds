@@ -1,0 +1,79 @@
+---
+title: "Ontology & Schema"
+description: "Defining the grammar of your World."
+---
+
+# Ontology & Schema
+
+If **Entities** are the atoms of your agent's memory, the **Ontology** is the
+grammar that dictates how they interact.
+
+In a Neuro-Symbolic system, the ontology acts as the formal bridge between
+**unstructured data** and **structured symbolic logic**. It defines what types
+of things exist in your World and what they are allowed to do.
+
+## Why Structure Matters
+
+Without an ontology, an agent's memory is a chaotic pile of text chunks. With an
+ontology, the agent understands the **nature** of the information it is
+processing.
+
+- **Predictable Relationships**: Instead of guessing if a user "likes" or
+  "loves" a project, the ontology defines a single, stable predicate:
+  `w:prefers`.
+- **Type Safety for AI**: When the agent extracts a new fact, it checks the
+  ontology to ensure it is assigning properties to the right type of entity
+  (e.g., a `Task` has a `deadline`, but a `User` has a `role`).
+- **Interoperability**: By using standardized schemas (like Schema.org or custom
+  Wazoo namespaces), you ensure that your agent's memory can share knowledge
+  with other agents and tools seamlessly.
+
+## Core Components
+
+### 1. Classes (The "What")
+
+Classes define the categories of entities in your World.
+
+- **Examples:** `User`, `Project`, `SoftwareModule`, `DesignAsset`.
+- **Function:** Tells the engine, "This node is a specific _kind_ of thing."
+
+### 2. Predicates (The "How")
+
+Predicates (or Properties) define the relationships between entities or between
+an entity and a value.
+
+- **Examples:** `worksOn`, `assignedTo`, `hasPriority`, `memberOf`.
+- **Function:** The "verbs" that create the edges in your graph.
+
+## Generative AI Fact Extraction
+
+This is where formal structure meets unstructured input. When you ingest raw
+text, the Worlds engine doesn't just look for keywords. It performs
+**Ontological Extraction**:
+
+1. **Generative AI Input**: An LLM reads the unstructured text: _"Ethan is
+   leading the API redesign."_
+2. **Symbolic Mapping**: The engine looks at your World's ontology and
+   identifies that "Ethan" is a `User` and "API redesign" is a `Project`.
+3. **Fact Creation**: It maps the relationship to the formal predicate
+   `w:leadsProject`.
+
+This mapping ensures that your "World" remains orderly and that your
+**Verifiable Reasoning** queries remain accurate, providing a perfect **audit
+trail** for every fact.
+
+## Dynamic vs. Fixed Schemas
+
+- **Fixed**: You can define a strict schema that your agent must follow,
+  ensuring 100% data integrity for industrial applications.
+- **Malleable**: Worlds can also "discover" new predicates as it learns,
+  allowing the ontology to evolve as the agent encounters new domains of
+  knowledge.
+
+<Card
+  title="Reasoning & Inference"
+  icon="bolt"
+  href="/concepts/reasoning-inference"
+>
+  Learn how the engine uses these ontological rules to infer new facts.
+</Card>

@@ -1,0 +1,56 @@
+---
+title: "The Agentic Loop"
+description: "The lifecycle of an agent interaction: Search, Act, and Learn."
+---
+
+# The Agentic Loop
+
+Worlds is designed to sit at the center of the **Agentic Loop**. An agent
+doesn't just read from Worlds; it participates in a continuous cycle of
+retrieving context, performing actions, and learning from the results.
+
+## The Three Stages
+
+To build a "Continual Learning" agent, your system should follow this three-step
+lifecycle during every interaction:
+
+### 1. Search (Retrieve Context)
+
+Before the agent even sees the user's prompt, your system uses the
+`searchEntities` tool to find relevant context in the World. This "primes" the
+agent's context window with the exact triples it needs to be helpful.
+
+### 2. Act (The Reasoning)
+
+The agent processes the user's request using the retrieved context. It might
+execute a tool, query a codebase, or simply answer a question. During this
+stage, the agent may identify new facts or recognize that an old fact has
+changed.
+
+### 3. Learn (Materialize Knowledge)
+
+This is the most critical step. After the action is complete, the agent uses the
+`validateRdf` and `executeSparql` tools (via `@wazoo/ai-sdk`) to **materialize**
+its new understanding back into the World.
+
+- **Refining Facts**: If the agent realizes the user's focus has shifted, it
+  issues an RDF update.
+- **Deepening Identity**: If the agent learns a new preference, it adds a new
+  triple to the user's profile.
+
+## Why this Matters
+
+Without the **Learn** stage, an AI is essentially suffering from "short-term
+memory loss." It might be helpful for one session, but it will forget everything
+the moment the window is closed.
+
+By completing the loop, you turn a one-off "vibe" into a **Persistent
+Assistant** that grows smarter with every single turn.
+
+<Card
+  title="AI SDK Reference"
+  icon="code"
+  href="/api-integrations/native-sdks/sdk"
+>
+  Explore the tools used to implement the Agentic Loop in your application.
+</Card>
