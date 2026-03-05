@@ -134,6 +134,7 @@ components:
         - predicate
         - object
         - score
+        - worldId
 
     SparqlResults:
       type: object
