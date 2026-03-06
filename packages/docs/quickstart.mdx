@@ -36,58 +36,52 @@ Follow these steps to integrate Worlds into your AI application.
     Create a connection to the Worlds API and initialize your first persistent
     context.
 
-    <Tabs>
-      <Tab title="TypeScript">
-        ```typescript
-        import { WorldsSdk } from "@wazoo/worlds-sdk";
+    <CodeGroup>
+      ```typescript TypeScript
+      import { WorldsSdk } from "@wazoo/worlds-sdk";
 
-        const sdk = new WorldsSdk({
-          apiKey: "YOUR_API_KEY",
-        });
+      const sdk = new WorldsSdk({
+        apiKey: "YOUR_API_KEY",
+      });
 
-        const world = await sdk.worlds.create({
-          slug: "my-first-world",
-          label: "My First World",
-        });
-        ```
-      </Tab>
-      <Tab title="cURL">
-        ```bash
-        curl -X POST https://api.wazoo.dev/worlds \
-          -H "Authorization: Bearer YOUR_API_KEY" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "slug": "my-first-world",
-            "label": "My First World"
-          }'
-        ```
-      </Tab>
-    </Tabs>
+      const world = await sdk.worlds.create({
+        slug: "my-first-world",
+        label: "My First World",
+      });
+      ```
+
+      ```bash cURL
+      curl -X POST https://api.wazoo.dev/worlds \
+        -H "Authorization: Bearer YOUR_API_KEY" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "slug": "my-first-world",
+          "label": "My First World"
+        }'
+      ```
+    </CodeGroup>
 
   </Step>
 
   <Step title="Add context">
     Start feeding your AI agents with persistent, searchable memory.
 
-    <Tabs>
-      <Tab title="TypeScript">
-        ```typescript
-        await sdk.worlds.import("my-first-world", `
+    <CodeGroup>
+      ```typescript TypeScript
+      await sdk.worlds.import("my-first-world", `
+        <#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .
+      `, { format: "turtle" });
+      ```
+
+      ```bash cURL
+      curl -X POST https://api.wazoo.dev/worlds/my-first-world/sparql \
+        -H "Authorization: Bearer YOUR_API_KEY" \
+        -H "Content-Type: application/sparql-update" \
+        -d 'INSERT DATA {
           <#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .
-        `, { format: "turtle" });
-        ```
-      </Tab>
-      <Tab title="cURL">
-        ```bash
-        curl -X POST https://api.wazoo.dev/worlds/my-first-world/sparql \
-          -H "Authorization: Bearer YOUR_API_KEY" \
-          -H "Content-Type: application/sparql-update" \
-          -d 'INSERT DATA {
-            <#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .
-          }'
-        ```
-      </Tab>
-    </Tabs>
+        }'
+      ```
+    </CodeGroup>
 
   </Step>
 </Steps>
