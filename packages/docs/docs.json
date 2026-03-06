@@ -40,8 +40,18 @@
             ]
           },
           {
-            "group": "Concepts",
-            "pages": ["concepts/worlds", "concepts/graphs", "concepts/search"]
+            "group": "Academy",
+            "pages": [
+              "academy/index",
+              {
+                "group": "Chapter 1: Fundamentals",
+                "pages": ["academy/world-memory", "academy/knowledge-graphs"]
+              },
+              {
+                "group": "Chapter 2: Discovery",
+                "pages": ["academy/semantic-search"]
+              }
+            ]
           }
         ]
       },
