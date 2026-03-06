@@ -3,6 +3,11 @@ title: "Quickstart"
 description: "Start building with Worlds in minutes"
 ---
 
+## Prerequisites
+
+Requires a Worlds API key. Worlds you create can be viewed on the
+[Worlds Console](https://console.wazoo.dev).
+
 ## Getting Started
 
 Follow these steps to integrate Worlds into your AI application.
@@ -32,24 +37,55 @@ pnpm add @wazoo/worlds-sdk
 Create a connection to the Worlds API and initialize your first persistent
 context.
 
-```typescript
-import { WorldsWorld } from "@wazoo/worlds-sdk";
+<Tabs>
+  <Tab title="TypeScript">
+    ```typescript
+    import { WorldsSdk } from "@wazoo/worlds-sdk";
 
-const world = new WorldsWorld({
-  apiKey: "YOUR_API_KEY",
-  worldId: "my-first-world",
-});
+    const sdk = new WorldsSdk({
+      apiKey: "YOUR_API_KEY",
+    });
 
-await world.init();
-```
+    const world = await sdk.worlds.create({
+      slug: "my-first-world",
+      label: "My First World",
+    });
+    ```
+
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://api.wazoo.dev/worlds \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "slug": "my-first-world",
+        "label": "My First World"
+      }'
+    ```
+  </Tab>
+</Tabs>
 
 ### 3. Add context
 
 Start feeding your AI agents with persistent, searchable memory.
 
-```typescript
-await world.insert({
-  text: "The secret ingredient is always more compute.",
-  metadata: { source: "internal-memo" },
-});
-```
+<Tabs>
+  <Tab title="TypeScript">
+    ```typescript
+    await sdk.worlds.import("my-first-world", `
+      <#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .
+    `, { format: "turtle" });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://api.wazoo.dev/worlds/my-first-world/sparql \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -H "Content-Type: application/sparql-update" \
+      -d 'INSERT DATA {
+        <#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .
+      }'
+    ```
+  </Tab>
+</Tabs>
