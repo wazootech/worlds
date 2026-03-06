@@ -7,112 +7,27 @@ description: "Make your first call to Worlds API in minutes."
 
 Follow these steps to integrate Worlds into your AI application.
 
-<Steps>
-  <Step title="Sign into the Worlds Console">
-    Get your Worlds API **base URL** and **API key** from the
-    [Worlds Console](https://console.wazoo.dev).
-  </Step>
+<Card
+  title="Sign into the Worlds Console"
+  icon="globe"
+  href="https://console.wazoo.dev"
+  horizontal
+>
+  Get your Worlds API **base URL** and **API key** from the [Worlds
+  Console](https://console.wazoo.dev).
+</Card>
 
-  <Step title="Install the SDK and set your API key">
-    Choose your preferred environment to get started.
+## Choose your path
 
-    <CodeGroup>
-      ```bash deno
-      deno add jsr:@wazoo/worlds-sdk
-      ```
+Ready to start building? Pick the environment that fits your workflow.
 
-      ```bash npm
-      npx jsr add @wazoo/worlds-sdk
-      ```
-
-      ```bash pnpm
-      pnpm i jsr:@wazoo/worlds-sdk
-      ```
-
-      ```bash yarn
-      yarn add jsr:@wazoo/worlds-sdk
-      ```
-
-      ```bash bun
-      bunx jsr add @wazoo/worlds-sdk
-      ```
-    </CodeGroup>
-
-  </Step>
-
-  <Step title="Initialize your first World">
-    Create a connection to the Worlds API and initialize your first persistent
-    context.
-
-    <CodeGroup>
-      ```typescript TypeScript
-      import { WorldsSdk } from "@wazoo/worlds-sdk";
-
-      const sdk = new WorldsSdk({
-        baseUrl: "https://api.wazoo.dev",
-        apiKey: "YOUR_API_KEY",
-      });
-
-      const world = await sdk.worlds.create({
-        slug: "my-first-world",
-        label: "My First World",
-      });
-      ```
-
-      ```bash cURL
-      curl -X POST https://api.wazoo.dev/worlds \
-        -H "Authorization: Bearer YOUR_API_KEY" \
-        -H "Content-Type: application/json" \
-        -d '{
-          "slug": "my-first-world",
-          "label": "My First World"
-        }'
-      ```
-
-      ```bash CLI
-      worlds create --label "My First World" --slug "my-first-world"
-      ```
-    </CodeGroup>
-
-  </Step>
-
-  <Step title="Add context">
-    Start feeding your AI agents with persistent, searchable memory.
-
-    <CodeGroup>
-      ```typescript TypeScript
-      await sdk.worlds.import(
-        "my-first-world",
-        `
-        <#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .
-        `,
-        { format: "turtle" },
-      );
-      ```
-
-      ```bash cURL
-      curl -X POST https://api.wazoo.dev/worlds/my-first-world/sparql \
-        -H "Authorization: Bearer YOUR_API_KEY" \
-        -H "Content-Type: application/sparql-update" \
-        -d 'INSERT DATA {
-          <#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .
-        }'
-      ```
-
-      ```bash CLI
-      # Create a local file with your context
-      echo '<#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .' > data.ttl
-
-      # Import the context into your world
-      worlds import my-first-world data.ttl --format turtle
-      ```
-    </CodeGroup>
-
-  </Step>
-</Steps>
-
-The Worlds API automatically:
-
-- **Extracts memories** from conversations
-- **Builds and maintains** user profiles (static facts + dynamic context)
-- **World model returns relevant context** for personalized LLM responses
+<CardGroup cols={2}>
+  <Card title="Command Line Interface" icon="terminal" href="/quickstart/cli">
+    Manage your worlds, import data, and run SPARQL queries directly from your
+    terminal.
+  </Card>
+  <Card title="Software Development Kit" icon="code" href="/quickstart/sdk">
+    Integrate persistent memory and world models into your software
+    applications.
+  </Card>
+</CardGroup>

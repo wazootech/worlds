@@ -6,10 +6,22 @@
 Platform™ instances. It provides a convenient way to interact with worlds,
 organizations, and invites directly from your terminal.
 
+## Installation
+
+Install the Worlds Platform™ CLI globally using Deno:
+
+```sh
+deno install -A --name worlds jsr:@wazoo/worlds-cli
+```
+
 ## Usage
 
 ```sh
 deno -A jsr:@wazoo/worlds-cli [command] [options]
+
+# or
+
+worlds [command] [options]
 ```
 
 ### Commands

@@ -1,0 +1,39 @@
+---
+title: "CLI quickstart"
+description: "Start managing your worlds from the terminal in minutes."
+---
+
+## Installation
+
+Install the Worlds CLI globally using Deno:
+
+```bash
+deno install -A --name worlds jsr:@wazoo/worlds-cli
+```
+
+## Initialize your first World
+
+Create your first persistent context directly from the terminal.
+
+```bash
+worlds create --label "My First World" --slug "my-first-world"
+```
+
+## Add context
+
+Start feeding your AI agents with persistent, searchable memory.
+
+```bash
+# Create a local file with your context
+echo '<#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .' > data.ttl
+
+# Import the context into your world
+worlds import my-first-world data.ttl --format turtle
+```
+
+## Next Steps
+
+Now that you've set up your first world, explore the full power of the CLI:
+
+- [CLI Reference](/packages/cli/README.md)
+- [Search and SPARQL](/intro)

@@ -26,8 +26,16 @@
         "icon": "code",
         "groups": [
           {
-            "group": "Getting Started",
-            "pages": ["index", "intro", "quickstart"]
+            "group": "Get started",
+            "pages": [
+              "index",
+              "intro",
+              {
+                "group": "Quickstart",
+                "root": "quickstart",
+                "pages": ["quickstart/cli", "quickstart/sdk"]
+              }
+            ]
           }
         ]
       },
