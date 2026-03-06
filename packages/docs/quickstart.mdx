@@ -1,67 +1,55 @@
 ---
 title: "Quickstart"
-description: "Start building with the Worlds Platform in under 5 minutes"
+description: "Start building with Worlds in minutes"
 ---
 
-The fastest way to experience neuro-symbolic knowledge is through the **Worlds
-Management Console**. No code required.
+## Getting Started
 
-## Get Started
+Follow these steps to integrate Worlds into your AI application.
 
-Follow these steps to create your first World and run a semantic search.
+### 1. Install the SDK
 
-<Steps>
-  <Step title="Create an Account">
-    Visit [console.wazoo.dev](https://console.wazoo.dev) and sign up. You'll be prompted to create your first **Organization** to begin.
-  </Step>
+Choose your preferred environment to get started with the Worlds SDK.
 
-<Step title="Provision a World">
-  In your organization dashboard under **My Worlds**, click on **"Create
-  World"**. - Give it a name (e.g., "My First World"). - Click **Create**. Your
-  World will be provisioned instantly.
-</Step>
+<CodeGroup>
 
-  <Step title="Add Knowledge">
-    Select your world and navigate to the **SPARQL** tab. Paste the following triples into the editor to define a simple concept:
+```bash npm
+npm install @wazoo/worlds-sdk
+```
 
-    ```sparql
-    INSERT DATA {
-      <http://example.org/ethan> <http://schema.org/name> "Ethan" .
-      <http://example.org/ethan> <http://schema.org/jobTitle> "Software Engineer" .
-    }
-    ```
-    Click **Execute**.
+```bash yarn
+yarn add @wazoo/worlds-sdk
+```
 
-  </Step>
+```bash pnpm
+pnpm add @wazoo/worlds-sdk
+```
 
-  <Step title="Run a Semantic Search">
-    Head over to the **Search** tab. Type a natural language question like:
-    
-    > "Find the software engineer"
+</CodeGroup>
 
-    The Worlds Platform uses its underlying vector embeddings to find the most relevant nodes. Click **Search Triples** to see the results.
+### 2. Initialize your first World
 
-  </Step>
-</Steps>
+Create a connection to the Worlds API and initialize your first persistent
+context.
 
-## Next Steps
+```typescript
+import { WorldsWorld } from "@wazoo/worlds-sdk";
 
-Now that you've experienced Worlds via the UI, you're ready to integrate it into
-your own applications.
+const world = new WorldsWorld({
+  apiKey: "YOUR_API_KEY",
+  worldId: "my-first-world",
+});
 
-<CardGroup cols={2}>
-  <Card
-    title="Programmatic Access"
-    icon="code"
-    href="/api-integrations/native-sdks"
-  >
-    Learn how to use the TypeScript SDK to automate your Worlds.
-  </Card>
-  <Card
-    title="Core Concepts"
-    icon="brain"
-    href="/concepts/knowledge-primitives"
-  >
-    Understand the architecture of polymorphic Worlds.
-  </Card>
-</CardGroup>
+await world.init();
+```
+
+### 3. Add context
+
+Start feeding your AI agents with persistent, searchable memory.
+
+```typescript
+await world.insert({
+  text: "The secret ingredient is always more compute.",
+  metadata: { source: "internal-memo" },
+});
+```

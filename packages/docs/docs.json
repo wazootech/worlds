@@ -8,7 +8,7 @@
     "dark": "#78350F"
   },
   "contextual": {
-    "options": ["copy", "view", "chatgpt", "claude", "cursor", "vscode"]
+    "options": ["copy", "view"]
   },
   "favicon": "/images/wazoo.svg",
   "seo": {
@@ -27,53 +27,7 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["overview", "quickstart", "vibe-coding"]
-          },
-          {
-            "group": "Core Concepts",
-            "pages": [
-              "concepts/how-it-works",
-              "concepts/worlds-vs-rag",
-              "concepts/knowledge-primitives",
-              "concepts/agentic-loop",
-              "concepts/reasoning-inference"
-            ]
-          },
-          {
-            "group": "Infrastructure",
-            "pages": [
-              "infrastructure/deployment",
-              "infrastructure/configuration"
-            ]
-          },
-          {
-            "group": "Architecture",
-            "pages": [
-              "architecture/system-design",
-              "architecture/request-pipeline"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API Integrations",
-        "icon": "plug",
-        "groups": [
-          {
-            "group": "Native SDKs",
-            "pages": [
-              "api-integrations/native-sdks/index",
-              "api-integrations/native-sdks/sdk"
-            ]
-          },
-          {
-            "group": "Frameworks",
-            "pages": [
-              "api-integrations/frameworks/ai-sdk",
-              "api-integrations/frameworks/vercel-ai",
-              "api-integrations/frameworks/langchain",
-              "api-integrations/frameworks/openai"
-            ]
+            "pages": ["index", "intro", "quickstart"]
           }
         ]
       },
@@ -83,17 +37,7 @@
         "openapi": "openapi.yaml",
         "groups": [
           {
-            "group": "API Basics",
-            "pages": [
-              "api-reference/basics/authentication",
-              "api-reference/basics/search",
-              "api-reference/basics/sparql",
-              "api-reference/basics/specification"
-            ]
-          },
-          {
             "group": "Endpoints",
-            "expanded": false,
             "pages": [
               "GET /worlds",
               "POST /worlds",
@@ -109,38 +53,6 @@
             ]
           }
         ]
-      },
-      {
-        "tab": "Cookbook",
-        "icon": "hat-chef",
-        "groups": [
-          {
-            "group": "Guides",
-            "pages": [
-              "cookbook/guides/social-graphs",
-              "cookbook/guides/personal-search",
-              "cookbook/guides/cli-tasks"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Contribute",
-        "icon": "users-gear",
-        "groups": [
-          {
-            "group": "General",
-            "pages": [
-              "contribute/introduction",
-              "contribute/audience",
-              "contribute/philosophy"
-            ]
-          },
-          {
-            "group": "Resources",
-            "pages": ["contribute/whitepaper"]
-          }
-        ]
       }
     ],
     "global": {
@@ -153,6 +65,12 @@
       ]
     }
   },
+  "redirects": [
+    {
+      "source": "/overview",
+      "destination": "/intro"
+    }
+  ],
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -182,10 +100,6 @@
           {
             "label": "SDK (JSR)",
             "href": "https://jsr.io/@wazoo/worlds-sdk"
-          },
-          {
-            "label": "Cookbooks",
-            "href": "/cookbook"
           }
         ]
       },
@@ -199,10 +113,6 @@
           {
             "label": "X (Twitter)",
             "href": "https://x.com/wazootech"
-          },
-          {
-            "label": "LinkedIn",
-            "href": "https://www.linkedin.com/company/wazootech/"
           }
         ]
       },
@@ -212,10 +122,6 @@
           {
             "label": "Blog",
             "href": "https://wazoo.dev/blog"
-          },
-          {
-            "label": "Technical Specs",
-            "href": "/contribute/whitepaper"
           }
         ]
       }
