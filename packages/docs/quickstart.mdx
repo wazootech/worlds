@@ -1,32 +1,40 @@
 ---
 title: "Quickstart"
-description: "Start building with Worlds in minutes"
+description: "Make your first call to Worlds API in minutes."
 ---
-
-## Prerequisites
-
-Requires a Worlds API key. Worlds you create can be viewed on the
-[Worlds Console](https://console.wazoo.dev).
 
 ## Getting Started
 
 Follow these steps to integrate Worlds into your AI application.
 
 <Steps>
-  <Step title="Install the SDK">
-    Choose your preferred environment to get started with the Worlds SDK.
+  <Step title="Sign into the Worlds Console">
+    Get your Worlds API **base URL** and **API key** from the
+    [Worlds Console](https://console.wazoo.dev).
+  </Step>
+
+  <Step title="Install the SDK and set your API key">
+    Choose your preferred environment to get started.
 
     <CodeGroup>
-      ```bash npm
-      npm install @wazoo/worlds-sdk
+      ```bash deno
+      deno add jsr:@wazoo/worlds-sdk
       ```
 
-      ```bash yarn
-      yarn add @wazoo/worlds-sdk
+      ```bash npm
+      npx jsr add @wazoo/worlds-sdk
       ```
 
       ```bash pnpm
-      pnpm add @wazoo/worlds-sdk
+      pnpm i jsr:@wazoo/worlds-sdk
+      ```
+
+      ```bash yarn
+      yarn add jsr:@wazoo/worlds-sdk
+      ```
+
+      ```bash bun
+      bunx jsr add @wazoo/worlds-sdk
       ```
     </CodeGroup>
 
@@ -41,6 +49,7 @@ Follow these steps to integrate Worlds into your AI application.
       import { WorldsSdk } from "@wazoo/worlds-sdk";
 
       const sdk = new WorldsSdk({
+        baseUrl: "https://api.wazoo.dev",
         apiKey: "YOUR_API_KEY",
       });
 
@@ -59,6 +68,10 @@ Follow these steps to integrate Worlds into your AI application.
           "label": "My First World"
         }'
       ```
+
+      ```bash CLI
+      worlds create --label "My First World" --slug "my-first-world"
+      ```
     </CodeGroup>
 
   </Step>
@@ -68,9 +81,13 @@ Follow these steps to integrate Worlds into your AI application.
 
     <CodeGroup>
       ```typescript TypeScript
-      await sdk.worlds.import("my-first-world", `
+      await sdk.worlds.import(
+        "my-first-world",
+        `
         <#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .
-      `, { format: "turtle" });
+        `,
+        { format: "turtle" },
+      );
       ```
 
       ```bash cURL
@@ -81,7 +98,21 @@ Follow these steps to integrate Worlds into your AI application.
           <#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .
         }'
       ```
+
+      ```bash CLI
+      # Create a local file with your context
+      echo '<#memo> <http://purl.org/dc/terms/description> "The secret ingredient is always more compute." .' > data.ttl
+
+      # Import the context into your world
+      worlds import my-first-world data.ttl --format turtle
+      ```
     </CodeGroup>
 
   </Step>
 </Steps>
+
+The Worlds API automatically:
+
+- **Extracts memories** from conversations
+- **Builds and maintains** user profiles (static facts + dynamic context)
+- **World model returns relevant context** for personalized LLM responses
