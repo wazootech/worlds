@@ -27,20 +27,20 @@
         "groups": [
           {
             "group": "Get started",
-            "pages": [
-              "intro",
-              {
-                "group": "Quickstart",
-                "pages": [
-                  "quickstart/index",
-                  "quickstart/cli",
-                  "quickstart/sdk"
-                ]
-              }
-            ]
+            "pages": ["index", "quickstart"]
           },
           {
-            "group": "Academy",
+            "group": "Command-line interface",
+            "pages": ["cli"]
+          }
+        ]
+      },
+      {
+        "tab": "Academy",
+        "icon": "graduation-cap",
+        "groups": [
+          {
+            "group": "Fundamentals",
             "pages": [
               "academy/index",
               {
