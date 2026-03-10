@@ -3,13 +3,11 @@ title: "Architecture"
 description: "High-level diagram and explanation of the Worlds architecture."
 ---
 
-# System Architecture
+# System architecture
 
-The Worlds Platform is built on a modular, polymorphic architecture designed for
-scalability and local-first development. It unifies a Control Plane (Console)
-with a high-performance Data Plane (API).
+The Worlds platform utilizes a modular, polymorphic architecture designed for scalability and local-first development. It unifies a control plane (Console) with a high-performance data plane (API).
 
-## High-Level Overview
+## High-level overview
 
 ```mermaid
 graph LR
@@ -50,26 +48,21 @@ graph LR
     N3 <-->|Hydrate / Flush| WorldDB
 ```
 
-## Control vs. Data Plane
+## Control vs. data plane
 
-The platform is split into two primary operational layers:
+The platform splits operations into two primary layers:
 
-### 1. The Control Plane (`packages/console`)
+### 1. Control plane (`packages/console`)
 
-The **Management Console** acts as the system's brain. It manages identity
-(WorkOS), handles organization-level provisioning, and orchestrates World Server
-instances.
+The **Management Console** acts as the system's brain. It manages identity (WorkOS), handles organization-level provisioning, and orchestrates World Server instances.
 
-### 2. The Data Plane (`packages/server`)
+### 2. Data plane (`packages/server`)
 
-The **Worlds API Server** handles RDF graph management, SPARQL execution, and
-hybrid search. This is the "Data Plane" where your information lives.
+The **Worlds API Server** handles RDF graph management, SPARQL execution, and hybrid search. This is the data plane where your information lives.
 
-## Monorepo Topology
+## Monorepo topology
 
-The ecosystem is organized as a Deno workspace. The `sdk` package serves as the
-primary bridge, used by the CLI, AI-SDK, and Console to communicate with the API
-Server.
+The ecosystem is organized as a Deno workspace. The `sdk` package serves as the primary bridge, used by the CLI, AI-SDK, and Console to communicate with the API Server.
 
 ```mermaid
 graph TD
@@ -94,12 +87,11 @@ graph TD
 
 ---
 
-# Request Pipeline
+# Request pipeline
 
-Every incoming HTTP request to the Worlds API Server passes through a fixed
-technical pipeline designed for security, efficiency, and flexibility.
+Every incoming HTTP request to the Worlds API Server passes through a fixed technical pipeline designed for security, efficiency, and flexibility.
 
-## Server Processing Flow
+## Server processing flow
 
 The server uses a structured pipeline to route requests and manage dependencies.
 
@@ -164,17 +156,14 @@ graph TD
     N3STORE --> BLOBSVC
 ```
 
-## Polymorphic Resource Managers
+## Polymorphic resource managers
 
-A key design feature is our use of hot-swappable resource managers. The core
-logic remains identical, while the implementation swaps based on the
-environment:
+A key design feature is our use of hot-swappable resource managers. The core logic remains identical, while the implementation swaps based on the environment:
 
-| Resource     | Local Dev Implementation   | Production Implementation |
+| Resource     | Local dev implementation   | Production implementation |
 | :----------- | :------------------------- | :------------------------ |
 | **Compute**  | Local Deno child processes | Deno Deploy               |
 | **Storage**  | Local SQLite files         | Turso (libSQL)            |
 | **Identity** | Mock file (`workos.json`)  | WorkOS AuthKit            |
 
-This pattern allows the _entire_ stack to run locally with zero cloud
-dependencies.
+This pattern allows the entire stack to run locally with zero cloud dependencies.

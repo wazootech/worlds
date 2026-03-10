@@ -1,7 +1,11 @@
 ---
 title: "Command-line interface"
-description: "Start managing your worlds from the terminal in minutes."
+description: "Manage your worlds from the command line using the Worlds CLI."
 ---
+
+# Command-line interface
+
+The Worlds CLI allows you to manage worlds, import data, and execute queries directly from your terminal.
 
 ## Installation
 
@@ -11,7 +15,7 @@ Install the Worlds CLI using Deno:
 deno install -A --name worlds jsr:@wazoo/worlds-cli
 ```
 
-### Initialize your first world
+## Initialize your first world
 
 Create a persistent context from the terminal:
 
@@ -19,7 +23,7 @@ Create a persistent context from the terminal:
 worlds create --label "My First World" --slug "my-first-world"
 ```
 
-### Add context
+## Add context
 
 Provide your AI agents with persistent, searchable memory:
 
@@ -33,7 +37,7 @@ worlds import my-first-world data.ttl --format turtle
 
 ## Next steps
 
-Now that you've set up your first world, explore the full power of the CLI:
+Now that you have set up your first world, explore the full capabilities of the CLI:
 
 - [CLI reference](https://github.com/wazootech/worlds/tree/main/packages/cli)
 - [Search and SPARQL](/guides/semantic-search)

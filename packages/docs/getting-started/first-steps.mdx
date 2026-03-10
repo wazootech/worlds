@@ -1,30 +1,28 @@
 ---
-title: "First Steps"
+title: "First steps"
 description:
   "Initial actions after installation and how to use AI coding agents with
   Worlds."
 ---
 
-# First Steps with Worlds
+# First steps
 
-Once you have installed the Worlds SDK, the next step is to begin building your
-stateful world models. We recommend starting with **Vibe Coding** to let AI
-agents handle the heavy lifting of knowledge integration.
+After installing the Worlds SDK, begin building your stateful world models.
+Start with **vibe coding** to let AI agents handle knowledge integration.
 
-## Vibe Coding
+## Vibe coding
 
-["Vibe Coding"](https://x.com/karpathy/status/1886192184808149383?lang=en) is
+["Vibe coding"](https://x.com/karpathy/status/1886192184808149383?lang=en) is
 the practice of using AI agents (like Claude Code, Windsurf, or Cursor) to build
 applications through high-level intent rather than manual line-by-line coding.
 
-Worlds is uniquely suited for Vibe Coding because its state is semantic and
-malleable. You can treat the AI output as a completed unit while maintaining a
-persistent, structured memory.
+Worlds suits vibe coding because its state is semantic and malleable. Treat the
+AI output as a completed unit while maintaining a persistent, structured memory.
 
-### The Agent Prompt
+### The agent prompt
 
 To help an AI agent integrate with Worlds, copy and paste the following
-"World-Aware" prompt into your agent's context:
+"world-aware" prompt into your agent's context:
 
 ```markdown
 I am building an application using Worlds. Worlds are persistent, semantic
@@ -32,7 +30,7 @@ knowledge containers.
 
 - Use the `@wazoo/worlds-sdk` SDK (available on JSR) to interact with them.
 - Every World has a `worldId`.
-- You can store data as "Malleable Knowledge" which is automatically indexed and
+- Store data as "Malleable Knowledge", which automatically indexes and becomes
   searchable.
 - Use the `search` endpoint to retrieve context from a World.
 
@@ -42,30 +40,36 @@ question about X, search the World for context first.
 
 ---
 
-## Agent Integration
+## Agent integration
 
-If you are using **Claude Code**, you can add Worlds as a custom skill by
-providing it the OpenAPI spec:
+If using **Claude Code**, add Worlds as a custom skill by providing it the
+OpenAPI specification.
 
-1.  **Get your API Key**: From the [Worlds Console](https://console.wazoo.dev).
-2.  **Mount the Spec**: Tell Claude to read
-    `https://docs.wazoo.dev/openapi.json`.
-3.  **Command**:
+<Steps>
+  <Step title="Get your API key">
+    Retrieve your key from the [Worlds console](https://console.wazoo.dev).
+  </Step>
+  <Step title="Mount the spec">
+    Tell Claude to read `https://docs.wazoo.dev/openapi.json`.
+  </Step>
+  <Step title="Run the command">
     `claude "Help me build a personal memory world for my project."`
+  </Step>
+</Steps>
 
-## Best Practices
+## Best practices
 
-- **Semantic Naming**: Give your Worlds descriptive names. The AI uses these
-  names to choose the right container for context.
-- **Verbose Connectors**: When setting up connectors, let the AI agent handle
-  the configuration logic.
-- **Context Loops**: Always ask the agent to "check the world" at the start of a
+- **Semantic naming**: Give your Worlds descriptive names. The AI uses these
+  names to choose the correct container for context.
+- **Verbose connectors**: let the AI agent handle the configuration logic when
+  setting up connectors.
+- **Context loops**: Always ask the agent to "check the world" at the start of a
   session.
 
-## AI Discovery
+## AI discovery
 
 Standard indices help LLM-based agents understand your documentation. Use these
-in agent prompts or context:
+indices in agent prompts or context:
 
 - **[llms.txt](/llms.txt)** — Concise index for quick agent context.
 - **[llms-full.txt](/llms-full.txt)** — Full documentation index for deep

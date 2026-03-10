@@ -1,66 +1,71 @@
 ---
-title: "Request Flow"
-description: "Startup process and per-request handling logic."
+title: "Request flow"
+description: "Startup process and per-request handling logic for the Worlds server."
 ---
 
-# Request Flow
+# Request flow
+
+The Worlds server follows a structured lifecycle for initialization and request handling.
 
 ## Startup process
 
+The server initialization sequence involves setting up the environment, database, and routing layers.
+
 <Steps>
-  <Step title="Environment Setup">
+  <Step title="Configure environment">
     `main.ts` reads environment variables and calls `createServerContext(config)`.
   </Step>
 
-<Step title="Context Creation">
-  `createServerContext` in `server.ts`: - Creates a single LibSQL **main
-  client**. - Calls `initializeDatabase(mainClient)`. - Builds **embeddings**. -
-  Instantiates **WorldsService** and chooses a **DatabaseManager**. - Returns
-  **ServerContext**.
-</Step>
+  <Step title="Create context">
+    `createServerContext` in `server.ts` performs the following actions:
+    - Creates a single LibSQL **main client**.
+    - Calls `initializeDatabase(mainClient)`.
+    - Builds the **embeddings** interface.
+    - Instantiates **WorldsService** and selects a **DatabaseManager**.
+    - Returns the **ServerContext**.
+  </Step>
 
-<Step title="Router Configuration">
-  `createServer(serverContext)` builds a single **Router**, then dynamically
-  registers route handlers.
-</Step>
+  <Step title="Configure router">
+    `createServer(serverContext)` builds a single **Router** and dynamically registers route handlers.
+  </Step>
 
-  <Step title="Server Initialization">
+  <Step title="Initialize server">
     `main.ts` exports `{ fetch: (request) => app.fetch(request) }` for `Deno.serve`.
   </Step>
 </Steps>
 
 ## Per-request flow
 
+Every incoming HTTP request passes through a standard processing pipeline.
+
 <Steps>
-  <Step title="Routing">
-    Router matches the request and invokes the handler.
+  <Step title="Route request">
+    The router matches the incoming request and invokes the corresponding handler.
   </Step>
 
-<Step title="Context Injection">
-  Handlers receive a context object with `request` and `params`.
-</Step>
+  <Step title="Inject context">
+    Handlers receive a context object containing the `request` and path `params`.
+  </Step>
 
-<Step title="Authorization">
-  Handlers call `authorizeRequest(serverContext, request)` to check the Bearer
-  token.
-</Step>
+  <Step title="Authorize request">
+    Handlers call `authorizeRequest(serverContext, request)` to verify the Bearer token.
+  </Step>
 
-<Step title="Business Logic Execution">
-  Handlers use `ServerContext` and resource services. They resolve world clients
-  via `serverContext.libsql.manager.get(worldId)`.
-</Step>
+  <Step title="Execute business logic">
+    Handlers utilize `ServerContext` and resource services. They resolve world-specific clients via `serverContext.libsql.manager.get(worldId)`.
+  </Step>
 
-  <Step title="Response Generation">
-    Success responses use `Response.json(...)`. Errors use `ErrorResponse` helpers.
+  <Step title="Generate response">
+    The system generates success responses using `Response.json(...)` and error responses using `ErrorResponse` helpers.
   </Step>
 </Steps>
 
 ## ServerContext
 
-Defined in `packages/server/context.ts`:
+Defined in `packages/server/context.ts`, the `ServerContext` provides shared resources to all handlers:
 
-- **embeddings: Embeddings** — Interface for generating text embeddings.
-- **libsql**:
-  - **database: Client** — Main database client.
-  - **manager: DatabaseManager** — Per-world database manager.
-- **admin?**: `{ apiKey: string }` — Required for production admin access.
+- **`embeddings: Embeddings`**: Interface for generating text embeddings.
+- **`libsql`**:
+  - **`database: Client`**: Main database client for management operations.
+  - **`manager: DatabaseManager`**: Manager for world-specific database instances.
+- **`admin?`**: `{ apiKey: string }` - Required for production admin access.

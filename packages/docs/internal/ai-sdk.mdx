@@ -1,44 +1,38 @@
 ---
-title: "AI SDK Tools"
-description:
-  "Reference for the neuro-symbolic tools provided in @wazoo/worlds-ai-sdk."
+title: "AI SDK tools"
+description: "Reference for neuro-symbolic tools provided in @wazoo/worlds-ai-sdk."
 ---
 
-# AI SDK Tools
+# AI SDK tools
 
-The `@wazoo/worlds-ai-sdk` package provides tools to bridge LLMs and structured
-RDF knowledge.
+The `@wazoo/worlds-ai-sdk` package provides tools that bridge LLMs and structured RDF knowledge. These tools enable agents to interact with the world graph autonomously.
 
 ## Core tools
 
+The SDK includes several key tools for world introspection and data manipulation.
+
 ### `discover-schema`
 
-Introspects a world's graph to identify available classes, properties, and
-relationships.
+Introspects a world's graph to identify available classes, properties, and relationships.
 
-- **Benefit**: Reduces hallucinations by grounding the agent in the actual
-  schema.
+- **Benefit**: Reduces hallucinations by grounding the agent in the actual schema.
 
 ### `execute-sparql`
 
-Provides a safe interface for agents to execute SPARQL `SELECT` and `ASK`
-queries.
+Provides a safe interface for agents to execute SPARQL `SELECT` and `ASK` queries.
 
-- **Safety**: Restricts query types and prevents unauthorized access.
+- **Safety**: Restricts query types and prevents unauthorized access to the underlying engine.
 
 ### `generate-iri`
 
-A utility for generating semantically meaningful Internationalized Resource
-Identifiers (IRIs).
+Generates semantically meaningful Internationalized Resource Identifiers (IRIs) for new entities.
 
 ### `search-entities`
 
 Integrates the hybrid search (Vector + FTS) capabilities of the Worlds API.
 
-- **Precision**: Returns a ranked list of entities matching semantic or keyword
-  criteria.
+- **Precision**: Returns a ranked list of entities matching semantic or keyword criteria.
 
 ## Integration
 
-These tools are compatible with frameworks like the **Vercel AI SDK**, allowing
-you to expose them as standard "tools" that the model calls autonomously.
+These tools are compatible with frameworks like the **Vercel AI SDK**, allowing you to expose them as standard tools that the model calls during a conversation.

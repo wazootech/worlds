@@ -1,14 +1,13 @@
 ---
-title: "Semantic Search"
+title: "Semantic search"
 description: "How Worlds enables semantic and full-text discovery of knowledge."
 ---
 
-Worlds combines full-text search with vector-based retrieval to provide a
-neuro-symbolic discovery experience.
+Worlds combines full-text search with vector-based retrieval to provide a neuro-symbolic discovery experience.
 
-> [!TIP] **Discovery workflow: Modeling synergy** Synergy defines the
-> interaction of discrete modules. In Worlds, discovery synergy combines
-> **neural intuition** and **symbolic exactness**.
+> [!TIP] **Discovery workflow: Modeling synergy** 
+> 
+> Synergy defines the interaction of discrete modules. In Worlds, discovery synergy combines **neural intuition** and **symbolic exactness**.
 
 ```mermaid
 graph TD
@@ -22,9 +21,7 @@ graph TD
 
 ## Environmental context isolation
 
-The Worlds architecture utilizes **progressive disclosure** to manage cognitive
-load. This technique isolates documentation sidebars strictly to the libraries,
-variables, and functions relevant to the active, localized module.
+The Worlds architecture utilizes **progressive disclosure** to manage cognitive load. This technique isolates documentation sidebars strictly to the libraries, variables, and functions relevant to the active, localized module.
 
 ### Core discovery technologies
 
@@ -34,15 +31,11 @@ variables, and functions relevant to the active, localized module.
 | **Full-text (FTS)** | Exact matching        | Deterministic retrieval |
 | **RRF**             | Ranking and synthesis | System optimization     |
 
-## The search loop: zero-knowledge onboarding
+## Search loop: Zero-knowledge onboarding
 
-Worlds manages large datasets by splitting knowledge into discrete segments
-called **Chunks**. Each Chunk undergoes a dual-channel process:
+Worlds manages large datasets by splitting knowledge into discrete segments called **chunks**. Each chunk undergoes a dual-channel process:
 
-1.  **Vectorization**: Transforms the document segment into a high-dimensional
-    vector for semantic matching.
-2.  **Linking**: Connects the Chunk to specific RDF statements (triples). This
-    ensures that every search result is actionable and verifiable.
+1.  **Vectorization**: Transforms the document segment into a high-dimensional vector for semantic matching.
+2.  **Linking**: Connects the chunk to specific RDF statements (triples). This ensures that every search result is actionable and verifiable.
 
-Discovery in Worlds is a multi-stage process that prioritizes accuracy and
-verifiability rather than a single-turn operation.
+Discovery in Worlds involves a multi-stage process that prioritizes accuracy and verifiability over a single-turn operation.

@@ -1,29 +1,51 @@
 ---
-title: "Routes & API"
-description: "API route registration, handler patterns, and endpoint reference."
+title: "Routes and API"
+description: "API route registration, handler patterns, and endpoint reference for the Worlds platform."
 ---
 
-# Routes & API
+# Routes and API
+
+The Worlds platform utilizes a modular routing system to handle core management and world-specific data operations.
 
 ## Registration
 
-In `server.ts`, the `routes` array lists module paths. Each module default
-exports a function `(serverContext: ServerContext) => Router`.
+In `server.ts`, the `routes` array lists the paths to available modules. Each module performs a default export of a function that initializes the router:
+
+```typescript
+(serverContext: ServerContext) => Router
+```
 
 ## Route handler pattern
 
-1. **Path Params:** Read from `ctx.params`.
-2. **Auth:** Call `authorizeRequest`.
-3. **Query/Body:** Parse and validate with Zod.
-4. **Lookup:** Use the appropriate service or resolve a world DB client.
-5. **Response:** Return `Response.json(record)` or an `ErrorResponse`.
+Every route handler in the platform follows a consistent execution pattern:
+
+1.  **Path parameters**: Read parameters from `ctx.params`.
+2.  **Authentication**: Call `authorizeRequest` to verify the user or agent identity.
+3.  **Validation**: Parse and validate the request body or query parameters using Zod.
+4.  **Business logic**: Distribute work to the appropriate service or resolve a world-specific database client.
+5.  **Response**: Return a success response via `Response.json(record)` or an appropriate `ErrorResponse`.
 
 ## Endpoints reference
 
-- **Organizations:** `GET/POST /v1/organizations`,
-  `GET/PUT/DELETE /v1/organizations/:organization`
-- **Invites:** `GET/POST /v1/invites`, `GET/DELETE /v1/invites/:code`
-- **Worlds:** `GET/POST /v1/worlds`, `GET/PUT/DELETE /v1/worlds/:world`,
-  `GET /v1/worlds/:world/download`, `GET /v1/worlds/:world/logs`
-- **SPARQL:** `GET/POST /v1/worlds/:world/sparql`
-- **Search:** `GET /v1/search`
+| Resource          | Method | Path                                          |
+| :---------------- | :----- | :-------------------------------------------- |
+| **Organizations** | GET    | `/v1/organizations`                           |
+|                   | POST   | `/v1/organizations`                           |
+|                   | GET    | `/v1/organizations/:organization`             |
+|                   | PUT    | `/v1/organizations/:organization`             |
+|                   | DELETE | `/v1/organizations/:organization`             |
+| **Invites**       | GET    | `/v1/invites`                                 |
+|                   | POST   | `/v1/invites`                                 |
+|                   | GET    | `/v1/invites/:code`                           |
+|                   | DELETE | `/v1/invites/:code`                           |
+| **Worlds**        | GET    | `/v1/worlds`                                  |
+|                   | POST   | `/v1/worlds`                                  |
+|                   | GET    | `/v1/worlds/:world`                           |
+|                   | PUT    | `/v1/worlds/:world`                           |
+|                   | DELETE | `/v1/worlds/:world`                           |
+|                   | GET    | `/v1/worlds/:world/download`                  |
+|                   | GET    | `/v1/worlds/:world/logs`                      |
+| **SPARQL**        | GET    | `/v1/worlds/:world/sparql`                    |
+|                   | POST   | `/v1/worlds/:world/sparql`                    |
+| **Search**        | GET    | `/v1/search`                                  |
+| **Health**        | GET    | `/health`                                     |

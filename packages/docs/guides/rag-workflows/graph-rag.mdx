@@ -1,51 +1,39 @@
 ---
 title: "Graph RAG"
-description:
-  "Transitioning from stateless text chunks to stateful agent memory."
+description: "Transition from stateless text chunks to stateful agent memory using Worlds Knowledge Graphs."
 ---
 
 # Graph RAG
 
-Standard Retrieval-Augmented Generation (RAG) often struggles with evolving
-facts and complex relational queries. **Graph RAG** in Worlds addresses these
-limitations by maintaining a stateful, structured memory.
+Standard retrieval-augmented generation (RAG) often struggles with evolving facts and complex relational queries. **Graph RAG** in Worlds addresses these limitations by maintaining a stateful, structured memory.
 
 ## Limits of stateless RAG
 
-In traditional RAG, you chunk and embed text for retrieval based on semantic
-similarity. This works for static information but fails to capture relationship
-dynamics or state changes.
+In traditional RAG, you chunk and embed text for retrieval based on semantic similarity. This works for static information but fails to capture relationship dynamics or state changes.
 
-### Scenario: the evolving fact
+### Scenario: The evolving fact
 
 1. **Monday:** "I am working on Project Apollo."
 2. **Wednesday:** "I am pausing Apollo to focus on Project Hermes."
 3. **Friday:** "What am I working on?"
 
-A traditional RAG system often retrieves both chunks, forcing the LLM to resolve
-the contradiction through heuristics. As your data grows, retrieval becomes
-increasingly noisy.
+A traditional RAG system often retrieves both chunks, forcing the LLM to resolve the contradiction through heuristics. As your data grows, retrieval becomes increasingly noisy.
 
-## The Worlds solution: stateful memory
+## Worlds solution: Stateful memory
 
-Worlds maintains a **living knowledge graph**. Instead of storing raw text, it
-extracts meaning as **triples** (subject → predicate → object).
+Worlds maintains a **living knowledge graph**. Instead of storing raw text, it extracts meaning as **triples** (subject → predicate → object).
 
-When facts change, Worlds updates the specific relationships in the graph. This
-allows you to resolve contradictions at the data layer rather than relying on
-probabilistic LLM reasoning.
+When facts change, Worlds updates the specific relationships in the graph. This allows you to resolve contradictions at the data layer rather than relying on probabilistic LLM reasoning.
 
-### Comparison: RAG vs. Worlds
+### Comparison: RAG and Worlds
 
-| Feature       | Traditional RAG     | Worlds (Agent memory)                 |
+| Feature       | Traditional RAG     | Worlds (agent memory)                 |
 | :------------ | :------------------ | :------------------------------------ |
 | **Search**    | Semantic similarity | Hybrid (semantic + relational)        |
 | **State**     | Stateless           | Stateful (resolves contradictions)    |
 | **Inference** | Hallucination-prone | Deterministic reasoning               |
 | **Structure** | Unstructured chunks | Knowledge primitives (items, triples) |
 
-## Implementing Graph RAG
+## Implementing graph RAG
 
-To implement Graph RAG with Worlds, follow the
-[Ingestion Pipeline](/overview/features#the-worlds-pipeline) to transform your
-unstructured data into a queryable graph.
+To implement graph RAG with Worlds, follow the [ingestion pipeline](/overview/features#the-worlds-pipeline) to transform your unstructured data into a queryable graph.

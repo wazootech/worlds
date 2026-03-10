@@ -1,47 +1,36 @@
 ---
-title: "World Memory"
-description:
-  "The primary resource of the Worlds ecosystem: A dedicated, isolated knowledge
-  graph instance."
+title: "World memory"
+description: "The primary resource of the Worlds ecosystem: A dedicated, isolated knowledge graph instance."
 ---
 
-A **World** is the foundational unit of organization in the ecosystem. It
-provides an isolated container for an agent's relationships, history, and facts.
+A **world** is the foundational unit of organization in the ecosystem. It provides an isolated container for an agent's relationships, history, and facts.
 
-> [!IMPORTANT] **Architectural stress test: Fragmented context** Legacy systems
-> design relies on single, linear context windows. This approach creates
-> fundamental reasoning limits.
->
-> _The Challenge_: Unlinked contexts fragment an agent's memory. To achieve
-> high-performance reasoning across complex tasks, utilize deterministic linkage
-> to build a multi-faceted graph.
+> [!IMPORTANT] **Architectural stress test: Fragmented context** 
+> 
+> Legacy system design relies on single, linear context windows. This approach creates fundamental reasoning limits. 
+> 
+> _The challenge_: Unlinked contexts fragment an agent's memory. To achieve high-performance reasoning across complex tasks, utilize deterministic linkage to build a multi-faceted graph.
 
 ## System goals and constraints
 
 | Goal            | Description                          | Constraint                     |
 | :-------------- | :----------------------------------- | :----------------------------- |
-| **Isolation**   | Prevent data leakage between agents. | One RDF dataset per World.     |
+| **Isolation**   | Prevent data leakage between agents. | One RDF dataset per world.     |
 | **Portability** | Maintain memory across model swaps.  | Decoupled from LLM provider.   |
-| **Fusion**      | Hybrid neural/symbolic reasoning.    | Requires both Vector + SPARQL. |
+| **Fusion**      | Hybrid neural/symbolic reasoning.    | Requires both vector + SPARQL. |
 
 ## Technical architecture: neuro-symbolic fusion
 
-A World functions as a **neuro-symbolic memory container**. It pairs an isolated
-RDF dataset with a high-performance vector search index.
+A world functions as a **neuro-symbolic memory container**. It pairs an isolated RDF dataset with a high-performance vector search index.
 
-### 1. The neural layer (intuition)
+### Neural layer
 
-This layer uses vector embeddings to manage semantic similarity. It allows the
-agent to navigate the world through natural language queries.
+The neural layer uses vector embeddings to manage semantic similarity. It allows the agent to navigate the world through natural language queries.
 
-### 2. The symbolic layer (logic)
+### Symbolic layer
 
-This layer uses RDF and SPARQL for deterministic facts. It provides
-**deterministic validation**, reducing the risk of hallucinations inherent in
-standalone LLMs.
+The symbolic layer uses RDF and SPARQL for deterministic facts. It provides deterministic validation, reducing the risk of hallucinations inherent in standalone LLMs.
 
 ## Symbolic audit trails
 
-Worlds eliminates "black box" behavior. Every retrieved fact has a verifiable
-audit trail in the RDF graph. If an agent makes a claim, the symbolic layer
-proves it.
+Worlds eliminates "black box" behavior. Every retrieved fact has a verifiable audit trail in the RDF graph. If an agent makes a claim, the symbolic layer proves it.

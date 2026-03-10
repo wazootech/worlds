@@ -1,39 +1,46 @@
 ---
-title: "Implementation Checklist"
-description: "A guide for developers implementing new features."
+title: "Implementation checklist"
+description: "A guide for developers implementing new features and resources in the Worlds platform."
 ---
 
-# Implementation Checklist
+# Implementation checklist
 
-Follow this checklist when adding new resources or routes to the platform.
+Follow this checklist when adding new resources or routes to the platform to ensure consistency and reliability.
 
-## New resource (main database)
+## New resource
 
-- [ ] Create `databases/core/<name>/` directory.
-- [ ] Add `queries.sql` with DDL and CRUD.
-- [ ] Run `deno task generate`.
-- [ ] Add `schema.ts` and `service.ts`.
-- [ ] Register table in `initializeDatabase` in `core/init.ts`.
-- [ ] Add `service.test.ts`.
+Complete these steps when adding a new resource to the main database:
+
+- [ ] Create the `databases/core/<name>/` directory.
+- [ ] Add `queries.sql` with DDL and CRUD operations.
+- [ ] Run `deno task generate` to update the SQL embedder files.
+- [ ] Create the `schema.ts` and `service.ts` files.
+- [ ] Register the new table in `initializeDatabase` within `core/init.ts`.
+- [ ] Implement unit tests in `service.test.ts`.
 
 ## New world database table
 
-- [ ] Add DDL to the resource’s `queries.sql`.
-- [ ] Register it in the world-scope portion of `initializeDatabase` in
-      `core/init.ts`.
-- [ ] Verify `DatabaseManager` implementations run this for new creates.
+Complete these steps when adding a table to the world-specific database:
+
+- [ ] Add the DDL to the resource's `queries.sql` file.
+- [ ] Register the table in the world-scope portion of `initializeDatabase` in `core/init.ts`.
+- [ ] Verify that `DatabaseManager` implementations execute this initialization for new worlds.
 
 ## New route
 
-- [ ] Create `routes/v1/.../route.ts`.
-- [ ] Implement a default export `(appContext) => Router`.
+Complete these steps when implementing a new API endpoint:
+
+- [ ] Create the `routes/v1/.../route.ts` file.
+- [ ] Implement a default export that returns a `Router` instance.
 - [ ] Register the module path in `server.ts`.
-- [ ] Implement auth, validation, and error handling.
-- [ ] Add `route.test.ts`.
+- [ ] Implement authentication, validation, and error handling.
+- [ ] Add integration tests in `route.test.ts`.
 
 ## Rate limits
 
-- [ ] Define the `featureId` and limit.
+Complete these steps to enforce rate limits on a new feature:
+
+- [ ] Define the `featureId` and corresponding limit.
 - [ ] Add the limit to `POLICY_LIMITS` in `rate-limit.ts`.
-- [ ] Call `checkRateLimit` in the handler.
-- [ ] Update the [Rate Limits](/reference/rate-limits) documentation.
+- [ ] Call `checkRateLimit` within the route handler.
+- [ ] Update the [rate limits](/reference/rate-limits) documentation.

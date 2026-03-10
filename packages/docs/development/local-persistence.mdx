@@ -1,32 +1,28 @@
 ---
-title: "Local Persistence"
-description: "How state is stored on your local filesystem."
+title: "Local persistence"
+description: "How the Worlds platform stores state on your local filesystem."
 ---
 
-# Local Persistence
+# Local persistence
 
-During local development, all state is stored in the `packages/console/data`
-directory. This directory mirrors the resource hierarchy (Organizations >
-Worlds) using the local filesystem.
+During local development, all state is stored in the `packages/console/data` directory. This directory mirrors the resource hierarchy (organizations > worlds) using the local filesystem.
 
 ```text
 packages/console/data/
-├── workos.json           # Mock database for Organizations and Users
-└── {org_id}/             # Root directory for a specific Organization
+├── workos.json           # Mock database for organizations and users
+└── {org_id}/             # Root directory for a specific organization
     ├── worlds.db         # Primary libSQL DB (registry of worlds for the org)
-    └── worlds/           # Directory for individual World databases
-        └── {world_id}.db # Secondary libSQL DB (triples & embeddings for a world)
+    └── worlds/           # Directory for individual world databases
+        └── {world_id}.db # Secondary libSQL DB (triples and embeddings for a world)
 ```
 
 ## Resetting state
 
-To wipe all local data and start fresh, delete the contents of the
-`packages/console/data` directory.
+To wipe all local data and start fresh, delete the contents of the `packages/console/data` directory.
 
-## Modifying existing user data
+## Modifying user data
 
-To change the identity of your local user _after_ initial setup, edit
-`packages/console/data/workos.json` directly.
+To change the identity of your local user after initial setup, edit `packages/console/data/workos.json` directly.
 
 ```json
 {
@@ -44,5 +40,4 @@ To change the identity of your local user _after_ initial setup, edit
 }
 ```
 
-Changes made to this file will be reflected in the Console upon the next
-request.
+The console reflects changes made to this file upon the next request.

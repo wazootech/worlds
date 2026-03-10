@@ -1,40 +1,37 @@
 ---
 title: "Authentication"
-description: "How to authenticate requests to the World Server."
+description: "Authenticate requests to the Worlds API."
 ---
 
 # Authentication
 
-The World Server uses **Bearer Token** authentication. Include your API key in
-the `Authorization` header of every request.
+The Worlds API requires **Bearer Token** authentication. Include your API key in the `Authorization` header of every request.
 
 ## Generate an API key
 
-<Note>A valid API key is required to make requests to the API.</Note>
+You must provide a valid API key to interact with the API.
 
 <Tabs>
   <Tab title="Cloud">
     Generate an API key in the [dashboard](https://console.wazoo.dev/settings).
   </Tab>
   <Tab title="Self-hosted">
-    Use the `WORLDS_API_KEY` configured in your server's environment. This acts
-    as the **Root Admin Key** for your instance and is typically managed by your
-    provisioner.
+    Use the `WORLDS_API_KEY` environment variable configured on your server. This acts as the **root admin key** for your instance.
   </Tab>
 </Tabs>
 
 ### Use unprotected mode
 
-For rapid prototyping and local development, the `WORLDS_API_KEY` is
-**optional**.
+For rapid prototyping and local development, the `WORLDS_API_KEY` is optional.
 
-> [!WARNING] If you do not provide a `WORLDS_API_KEY`, the server will run in
-> **unprotected mode**, granting full administrative access to all requests.
-> This state is strictly intended for local development.
+> [!WARNING]
+> If you do not provide a `WORLDS_API_KEY`, the server runs in **unprotected mode**, granting full administrative access to all requests. Use this state strictly for local development.
 
 ## Authenticate requests
 
 ### Set the header
+
+Configure the `Authorization` header with your API key:
 
 ```http
 Authorization: Bearer <YOUR_API_KEY>
@@ -42,7 +39,7 @@ Authorization: Bearer <YOUR_API_KEY>
 
 ### Use the SDK
 
-The SDK handles authentication automatically when you initialize the client.
+The SDK handles authentication automatically when you initialize the client:
 
 ```typescript
 import { WorldsSdk } from "@wazoo/worlds-sdk";
@@ -55,5 +52,4 @@ const sdk = new WorldsSdk({
 
 ## Admin access
 
-Certain endpoints, such as listing all worlds for an account, require an admin
-API key. If you are self-hosting, this is your `WORLDS_API_KEY`.
+Certain endpoints, such as listing all worlds for an account, require an admin API key. In self-hosted environments, use your `WORLDS_API_KEY`.

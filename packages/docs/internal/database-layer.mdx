@@ -1,42 +1,41 @@
 ---
-title: "Database Layer"
-description: "Main and World database scopes, management, and codegen."
+title: "Database layer"
+description: "Main and world database scopes, management, and codegen for the Worlds platform."
 ---
 
-# Database Layer
+# Database layer
+
+The Worlds platform utilizes a dual-scope database architecture to separate management logic from world-specific data.
 
 ## Two database scopes
 
+The system manages two distinct types of database instances:
+
 - **Main database** (single instance):
-  - Tables: `organizations`, `worlds`, `service_accounts`, `invites`,
-    `rate_limits`, `usage`.
-  - Created by `initializeDatabase(client)` in `lib/database/init.ts`.
+  - **Tables**: `organizations`, `worlds`, `service_accounts`, `invites`, `rate_limits`, `usage`.
+  - **Initialization**: Created by `initializeDatabase(client)` in `lib/database/init.ts`.
 - **World databases** (one per world):
-  - Tables: `chunks` (with FTS and vector index), `triples`, `logs`.
-  - Created by `initializeDatabase(client)` in `lib/database/init.ts`.
-  - When a new world DB is created, the system initializes the schema.
+  - **Tables**: `chunks` (with FTS and vector index), `triples`, `logs`.
+  - **Initialization**: Created by `initializeDatabase(client)` in `lib/database/init.ts` upon world creation.
 
 ## DatabaseManager interface
 
-Defined in `packages/server/lib/database/manager.ts`:
+Defined in `packages/server/lib/database/manager.ts`, the `DatabaseManager` interface provides a common API for world database lifecycle management:
 
-- `create(id: string): Promise<ManagedDatabase>` — Create a new world DB and
-  initialize its schema.
-- `get(id: string): Promise<ManagedDatabase>` — Retrieve a `ManagedDatabase` for
-  the world.
-- `delete(id: string): Promise<void>` — Remove the world DB resources.
+- `create(id: string): Promise<ManagedDatabase>`: Creates a new world database and initializes its schema.
+- `get(id: string): Promise<ManagedDatabase>`: Retrieves a `ManagedDatabase` instance for the specified world.
+- `delete(id: string): Promise<void>`: Removes the database resources for the specified world.
 
-### Implementations:
+### Implementations
 
-- **FileDatabaseManager**: Stores each world as `{id}.db` in the
-  `WORLDS_BASE_DIR` (defaults to `./worlds`).
-- **TursoDatabaseManager**: Uses Turso API to manage remote databases and
-  tokens.
-- **MemoryDatabaseManager**: In-memory clients for testing.
+- **FileDatabaseManager**: Stores each world as `{id}.db` in the `WORLDS_BASE_DIR` (defaults to `./worlds`).
+- **TursoDatabaseManager**: Interfaces with the Turso API to manage remote databases and tokens.
+- **MemoryDatabaseManager**: Utilizes in-memory clients for testing purposes.
 
 ## SQL and code generation
 
-- **Queries** live in `.sql` files under each resource.
-- **sql-embedder** generates `queries.sql.ts` files: run `deno task generate`.
-- `core/init.ts` imports table and index names from generated files to run DDL
-  in order.
+The platform uses a structured approach to SQL management and type safety:
+
+- **Queries**: Live in `.sql` files near their respective resources.
+- **Code generation**: The `sql-embedder` utility generates `queries.sql.ts` files. Run `deno task generate` to update these files.
+- **DDL execution**: `core/init.ts` imports table and index names from generated files to ensure correct execution order.

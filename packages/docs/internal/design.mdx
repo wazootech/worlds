@@ -1,15 +1,15 @@
 ---
-title: "Internal Design"
+title: "Internal design"
 description: "Structure, architecture, and conventions of the Worlds API."
 ---
 
-# Internal Design
+# Internal design
 
-This section describes the structure of the application for consistent
-implementation and extension. It is the source of truth for architecture,
-layering, and conventions.
+This document describes the application structure to ensure consistent implementation and extension. It serves as the source of truth for architecture, layering, and conventions.
 
 ## Repository layout
+
+The server follows a modular layout organized by service and resource:
 
 ```text
 packages/server/
@@ -24,12 +24,10 @@ packages/server/
 │   └── testing/       # TestContext and testing utilities
 ├── main.ts            # Deno serve entrypoint
 ├── middleware/        # auth.ts, rate-limit.ts
-├── models/            # Open API models and shared types
+├── models/            # OpenAPI models and shared types
 ├── routes/            # v1 API routes
 └── server.ts          # createServer, createServerContext
 ```
 
-- **Entrypoints:** `packages/server/main.ts` (server), `packages/cli/main.ts`
-  (CLI).
-- **Import alias:** `#/` maps to `./` within each package; use `#/lib/...`,
-  `#/routes/...` for internal imports.
+- **Entrypoints**: `packages/server/main.ts` (server) and `packages/cli/main.ts` (CLI).
+- **Import alias**: The `#/` alias maps to `./` within each package. Use `#/lib/...` or `#/routes/...` for internal imports.

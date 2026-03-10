@@ -1,58 +1,51 @@
 ---
 title: "Configuration"
-description: "Environment variables for the Console and World Server."
+description: "Environment variables for the management console and world server."
 ---
 
-# Configuration Reference
+# Configuration reference
 
-The Worlds platform switches between modes based on the presence of specific
-environment variables.
+The Worlds platform switches between modes based on the presence of specific environment variables.
 
-## Management Console
+## Management console
 
-These variables are required in `packages/console/.env` for production
-deployments.
+These variables are required in `packages/console/.env` for production deployments.
 
 | Variable                       | Mode       | Purpose                                                              |
 | :----------------------------- | :--------- | :------------------------------------------------------------------- |
-| `WORKOS_API_KEY`               | Production | Enables Remote WorkOS Management.                                    |
+| `WORKOS_API_KEY`               | Production | Enables remote WorkOS management.                                    |
 | `WORKOS_CLIENT_ID`             | Production | Required for AuthKit login.                                          |
 | `DENO_DEPLOY_TOKEN`            | Production | Enables remote Deno Deploy orchestration.                            |
 | `TURSO_API_TOKEN`              | Production | Enables remote Turso database provisioning.                          |
-| `TURSO_ORG`                    | Production | The Turso organization slug.                                         |
-| `WORLDS_EMBEDDINGS_DIMENSIONS` | Both       | Unified vector dimensions for DB and AI (defaults to `768`).         |
-| `OPENROUTER_API_KEY`           | Both       | Global fallback for embeddings.                                      |
+| `TURSO_ORG`                    | Production | Defines the Turso organization slug.                                 |
+| `WORLDS_EMBEDDINGS_DIMENSIONS` | Both       | Sets unified vector dimensions for DB and AI (defaults to `768`).    |
+| `OPENROUTER_API_KEY`           | Both       | Provides a global fallback for embeddings.                           |
 | `OPENROUTER_MANAGEMENT_KEY`    | Production | Enables automatic per-app API key generation via OpenRouter API.     |
-| `OPENROUTER_EMBEDDINGS_MODEL`  | Both       | Global fallback model (defaults to `openai/text-embedding-3-small`). |
-| `OLLAMA_BASE_URL`              | Both       | Ollama API URL (defaults to `http://127.0.0.1:11434`).               |
-| `OLLAMA_EMBEDDINGS_MODEL`      | Both       | Ollama model (defaults to `nomic-embed-text`).                       |
+| `OPENROUTER_EMBEDDINGS_MODEL`  | Both       | Sets global fallback model (defaults to `openai/text-embedding-3-small`). |
+| `OLLAMA_BASE_URL`              | Both       | Sets Ollama API URL (defaults to `http://127.0.0.1:11434`).           |
+| `OLLAMA_EMBEDDINGS_MODEL`      | Both       | Sets Ollama model (defaults to `nomic-embed-text`).                  |
 
-By default, the Worlds Platform uses **Ollama** for local embeddings to ensure
-your data never leaves your machine.
+By default, the Worlds platform uses **Ollama** for local embeddings to ensure data never leaves your machine.
 
-> [!TIP] You can use **OpenRouter** for embeddings in local development by
-> adding an `OPENROUTER_API_KEY` to your environment.
+> [!TIP]
+> You can use **OpenRouter** for embeddings in local development by adding an `OPENROUTER_API_KEY` to your environment.
 
-## World Server
+## World server
 
-These are automatically provisioned and injected by the Console during
-deployment, but required if self-hosting the server manually.
+The console automatically provisions and injects these variables during deployment. You only need to set them manually if you are self-hosting the server.
 
 | Variable                       | Purpose                                                                                 |
 | :----------------------------- | :-------------------------------------------------------------------------------------- |
-| `WORLDS_API_KEY`               | The **Root Admin Key** for the server. If omitted, the server runs in unprotected mode. |
-| `WORLDS_EMBEDDINGS_DIMENSIONS` | Unified vector dimensions for DB and AI (defaults to `768`).                            |
-| `LIBSQL_URL`                   | Connection string (e.g., `libsql://...` or `file:...`).                                 |
-| `LIBSQL_AUTH_TOKEN`            | Auth token for remote libSQL/Turso instances.                                           |
-| `OPENROUTER_API_KEY`           | For high-quality OpenRouter embeddings.                                                 |
-| `OLLAMA_BASE_URL`              | Ollama API URL (defaults to `http://127.0.0.1:11434`).                                  |
+| `WORLDS_API_KEY`               | Sets the **root admin key** for the server. If omitted, the server runs in unprotected mode. |
+| `WORLDS_EMBEDDINGS_DIMENSIONS` | Sets unified vector dimensions for DB and AI (defaults to `768`).                            |
+| `LIBSQL_URL`                   | Defines the connection string (e.g., `libsql://...` or `file:...`).                     |
+| `LIBSQL_AUTH_TOKEN`            | Provides the auth token for remote libSQL/Turso instances.                              |
+| `OPENROUTER_API_KEY`           | Enables high-quality OpenRouter embeddings.                                             |
+| `OLLAMA_BASE_URL`              | Sets Ollama API URL (defaults to `http://127.0.0.1:11434`).                             |
 
 ## Embedding providers
 
-The platform selects an embedding provider based on available environment
-variables:
+The platform selects an embedding provider based on available environment variables:
 
-- **OpenRouter**: Triggered when `OPENROUTER_API_KEY` is present. Recommended
-  for cloud-based AI.
-- **Ollama**: Default provider when no cloud keys are present. Recommended for
-  local development and private hosting.
+- **OpenRouter**: Triggered when `OPENROUTER_API_KEY` is present. Recommended for cloud-based AI.
+- **Ollama**: Default provider when no cloud keys are present. Recommended for local development and private hosting.
