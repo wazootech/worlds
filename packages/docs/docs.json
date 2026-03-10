@@ -26,32 +26,70 @@
         "icon": "code",
         "groups": [
           {
-            "group": "Setup",
-            "pages": ["getting-started/quickstart", "overview/introduction"]
-          }
-        ]
-      },
-      {
-        "tab": "Academy",
-        "icon": "graduation-cap",
-        "groups": [
-          {
-            "group": "Fundamentals",
+            "group": "Getting Started",
             "pages": [
-              "academy/index",
-              {
-                "group": "Chapter 1: Fundamentals",
-                "pages": ["academy/world-memory", "academy/knowledge-graphs"]
-              },
-              {
-                "group": "Chapter 2: Discovery",
-                "pages": ["academy/semantic-search"]
-              }
+              "overview/introduction",
+              "getting-started/quickstart",
+              "getting-started/installation",
+              "getting-started/first-steps",
+              "getting-started/common-tasks"
             ]
           },
           {
-            "group": "History",
-            "pages": ["academy/history"]
+            "group": "Overview",
+            "pages": [
+              "overview/architecture",
+              "overview/features",
+              "overview/use-cases",
+              "overview/world-memory",
+              "overview/academy",
+              "overview/maturity",
+              "overview/roadmap",
+              "overview/history"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              "concepts/worlds",
+              "concepts/statements",
+              "concepts/graphs",
+              "concepts/search"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              {
+                "group": "RAG Workflows",
+                "pages": [
+                  "guides/rag-workflows/graph-rag",
+                  "guides/rag-workflows/ontology-rag",
+                  "guides/rag-workflows/document-rag"
+                ]
+              },
+              {
+                "group": "Security",
+                "pages": [
+                  "guides/security/current-features",
+                  "guides/security/enterprise-roadmap"
+                ]
+              },
+              "guides/data-integration",
+              "guides/querying",
+              "guides/monitoring",
+              "guides/knowledge-graphs",
+              "guides/semantic-search"
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "examples/code-samples",
+              "examples/datasets",
+              "examples/tutorials",
+              "examples/integrations"
+            ]
           }
         ]
       },
@@ -63,6 +101,14 @@
           {
             "group": "CLI",
             "pages": ["reference/cli"]
+          },
+          {
+            "group": "Configuration",
+            "pages": ["reference/configuration"]
+          },
+          {
+            "group": "Schemas",
+            "pages": ["reference/schemas"]
           },
           {
             "group": "Endpoints",
@@ -78,6 +124,25 @@
               "GET /worlds/{world}/logs",
               "GET /worlds/{world}/export",
               "POST /worlds/{world}/import"
+            ]
+          },
+          {
+            "group": "Changelog",
+            "pages": ["reference/changelog"]
+          }
+        ]
+      },
+      {
+        "tab": "Contributing",
+        "icon": "users",
+        "groups": [
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing/developer-guide",
+              "contributing/guidelines",
+              "contributing/code-of-conduct",
+              "contributing/getting-help"
             ]
           }
         ]
