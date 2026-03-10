@@ -40,6 +40,7 @@
               "overview/introduction",
               "overview/architecture",
               "overview/features",
+              "overview/whitepaper",
               "overview/use-cases",
               "overview/world-memory",
               "overview/academy",
@@ -89,6 +90,10 @@
         "icon": "book-open",
         "openapi": "openapi.yaml",
         "groups": [
+          {
+            "group": "API Basics",
+            "pages": ["reference/api-basics/authentication"]
+          },
           {
             "group": "CLI",
             "pages": ["reference/cli"]

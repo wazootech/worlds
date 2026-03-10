@@ -1,5 +1,180 @@
 ---
 title: "Architecture"
+description: "High-level diagram and explanation of the Worlds architecture."
 ---
 
-TODO: High-level diagram and explanation of the Worlds architecture.
+# System Architecture
+
+The Worlds Platform is built on a modular, polymorphic architecture designed for
+scalability and local-first development. It unifies a Control Plane (Console)
+with a high-performance Data Plane (API).
+
+## High-Level Overview
+
+```mermaid
+graph LR
+    subgraph Users ["End Users"]
+        direction TB
+        Dev([Developer / Human])
+        Agent([AI Agent / Bot])
+    end
+
+    subgraph Control ["Control Plane"]
+        direction TB
+        Console[Console]
+        Auth[Auth Service]
+    end
+
+    subgraph Edge ["Worlds"]
+        direction TB
+        Guard{Auth Guard}
+        N3[("n3<br/><i>Hot Memory</i>")]
+    end
+
+    subgraph Storage ["Database"]
+        direction TB
+        SysDB[("System DB")]
+        WorldDB[("Per-World DBs")]
+    end
+
+    %% Human/Control Flow
+    Dev ==>|HTTPS| Console
+    Console <==>|Mgmt API| Guard
+
+    %% Agent/Data Flow
+    Agent <==>|HTTPS / SDK| Guard
+    Guard <==>|Authorized| N3
+
+    %% Internal Processing
+    N3 <-->|Hybrid Search| WorldDB
+    N3 <-->|Hydrate / Flush| WorldDB
+```
+
+## Control vs. Data Plane
+
+The platform is split into two primary operational layers:
+
+### 1. The Control Plane (`packages/console`)
+
+The **Management Console** acts as the system's brain. It manages identity
+(WorkOS), handles organization-level provisioning, and orchestrates World Server
+instances.
+
+### 2. The Data Plane (`packages/server`)
+
+The **Worlds API Server** handles RDF graph management, SPARQL execution, and
+hybrid search. This is the "Data Plane" where your information lives.
+
+## Monorepo Topology
+
+The ecosystem is organized as a Deno workspace. The `sdk` package serves as the
+primary bridge, used by the CLI, AI-SDK, and Console to communicate with the API
+Server.
+
+```mermaid
+graph TD
+    ROOT["Deno Workspace Root"]
+    SERVER["@wazoo/worlds-server"]
+    SDK["@wazoo/worlds-sdk"]
+    AISDK["@wazoo/worlds-ai-sdk"]
+    CLI["@wazoo/worlds-cli"]
+    CONSOLE["worlds-console (Next.js)"]
+
+    ROOT --> SERVER
+    ROOT --> SDK
+    ROOT --> AISDK
+    ROOT --> CLI
+    ROOT -.-> CONSOLE
+
+    CLI --> SDK
+    AISDK --> SDK
+    CONSOLE --> SDK
+    SDK --> SERVER
+```
+
+---
+
+# Request Pipeline
+
+Every incoming HTTP request to the Worlds API Server passes through a fixed
+technical pipeline designed for security, efficiency, and flexibility.
+
+## Server Processing Flow
+
+The server uses a structured pipeline to route requests and manage dependencies.
+
+```mermaid
+graph TD
+    REQ["Incoming HTTP Request"]
+
+    subgraph "Auth — packages/server"
+        APIKEY["Bearer Token check\n(WORLDS_API_KEY or unprotected mode)"]
+    end
+
+    subgraph "Router — @fartlabs/rt"
+        R_WORLDS["GET/POST /worlds\nGET/PUT/DELETE /worlds/:id"]
+        R_SPARQL["GET/POST /worlds/:id/sparql"]
+        R_SEARCH["GET /worlds/:id/search"]
+        R_IMPORT["POST /worlds/:id/import"]
+        R_EXPORT["GET /worlds/:id/export"]
+        R_LOGS["GET /worlds/:id/logs"]
+    end
+
+    subgraph "Services — packages/server/lib"
+        WORLDSSVC["WorldsService\n(world metadata CRUD)"]
+        CHUNKSSVC["ChunksService\n(hybrid search via RRF)"]
+        LOGSSVC["LogsService\n(event logs)"]
+        BLOBSVC["BlobsService\n(RDF blob storage)"]
+    end
+
+    subgraph "Query Engine"
+        N3STORE["N3 Store\n(in-memory RDF graph)"]
+        COMUNICA["Comunica\n(SPARQL execution)"]
+        PATCH["handlePatch()\n(triple upsert + embeddings)"]
+    end
+
+    subgraph "Persistence — LibSQL"
+        MAINDB["System DB\n(worlds registry, logs)"]
+        WORLDDB["Per-World DB\n(triples, chunks, blobs)"]
+    end
+
+    REQ --> APIKEY
+    APIKEY --> R_WORLDS
+    APIKEY --> R_SPARQL
+    APIKEY --> R_SEARCH
+    APIKEY --> R_IMPORT
+    APIKEY --> R_EXPORT
+    APIKEY --> R_LOGS
+
+    R_WORLDS --> WORLDSSVC
+    R_SPARQL --> N3STORE
+    R_IMPORT --> N3STORE
+    R_EXPORT --> N3STORE
+    R_SEARCH --> CHUNKSSVC
+    R_LOGS --> LOGSSVC
+
+    N3STORE --> COMUNICA
+    N3STORE --> PATCH
+    PATCH --> CHUNKSSVC
+
+    WORLDSSVC --> MAINDB
+    LOGSSVC --> WORLDDB
+    BLOBSVC --> WORLDDB
+    CHUNKSSVC --> WORLDDB
+    N3STORE --> BLOBSVC
+```
+
+## Polymorphic Resource Managers
+
+A key design feature is our use of hot-swappable resource managers. The core
+logic remains identical, while the implementation swaps based on the
+environment:
+
+| Resource     | Local Dev Implementation   | Production Implementation |
+| :----------- | :------------------------- | :------------------------ |
+| **Compute**  | Local Deno child processes | Deno Deploy               |
+| **Storage**  | Local SQLite files         | Turso (libSQL)            |
+| **Identity** | Mock file (`workos.json`)  | WorkOS AuthKit            |
+
+This pattern allows the _entire_ stack to run locally with zero cloud
+dependencies.

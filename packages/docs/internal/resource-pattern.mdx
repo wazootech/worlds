@@ -1,0 +1,29 @@
+---
+title: "Resource Pattern"
+description: "The standard structure for implementing resources and services."
+---
+
+# Resource Pattern
+
+Each resource follows a consistent structure under
+`packages/server/lib/database/core/` or `packages/server/lib/database/world/`:
+
+- **queries.sql** — DDL and CRUD queries.
+- **queries.sql.ts** — Generated string constants.
+- **schema.ts** — Zod schemas.
+- **service.ts** — Service class implementing methods.
+- **service.test.ts** — Deno tests using in-memory client.
+
+## Service mapping
+
+| Resource         | DB scope | Used by (production)                                      |
+| :--------------- | :------- | :-------------------------------------------------------- |
+| chunks           | World    | search route, rdf-patch, testing                          |
+| invites          | Main     | invites route, testing                                    |
+| logs             | World    | worlds route (logs), testing                              |
+| organizations    | Main     | organizations route, testing                              |
+| rate-limits      | Main     | middleware/rate-limit, init, testing                      |
+| service-accounts | Main     | organizations route, testing                              |
+| triples          | World    | rdf-patch, chunks test, testing                           |
+| usage            | Main     | search route (ChunksService), testing                     |
+| worlds           | Main     | server.ts, worlds/sparql/search routes, managers, testing |

@@ -1,0 +1,66 @@
+---
+title: "Request Flow"
+description: "Startup process and per-request handling logic."
+---
+
+# Request Flow
+
+## Startup process
+
+<Steps>
+  <Step title="Environment Setup">
+    `main.ts` reads environment variables and calls `createServerContext(config)`.
+  </Step>
+
+<Step title="Context Creation">
+  `createServerContext` in `server.ts`: - Creates a single LibSQL **main
+  client**. - Calls `initializeDatabase(mainClient)`. - Builds **embeddings**. -
+  Instantiates **WorldsService** and chooses a **DatabaseManager**. - Returns
+  **ServerContext**.
+</Step>
+
+<Step title="Router Configuration">
+  `createServer(serverContext)` builds a single **Router**, then dynamically
+  registers route handlers.
+</Step>
+
+  <Step title="Server Initialization">
+    `main.ts` exports `{ fetch: (request) => app.fetch(request) }` for `Deno.serve`.
+  </Step>
+</Steps>
+
+## Per-request flow
+
+<Steps>
+  <Step title="Routing">
+    Router matches the request and invokes the handler.
+  </Step>
+
+<Step title="Context Injection">
+  Handlers receive a context object with `request` and `params`.
+</Step>
+
+<Step title="Authorization">
+  Handlers call `authorizeRequest(serverContext, request)` to check the Bearer
+  token.
+</Step>
+
+<Step title="Business Logic Execution">
+  Handlers use `ServerContext` and resource services. They resolve world clients
+  via `serverContext.libsql.manager.get(worldId)`.
+</Step>
+
+  <Step title="Response Generation">
+    Success responses use `Response.json(...)`. Errors use `ErrorResponse` helpers.
+  </Step>
+</Steps>
+
+## ServerContext
+
+Defined in `packages/server/context.ts`:
+
+- **embeddings: Embeddings** — Interface for generating text embeddings.
+- **libsql**:
+  - **database: Client** — Main database client.
+  - **manager: DatabaseManager** — Per-world database manager.
+- **admin?**: `{ apiKey: string }` — Required for production admin access.

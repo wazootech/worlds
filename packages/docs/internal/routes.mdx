@@ -1,0 +1,29 @@
+---
+title: "Routes & API"
+description: "API route registration, handler patterns, and endpoint reference."
+---
+
+# Routes & API
+
+## Registration
+
+In `server.ts`, the `routes` array lists module paths. Each module default
+exports a function `(serverContext: ServerContext) => Router`.
+
+## Route handler pattern
+
+1. **Path Params:** Read from `ctx.params`.
+2. **Auth:** Call `authorizeRequest`.
+3. **Query/Body:** Parse and validate with Zod.
+4. **Lookup:** Use the appropriate service or resolve a world DB client.
+5. **Response:** Return `Response.json(record)` or an `ErrorResponse`.
+
+## Endpoints reference
+
+- **Organizations:** `GET/POST /v1/organizations`,
+  `GET/PUT/DELETE /v1/organizations/:organization`
+- **Invites:** `GET/POST /v1/invites`, `GET/DELETE /v1/invites/:code`
+- **Worlds:** `GET/POST /v1/worlds`, `GET/PUT/DELETE /v1/worlds/:world`,
+  `GET /v1/worlds/:world/download`, `GET /v1/worlds/:world/logs`
+- **SPARQL:** `GET/POST /v1/worlds/:world/sparql`
+- **Search:** `GET /v1/search`

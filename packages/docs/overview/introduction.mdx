@@ -1,38 +1,93 @@
 ---
 title: "Introduction"
-description: "Context infrastructure for stateful world models."
+description:
+  "Worlds is the context infrastructure for stateful, self-improving world
+  models."
 ---
 
-Worlds is the open-source context infrastructure for stateful, self-improving
-**world models**. Our world models enable operators to build unique agents with
-perfect recall and auditable reasoning.
+# Welcome to Worlds
+
+Worlds is a **Neuro-Symbolic Memory API** designed for the AI era. It provides a
+stateful infrastructure layer that bridges the gap between the probabilistic
+nature of LLMs and the deterministic precision of structured data.
+
+Our context infrastructure enables operators to build unique agents with perfect
+recall and auditable reasoning by maintaining a **persistent, verifiable world
+model**.
+
+## Core Philosophy
+
+Worlds is built on three core pillars that bridge the gap between AI intuition
+and deterministic ownership.
+
+### 1. Neuro-Symbolic Synthesis
+
+At the heart of Worlds is a hybrid architecture designed to solve the "reasoning
+gap" in modern AI.
+
+- **Neural (LLM Intuition)**: Generative AI extracts meaning from unstructured
+  data.
+- **Symbolic (RDF Logic)**: That meaning is stored as deterministic facts in a
+  queryable graph. This ensures your agent isn't just "guessing" context based
+  on probabilities, but is navigating a **structured map of reality**.
+
+### 2. Edge-First Autonomy
+
+We believe an agent's memory should live as close to the user as possible.
+Whether on a local machine, a private server, or at the network edge, Worlds
+ensures that intelligence and knowledge live where you do.
+
+- **Local Autonomy**: Agents never depend on a central cloud for their memory.
+- **Low Latency**: Retrieving memory from a local node is significantly faster
+  than a global database.
+
+### 3. The Local-First Manifesto
+
+As agents become more autonomous, the knowledge they carry must remain the
+property of the humans they serve.
+
+- **Residency**: Data lives close to you.
+- **Ownership**: You own the triples; Worlds is the facilitator.
+- **Portability**: Your graph is an open standard (RDF), not a proprietary silo.
+
+## Key Capabilities
 
 <CardGroup cols={2}>
-  <Card title="Self-improving memory" icon="brain">
-    Managed world models with perfect recall. Fuses vector, keyword, &
-    graph-based relational filters for persistent & logical memory.
+  <Card title="Neuro-Symbolic Reasoning" icon="brain-circuit">
+    Move fluidly between "fuzzy" LLM logic and "rigid" Knowledge Graph truth
+    using SPARQL.
   </Card>
-  <Card title="Managed RAG" icon="microchip">
-    Knowledge control plane. Provision isolated RDF graphs with hybrid search,
-    symbolic operations, & real-time developer logs.
+  <Card title="Edge-First Architecture" icon="bolt">
+    Localized, low-latency knowledge retrieval powered by Deno and Turso.
   </Card>
-  <Card title="Provider-agnostic" icon="gears">
+  <Card title="Malleable Knowledge" icon="pen-nib">
+    Surgically edit specific facts within a graph without retraining or
+    re-indexing entire blocks.
+  </Card>
+  <Card title="Hybrid Search" icon="magnifying-glass">
+    Combine vector similarity, keyword precision, and graph-based relational
+    filters.
+  </Card>
+  <Card title="Provider Agnostic" icon="gears">
     Bring your own brain. Connect with OpenAI, Anthropic, Gemini, xAI, DeepSeek,
     & more.
   </Card>
-  <Card title="Data sovereignty" icon="bolt">
-    Local-first infrastructure that eliminates centralized points of failure
-    while fundamentally aligning with GDPR & SOC 2.
-  </Card>
-  <Card title="Neuro-symbolic reasoning" icon="wand-magic-sparkles">
-    Execute zero-hallucination reasoning by bridging neural & symbolic
-    inference. Transform natural language into precise, auditable graph queries
-    spontaneouslly.
-  </Card>
-  <Card title="Agent-native SDK" icon="puzzle-piece">
+  <Card title="Agent-Native SDK" icon="puzzle-piece">
     Tool & MCP-native SDK with ready-to-use functions for schema discovery &
-    bridging private knowledge with any agentic workflow.
+    bridging private knowledge.
   </Card>
 </CardGroup>
 
-Worlds provides the abstraction to build the best agents.
+## Next Steps
+
+Ready to start building? Follow our guides to integrate Worlds into your agentic
+loops.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/getting-started/quickstart">
+    Get up and running with Worlds in minutes.
+  </Card>
+  <Card title="How Worlds Work" icon="book" href="/overview/features">
+    Deep dive into entities, trust models, and the data pipeline.
+  </Card>
+</CardGroup>

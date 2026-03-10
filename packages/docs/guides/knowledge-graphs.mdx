@@ -1,48 +1,60 @@
----
-title: "Knowledge Graphs"
-description:
-  "How Worlds uses graphs to build a verifiable, neuro-symbolic memory."
----
+# Knowledge Graphs
 
 A **knowledge graph** powers every World. Worlds organizes information in a
-graph-based structure rather than rigid tables. This approach models complex
+graph-based structure rather than rigid tables, allowing you to model complex
 relationships with precision.
 
-> [!NOTE] **Systemic synergy: Relational logic** Defining relationships through
-> **RDF predicates** enables reasoning capabilities that standalone statistical
-> models cannot achieve.
+## Knowledge primitives
 
-## RDF triples: the building blocks
+To build with Worlds, you must understand the three fundamental building blocks
+of knowledge.
 
-The fundamental unit of knowledge is the **statement**, which functions as an
-**RDF triple**. It follows the standard W3C structure:
+### 1. Items (entities)
+
+**Items** are the distinct "things" in your World—a person, a piece of code, or
+a company.
+
+- **Identification**: Every item is identified by a unique **IRI**
+  (Internationalized Resource Identifier).
+- **Classes**: Items are categorized by their type (e.g., `User`, `Project`,
+  `Task`).
+
+### 2. Properties (predicates)
+
+**Properties** are the "verbs" or "connectors" that define how items relate.
+
+- **Examples**: `worksOn`, `managerOf`, `hasPriority`.
+- **Ontology**: The set of defined properties forms the "grammar" of your World,
+  ensuring your agents use consistent language.
+
+### 3. Facts (triples)
+
+A **fact** is created when you connect two items using a property. This follows
+the standard W3C **RDF triple** structure:
 
 ```mermaid
 graph LR
-    Subject["Subject (Entity)"] -- "Predicate (Relationship)" --> Object["Object (Value/Entity)"]
+    Subject["Subject (Item)"] -- "Predicate (Property)" --> Object["Object (Item/Value)"]
 ```
 
-### Triple examples
-
-| Subject            | Predicate    | Object             |
-| :----------------- | :----------- | :----------------- |
-| `Agent_01`         | `hasMemory`  | `World_Beta`       |
-| `World_Beta`       | `contains`   | `Research_Paper_X` |
-| `Research_Paper_X` | `authoredBy` | `Vannevar_Bush`    |
+| Component     | Example              |
+| :------------ | :------------------- |
+| **Subject**   | `User:Ethan`         |
+| **Predicate** | `isWorkingOn`        |
+| **Object**    | `Project:Worlds-API` |
 
 ## Why graphs matter: deterministic truth
 
 Knowledge graph statements represent facts. Unlike statistical LLM weights,
-Worlds retrieves specific, auditable relationships. This mechanism prevents
-hallucinations.
+Worlds retrieves specific, auditable relationships.
 
-- **Malleability**: Users mutate and fork graphs in real-time.
+- **Malleability**: You can mutate and fork graphs in real-time.
 - **Traceability**: Every claim has a symbolic path back to its source.
-- **Interoperability**: Data uses the **RDF 1.1** context for universal
-  portability. [Read the W3C spec](http://www.w3.org/TR/rdf11-concepts/).
+- **Evolution**: New facts can surgically update or override old ones to
+  maintain grounded truth.
 
-## The Worlds SDK: the architectural abstraction
+## Technical context
 
-The **Worlds SDK** provide the high-level interface to the graph. It translates
-between human intuition and symbolic logic (SPARQL). It handles complex graph
-traversals, making mastery accessible without database expertise.
+Worlds uses the **RDF 1.1** standard for universal portability. You can
+interface with the graph through the [Worlds SDK](/getting-started/quickstart),
+which abstracts away the complexity of raw SPARQL queries.

@@ -1,0 +1,36 @@
+---
+title: "Testing Framework"
+description: "Test architectural patterns and the TestContext."
+---
+
+# Testing Framework
+
+## TestContext
+
+`TestContext` (defined in `lib/testing/mod.ts`) extends the standard
+`ServerContext` to provide an isolated environment:
+
+- Builds an in-memory main client.
+- Initializes the schema.
+- Instantiates all services.
+- Uses **MemoryDatabaseManager**, which creates fresh, initialized in-memory
+  world databases as needed.
+
+## Testing patterns
+
+### Service tests
+
+Automated tests create an in-memory client, initialize the schema, and verify
+CRUD operations.
+
+### Route tests
+
+1. Initialize the `TestContext`.
+2. Register the route with the test context.
+3. Use `app.fetch()` with a mock `Request`.
+4. Assert response statuses and JSON bodies.
+
+### Identity mocking
+
+The `createTestOrganization(context)` helper inserts a mock organization and
+returns an API key for use in `Authorization` headers.

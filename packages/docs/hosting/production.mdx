@@ -1,0 +1,51 @@
+---
+title: "Production Deployment"
+description: "A guide to deploying the Worlds Platform™ to the cloud."
+---
+
+# Production Deployment
+
+To run a production-grade instance of the Worlds Platform™, follow these steps:
+
+## Provision infrastructure
+
+- **Identity (WorkOS)**: Set up AuthKit and retrieve `WORKOS_API_KEY`,
+  `WORKOS_CLIENT_ID`, and `WORKOS_COOKIE_PASSWORD`.
+- **Compute (Deno Deploy)**: Generate a personal access token.
+- **Storage (Turso)**: Retrieve `TURSO_API_TOKEN` and `TURSO_ORG`.
+- **AI Models (OpenRouter)**: Retrieve `OPENROUTER_API_KEY`.
+
+## Deploy the Console
+
+The Console is a Next.js application. Deploy it to Vercel, Netlify, or a VPS.
+
+- Set the environment variables retrieved above.
+- Ensure `NEXT_PUBLIC_WORKOS_REDIRECT_URI` matches your deployment callback URL.
+
+## Orchestrate Worlds
+
+Once the Console is running:
+
+1. Log in via AuthKit.
+2. Create an **Organization**.
+3. The platform will automatically provision a **Turso Database**, deploy a
+   **Deno Deploy App**, and link them together.
+
+## Cloud embeddings with OpenRouter
+
+By default, production is configured to use **OpenRouter** for cloud-based
+embeddings.
+
+<Steps>
+  <Step title="Get an API Key">
+    Visit [OpenRouter](https://openrouter.ai/keys).
+  </Step>
+
+<Step title="Configure the Console">
+  Add `OPENROUTER_API_KEY` to your environment.
+</Step>
+
+  <Step title="Automatic Injection">
+    The Console will automatically inject this key into new World instances.
+  </Step>
+</Steps>
