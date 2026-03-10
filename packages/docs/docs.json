@@ -28,24 +28,30 @@
           {
             "group": "Setup",
             "pages": ["getting-started/quickstart", "overview/introduction"]
-          },
-          {
-            "group": "Academy basics",
-            "pages": ["overview/academy", "overview/history"]
           }
         ]
       },
       {
-        "tab": "Guides",
+        "tab": "Academy",
         "icon": "graduation-cap",
         "groups": [
           {
-            "group": "Academy lessons",
+            "group": "Fundamentals",
             "pages": [
-              "guides/world-memory",
-              "guides/knowledge-graphs",
-              "guides/semantic-search"
+              "academy/index",
+              {
+                "group": "Chapter 1: Fundamentals",
+                "pages": ["academy/world-memory", "academy/knowledge-graphs"]
+              },
+              {
+                "group": "Chapter 2: Discovery",
+                "pages": ["academy/semantic-search"]
+              }
             ]
+          },
+          {
+            "group": "History",
+            "pages": ["academy/history"]
           }
         ]
       },
@@ -99,30 +105,6 @@
     {
       "source": "/quickstart",
       "destination": "/getting-started/quickstart"
-    },
-    {
-      "source": "/academy",
-      "destination": "/overview/academy"
-    },
-    {
-      "source": "/academy/index",
-      "destination": "/overview/academy"
-    },
-    {
-      "source": "/academy/history",
-      "destination": "/overview/history"
-    },
-    {
-      "source": "/academy/world-memory",
-      "destination": "/guides/world-memory"
-    },
-    {
-      "source": "/academy/knowledge-graphs",
-      "destination": "/guides/knowledge-graphs"
-    },
-    {
-      "source": "/academy/semantic-search",
-      "destination": "/guides/semantic-search"
     },
     {
       "source": "/cli",
