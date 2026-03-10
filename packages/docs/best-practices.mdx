@@ -1,0 +1,160 @@
+---
+title: "Documentation Best Practices"
+description:
+  "A comprehensive guide to building maintainable, high-fidelity technical
+  documentation."
+---
+
+# Documentation Best Practices
+
+Whether you are building a site from scratch or contributing to an existing
+knowledge base, following standardized practices ensures your documentation
+remains maintainable, scalable, and easy for your users to navigate.
+
+---
+
+## The Philosophy of Documentation
+
+Great documentation is more than an instruction manual; it is an interactive
+ecosystem that enforces comprehension.
+
+### 1. Productive Friction (Ludic Pedagogy)
+
+Avoid "frictionless" design that leads to passive skimming. Instead, implement
+**Desirable Difficulty**:
+
+- **Heuristic Stress Tests**: Instead of just giving an answer, provide a logic
+  test or counter-hypothesis that forces the user to justify their approach.
+- **Socratic Instruction**: Use AI agents or interactive prompts that guide
+  users to deduce flaws in their own logic before unlocking solutions.
+
+### 2. Zero-Player Tutorials
+
+Model optimal behavior diegetically within the documentation:
+
+- **Live-Execution Sandboxes**: Provide operational models where the system
+  executes synergistic code in real-time. Watching the platform execute a
+  sophisticated operation is more effective than reading a list of parameters.
+- **Progressive Disclosure**: Sequence information so users see only the minimum
+  data required for their current task. Isolate documentation to the "local
+  biome" of the current lesson to prevent cognitive overload.
+
+---
+
+## Writing Standards
+
+### Voice and Tone
+
+- **Perspective**: Write in the second-person ("you").
+- **Voice**: Strictly use **Active Voice** (Actor + Verb + Target). Active voice
+  is clearer, shorter, and reduces the reader's mental processing time.
+  - _Active:_ "The client sends a request."
+  - _Passive:_ "A request is sent by the client."
+- **Tone**: Professional, direct, and authoritative.
+
+### What to Avoid (The "Blacklist")
+
+- **Marketing Fluff**: Never use subjective modifiers like "powerful,"
+  "seamless," "robust," or "cutting-edge."
+- **Filler Phrases**: Eliminate "it's important to note," "in order to," or
+  generic concluding summaries that merely restate the section above.
+- **Editorializing**: Remove "obviously," "simply," "just," or "easily." If it
+  were that easy, the user wouldn't be reading the docs.
+
+### Formatting Rules
+
+- **Sentence Case**: Use sentence case for all headings and code block titles
+  (e.g., "Getting started", not "Getting Started").
+- **Visual Validation**: Complexity—especially in graph theory—is hard to grasp
+  in text. Link to visualizers (like the World Workbench) to provide a feedback
+  loop.
+- **Conceptual Anchoring**: Always explain _what_ a concept is (the "Why")
+  before explaining _how_ to use it.
+
+---
+
+## Information Architecture: The Diátaxis Framework
+
+Wazoo documentation follows the **Diátaxis** framework, which divides content
+into four distinct quadrants based on the user's intent. Do not mix these types
+on a single page.
+
+| Quadrant          | Focus                  | Goal                                                    | Writing Style              |
+| :---------------- | :--------------------- | :------------------------------------------------------ | :------------------------- |
+| **Tutorials**     | Learning-oriented      | Help the user get started through a guided lesson.      | Educational, step-by-step. |
+| **How-to Guides** | Task-oriented          | Solve a specific, real-world problem or achieve a goal. | Practical, goal-focused.   |
+| **Reference**     | Information-oriented   | Provide technical descriptions of the machinery.        | Neutral, fact-based.       |
+| **Explanation**   | Understanding-oriented | Explain the "Why" and provide background context.       | Theoretical, discursive.   |
+
+### Applying Diátaxis
+
+- **Tutorials**: Use for `Quickstart` and `First Steps`.
+- **How-to Guides**: Use for `Data Integration`, `Querying`, or `Security`
+  setups.
+- **Reference**: Use for `API Docs`, `CLI Reference`, and `Schemas`.
+- **Explanation**: Use for `Architecture`, `Philosophy`, and the `Whitepaper`.
+
+---
+
+## Organizing Content
+
+### Hierarchy and Layout
+
+Choose a primary navigation pattern in `docs.json` that fits your audience and
+keep the hierarchy as shallow as possible.
+
+| Pattern       | When to Use                                                                    |
+| :------------ | :----------------------------------------------------------------------------- |
+| **Groups**    | Default approach. Best for a single audience with a straightforward hierarchy. |
+| **Tabs**      | Distinct sections for different audiences (e.g., Guides vs. API Reference).    |
+| **Dropdowns** | For multiple sections that aren't distinct enough to warrant top-level tabs.   |
+| **Versions**  | When maintaining multiple API versions simultaneously.                         |
+
+### File Conventions
+
+- **Naming**: Match existing patterns or use kebab-case (e.g.,
+  `api-reference.mdx`).
+- **Internal Links**: Use root-relative paths without extensions (e.g.,
+  `/getting-started/quickstart`).
+- **Code Examples**: Use realistic placeholder values (avoid "foo", "bar"). One
+  exceptionally clear example is better than multiple slight variations.
+
+---
+
+## Documenting APIs
+
+Choose a sustainable approach based on your project's maturity:
+
+1. **OpenAPI Specification (Recommended)**: Auto-generate endpoints from your
+   spec. This is the most efficient and maintainable method.
+2. **Manual Pages**: Use `api: "METHOD /path"` in frontmatter for full control
+   when a spec is unavailable.
+3. **Hybrid**: Auto-generate standard endpoints but write manual "User Journeys"
+   for complex, multi-step API workflows.
+
+---
+
+## The Documentation Workflow
+
+1. **Research**: Read `docs.json` to understand site structure. Search for
+   existing content to avoid duplication.
+2. **Read Surrounding Content**: Internalize the site's voice by reading 2–3
+   similar pages.
+3. **Drafting**: Lead with the "superpower" or benefit. Explain context first,
+   then procedure.
+4. **Interactive Check**: Can this be a Step component? Can it use a Tab to hide
+   irrelevant platform-specific info?
+5. **Update Navigation**: Add your new file path to `docs.json` so users can
+   find it.
+6. **Verify**: Use `mint validate` to find errors and ensure code blocks have
+   language tags.
+
+---
+
+## Sources & Citations
+
+- [Mintlify Documentation](https://mintlify.com/docs)
+- [TrustGraph Documentation Strategy](https://docs.trustgraph.ai)
+- [Supermemory Resource Guide](https://supermemory.ai/docs)
+- [Google Technical Writing Courses](https://developers.google.com/tech-writing)
+- [Ludic Pedagogy: The mechanics of antagonism in technical documentation](https://wazoo.dev/internal/pedagogy)

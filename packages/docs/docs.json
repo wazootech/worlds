@@ -137,6 +137,7 @@
             "pages": [
               "contributing/developer-guide",
               "contributing/guidelines",
+              "best-practices",
               "contributing/code-of-conduct",
               "contributing/getting-help"
             ]
