@@ -107,22 +107,6 @@
             "pages": ["reference/schemas"]
           },
           {
-            "group": "Endpoints",
-            "pages": [
-              "GET /worlds",
-              "POST /worlds",
-              "GET /worlds/{world}",
-              "PUT /worlds/{world}",
-              "DELETE /worlds/{world}",
-              "GET /worlds/{world}/search",
-              "GET /worlds/{world}/sparql",
-              "POST /worlds/{world}/sparql",
-              "GET /worlds/{world}/logs",
-              "GET /worlds/{world}/export",
-              "POST /worlds/{world}/import"
-            ]
-          },
-          {
             "group": "Changelog",
             "pages": ["reference/changelog"]
           }

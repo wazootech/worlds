@@ -1,6 +1,7 @@
 ---
 title: "SDK overview"
-description: "Interact with the Worlds API using the official TypeScript SDK."
+description:
+  "Interact with the Worlds API using the official TypeScript SDK and AI tools."
 ---
 
 # SDK overview
@@ -40,3 +41,24 @@ const result = await sdk.worlds.sparql(
 
 console.log(result);
 ```
+
+## AI SDK tools
+
+The `@wazoo/worlds-ai-sdk` package provides neuro-symbolic tools that bridge
+LLMs and structured RDF knowledge. These tools enable agents to interact with
+the world graph autonomously.
+
+### Core tools
+
+- **`discover-schema`**: Introspects a world's graph to identify available
+  classes and properties, reducing hallucinations by grounding the agent.
+- **`execute-sparql`**: Provides a safe interface for agents to execute SPARQL
+  `SELECT` and `ASK` queries.
+- **`generate-iri`**: Generates semantically meaningful IRIs for new entities.
+- **`search-entities`**: Integrates hybrid search (Vector + FTS) for precise
+  entity discovery.
+
+### Framework integration
+
+These tools are compatible with frameworks like the **Vercel AI SDK**, allowing
+you to expose them as standard tools during model conversations.

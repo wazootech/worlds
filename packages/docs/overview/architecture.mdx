@@ -92,81 +92,113 @@ graph TD
     SDK --> SERVER
 ```
 
+### Repository layout
+
+The server follows a modular layout organized by service and resource:
+
+```text
+packages/server/
+├── context.ts         # ServerContext shared by every route
+├── lib/               # Shared logic and utilities
+│   ├── ai-sdk/        # AI SDK integration
+│   ├── blob/          # RDF/SPARQL blob and store handling
+│   ├── database/      # Database layer and managers
+│   ├── embeddings/    # Embeddings interface and implementations
+│   ├── errors/        # ErrorResponse helpers
+│   ├── rdf-patch/     # RDF patch application logic
+│   └── testing/       # TestContext and testing utilities
+├── main.ts            # Deno serve entrypoint
+├── middleware/        # auth.ts, rate-limit.ts
+├── models/            # OpenAPI models and shared types
+├── routes/            # v1 API routes
+└── server.ts          # createServer, createServerContext
+```
+
+- **Entrypoints**: `packages/server/main.ts` (server) and `packages/cli/main.ts`
+  (CLI).
+- **Import alias**: The `#/` alias maps to `./` within each package.
+
 ---
 
-# Request pipeline
+# Request flow
 
-Every incoming HTTP request to the Worlds API Server passes through a fixed
-technical pipeline designed for security, efficiency, and flexibility.
+The Worlds server follows a structured lifecycle for initialization and request
+handling.
 
-## Server processing flow
+## Startup process
 
-The server uses a structured pipeline to route requests and manage dependencies.
+The server initialization sequence involves setting up the environment,
+database, and routing layers.
 
-```mermaid
-graph TD
-    REQ["Incoming HTTP Request"]
+<Steps>
+  <Step title="Configure environment">
+    `main.ts` reads environment variables and calls `createServerContext(config)`.
+  </Step>
 
-    subgraph "Auth — packages/server"
-        APIKEY["Bearer Token check\n(WORLDS_API_KEY or unprotected mode)"]
-    end
+<Step title="Create context">
+  `createServerContext` in `server.ts` performs the following actions: - Creates
+  a single LibSQL **main client**. - Calls `initializeDatabase(mainClient)`. -
+  Builds the **embeddings** interface. - Instantiates **WorldsService** and
+  selects a **DatabaseManager**. - Returns the **ServerContext**.
+</Step>
 
-    subgraph "Router — @fartlabs/rt"
-        R_WORLDS["GET/POST /worlds\nGET/PUT/DELETE /worlds/:id"]
-        R_SPARQL["GET/POST /worlds/:id/sparql"]
-        R_SEARCH["GET /worlds/:id/search"]
-        R_IMPORT["POST /worlds/:id/import"]
-        R_EXPORT["GET /worlds/:id/export"]
-        R_LOGS["GET /worlds/:id/logs"]
-    end
+<Step title="Configure router">
+  `createServer(serverContext)` builds a single **Router** and dynamically
+  registers route handlers.
+</Step>
 
-    subgraph "Services — packages/server/lib"
-        WORLDSSVC["WorldsService\n(world metadata CRUD)"]
-        CHUNKSSVC["ChunksService\n(hybrid search via RRF)"]
-        LOGSSVC["LogsService\n(event logs)"]
-        BLOBSVC["BlobsService\n(RDF blob storage)"]
-    end
+  <Step title="Initialize server">
+    `main.ts` exports `{ fetch: (request) => app.fetch(request) }` for `Deno.serve`.
+  </Step>
+</Steps>
 
-    subgraph "Query Engine"
-        N3STORE["N3 Store\n(in-memory RDF graph)"]
-        COMUNICA["Comunica\n(SPARQL execution)"]
-        PATCH["handlePatch()\n(triple upsert + embeddings)"]
-    end
+## Per-request flow
 
-    subgraph "Persistence — LibSQL"
-        MAINDB["System DB\n(worlds registry, logs)"]
-        WORLDDB["Per-World DB\n(triples, chunks, blobs)"]
-    end
+Every incoming HTTP request passes through a standard processing pipeline.
 
-    REQ --> APIKEY
-    APIKEY --> R_WORLDS
-    APIKEY --> R_SPARQL
-    APIKEY --> R_SEARCH
-    APIKEY --> R_IMPORT
-    APIKEY --> R_EXPORT
-    APIKEY --> R_LOGS
+<Steps>
+  <Step title="Route request">
+    The router matches the incoming request and invokes the corresponding handler.
+  </Step>
 
-    R_WORLDS --> WORLDSSVC
-    R_SPARQL --> N3STORE
-    R_IMPORT --> N3STORE
-    R_EXPORT --> N3STORE
-    R_SEARCH --> CHUNKSSVC
-    R_LOGS --> LOGSSVC
+<Step title="Inject context">
+  Handlers receive a context object containing the `request` and path `params`.
+</Step>
 
-    N3STORE --> COMUNICA
-    N3STORE --> PATCH
-    PATCH --> CHUNKSSVC
+<Step title="Authorize request">
+  Handlers call `authorizeRequest(serverContext, request)` to verify the Bearer
+  token.
+</Step>
 
-    WORLDSSVC --> MAINDB
-    LOGSSVC --> WORLDDB
-    BLOBSVC --> WORLDDB
-    CHUNKSSVC --> WORLDDB
-    N3STORE --> BLOBSVC
-```
+<Step title="Execute business logic">
+  Handlers utilize `ServerContext` and resource services. They resolve
+  world-specific clients via `serverContext.libsql.manager.get(worldId)`.
+</Step>
+
+  <Step title="Generate response">
+    The system generates success responses using `Response.json(...)` and error responses using `ErrorResponse` helpers.
+  </Step>
+</Steps>
+
+## ServerContext
+
+Defined in `packages/server/context.ts`, the `ServerContext` provides shared
+resources to all handlers:
+
+- **`embeddings: Embeddings`**: Interface for generating text embeddings.
+- **`libsql`**:
+  - **`database: Client`**: Main database client for management operations.
+  - **`manager: DatabaseManager`**: Manager for world-specific database
+    instances.
+- **`admin?`**: `{ apiKey: string }` - Required for production admin access.
+
+---
+
+# Design principles
 
 ## Polymorphic resource managers
 
-A key design feature is our use of hot-swappable resource managers. The core
+A key design feature is the use of hot-swappable resource managers. The core
 logic remains identical, while the implementation swaps based on the
 environment:
 
