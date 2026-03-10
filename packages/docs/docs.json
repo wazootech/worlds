@@ -26,44 +26,38 @@
         "icon": "code",
         "groups": [
           {
-            "group": "Get started",
-            "pages": ["intro", "quickstart"]
+            "group": "Setup",
+            "pages": ["getting-started/quickstart", "overview/introduction"]
           },
           {
-            "group": "Command-line interface",
-            "pages": ["cli"]
+            "group": "Academy basics",
+            "pages": ["overview/academy", "overview/history"]
           }
         ]
       },
       {
-        "tab": "Academy",
+        "tab": "Guides",
         "icon": "graduation-cap",
         "groups": [
           {
-            "group": "Fundamentals",
+            "group": "Academy lessons",
             "pages": [
-              "academy/index",
-              {
-                "group": "Chapter 1: Fundamentals",
-                "pages": ["academy/world-memory", "academy/knowledge-graphs"]
-              },
-              {
-                "group": "Chapter 2: Discovery",
-                "pages": ["academy/semantic-search"]
-              }
+              "guides/world-memory",
+              "guides/knowledge-graphs",
+              "guides/semantic-search"
             ]
-          },
-          {
-            "group": "History",
-            "pages": ["academy/history"]
           }
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Reference",
         "icon": "book-open",
         "openapi": "openapi.yaml",
         "groups": [
+          {
+            "group": "CLI",
+            "pages": ["reference/cli"]
+          },
           {
             "group": "Endpoints",
             "pages": [
@@ -96,11 +90,43 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/intro"
+      "destination": "/overview/introduction"
     },
     {
-      "source": "/overview",
-      "destination": "/intro"
+      "source": "/intro",
+      "destination": "/overview/introduction"
+    },
+    {
+      "source": "/quickstart",
+      "destination": "/getting-started/quickstart"
+    },
+    {
+      "source": "/academy",
+      "destination": "/overview/academy"
+    },
+    {
+      "source": "/academy/index",
+      "destination": "/overview/academy"
+    },
+    {
+      "source": "/academy/history",
+      "destination": "/overview/history"
+    },
+    {
+      "source": "/academy/world-memory",
+      "destination": "/guides/world-memory"
+    },
+    {
+      "source": "/academy/knowledge-graphs",
+      "destination": "/guides/knowledge-graphs"
+    },
+    {
+      "source": "/academy/semantic-search",
+      "destination": "/guides/semantic-search"
+    },
+    {
+      "source": "/cli",
+      "destination": "/reference/cli"
     }
   ],
   "logo": {
