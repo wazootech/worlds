@@ -32,13 +32,13 @@
           {
             "group": "Get Started",
             "pages": [
-              "getting-started/quickstart",
-              "getting-started/authentication"
+              "overview/getting-started/quickstart",
+              "overview/getting-started/authentication"
             ]
           },
           {
             "group": "Tutorials",
-            "pages": ["getting-started/agent-integration"]
+            "pages": ["overview/getting-started/agent-integration"]
           },
           {
             "group": "Concepts",
@@ -54,7 +54,7 @@
             "pages": ["overview/academy"]
           },
           {
-            "group": "Reference",
+            "group": "Background",
             "pages": [
               "overview/whitepaper",
               "overview/use-cases",
@@ -83,6 +83,7 @@
               },
               "guides/data-integration",
               "guides/querying",
+              "guides/hosting/production",
               "guides/monitoring",
               "guides/knowledge-graphs",
               "guides/semantic-search"
@@ -91,10 +92,10 @@
           {
             "group": "Examples",
             "pages": [
-              "examples/code-samples",
-              "examples/datasets",
-              "examples/tutorials",
-              "examples/integrations"
+              "guides/examples/code-samples",
+              "guides/examples/datasets",
+              "guides/examples/tutorials",
+              "guides/examples/integrations"
             ]
           }
         ]
@@ -139,7 +140,7 @@
             "pages": [
               "contributing/developer-guide",
               "contributing/guidelines",
-              "best-practices",
+              "contributing/best-practices",
               "contributing/code-of-conduct",
               "contributing/getting-help"
             ]
@@ -161,18 +162,6 @@
     {
       "source": "/",
       "destination": "/overview/introduction"
-    },
-    {
-      "source": "/intro",
-      "destination": "/overview/introduction"
-    },
-    {
-      "source": "/quickstart",
-      "destination": "/getting-started/quickstart"
-    },
-    {
-      "source": "/cli",
-      "destination": "/reference/cli"
     }
   ],
   "logo": {
