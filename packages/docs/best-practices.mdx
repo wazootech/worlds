@@ -193,7 +193,18 @@ Use callouts by severity:
 - **Info:** Contextual info.
 - **Tip:** Best practices.
 - **Warning:** Destructive actions or gotchas.
-- **Success/Check:** Confirmation state.
+- **Check:** Confirmation state or completion.
+- **Danger:** High-risk actions or critical errors.
+
+Example syntax:
+```mdx
+<Note>This adds a note in the content</Note>
+```
+
+For specific icons or colors, use the custom `Callout` component:
+```mdx
+<Callout icon="key" color="#FFC107">This is a custom callout</Callout>
+```
 
 ### Reusable content (snippets)
 
