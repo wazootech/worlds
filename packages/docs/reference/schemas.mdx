@@ -12,20 +12,20 @@ management logic from world-specific data.
 
 The system manages two distinct types of database instances:
 
-- **Main database** (single instance):
+- **Main database**, maintained as a single instance:
   - **Tables**: `organizations`, `worlds`, `service_accounts`, `invites`,
     `rate_limits`, `usage`.
-  - **Initialization**: Created by `initializeDatabase(client)` in
-    `lib/database/init.ts`.
-- **World databases** (one per world):
-  - **Tables**: `chunks` (with FTS and vector index), `triples`, `logs`.
-  - **Initialization**: Created by `initializeDatabase(client)` upon world
-    creation.
+  - **Initialization**: The core database initialization service handles
+    identity.
+- **World databases**, initialized for each specific world:
+  - **Tables**: `chunks`, including FTS and vector indices, `triples`, and
+    `logs`.
+  - **Initialization**: Handled dynamically upon world creation.
 
 ## DatabaseManager interface
 
-Defined in `packages/server/lib/database/manager.ts`, the `DatabaseManager`
-interface provides a common API for world database lifecycle management:
+The `DatabaseManager` interface provides a common API for world database
+lifecycle management:
 
 - `create(id: string)`: Creates a new world database and initializes its schema.
 - `get(id: string)`: Retrieves a `ManagedDatabase` instance for the specified
@@ -34,8 +34,7 @@ interface provides a common API for world database lifecycle management:
 
 ### Implementations
 
-- **FileDatabaseManager**: Stores each world as `{id}.db` in the
-  `WORLDS_BASE_DIR`.
+- **FileDatabaseManager**: Stores each world as a persistent database file.
 - **TursoDatabaseManager**: Interfaces with the Turso API for remote database
   management.
 - **MemoryDatabaseManager**: Utilizes in-memory clients for testing.
@@ -45,7 +44,7 @@ interface provides a common API for world database lifecycle management:
 The platform uses a structured approach to SQL management and type safety:
 
 - **Queries**: Live in `.sql` files near their respective resources.
-- **Code generation**: The `sql-embedder` utility generates `queries.sql.ts`
-  files. Run `deno task generate` to update these files.
-- **DDL execution**: `core/init.ts` imports table and index names from generated
-  files to ensure correct execution order.
+- **Code generation**: An internal utility embeds SQL queries into TypeScript
+  constants to ensure runtime availability.
+- **DDL execution**: The system orchestrates table and index creation during
+  initialization to ensure correct execution order.

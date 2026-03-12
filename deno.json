@@ -16,6 +16,7 @@
     "fmt": "deno fmt",
     "check": "deno check",
     "publish:dry": "deno publish --dry-run --allow-dirty",
+    "reset": "npm run reset --prefix ./packages/console",
     "precommit:console": "npm run precommit --prefix packages/console",
     "precommit:docs": "npm run precommit --prefix packages/docs",
     "precommit": {

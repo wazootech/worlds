@@ -34,10 +34,10 @@ Run common tasks from the root of the repository using Deno:
     The console allocates ports starting from `8001`. If you encounter conflicting services or lingering processes, run:
 
     ```bash
-    npm run nuke
+    deno task reset
     ```
 
-    This command terminates all local Deno processes and resets the development lock. Alternatively, adjust the `apiBaseUrl` in `data/workos.json` and restart the console.
+    This command terminates all local Deno processes and resets the development lock. Alternatively, adjust the API base URL in the identity configuration and restart the console.
 
   </Accordion>
 </AccordionGroup>

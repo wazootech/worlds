@@ -11,14 +11,14 @@ To develop on the Worlds platform, install the following tools:
 
 ## Setup the console
 
-The console orchestrates all other resources. In local mode, it uses
-`data/workos.json` as a mock identity provider.
+The console orchestrates all other resources. In local mode, it uses a mock
+identity provider file.
 
 <Steps>
   <Step title="Clone and install">
     ```bash
     git clone https://github.com/wazootech/worlds.git
-    cd worlds/packages/console
+    cd worlds # Navigate to the Console directory
     npm install
     ```
   </Step>
@@ -46,18 +46,18 @@ The console orchestrates all other resources. In local mode, it uses
 
 Once the console runs, it automatically manages local Worlds API processes.
 
-- **Automatic boot**: On startup, the console checks `data/workos.json` and
-  spawns a `deno serve` process for every local organization.
+- **Automatic boot**: On startup, the console checks the local identity database
+  and spawns a server process for every local organization.
 - **Dynamic provisioning**: When you create a new organization in the console
   UI:
   1. The system generates a local API key.
-  2. The system creates a local SQLite database in `data/{org_id}/worlds.db`.
+  2. The system creates a local organization database.
   3. The system spawns a new Worlds API server on an available local port.
 
 ## Customizing the local user
 
 In local development mode, you can customize the identity of the mock user
-session by setting environment variables in `packages/console/.env`:
+session by setting environment variables in the Console configuration file:
 
 ```dotenv
 LOCAL_USER_ID="admin"
@@ -66,8 +66,8 @@ LOCAL_USER_FIRST_NAME="System"
 LOCAL_USER_LAST_NAME="Admin"
 ```
 
-The system uses these values to initialize the `data/workos.json` file if it
-does not exist.
+The system uses these values to initialize the mock identity file if it does not
+exist.
 
 ## Configuration reference
 

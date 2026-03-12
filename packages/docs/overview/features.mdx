@@ -13,12 +13,12 @@ organizes information as a **dynamic, queryable model of reality**.
 To understand how Worlds powers intelligent agents, you must understand the
 lifecycle of data moving through the platform.
 
-### Ingestion (input)
+### Ingestion
 
 Raw information enters the system from user chats, GitHub repositories, or PDFs.
 At this stage, the data remains unstructured human language.
 
-### Processing (neuro-symbolic engine)
+### Neuro-symbolic engine
 
 The Worlds engine uses LLMs to extract meaning and entities. It translates
 ambiguous language into structured **triples** (subject → predicate → object).
@@ -29,7 +29,7 @@ evolves through:
 - **Extending** existing entities with new context.
 - **Inferring** hidden relationships via symbolic reasoning.
 
-### Retrieval (output)
+### Retrieval
 
 When an agent needs context, it performs a **hybrid search**. This process mixes
 semantic vector similarity with deterministic graph traversal to pull a
@@ -47,14 +47,15 @@ graph LR
 
 ## Storage engine
 
-To achieve both semantic flexibility and structural precision, we employ a
-hybrid storage strategy.
+To achieve both semantic flexibility and structural precision, the storage
+engine employs a hybrid strategy.
 
-### n3 (hot memory)
+Worlds utilizes an in-memory, WASM-compiled RDF store that supports SPARQL. The
+infrastructure supports any RDF store—including Apache Jena Fuseki or a local
+file system—that implements `rdf-patch` forward synchronization.
 
-An in-memory, WASM-compiled RDF store that supports SPARQL. This allows for
-complex graph pattern matching (e.g., recursive queries, property paths) that
-SQL and vectors cannot easily handle.
+`n3` is the preferred store because it runs entirely within the JavaScript
+runtime, providing isolated, high-performance in-memory state.
 
 - **Pre-loading**: WASM modules are pre-loaded to ensure "warm" isolates.
 - **Hydration**: The SQLite "system of record" hydrates the graph state upon
@@ -64,28 +65,28 @@ SQL and vectors cannot easily handle.
 
 ### SQLite storage
 
-We utilize a hybrid schema for persistence to avoid the overhead of
+The system utilizes a hybrid schema for persistence to avoid the overhead of
 general-purpose SPARQL engines on disk while maintaining semantic integrity.
 
 - **`triples` table**: Stores atomic units of knowledge (Subject, Predicate,
   Object).
 - **`chunks` table**: Stores overlapping text segments with vector embeddings
-  (targeting string literals) and ranks derived from triple data.
+  targeting string literals, and ranks derived from triple data.
 - **`entity_types` table**: An optimized table for mapping entities to their
   `rdf:type` IRIs, enabling rapid structural filtering.
 - **`blobs` table**: Handles large-scale RDF data and file-based state.
 
 ### Hybrid search and RRF
 
-We utilize **Reciprocal Rank Fusion (RRF)** to combine results from distinct
-indices into a single, unified relevance ranking:
+The platform utilizes **Reciprocal Rank Fusion (RRF)** to combine results from
+distinct indices into a single, unified relevance ranking:
 
-- **Semantic search (vector index)**: Captures conceptual meaning using
+- **Semantic search**: Captures conceptual meaning using a vector index and
   high-dimensional embeddings (1536-dim).
 - **Keyword search (FTS5)**: Provides exact term matching using the BM25 ranking
   algorithm.
 - **Graph context**: Restricts search results based on structural RDF
-  relationships (subject/predicate filters).
+  relationships using subject or predicate filters.
 
 The fusion algorithm follows the industry-standard RRF formula:
 

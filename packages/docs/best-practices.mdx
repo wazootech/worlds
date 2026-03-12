@@ -138,6 +138,11 @@ Maintain a professional, authoritative, and direct tone.
   descriptions (for example, `Processing (neuro-symbolic engine)`). Instead,
   choose optimal wording and forego the parentheses. Use parentheses only for
   direct relationships, such as defining acronyms.
+- **Fragile file references**: Avoid referencing specific internal codebase
+  paths or filenames (for example, `packages/server/main.ts`) in user-facing
+  documentation. These references break as the project evolves. Instead, use
+  functional descriptions like "the server entrypoint" or "the database
+  initialization service."
 - **AI-typical patterns**: Avoid generic introductions, stilted phrasing, and
   concluding summaries that restate previous sections.
 

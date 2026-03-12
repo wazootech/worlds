@@ -11,15 +11,14 @@ core data model and SPARQL for structured querying.
 
 The system manages RDF data through several core utilities:
 
-- **`lib/blob/n3.ts`**: Provides utilities to convert between RDF blobs (e.g.,
+- **N3 utility**: Provides functions to convert between RDF blobs (e.g.,
   N-Quads strings) and in-memory N3 stores.
-- **`lib/blob/sparql.ts`**: The `sparql(blob, query, handler)` function executes
-  SPARQL queries using the Comunica engine over an N3 store.
+- **SPARQL utility**: Executes SPARQL queries using the Comunica engine over an
+  N3 store.
 
 ## RDF patching
 
-Centralized in `lib/rdf-patch/mod.ts`, the
-`handlePatch(client, embeddings, patches)` function processes mutations for the
+Centralized in the core patch service, the system processes mutations for the
 world database:
 
 1.  **Deterministic identification**: Skolemizes and hashes each quad to a

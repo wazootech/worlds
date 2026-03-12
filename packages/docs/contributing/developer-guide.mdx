@@ -15,8 +15,8 @@ resources and services within the core and world-specific database scopes.
 
 ### Directory structure
 
-Each resource resides under `packages/server/lib/database/core/` or
-`packages/server/lib/database/world/` and contains:
+Each resource resides within the internal database service directories and
+contains:
 
 - **`queries.sql`**: DDL and CRUD operations.
 - **`queries.sql.ts`**: Generated string constants for SQL queries.
@@ -30,11 +30,11 @@ Follow this checklist when adding new resources, tables, or routes:
 
 <AccordionGroup>
   <Accordion title="New resource">
-    - [ ] Create the `databases/core/<name>/` directory.
+    - [ ] Create the database resource directory.
     - [ ] Add `queries.sql` with DDL and CRUD operations.
     - [ ] Run `deno task generate` to update SQL embedder files.
     - [ ] Create `schema.ts` and `service.ts`.
-    - [ ] Register the table in `initializeDatabase` within `core/init.ts`.
+    - [ ] Register the table in the database initialization service.
     - [ ] Implement unit tests in `service.test.ts`.
   </Accordion>
 
@@ -47,7 +47,7 @@ Follow this checklist when adding new resources, tables, or routes:
   <Accordion title="New route">
     - [ ] Create `routes/v1/.../route.ts`.
     - [ ] Implement a default export returning a `Router` instance.
-    - [ ] Register the module path in `server.ts`.
+    - [ ] Register the module path in the server configuration.
     - [ ] Implement authentication, validation, and error handling.
     - [ ] Add integration tests in `route.test.ts`.
   </Accordion>
@@ -55,8 +55,8 @@ Follow this checklist when adding new resources, tables, or routes:
 
 ## Routing and API
 
-The platform uses a modular routing system. In `server.ts`, the `routes` array
-lists available modules.
+The platform uses a modular routing system, listing available modules in the
+server configuration.
 
 ### Route handler pattern
 
@@ -77,7 +77,7 @@ reliability.
 
 ### TestContext
 
-Defined in `lib/testing/mod.ts`, the `TestContext` provides an isolated
+The `TestContext` provided by the testing utilities module provides an isolated
 environment:
 
 - **Isolated main database**: Builds an in-memory main client for each session.

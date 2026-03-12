@@ -4,9 +4,9 @@ description: "High-level diagram and explanation of the Worlds architecture."
 ---
 
 The Worlds platform utilizes a managed neuro-symbolic infrastructure designed
-for edge-distributed, agentic memory. It separates a **Control Plane** (Console)
-for management from a **Data Plane** (Worlds API) for high-performance
-execution.
+for edge-distributed, agentic memory. It separates a **Control Plane**, or
+Console, for management from a **Data Plane**, or Worlds API, for
+high-performance execution.
 
 ## High-level overview
 
@@ -57,13 +57,13 @@ graph LR
 
 The platform splits operations into two primary layers:
 
-### 1. Control plane (`packages/console`)
+### 1. Control plane
 
 The **Management Console** acts as the system's brain. It manages identity
-(WorkOS), handles organization-level provisioning, and orchestrates World Server
-instances.
+through WorkOS, handles organization-level provisioning, and orchestrates World
+Server instances.
 
-### 2. Data plane (`packages/server`)
+### 2. Data plane
 
 The **Worlds API Server** handles RDF graph management, SPARQL execution, and
 hybrid search. This is the data plane where your information lives.
@@ -81,13 +81,13 @@ flowchart TD
     classDef process fill:#F59E0B,stroke:#78350F,stroke-dasharray: 5 5,color:#333;
 
     subgraph Sources ["DATA SOURCES & INTEGRATIONS"]
-        RAW["Raw Data<br/>(Text, Files, Chats)"]
-        CLOUD["Cloud Connectors<br/>(Notion, Obsidian, GDrive)"]
+        RAW["Raw Data<br/>Text, Files, Chats"]
+        CLOUD["Cloud Connectors<br/>Notion, Obsidian, GDrive"]
     end
 
     subgraph Ingestion ["AGENT-NATIVE SDK"]
-        SDK["Worlds SDK<br/>(search / sparql / discover)"]
-        MCP["MCP Protocol<br/>(Claude, Cursor, Gemini)"]
+        SDK["Worlds SDK<br/>search / sparql / discover"]
+        MCP["MCP Protocol<br/>Claude, Cursor, Gemini"]
     end
 
     subgraph Core ["NEURO-SYMBOLIC REASONING"]
@@ -102,9 +102,9 @@ flowchart TD
     end
 
     subgraph State ["WORLD STATE"]
-        BLOBS[("RDF Store<br/>(System of Record)")]
-        TRIPLES[("triples<br/>(SQLite table)")]
-        CHUNKS[("chunks<br/>(SQLite table)")]
+        BLOBS[("RDF Store<br/>System of Record")]
+        TRIPLES[("triples<br/>SQLite table")]
+        CHUNKS[("chunks<br/>SQLite table")]
     end
 
     %% Data Flow
@@ -145,20 +145,20 @@ graph LR
     W2 --> W2DB[(World 2 DB)]
 ```
 
-### Organizations (Tenant Level)
+### Organizations
 
-An Organization is the top-level grouping managed by the Console. Provisioning
+The Console manages Organizations as top-level groupings. Provisioning
 an Organization initializes a dedicated API server instance, a primary metadata
 database, and an admin security boundary.
 
-### Worlds (Domain Level)
+### Worlds
 
-A World is a specific context or graph managed by the Organization's server.
+The Organization's server manages each World as a specific context or graph.
 
 - **Dedicated Storage**: Each World maintains its own secondary libSQL database
   for triples and embeddings.
-- **Isolation**: Worlds are sub-resources accessed via the Org's base URL (e.g.,
-  `/v1/worlds/{id}`), ensuring zero cross-contamination.
+- **Isolation**: Worlds are sub-resources accessed via the Org's base URL, such
+  as `/v1/worlds/{id}`, ensuring zero cross-contamination.
 
 ## Monorepo topology
 
@@ -172,7 +172,7 @@ graph TD
     SDK["@wazoo/worlds-sdk"]
     AISDK["@wazoo/worlds-ai-sdk"]
     CLI["@wazoo/worlds-cli"]
-    CONSOLE["worlds-console (Next.js)"]
+    CONSOLE["worlds-console<br/>Next.js"]
 
     ROOT --> SERVER
     ROOT --> SDK
@@ -191,25 +191,21 @@ graph TD
 The server follows a modular layout organized by service and resource:
 
 ```text
-packages/server/
-├── context.ts         # ServerContext shared by every route
-├── lib/               # Shared logic and utilities
-│   ├── ai-sdk/        # AI SDK integration
-│   ├── blob/          # RDF/SPARQL blob and store handling
-│   ├── database/      # Database layer and managers
-│   ├── embeddings/    # Embeddings interface and implementations
-│   ├── errors/        # ErrorResponse helpers
-│   ├── rdf-patch/     # RDF patch application logic
-│   └── testing/       # TestContext and testing utilities
-├── main.ts            # Deno serve entrypoint
-├── middleware/        # auth.ts, rate-limit.ts
-├── models/            # OpenAPI models and shared types
-├── routes/            # v1 API routes
-└── server.ts          # createServer, createServerContext
+The Worlds API Server follows a modular layout organized by service and
+resource, separating core reasoning logic from the persistence and transport
+layers.
+
+Key directories include:
+
+- `lib/`: Shared logic for RDF/SPARQL handling, database management, and
+  embeddings.
+- `middleware/`: Authentication and rate-limiting logic.
+- `models/`: API models and shared types.
+- `routes/`: Implementation of the v1 API endpoints.
 ```
 
-- **Entrypoints**: `packages/server/main.ts` (server) and `packages/cli/main.ts`
-  (CLI).
+- **Entrypoints**: The server and CLI provide dedicated entrypoints for
+  initialization and CLI command execution.
 - **Import alias**: The `#/` alias maps to `./` within each package.
 
 ---
@@ -230,11 +226,11 @@ A key design feature is the use of hot-swappable resource managers. The core
 logic remains identical, while the implementation swaps based on the
 environment:
 
-| Resource     | Local dev implementation   | Production implementation |
-| :----------- | :------------------------- | :------------------------ |
-| **Compute**  | Local Deno child processes | Deno Deploy               |
-| **Storage**  | Local SQLite files     | Turso (libSQL)            |
-| **Identity** | Mock workos.json file | WorkOS AuthKit            |
+| Resource     | Local dev implementation | Production implementation |
+| :----------- | :----------------------- | :------------------------ |
+| **Compute**  | Local child processes    | Managed edge runtime      |
+| **Storage**  | Local SQLite files       | Remote libSQL             |
+| **Identity** | Mock identity file       | Managed Identity Service  |
 
 This pattern allows the entire stack to run locally with zero cloud
 dependencies.
