@@ -38,7 +38,7 @@
           },
           {
             "group": "Tutorials",
-            "pages": ["getting-started/first-steps"]
+            "pages": ["getting-started/agent-integration"]
           },
           {
             "group": "Concepts",
