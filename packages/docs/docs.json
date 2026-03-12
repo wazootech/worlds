@@ -31,7 +31,10 @@
           },
           {
             "group": "Get Started",
-            "pages": ["getting-started/quickstart"]
+            "pages": [
+              "getting-started/quickstart",
+              "getting-started/authentication"
+            ]
           },
           {
             "group": "Tutorials",
@@ -40,6 +43,7 @@
           {
             "group": "Concepts",
             "pages": [
+              "overview/philosophy",
               "overview/architecture",
               "overview/world-memory",
               "overview/features"
@@ -115,6 +119,10 @@
           {
             "group": "Schemas",
             "pages": ["reference/schemas"]
+          },
+          {
+            "group": "System Internals",
+            "pages": ["reference/request-flow", "reference/database-layer"]
           },
           {
             "group": "Changelog",

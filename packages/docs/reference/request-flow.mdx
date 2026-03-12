@@ -1,0 +1,76 @@
+---
+title: "Request flow"
+description: "Startup process and per-request handling logic."
+---
+
+The Worlds API server is built on a modular architecture designed for
+predictable execution and high-performance graph operations at the edge.
+
+## Startup process
+
+The server initialization follows a strict sequence to ensure all resources are
+available before handling the first request.
+
+<Steps>
+  <Step title="Environment setup">
+    `main.ts` reads environment variables (e.g., `LIBSQL_URL`, `ADMIN_API_KEY`, `GOOGLE_API_KEY`) and initializes the server context.
+  </Step>
+
+<Step title="Context creation">
+  The server builds a single `ServerContext`. This includes creating the primary
+  LibSQL client, initializing the main metadata database, and setting up the
+  embeddings provider (e.g., Gemini).
+</Step>
+
+<Step title="Router configuration">
+  The engine builds a router and dynamically registers handlers for each defined
+  route.
+</Step>
+
+  <Step title="Server initialization">
+    The entry point exports a fetch handler, making the server compatible with Deno Deploy and other edge runtimes.
+  </Step>
+</Steps>
+
+## Per-request cycle
+
+Every incoming request passes through a standardized lifecycle to maintain
+security and consistency.
+
+<Steps>
+  <Step title="Routing">
+    The router matches the request URL and method to a specific handler module.
+  </Step>
+
+<Step title="Authorization">
+  If the endpoint is secured, the server verifies the `Authorization: Bearer`
+  token against the stored API keys or environment configuration.
+</Step>
+
+<Step title="Validation">
+  Request bodies and query parameters are validated via Zod schemas to ensure
+  type-safety before entering the logic layer.
+</Step>
+
+<Step title="Execution">
+  The handler uses the `ServerContext` to interact with services. For
+  world-specific operations, it resolves the appropriate per-world database
+  client.
+</Step>
+
+  <Step title="Response">
+    The system returns a serialized JSON response or a standardized error response.
+  </Step>
+</Steps>
+
+## Server context
+
+The `ServerContext` is a shared object that provides access to core
+infrastructure:
+
+- **Embeddings**: Interface for generating vectors from text.
+- **LibSQL**:
+  - **Database**: Client for the primary metadata database.
+  - **Manager**: Handles the creation and resolution of per-world database
+    files.
+- **Admin**: Security configuration for account-level operations.

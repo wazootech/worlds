@@ -1,0 +1,54 @@
+---
+title: "Database layer"
+description: "Scoped database management and persistence strategies."
+---
+
+Worlds utilizes a tiered storage strategy to maintain performance and isolation
+across multi-tenant environments.
+
+## Database scopes
+
+The system separates metadata from graph data using two distinct database
+scopes.
+
+### Main database
+
+The single "Ground Truth" database for the entire platform instance.
+
+- **Tables**: `organizations`, `worlds`, `service_accounts`, `invites`,
+  `rate_limits`.
+- **Role**: Stores account management, provisioning metadata, and usage
+  tracking.
+
+### World databases
+
+Dedicated databases for each individual knowledge graph.
+
+- **Tables**: `triples`, `chunks`, `logs`.
+- **Role**: Stores high-fidelity RDF statements and their associated vector
+  embeddings.
+- **Isolation**: Each world operates in its own SQLite or Turso namespace,
+  ensuring zero data leakage between contexts.
+
+## Database manager
+
+The `DatabaseManager` interface abstracts the persistence layer, allowing the
+server to operate over different storage backends.
+
+- **FileDatabaseManager**: Stores world-specific SQLite files in a local
+  directory.
+- **TursoDatabaseManager**: Manages remote databases via the Turso API for
+  distributed edge deployments.
+- **MemoryDatabaseManager**: Leverages in-memory clients for transient testing
+  environments.
+
+## Code generation
+
+To ensure type-safety and performance, Worlds utilizes the `sql-embedder` tool.
+
+1.  **Raw SQL**: Queries are written in `.sql` files within the resource
+    directories.
+2.  **Embedding**: Running `deno task generate` embeds these queries into
+    TypeScript constants.
+3.  **Execution**: Services import these constants to run DDL and DML
+    operations, preventing runtime syntax errors and obfuscation.

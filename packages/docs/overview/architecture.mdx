@@ -3,49 +3,54 @@ title: "Architecture"
 description: "High-level diagram and explanation of the Worlds architecture."
 ---
 
-The Worlds platform utilizes a modular, polymorphic architecture designed for
-scalability and local-first development. It unifies a control plane (Console)
-with a high-performance data plane (API).
+The Worlds platform utilizes a managed neuro-symbolic infrastructure designed
+for edge-distributed, agentic memory. It separates a **Control Plane** (Console)
+for management from a **Data Plane** (Worlds API) for high-performance
+execution.
 
 ## High-level overview
 
+The following diagram illustrates the relationship between the management layer,
+the reasoning engine, and the isolated persistent state.
+
 ```mermaid
 graph LR
-    subgraph Users ["End Users"]
+    subgraph Clients ["Ingestion"]
         direction TB
-        Dev([Developer / Human])
-        Agent([AI Agent / Bot])
+        Dev([Developer])
+        Agent([AI Agent])
+        SDK["Worlds SDK"]
     end
 
     subgraph Control ["Control Plane"]
         direction TB
         Console[Console]
-        Auth[Auth Service]
+        Auth[Identity Service]
     end
 
-    subgraph Edge ["Worlds"]
+    subgraph Data ["Data Plane (World Engine)"]
         direction TB
-        Guard{Auth Guard}
-        N3[("n3<br/><i>Hot Memory</i>")]
+        Engine["Reasoning Engine<br/><i>(Hot RDF Memory)</i>"]
+        Sync["Forward-Sync"]
     end
 
-    subgraph Storage ["Database"]
+    subgraph State ["Persistence"]
         direction TB
-        SysDB[("System DB")]
-        WorldDB[("Per-World DBs")]
+        DB[("Isolated libSQL DB")]
     end
 
     %% Human/Control Flow
     Dev ==>|HTTPS| Console
-    Console <==>|Mgmt API| Guard
+    Console <==>|Management| Auth
 
     %% Agent/Data Flow
-    Agent <==>|HTTPS / SDK| Guard
-    Guard <==>|Authorized| N3
+    Agent <==>|SDK / MCP| Engine
+    SDK --- Engine
 
     %% Internal Processing
-    N3 <-->|Hybrid Search| WorldDB
-    N3 <-->|Hydrate / Flush| WorldDB
+    Engine -.->|Hydrate / Flush| DB
+    Engine -->|Patches| Sync
+    Sync -->|Index Update| DB
 ```
 
 ## Control vs. data plane
@@ -62,6 +67,98 @@ instances.
 
 The **Worlds API Server** handles RDF graph management, SPARQL execution, and
 hybrid search. This is the data plane where your information lives.
+
+## Data plane deep dive
+
+The World Engine follows a multi-tiered data transformation journey, fusing
+diverse input sources into a verifiable neuro-symbolic knowledge state.
+
+```mermaid
+flowchart TD
+    %% Global Styling
+    classDef engine fill:#D97706,stroke:#78350F,stroke-width:2px,color:#fff;
+    classDef persistence fill:#1a1510,stroke:#D97706,stroke-width:1px,color:#f2f2f2;
+    classDef process fill:#F59E0B,stroke:#78350F,stroke-dasharray: 5 5,color:#333;
+
+    subgraph Sources ["DATA SOURCES & INTEGRATIONS"]
+        RAW["Raw Data<br/>(Text, Files, Chats)"]
+        CLOUD["Cloud Connectors<br/>(Notion, Obsidian, GDrive)"]
+    end
+
+    subgraph Ingestion ["AGENT-NATIVE SDK"]
+        SDK["Worlds SDK<br/>(search / sparql / discover)"]
+        MCP["MCP Protocol<br/>(Claude, Cursor, Gemini)"]
+    end
+
+    subgraph Core ["NEURO-SYMBOLIC REASONING"]
+        SPARQL["Comunica Engine<br/>(SPARQL 1.1/1.2)"]
+        PROXY["Forward-Sync Proxy<br/>(Mutation Interceptor)"]
+    end
+
+    subgraph Pipeline ["RDF-PATCH PIPELINE"]
+        SKOLEM["Skolemization (RDFC-1.0)"]
+        EMBED["Multimodal Embeddings"]
+        CHUNK["Dynamic Chunking"]
+    end
+
+    subgraph State ["WORLD STATE"]
+        BLOBS[("RDF Store<br/>(System of Record)")]
+        TRIPLES[("triples<br/>(SQLite table)")]
+        CHUNKS[("chunks<br/>(SQLite table)")]
+    end
+
+    %% Data Flow
+    RAW --> SDK
+    CLOUD --> SDK
+    SDK <--> MCP
+
+    SDK -->|SPARQL Update| SPARQL
+    SPARQL --> PROXY
+
+    PROXY -->|Quad Patches| SKOLEM
+    SKOLEM --> EMBED
+    EMBED --> CHUNK
+
+    SKOLEM -->|Atomic Commit| TRIPLES
+    CHUNK -->|Atomic Commit| CHUNKS
+
+    SPARQL -->|Serialized Flush| BLOBS
+
+    %% Assignments
+    class Core,SPARQL,N3 engine;
+    class State,BLOBS,TRIPLES,CHUNKS persistence;
+    class Pipeline,SKOLEM,EMBED,CHUNK process;
+```
+
+## Resource hierarchy
+
+Understanding the relationship between **Organizations** and **Worlds** is key
+to managing isolation and scaling.
+
+```mermaid
+graph LR
+    Org[Organization] --> Server[API Server]
+    Org --> MetaDB[(Primary DB)]
+    Server --> W1[World 1]
+    Server --> W2[World 2]
+    W1 --> W1DB[(World 1 DB)]
+    W2 --> W2DB[(World 2 DB)]
+```
+
+### Organizations (Tenant Level)
+
+An Organization is the top-level grouping managed by the Console. Provisioning
+an Organization initializes a dedicated API server instance, a primary metadata
+database, and an admin security boundary.
+
+### Worlds (Domain Level)
+
+A World is a specific context or graph managed by the Organization's server.
+
+- **Dedicated Storage**: Each World maintains its own secondary libSQL database
+  for triples and embeddings.
+- **Isolation**: Worlds are sub-resources accessed via the Org's base URL (e.g.,
+  `/v1/worlds/{id}`), ensuring zero cross-contamination.
 
 ## Monorepo topology
 
@@ -120,74 +217,8 @@ packages/server/
 ## Request flow
 
 The Worlds server follows a structured lifecycle for initialization and request
-handling.
-
-## Startup process
-
-The server initialization sequence involves setting up the environment,
-database, and routing layers.
-
-<Steps>
-  <Step title="Configure environment">
-    `main.ts` reads environment variables and calls `createServerContext(config)`.
-  </Step>
-
-<Step title="Create context">
-  `createServerContext` in `server.ts` performs the following actions: - Creates
-  a single LibSQL **main client**. - Calls `initializeDatabase(mainClient)`. -
-  Builds the **embeddings** interface. - Instantiates **WorldsService** and
-  selects a **DatabaseManager**. - Returns the **ServerContext**.
-</Step>
-
-<Step title="Configure router">
-  `createServer(serverContext)` builds a single **Router** and dynamically
-  registers route handlers.
-</Step>
-
-  <Step title="Initialize server">
-    `main.ts` exports `{ fetch: (request) => app.fetch(request) }` for `Deno.serve`.
-  </Step>
-</Steps>
-
-## Per-request flow
-
-Every incoming HTTP request passes through a standard processing pipeline.
-
-<Steps>
-  <Step title="Route request">
-    The router matches the incoming request and invokes the corresponding handler.
-  </Step>
-
-<Step title="Inject context">
-  Handlers receive a context object containing the `request` and path `params`.
-</Step>
-
-<Step title="Authorize request">
-  Handlers call `authorizeRequest(serverContext, request)` to verify the Bearer
-  token.
-</Step>
-
-<Step title="Execute business logic">
-  Handlers utilize `ServerContext` and resource services. They resolve
-  world-specific clients via `serverContext.libsql.manager.get(worldId)`.
-</Step>
-
-  <Step title="Generate response">
-    The system generates success responses using `Response.json(...)` and error responses using `ErrorResponse` helpers.
-  </Step>
-</Steps>
-
-## ServerContext
-
-Defined in `packages/server/context.ts`, the `ServerContext` provides shared
-resources to all handlers:
-
-- **`embeddings: Embeddings`**: Interface for generating text embeddings.
-- **`libsql`**:
-  - **`database: Client`**: Main database client for management operations.
-  - **`manager: DatabaseManager`**: Manager for world-specific database
-    instances.
-- **`admin?`**: `{ apiKey: string }` - Required for production admin access.
+handling. For a detailed breakdown of the startup process and per-request cycle,
+refer to the [Request flow](/reference/request-flow) reference.
 
 ---
 
