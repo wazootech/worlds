@@ -35,7 +35,7 @@ knowledge retrieval.
 
 ## Introduction
 
-### Context: The ephemeral nature of LLMs
+### LLM ephemeral nature
 
 Transformer-based models provide agents with fluent communication skills and
 broad world knowledge frozen in their weights. However, these models are
@@ -43,7 +43,7 @@ stateless. Once a context window closes, the thought is lost. For an AI agent to
 operate autonomously over long periods, it requires persistent memory that is
 both accessible and mutable.
 
-### Problem: The reasoning gap and fluid intelligence
+### Reasoning gap
 
 Current industry standards rely heavily on **vector databases** to provide
 long-term memory. As identified in benchmarks like **ARC-AGI-3**, true
@@ -61,7 +61,7 @@ environments. The reasoning gap occurs because vector search struggles with:
   hindering the **interoperability** required for a truly personal or autonomous
   AI entity.
 
-### Solution: Worlds
+### Solution
 
 **Worlds** provides **malleable knowledge** within an AI agent's reach. Unlike
 static knowledge bases, "Worlds" are dynamic, graph-based environments that
@@ -78,7 +78,7 @@ world where an assistant knows your relationships, history, and preferences with
 The Worlds platform utilizes a dual-process methodology to bridge the semantic
 intuition of neural networks with the deterministic logic of symbolic systems.
 
-### 1. The Neuro-Symbolic Pipeline
+### 1. Neuro-symbolic pipeline
 
 Data ingestion follows a multi-stage transformation process:
 
@@ -91,7 +91,7 @@ Data ingestion follows a multi-stage transformation process:
 4.  **Semantic Indexing**: Each chunk and triple is indexed simultaneously via
     high-dimensional vector embeddings and full-text search (FTS) keys.
 
-### 2. State Management and Feedback Loops
+### 2. State management
 
 Unlike stateless RAG systems, Worlds treats memory as a dynamic, mutable state.
 The platform implements an **on-policy learning loop** where agent interactions
@@ -101,9 +101,9 @@ specific knowledge sub-graphs without re-indexing the entire dataset.
 
 ---
 
-## System architecture
+## Architecture
 
-### High-level overview
+### Overview
 
 The system follows a segregated Client-Server architecture designed for edge
 deployment. It unifies a Console-managed Control Plane with a high-performance
@@ -153,7 +153,7 @@ graph LR
 - **Wazoo Technologies**: AI R&D lab focused on neuro-symbolic research and the
   development of Worlds.
 
-### Component breakdown
+### Components
 
 - **The SDK**: A canonical TypeScript client that handles authentication and
   type-safe API requests. It acts as the bridge between "neural" code (LLMs) and
@@ -214,7 +214,7 @@ semantic search, the engine implements a multi-index strategy inspired by
   (`PRIMARY KEY (subject, type) WITHOUT ROWID`) for high-speed class-based
   filtering.
 
-### Hybrid search and RRF
+### Hybrid search
 
 The system utilizes **Reciprocal Rank Fusion (RRF)** to combine results from
 distinct indices into a single, unified relevance ranking:
@@ -263,7 +263,7 @@ This approach allows agents to answer complex, high-precision queries like
 _"Find entities located in New York via the graph that are 'cozy' via vector or
 FTS search"_.
 
-### Disambiguation and human-in-the-loop
+### Disambiguation
 
 RRF provides a strong initial ranking, but complex knowledge graphs often
 contain ambiguous entities or near-identical triples. To ensure 100% reasoning
@@ -290,7 +290,7 @@ managing it through rigorous, auditable verification.
 
 ---
 
-## SDK and the "invisible" agent
+## SDK & agents
 
 The World Engine is available to AI agents without requiring developers to write
 raw SPARQL.
@@ -307,7 +307,7 @@ The SDK provides drop-in tools for the Vercel AI SDK and other agent frameworks:
   knowledge.
 - **`generate-iri`**: Creates stable, predictable identifiers for new entities.
 
-### Standardized interoperability (MCP) and plugins
+### Interoperability
 
 Worlds is agent-ready from the first request. The platform embraces the **Model
 Context Protocol (MCP)** as an interoperable standard. As a dedicated context
@@ -318,7 +318,7 @@ source code without hallucinations.
 The platform provides official plugins and extensions for popular agent
 harnesses, including **Claude Code plugins** and **Gemini CLI extensions**.
 
-### Invisible SPARQL agent
+### SPARQL agent
 
 A sophisticated translator agent sits between the developer's natural language
 request and the database. This translator generates valid SPARQL queries from
@@ -329,7 +329,7 @@ of a chat interface.
 
 ---
 
-## API and control plane
+## API & control
 
 The platform exposes a comprehensive REST API organized into Management-oriented
 Control Plane and Graph-oriented Data Plane operations.
@@ -344,7 +344,7 @@ Control Plane and Graph-oriented Data Plane operations.
 - **Search**: Dedicated endpoints for searching statements and text chunks via
   full-text or semantic query parameters.
 
-### Access control and multi-tenancy
+### Access control
 
 - **Dynamic access**: Runtime enforcement of plan limits (e.g., Free vs. Pro
   tiers) without code deployment.
@@ -372,7 +372,7 @@ a user may navigate to a specific world.
 
 ---
 
-## Benchmarks and Performance
+## Benchmarks
 
 ### MemoryBench (Tsinghua University)
 

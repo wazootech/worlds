@@ -8,7 +8,7 @@ description:
 The Worlds platform utilizes a dual-scope database architecture to separate
 management logic from world-specific data.
 
-## Two database scopes
+## Scopes
 
 The system manages two distinct types of database instances:
 
@@ -22,7 +22,7 @@ The system manages two distinct types of database instances:
     `logs`.
   - **Initialization**: Handled dynamically upon world creation.
 
-## DatabaseManager interface
+## DatabaseManager
 
 The `DatabaseManager` interface provides a common API for world database
 lifecycle management:
@@ -39,7 +39,7 @@ lifecycle management:
   management.
 - **MemoryDatabaseManager**: Utilizes in-memory clients for testing.
 
-## SQL and code generation
+## Generation
 
 The platform uses a structured approach to SQL management and type safety:
 

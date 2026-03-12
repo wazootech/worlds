@@ -20,7 +20,7 @@ to build a multi-faceted graph.
 
 </Note>
 
-## System goals and constraints
+## Goals
 
 | Goal            | Description                          | Constraint                     |
 | :-------------- | :----------------------------------- | :----------------------------- |
@@ -28,7 +28,7 @@ to build a multi-faceted graph.
 | **Portability** | Maintain memory across model swaps.  | Decoupled from LLM provider.   |
 | **Fusion**      | Hybrid neural/symbolic reasoning.    | Requires both vector + SPARQL. |
 
-## Technical architecture: neuro-symbolic fusion
+## Architecture
 
 A world functions as a **neuro-symbolic memory container**. It pairs an isolated
 RDF dataset with a high-performance vector search index.
@@ -44,7 +44,7 @@ The symbolic layer uses RDF and SPARQL for deterministic facts. It provides
 deterministic validation, reducing the risk of hallucinations inherent in
 standalone LLMs.
 
-## Symbolic audit trails
+## Audit trails
 
 Worlds eliminates "black box" behavior. Every retrieved fact has a verifiable
 audit trail in the RDF graph. If an agent makes a claim, the symbolic layer

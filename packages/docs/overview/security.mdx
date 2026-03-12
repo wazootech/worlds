@@ -11,7 +11,7 @@ your data remains secure.
 The platform uses two primary authentication strategies depending on the use
 case.
 
-### 1. API Keys for agents and SDKs
+### 1. API keys
 
 AI agents and background services authenticate using scoped API keys. You can
 generate and manage these keys via the **Console**.
@@ -22,7 +22,7 @@ Include your API key in the `Authorization` header of your requests:
 Authorization: Bearer <your-api-key>
 ```
 
-### 2. Identity Service for humans and the Console
+### 2. Identity service
 
 The Console uses an identity service, such as WorkOS, to manage human users and
 organizations. This layer handles MFA, SSO, and team-based access control.
