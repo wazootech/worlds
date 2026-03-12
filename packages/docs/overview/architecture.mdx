@@ -30,7 +30,7 @@ graph LR
 
     subgraph Data ["Data Plane (World Engine)"]
         direction TB
-        Engine["Reasoning Engine<br/><i>(Hot RDF Memory)</i>"]
+        Engine["Reasoning Engine<br/><i>Hot RDF Memory</i>"]
         Sync["Forward-Sync"]
     end
 
@@ -91,8 +91,8 @@ flowchart TD
     end
 
     subgraph Core ["NEURO-SYMBOLIC REASONING"]
-        SPARQL["Comunica Engine<br/>(SPARQL 1.1/1.2)"]
-        PROXY["Forward-Sync Proxy<br/>(Mutation Interceptor)"]
+        SPARQL["Comunica Engine<br/>SPARQL 1.1/1.2"]
+        PROXY["Forward-Sync Proxy<br/>Mutation Interceptor"]
     end
 
     subgraph Pipeline ["RDF-PATCH PIPELINE"]
@@ -233,8 +233,8 @@ environment:
 | Resource     | Local dev implementation   | Production implementation |
 | :----------- | :------------------------- | :------------------------ |
 | **Compute**  | Local Deno child processes | Deno Deploy               |
-| **Storage**  | Local SQLite files         | Turso (libSQL)            |
-| **Identity** | Mock file (`workos.json`)  | WorkOS AuthKit            |
+| **Storage**  | Local SQLite files     | Turso (libSQL)            |
+| **Identity** | Mock workos.json file | WorkOS AuthKit            |
 
 This pattern allows the entire stack to run locally with zero cloud
 dependencies.

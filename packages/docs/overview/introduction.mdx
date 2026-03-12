@@ -10,10 +10,21 @@ with persistent, verifiable memory and world models.
 
 Traditional memory systems rely on semantic search, which often causes agents to
 hallucinate or lose structural context. You can bridge this "Reasoning Gap" by
-fusing hybrid search with symbolic logic (RDF/SPARQL precision). Worlds ensures
+fusing hybrid search with the precision of symbolic logic. Worlds ensures
 your agents navigate reality with deterministic precision.
 
-![Worlds Architectural Flow](/images/architectural-flow.png)
+<Frame>
+  <img
+    className="block dark:hidden"
+    src="/images/wazoo.svg"
+    alt="Worlds API hero image light"
+  />
+  <img
+    className="hidden dark:block"
+    src="/images/wazoo.svg"
+    alt="Worlds API hero image dark"
+  />
+</Frame>
 
 ## Worlds at a glance
 
@@ -49,10 +60,10 @@ Integrate Worlds into your agentic loops.
 
 Contrast traditional RAG patterns with the neuro-symbolic architecture.
 
-| Feature         | Semantic RAG (Vector)       | Worlds (Neuro-symbolic)    |
+| Feature         | Semantic RAG                | Worlds                     |
 | :-------------- | :-------------------------- | :------------------------- |
 | **Recall type** | Probabilistic intuition     | Deterministic precision    |
-| **Logic**       | Implicit (found in weights) | Explicit (stored as RDF)   |
+| **Logic**       | Implicit weight-based logic | Explicit RDF-based logic   |
 | **Querying**    | Similarity search           | SPARQL 1.1 + Hybrid Search |
 | **State**       | Ephemeral / Static          | Malleable / Verifiable     |
 
