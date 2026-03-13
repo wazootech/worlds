@@ -20,12 +20,13 @@
 <p align="center">
   <a href="https://jsr.io/@wazoo/worlds-sdk"><img src="https://jsr.io/badges/@wazoo/worlds-sdk" alt="JSR" /></a>
   <a href="https://jsr.io/@wazoo/worlds-sdk/score"><img src="https://jsr.io/badges/@wazoo/worlds-sdk/score" alt="JSR Score" /></a>
+  <a href="https://github.com/wazootech/worlds/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-WTFPL-blue.svg" alt="License" /></a>
 </p>
 
 ---
 
-Worlds Platform is the memory and context layer for AI. It is a REST API
-designed to manage, query, update, and reason over
+Worlds Platform is the open-source memory and context layer for AI. It is a REST
+API designed to manage, query, update, and reason over
 [SPARQL](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge bases at
 the edge.
 

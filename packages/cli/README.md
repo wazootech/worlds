@@ -2,8 +2,9 @@
 
 [![JSR](https://jsr.io/badges/@wazoo/worlds-cli)](https://jsr.io/@wazoo/worlds-cli)
 
-**Worlds Platform CLI** is a command-line tool for managing your Worlds Platform instances. It provides a convenient way to interact with worlds,
-organizations, and invites directly from your terminal.
+**Worlds Platform CLI** is a command-line tool for managing your Worlds Platform
+instances. It provides a convenient way to interact with worlds, organizations,
+and invites directly from your terminal.
 
 ## Installation
 
