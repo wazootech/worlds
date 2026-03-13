@@ -1,26 +1,129 @@
-# Worlds Platform™
+<p align="center">
+  <picture>
+    <source srcset="packages/docs/logo/dark.svg" media="(prefers-color-scheme: dark)">
+    <source srcset="packages/docs/logo/light.svg" media="(prefers-color-scheme: light)">
+    <img src="packages/docs/logo/dark.svg" alt="Worlds Platform" width="400" />
+  </picture>
+</p>
 
-[![JSR](https://jsr.io/badges/@wazoo/worlds-sdk)](https://jsr.io/@wazoo/worlds-sdk)
-[![JSR score](https://jsr.io/badges/@wazoo/worlds-sdk/score)](https://jsr.io/@wazoo/worlds-sdk/score)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/wazootech/worlds)
+<p align="center">
+  <strong>World Models as a Service. Context engine for AI.</strong>
+</p>
 
-**Worlds Platform™** is a REST API designed to manage, query, update, and reason
-over [SPARQL](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge
-bases at the edge. It places a malleable **context graph** within arm's reach of
-your AI agent.
+<p align="center">
+  <a href="https://jsr.io/@wazoo/worlds-sdk">SDK</a> ·
+  <a href="https://jsr.io/@wazoo/worlds-sdk/score">Score</a> ·
+  <a href="https://github.com/wazootech/worlds">GitHub</a> ·
+  <a href="https://deepwiki.com/wazootech/worlds">Wiki</a>
+</p>
 
-## Design
+<p align="center">
+  <a href="https://jsr.io/@wazoo/worlds-sdk"><img src="https://jsr.io/badges/@wazoo/worlds-sdk" alt="JSR" /></a>
+  <a href="https://jsr.io/@wazoo/worlds-sdk/score"><img src="https://jsr.io/badges/@wazoo/worlds-sdk/score" alt="JSR Score" /></a>
+</p>
 
-**Bring your own brain (BYOB).** Worlds Platform™ is agnostic to the agent using
-it.
+---
 
-**Powered by N3.** Worlds Platform™ leverages
-[N3](https://github.com/rdfjs/N3.js) for high-performance store operations.
+Worlds Platform™ is the memory and context layer for AI. It is a REST API
+designed to manage, query, update, and reason over
+[SPARQL](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge bases at
+the edge.
 
-## Usage
+Worlds Platform™ provides a structured, malleable context graph to improve agent
+reasoning.
 
-You can use the Worlds SDK to interact with your knowledge bases
-programmatically.
+|                 |                                                                        |
+| --------------- | ---------------------------------------------------------------------- |
+| **Reasoning**   | Built-in SPARQL support for complex reasoning and knowledge discovery. |
+| **Structured**  | N3-powered triple store for high-performance knowledge management.     |
+| **Agnostic**    | Bring Your Own Brain (BYOB). Works with any LLM, framework, or agent.  |
+| **Performance** | Designed for the edge. Low latency store operations.                   |
+| **AI native**   | First-class support for LLM tool-calling and context injection.        |
+
+All of this is delivered via a simple, unified API.
+
+---
+
+## Use Worlds
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### I use AI tools
+
+Manage your knowledge visually. Explore graphs, run queries, and build your
+personal world model.
+
+Persistent context across all your AI assistants and tools.
+
+**[→ Open Worlds console](packages/console)**
+
+</td>
+<td width="50%" valign="top">
+
+### I build AI products
+
+Add structured memory, RAG, and reasoning to your agents with the SDK.
+
+No RDF expertise required. Simple, powerful, and scalable.
+
+**[→ Jump to developer quickstart](#build-with-worlds-sdk)**
+
+</td>
+</tr>
+</table>
+
+---
+
+## Give your AI a Worlds model
+
+The Worlds SDK and AI SDK provide AI agents with persistent, structured memory.
+
+### The console
+
+Manage your worlds through our web interface. Build graphs, test SPARQL queries,
+and monitor your agent's memory.
+
+### AI SDK tools
+
+The Worlds Platform AI SDK provides first-class support for LLM tool-calling.
+
+```typescript
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { createTools } from "@wazoo/worlds-ai-sdk";
+
+const sdk = new WorldsSdk({
+  baseUrl: "http://localhost:8000",
+  apiKey: "your-api-key",
+});
+
+const { text } = await generateText({
+  model: openai("gpt-4o"),
+  tools: createTools({
+    sdk,
+    sources: [{ id: "my-knowledge-base" }],
+  }),
+  prompt: "Find all people in the knowledge base and describe them.",
+});
+```
+
+---
+
+## Build with Worlds SDK
+
+If you're building AI agents or apps, Worlds provides the entire context stack
+through one SDK including memory, reasoning, and graph management.
+
+### Install
+
+```bash
+deno add jsr:@wazoo/worlds-sdk
+```
+
+### Quickstart
 
 ```typescript
 import { WorldsSdk } from "@wazoo/worlds-sdk";
@@ -44,21 +147,6 @@ await sdk.worlds.sparql(
 `,
 );
 
-// Search your world to find the named node for Gregory.
-const searchResult = await sdk.worlds.search(worldId, "Gregory");
-
-console.log(searchResult);
-// [
-//   {
-//     subject: "http://example.com/gregory",
-//     predicate: "http://schema.org/givenName",
-//     object: "Gregory",
-//     vecRank: 0.1,
-//     ftsRank: 0.1,
-//     score: 0.9
-//   }
-// ]
-
 // Reason over your world using SPARQL.
 const result = await sdk.worlds.sparql(
   worldId,
@@ -69,73 +157,30 @@ const result = await sdk.worlds.sparql(
   }
 `,
 );
-
-console.log(result);
-// {
-//   head: { vars: [ "name" ] },
-//   results: {
-//     bindings: [
-//       {
-//         name: { type: "literal", value: "Gregory" }
-//       }
-//     ]
-//   }
-// }
 ```
 
-### AI SDK tools
+---
 
-The Worlds Platform™ AI SDK provides first-class support for LLM tool-calling.
+## Under the hood
 
-```typescript
-import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
-import { WorldsSdk } from "@wazoo/worlds-sdk";
-import { createTools } from "@wazoo/worlds-ai-sdk";
-
-const sdk = new WorldsSdk({
-  baseUrl: "http://localhost:8000",
-  apiKey: "your-api-key",
-});
-
-const { text } = await generateText({
-  model: openai("gpt-4o"),
-  tools: createTools({
-    sdk,
-    sources: [{ id: "my-knowledge-base" }],
-  }),
-  prompt: "Find all people in the knowledge base and describe them.",
-});
+```
+Your App / AI Agent
+        ↓
+    Worlds SDK
+        │
+        ├── World Model Engine    N3-powered triple store, high-perf edge operations
+        ├── SPARQL Processor      Complex reasoning, graph updates, and queries
+        ├── Search & Distill      FTS + Vector search across your knowledge graph
+        └── Tool Bridge           Automatic LLM tool generation and context injection
 ```
 
-## Development
+**Memory is not just RAG.** Worlds Platform™ focuses on symbolic memory. It
+understands relationships, hierarchies, and logic, moving beyond similarity
+matches to true reasoning.
 
-Contributions are welcome! Please open an issue or submit a pull request.
+---
 
-**Generate code:**
-
-```sh
-deno task generate
-```
-
-**Start the development server:**
-
-```sh
-deno task start:server
-```
-
-**Format, lint, and test before committing:**
-
-```sh
-deno task precommit
-```
-
-## Etymology
-
-We named the **Worlds API™** after "World Models as a Service" as a nod to the
-[Many-worlds interpretation](https://en.wikipedia.org/wiki/Many-worlds_interpretation).
-
-## Research
+## Research and documentation
 
 This work is inspired by the intersection of neuro-symbolic AI and knowledge
 graphs:
@@ -145,16 +190,23 @@ graphs:
 - [MemGPT: Towards LLMs as Operating Systems (Arxiv)](https://arxiv.org/abs/2310.08560)
 
 For further information, please refer to our
-[whitepaper](packages/docs/paper.mdx).
-
-## Glossary
-
-- **Neuro-symbolic AI:** An AI system that combines the strengths of neural
-  networks and structured data.
-- **RDF:** A W3C standard for representing information.
-- **SPARQL:** A W3C standard for querying and updating RDF data.
-- **Ontology:** A formal description of a domain of knowledge.
+[whitepaper](packages/docs/overview/whitepaper.mdx).
 
 ---
 
-Developed with 🧪 [**@wazootech**](https://github.com/wazootech)
+## Links
+
+- [Documentation](packages/docs)
+- [Quickstart](#build-with-worlds-sdk)
+- [Wazoo Tech](https://github.com/wazootech)
+- [Support](https://deepwiki.com/wazootech/worlds)
+
+---
+
+<p align="center">
+  <strong>Give your AI a Worlds model.</strong>
+</p>
+
+---
+
+Developed with [**@wazootech**](https://github.com/wazootech)
