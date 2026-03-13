@@ -1,6 +1,6 @@
 # Worlds
 
-The official web dashboard for [Worlds API™](https://jsr.io/@fartlabs/worlds).
+The official web dashboard for [Worlds API](https://jsr.io/@fartlabs/worlds).
 
 <img width="1490" height="1006" alt="Connect via SDK screen" src="https://github.com/user-attachments/assets/575c866d-72ec-4dec-b8a7-5dc4ed0aca6f" />
 

@@ -1,4 +1,4 @@
-# Contributing to Worlds platform™
+# Contributing to Worlds platform
 
 Thank you for your interest in contributing to Worlds! We welcome contributions
 from developers of all skill levels. This guide will help you get started with

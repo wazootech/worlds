@@ -1,8 +1,8 @@
-# Worlds Platform™ Server
+# Worlds Platform Server
 
 [![JSR](https://jsr.io/badges/@wazoo/worlds-server)](https://jsr.io/@wazoo/worlds-server)
 
-**Worlds Platform™ Server** is the core REST API implementation for managing,
+**Worlds Platform Server** is the core REST API implementation for managing,
 querying, and reasoning over context graphs. It is built with
 [Deno](https://deno.land/) and leverages high-performance libraries for RDF
 operations and vector embeddings.

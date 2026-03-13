@@ -1,14 +1,13 @@
-# Worlds Platform™ CLI
+# Worlds Platform CLI
 
 [![JSR](https://jsr.io/badges/@wazoo/worlds-cli)](https://jsr.io/@wazoo/worlds-cli)
 
-**Worlds Platform™ CLI** is a command-line tool for managing your Worlds
-Platform™ instances. It provides a convenient way to interact with worlds,
+**Worlds Platform CLI** is a command-line tool for managing your Worlds Platform instances. It provides a convenient way to interact with worlds,
 organizations, and invites directly from your terminal.
 
 ## Installation
 
-Install the Worlds Platform™ CLI globally using Deno:
+Install the Worlds Platform CLI globally using Deno:
 
 ```sh
 deno install -A --name worlds jsr:@wazoo/worlds-cli

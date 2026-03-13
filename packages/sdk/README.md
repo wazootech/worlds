@@ -1,9 +1,9 @@
-# Worlds Platform™ SDK
+# Worlds Platform SDK
 
 [![JSR](https://jsr.io/badges/@wazoo/worlds-sdk)](https://jsr.io/@wazoo/worlds-sdk)
 
-**Worlds Platform™ SDK** is the official TypeScript/Deno client for interacting
-with the Worlds Platform™. It provides a structured, type-safe way to manage
+**Worlds Platform SDK** is the official TypeScript/Deno client for interacting
+with the Worlds Platform. It provides a structured, type-safe way to manage
 knowledge bases, organizations, and invites.
 
 ## Installation

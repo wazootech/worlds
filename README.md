@@ -24,12 +24,12 @@
 
 ---
 
-Worlds Platform™ is the memory and context layer for AI. It is a REST API
+Worlds Platform is the memory and context layer for AI. It is a REST API
 designed to manage, query, update, and reason over
 [SPARQL](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge bases at
 the edge.
 
-Worlds Platform™ provides a structured, malleable context graph to improve agent
+Worlds Platform provides a structured, malleable context graph to improve agent
 reasoning.
 
 |                 |                                                                        |
@@ -174,7 +174,7 @@ Your App / AI Agent
         └── Tool Bridge           Automatic LLM tool generation and context injection
 ```
 
-**Memory is not just RAG.** Worlds Platform™ focuses on symbolic memory. It
+**Memory is not just RAG.** Worlds Platform focuses on symbolic memory. It
 understands relationships, hierarchies, and logic, moving beyond similarity
 matches to true reasoning.
 

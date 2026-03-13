@@ -1,9 +1,9 @@
-# Worlds Platform™ AI SDK
+# Worlds Platform AI SDK
 
 [![JSR](https://jsr.io/badges/@wazoo/worlds-ai-sdk)](https://jsr.io/@wazoo/worlds-ai-sdk)
 
-**Worlds Platform™ AI SDK** provides a set of tools for LLMs to interact with
-the [Worlds Platform™](https://github.com/wazootech/worlds-api). It enables AI
+**Worlds Platform AI SDK** provides a set of tools for LLMs to interact with
+the [Worlds Platform](https://github.com/wazootech/worlds-api). It enables AI
 agents to discover schemas, execute SPARQL queries, search for entities, and
 generate IRIs within a knowledge base.
 
