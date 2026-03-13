@@ -19,7 +19,8 @@
   <a href="https://deepwiki.com/wazootech/worlds"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" /></a>
 </p>
 
----
+
+
 
 Worlds Platform is the open-source **auto-memory** and context layer for AI. It
 is a REST API designed to manage, query, update, and reason over
