@@ -6,24 +6,30 @@
     "./packages/cli"
   ],
   "tasks": {
+    "install": "npm i --prefix ./packages/console && npm i --prefix ./packages/docs",
+    "start": "npm run dev --prefix ./packages/console",
     "start:cli": "deno -A --env=./packages/cli/.env ./packages/cli/main.ts",
+    "start:docs": "npm run dev --prefix ./packages/docs",
     "start:server": "deno serve -A --env=./packages/server/.env ./packages/server/main.ts",
     "test": "deno test -A",
     "lint": "deno lint",
     "fmt": "deno fmt",
-    "check": "deno check --doc packages/server packages/cli packages/sdk packages/ai-sdk",
+    "check": "deno check",
+    "publish:dry": "deno publish --dry-run --allow-dirty",
+    "reset": "npm run reset --prefix ./packages/console",
     "precommit:console": "npm run precommit --prefix packages/console",
+    "precommit:docs": "npm run precommit --prefix packages/docs",
     "precommit": {
       "dependencies": [
         "fmt",
         "lint",
         "check",
         "test",
+        "precommit:docs",
         "precommit:console",
         "publish:dry"
       ]
-    },
-    "publish:dry": "deno publish --dry-run --allow-dirty"
+    }
   },
   "imports": {
     "@std/cli": "jsr:@std/cli@1.0.28",

@@ -1,0 +1,55 @@
+---
+title: "World memory"
+description:
+  "The primary resource of the Worlds Ecosystem: A dedicated, isolated knowledge
+  graph instance."
+---
+
+A **world** is the foundational unit of organization in the ecosystem. It
+provides an isolated container for an agent's relationships, history, and facts.
+
+<Note>
+  **The problem: Why AI forgets**
+
+Traditional AI can only "remember" what's in its current chat window. Once that
+window fills up or the chat ends, it loses the thread. This makes it hard for
+agents to handle complex jobs that take more than one session.
+
+**The solution: Linked memory**
+
+Instead of just hoping the AI finds the right data in a massive pile, Worlds
+creates a structured map (a graph). By linking related facts together, your
+agent can always follow the logical path from one piece of information to
+another, no matter how much data you add.
+
+</Note>
+
+## Goals
+
+| Goal            | Description                          | Constraint                     |
+| :-------------- | :----------------------------------- | :----------------------------- |
+| **Isolation**   | Prevent data leakage between agents. | One RDF dataset per world.     |
+| **Portability** | Maintain memory across model swaps.  | Decoupled from LLM provider.   |
+| **Fusion**      | Hybrid neural/symbolic reasoning.    | Requires both vector + SPARQL. |
+
+## Architecture
+
+A world functions as a **neuro-symbolic memory container**. It pairs an isolated
+RDF dataset with a high-performance vector search index.
+
+### Neural layer
+
+The neural layer uses vector embeddings to manage semantic similarity. It allows
+the agent to navigate the world through natural language queries.
+
+### Symbolic layer
+
+The symbolic layer uses RDF and SPARQL for deterministic facts. It provides
+deterministic validation, reducing the risk of hallucinations inherent in
+standalone LLMs.
+
+## Audit trails
+
+Worlds eliminates "black box" behavior. Every retrieved fact has a verifiable
+audit trail in the RDF graph. If an agent makes a claim, the symbolic layer
+proves it.

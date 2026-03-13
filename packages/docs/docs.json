@@ -1,134 +1,139 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Worlds API",
+  "name": "Worlds Docs",
   "colors": {
     "primary": "#D97706",
     "light": "#F59E0B",
     "dark": "#78350F"
   },
+  "contextual": {
+    "options": ["copy", "view"]
+  },
   "favicon": "/images/wazoo.svg",
+  "seo": {
+    "indexing": "all",
+    "metatags": {
+      "og:type": "website",
+      "og:site_name": "Worlds Docs",
+      "canonical": "https://docs.wazoo.dev"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Developer Platform",
+        "icon": "code",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Welcome",
+            "pages": ["overview/introduction"]
+          },
+          {
+            "group": "Get Started",
             "pages": [
-              "index",
-              "getting-started/quickstart",
-              "getting-started/authentication"
+              "overview/getting-started/quickstart",
+              "overview/getting-started/authentication"
             ]
           },
           {
-            "group": "Architecture",
+            "group": "Tutorials",
+            "pages": ["overview/getting-started/agent-integration"]
+          },
+          {
+            "group": "Concepts",
             "pages": [
-              "architecture/overview",
-              "architecture/resource-hierarchy",
-              "architecture/paper"
+              "overview/philosophy",
+              "overview/architecture",
+              "overview/world-memory",
+              "overview/features"
             ]
           },
           {
-            "group": "Hosting",
+            "group": "Learning Path",
+            "pages": ["overview/academy"]
+          },
+          {
+            "group": "Background",
             "pages": [
-              "hosting/production",
-              "hosting/configuration"
+              "overview/whitepaper",
+              "overview/use-cases",
+              "overview/roadmap",
+              "overview/maturity",
+              "overview/history"
             ]
           },
           {
-            "group": "Development",
+            "group": "Guides",
             "pages": [
-              "development/local-setup",
-              "development/local-persistence",
-              "development/tasks"
+              {
+                "group": "RAG Workflows",
+                "pages": [
+                  "guides/rag-workflows/graph-rag",
+                  "guides/rag-workflows/ontology-rag",
+                  "guides/rag-workflows/document-rag"
+                ]
+              },
+                            "guides/data-integration",
+              "guides/querying",
+              "guides/hosting/production",
+              "guides/monitoring",
+              "guides/knowledge-graphs",
+              "guides/semantic-search"
             ]
           },
           {
-            "group": "Core Concepts",
+            "group": "Examples",
             "pages": [
-              "concepts/worlds",
-              "concepts/sparql",
-              "concepts/search"
+              "guides/examples/code-samples",
+              "guides/examples/datasets",
+              "guides/examples/tutorials",
+              "guides/examples/integrations"
             ]
           }
         ]
       },
       {
-        "tab": "Internal",
+        "tab": "Reference",
+        "icon": "book-open",
+        "openapi": "openapi.yaml",
         "groups": [
           {
-            "group": "System Design",
-            "pages": [
-              "internal/design",
-              "internal/request-flow",
-              "internal/database-layer",
-              "internal/resource-pattern"
-            ]
+            "group": "API Basics",
+            "pages": ["reference/api", "reference/api-basics/authentication"]
           },
           {
-            "group": "Implementation",
-            "pages": [
-              "internal/routes",
-              "internal/ai-sdk",
-              "internal/deno-app-management",
-              "internal/rdf-sparql",
-              "internal/embeddings-search",
-              "internal/logging"
-            ]
+            "group": "CLI",
+            "pages": ["reference/cli"]
+          },
+          {
+            "group": "Configuration",
+            "pages": ["reference/configuration"]
+          },
+          {
+            "group": "System Internals",
+            "pages": ["reference/request-flow"]
           },
 
           {
-            "group": "Maintenance",
-            "pages": [
-              "internal/testing",
-              "internal/checklist"
-            ]
+            "group": "Changelog",
+            "pages": ["reference/changelog"]
           }
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Contributing",
+        "icon": "users",
         "groups": [
           {
-            "group": "Worlds",
+            "group": "Contributing",
             "pages": [
-              "api-reference/worlds/list",
-              "api-reference/worlds/get",
-              "api-reference/worlds/create",
-              "api-reference/worlds/update",
-              "api-reference/worlds/delete"
-            ]
-          },
-          {
-            "group": "SPARQL",
-            "pages": [
-              "api-reference/sparql/query",
-              "api-reference/sparql/update"
-            ]
-          },
-          {
-            "group": "Search",
-            "pages": [
-              "api-reference/search/search"
-            ]
-          },
-          {
-            "group": "Policy",
-            "pages": [
-              "reference/rate-limits"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "SDKs",
-        "groups": [
-          {
-            "group": "TypeScript SDK",
-            "pages": [
-              "sdk/overview",
-              "sdk/reference"
+              "contributing/developer-guide",
+              "contributing/guidelines",
+
+              "contributing/best-practices",
+              "contributing/code-of-conduct",
+              "contributing/getting-help"
             ]
           }
         ]
@@ -144,15 +149,21 @@
       ]
     }
   },
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/overview/introduction"
+    }
+  ],
   "logo": {
-    "light": "/images/wazoo.svg",
-    "dark": "/images/wazoo.svg"
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
   },
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "https://github.com/EthanThatOneKid/worlds-api/issues"
+        "type": "github",
+        "href": "https://github.com/wazootech/worlds"
       }
     ],
     "primary": {
@@ -162,10 +173,43 @@
     }
   },
   "footer": {
-    "socials": {
-      "linkedin": "https://www.linkedin.com/company/wazootech/",
-      "github": "https://github.com/wazootech"
-    }
+    "links": [
+      {
+        "header": "Explore",
+        "items": [
+          {
+            "label": "Worlds Console",
+            "href": "https://console.wazoo.dev"
+          },
+          {
+            "label": "SDK (JSR)",
+            "href": "https://jsr.io/@wazoo/worlds-sdk"
+          }
+        ]
+      },
+      {
+        "header": "Community",
+        "items": [
+          {
+            "label": "GitHub",
+            "href": "https://github.com/wazootech/worlds"
+          },
+          {
+            "label": "X (Twitter)",
+            "href": "https://x.com/wazootech"
+          }
+        ]
+      },
+      {
+        "header": "Resources",
+        "items": [
+          {
+            "label": "Blog",
+            "href": "https://wazoo.dev/blog"
+          }
+        ]
+      }
+    ]
   },
   "integrations": {
     "ga4": {

@@ -1,10 +1,10 @@
-# Worlds Platform™ SDK
+# Worlds Platform SDK
 
 [![JSR](https://jsr.io/badges/@wazoo/worlds-sdk)](https://jsr.io/@wazoo/worlds-sdk)
 
-**Worlds Platform™ SDK** is the official TypeScript/Deno client for interacting
-with the Worlds Platform™. It provides a structured, type-safe way to manage
-knowledge bases, organizations, and invites.
+**Worlds Platform SDK** is the official TypeScript/Deno client for interacting
+with the Worlds Platform. It provides a structured, type-safe way to manage
+knowledge bases (worlds).
 
 ## Installation
 
@@ -23,16 +23,19 @@ const sdk = new WorldsSdk({
   apiKey: "your-api-key",
 });
 
-// Interact with worlds, organizations, and invites.
+// Interact with worlds.
 const world = await sdk.worlds.get("my-world-id");
 ```
 
 ## Features
 
 - **Type-safe API**: Full TypeScript definitions for all API resources.
-- **Client-side Validation**: Leverages Zod for robust data handling.
+- **Client-side Validation**: Leverages Zod for data handling.
 - **Ease of Use**: Simplified methods for SPARQL queries, semantic search, and
   schema discovery.
+
+For more information, see the
+[official documentation](https://docs.wazoo.dev/reference/sdk-overview).
 
 ---
 

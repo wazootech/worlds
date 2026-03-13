@@ -11,8 +11,7 @@
     "check": "tsc --noEmit",
     "precommit": "npm run lint && npm run format && npm run check",
     "update:sdk": "npx jsr add @wazoo/worlds-sdk",
-    "nuke": "taskkill /F /IM deno.exe /T & rimraf .next/dev/lock",
-    "predev": "rimraf .next/dev/lock"
+    "reset": "taskkill /F /IM deno.exe /T & rimraf .next/dev/lock"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.23",

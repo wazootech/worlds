@@ -1,5 +1,5 @@
-<svg width="200" height="32" viewBox="0 0 200 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <g transform="scale(0.0615)">
+<svg width="170" height="32" viewBox="0 0 170 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(0, -1.585) scale(0.0682)">
     <clipPath id="p.0">
       <path d="m0 0l520.0 0l0 520.0l-520.0 0l0 -520.0z" clip-rule="nonzero" />
     </clipPath>
@@ -13,5 +13,5 @@
       <path fill="#ff9800" d="m505.64868 305.6166l0 0c-0.12124634 67.46524 -109.278656 122.224335 -244.35449 122.581085c-135.0758 0.3567505 -245.3866 -53.822754 -246.93633 -121.28354l245.63737 -1.4076538z" fill-rule="evenodd" />
     </g>
   </g>
-  <text x="40" y="24" font-family="Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-weight="600" font-size="20" fill="#0F172A" letter-spacing="-0.02em">Worlds <tspan font-weight="400" fill="#64748B">[Docs]</tspan></text>
+  <text x="38" y="23" font-family="Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-weight="600" font-size="20" fill="#0F172A" letter-spacing="-0.02em">Worlds <tspan font-weight="400" fill="#64748B">[Docs]</tspan></text>
 </svg>

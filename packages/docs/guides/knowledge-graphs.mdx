@@ -1,0 +1,64 @@
+---
+title: "Knowledge graphs"
+description:
+  "Model complex relationships with precision using a graph-based structure."
+---
+
+A **knowledge graph** powers every world. Worlds organizes information in a
+graph-based structure rather than rigid tables, allowing you to model complex
+relationships with precision.
+
+## Knowledge primitives
+
+To build with Worlds, you must understand the three fundamental building blocks
+of knowledge.
+
+### Items
+
+**Items** are the distinct "things" in your world—a person, a piece of code, or
+a company.
+
+- **Identification**: A unique **IRI** (Internationalized Resource Identifier)
+  identifies every item.
+- **Classes**: Categorize items by their type (e.g., `User`, `Project`, `Task`).
+
+### Properties
+
+**Properties** are the "verbs" or "connectors" that define how items relate.
+
+- **Examples**: `worksOn`, `managerOf`, `hasPriority`.
+- **Ontology**: The set of defined properties forms the "grammar" of your world,
+  ensuring your agents use consistent language.
+
+### Facts
+
+A **fact** occurs when you connect two items using a property. This follows the
+standard W3C **RDF triple** structure:
+
+```mermaid
+graph LR
+    Subject["Subject (Item)"] -- "Predicate (Property)" --> Object["Object (Item/Value)"]
+```
+
+| Component     | Example              |
+| :------------ | :------------------- |
+| **Subject**   | `User:Ethan`         |
+| **Predicate** | `isWorkingOn`        |
+| **Object**    | `Project:Worlds-API` |
+
+## Why graphs matter
+
+Knowledge graph statements represent facts. Unlike statistical LLM weights,
+Worlds retrieves specific, auditable relationships.
+
+- **Malleability**: Mutate and fork graphs in real-time.
+- **Traceability**: Every claim provides a symbolic path back to its source.
+- **Evolution**: New facts can surgically update or override old ones to
+  maintain grounded truth.
+
+## Technical context
+
+Worlds uses the **RDF 1.1** standard for universal portability. You can
+interface with the graph through the
+[Worlds SDK](/overview/getting-started/quickstart), which abstracts away the
+complexity of raw SPARQL queries.
