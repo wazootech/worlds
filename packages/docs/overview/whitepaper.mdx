@@ -3,9 +3,6 @@ title: "Whitepaper"
 description: "Malleable knowledge at the edge for neuro-symbolic agents."
 ---
 
-
-**Author**: Ethan Davidson, Founder of Wazoo Technologies **Date**: January 2026
-
 ## Abstract
 
 Large Language Models (LLMs) demonstrate remarkable capabilities in natural
@@ -17,12 +14,11 @@ traceability.
 
 Worlds is a managed infrastructure layer—a "world engine"—that acts as a
 detachable hippocampus for AI agents. By combining a SPARQL-compatible RDF store
-with edge-distributed SQLite for persistence, Worlds enables **automatic memory**
-(or **auto-memory**) for agents to maintain mutable, structured knowledge
-graphs. This system fuses vector search for
-semantic intuition with deterministic facts for precise data retrieval,
-empowering agents to navigate a persistent, interoperable map of reality rather
-than predicting the next token.
+with edge-distributed SQLite for persistence, Worlds enables automatic
+memory (or auto-memory) for agents to maintain mutable, structured
+knowledge graphs. This system fuses vector search for semantic intuition with
+deterministic facts for precise data retrieval, empowering agents to navigate a
+persistent, interoperable map of reality rather than predicting the next token.
 
 By 2026, the artificial intelligence industry has realigned around fluid
 intelligence and outcome-based results. Worlds provides the structural
@@ -43,8 +39,8 @@ both accessible and mutable.
 
 ### Reasoning gap
 
-Current industry standards rely heavily on **vector databases** to provide
-long-term memory. As identified in benchmarks like **ARC-AGI-3**, true
+Current industry standards rely heavily on vector databases to provide
+long-term memory. As identified in benchmarks like ARC-AGI-3, true
 intelligence requires a system to adapt efficiently to novel, untrained
 environments. The reasoning gap occurs because vector search struggles with:
 
@@ -56,30 +52,34 @@ environments. The reasoning gap occurs because vector search struggles with:
 - Temporal awareness: Standard RAG is stateless and fails to capture
   relationship dynamics or state invalidations over extended horizons.
 - Data silos: Information remains trapped in proprietary walled gardens,
-  hindering the **interoperability** required for a truly personal or autonomous
+  hindering the interoperability required for a truly personal or autonomous
   AI entity.
 
 ### Solution
 
-**Worlds** provides **malleable knowledge** within an AI agent's reach. Unlike
+Worlds provides malleable knowledge within an AI agent's reach. Unlike
 static knowledge bases, "Worlds" are dynamic, graph-based environments that
 agents can query, update, and reason over in real-time.
 
-It acts as a **"digital garden"** for the next generation of software—a private
+It acts as a "digital garden" for the next generation of software—a private
 world where an assistant knows your relationships, history, and preferences with
 100% accuracy, acting as an extension of your own mind.
 
 ### Cognitive architecture
 
-The Worlds Platform mirrors human cognitive systems to provide a structured "memory stack" for autonomous agents, implementing what is increasingly recognized as **auto-memory**—a system that self-organizes and recalls context without manual engineering.
+The Worlds Platform mirrors human cognitive systems
+([Memory](https://en.wikipedia.org/wiki/Memory)) to provide a structured "memory
+stack" for autonomous agents, implementing what is increasingly recognized as
+auto-memory—a system that self-organizes and recalls context without manual
+engineering.
 
-| Memory type    | Agent perspective       | Worlds Platform implementation                                             |
-| :------------- | :---------------------- | :------------------------------------------------------------------------- |
-| **Semantic**   | What it **knows**       | **Triple Store**: Structured facts and SPARQL reasoning.                   |
-| **Episodic**   | What it **did**         | **Log System**: Temporal history of events and metadata.                   |
-| **Working**    | What it is **thinking** | **Scratchpad**: Live distillation of knowledge into prompts.               |
-| **Procedural** | What it **can do**      | **Tool Bridge**: Automated skills for graph operations, tools, and agents. |
-| **Sensory**    | What it **perceives**   | **Ingestion**: Raw data streams and vector indexing.                       |
+| Memory type    | Agent perspective       | Worlds Platform implementation                                       |
+| :------------- | :---------------------- | :------------------------------------------------------------------- |
+| **Semantic**   | What it **knows**       | **RDF Store**: Structured facts and SPARQL reasoning.                |
+| **Episodic**   | What it **did**         | **Append-only Log**: Temporal history of events and metadata.        |
+| **Working**    | What it is **thinking** | **Scratchpad**: Live distillation of knowledge into prompts.         |
+| **Procedural** | What it **can do**      | **Tools**: Automated skills for graph operations, tools, and agents. |
+| **Sensory**    | What it **perceives**   | **Ingestion**: Raw data streams and vector indexing.                 |
 
 ---
 
@@ -104,7 +104,7 @@ Data ingestion follows a multi-stage transformation process:
 ### 2. State management
 
 Unlike stateless RAG systems, Worlds treats memory as a dynamic, mutable state.
-The platform implements an **on-policy learning loop** where agent interactions
+The platform implements an on-policy learning loop where agent interactions
 directly inform the evolution of the knowledge graph. This is achieved through
 `rdf-patch` operations that allow for atomic updates, deletions, and forks of
 specific knowledge sub-graphs without re-indexing the entire dataset.
@@ -208,7 +208,7 @@ SPARQL engines on disk while maintaining semantic integrity.
 
 To ensure O(log N) performance for graph queries and millisecond responses for
 semantic search, the engine implements a multi-index strategy inspired by
-**Hexastore** index research:
+Hexastore index research:
 
 - **Graph indexing**: Standard B-Tree indices on `subject` and `predicate`
   enable rapid pattern matching for search filters.
@@ -222,7 +222,7 @@ semantic search, the engine implements a multi-index strategy inspired by
 
 ### Hybrid search
 
-The system utilizes **Reciprocal Rank Fusion (RRF)** to combine results from
+The system utilizes Reciprocal Rank Fusion (RRF) to combine results from
 distinct indices into a single, unified relevance ranking:
 
 - **Semantic search**: Captures conceptual meaning using a vector index and
@@ -385,10 +385,10 @@ consistency over time.
 
 | Metric                 | Traditional RAG | Worlds (Neuro-Symbolic) | Delta  |
 | :--------------------- | :-------------- | :---------------------- | :----- |
-| **Declarative Recall** | 68.4%           | **89.2%**               | +20.8% |
-| **Procedural Memory**  | 42.1%           | **76.5%**               | +34.4% |
-| **On-Policy Learning** | Low             | **High**                | N/A    |
-| **Efficiency (ms)**    | 120ms           | **45ms** (Edge)         | -62.5% |
+| **Declarative Recall** | 68.4%           | 89.2%                   | +20.8% |
+| **Procedural Memory**  | 42.1%           | 76.5%                   | +34.4% |
+| **On-Policy Learning** | Low             | High                    | N/A    |
+| **Efficiency (ms)**    | 120ms           | 45ms (Edge)             | -62.5% |
 
 ### Journey to SOTA
 
