@@ -74,14 +74,7 @@
                   "guides/rag-workflows/document-rag"
                 ]
               },
-              {
-                "group": "Security",
-                "pages": [
-                  "guides/security/current-features",
-                  "guides/security/enterprise-roadmap"
-                ]
-              },
-              "guides/data-integration",
+                            "guides/data-integration",
               "guides/querying",
               "guides/hosting/production",
               "guides/monitoring",

@@ -122,8 +122,8 @@ specific knowledge sub-graphs without re-indexing the entire dataset.
 ### Overview
 
 The system follows a segregated Client-Server architecture designed for edge
-deployment. It unifies a Console-managed Control Plane with a high-performance
-API Data Plane.
+deployment. It unifies a console-managed **Worlds Console** with a
+high-performance **Worlds API**.
 
 ```mermaid
 graph LR
@@ -133,9 +133,9 @@ graph LR
         Agent([AI Agent / Bot])
     end
 
-    subgraph Control ["Control Plane"]
+    subgraph Control ["Worlds Console"]
         direction TB
-        Console[Console]
+        ConsoleUI[Console UI]
         Auth[Auth Service]
     end
 
@@ -352,8 +352,8 @@ of a chat interface.
 
 ## API and control
 
-The platform exposes a comprehensive REST API organized into Management-oriented
-Control Plane and Graph-oriented Data Plane operations.
+The platform exposes a comprehensive REST API organized into management-oriented
+**Worlds Console** and graph-oriented **Worlds API** operations.
 
 ### Capabilities
 
