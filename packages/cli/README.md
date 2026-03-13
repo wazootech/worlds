@@ -16,6 +16,8 @@ deno install -A --name worlds jsr:@wazoo/worlds-cli
 
 ## Usage
 
+For full details, see the [CLI reference](https://docs.wazoo.dev/reference/cli).
+
 ```sh
 deno -A jsr:@wazoo/worlds-cli [command] [options]
 

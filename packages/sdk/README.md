@@ -34,6 +34,9 @@ const world = await sdk.worlds.get("my-world-id");
 - **Ease of Use**: Simplified methods for SPARQL queries, semantic search, and
   schema discovery.
 
+For more information, see the
+[official documentation](https://docs.wazoo.dev/reference/sdk-overview).
+
 ---
 
 Developed with 🧪 [**@wazootech**](https://github.com/wazootech)

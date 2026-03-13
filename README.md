@@ -11,16 +11,10 @@
 </p>
 
 <p align="center">
-  <a href="https://jsr.io/@wazoo/worlds-sdk">SDK</a> ·
-  <a href="https://jsr.io/@wazoo/worlds-sdk/score">Score</a> ·
-  <a href="https://github.com/wazootech/worlds">GitHub</a> ·
-  <a href="https://deepwiki.com/wazootech/worlds">Wiki</a>
-</p>
-
-<p align="center">
-  <a href="https://jsr.io/@wazoo/worlds-sdk"><img src="https://jsr.io/badges/@wazoo/worlds-sdk" alt="JSR" /></a>
-  <a href="https://jsr.io/@wazoo/worlds-sdk/score"><img src="https://jsr.io/badges/@wazoo/worlds-sdk/score" alt="JSR Score" /></a>
-  <a href="https://github.com/wazootech/worlds/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-WTFPL-blue.svg" alt="License" /></a>
+  [![JSR](https://jsr.io/badges/@wazoo/worlds-sdk)](https://jsr.io/@wazoo/worlds-sdk)
+  [![JSR Score](https://jsr.io/badges/@wazoo/worlds-sdk/score)](https://jsr.io/@wazoo/worlds-sdk/score)
+  [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/wazootech/worlds)
+  [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/wazootech/worlds)
 </p>
 
 ---
@@ -30,18 +24,17 @@ API designed to manage, query, update, and reason over
 [SPARQL](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge bases at
 the edge.
 
-Worlds Platform provides a structured, malleable context graph to improve agent
+Worlds Platform provides an interoperable context graph to improve agent
 reasoning.
 
-|                 |                                                                        |
-| --------------- | ---------------------------------------------------------------------- |
-| **Reasoning**   | Built-in SPARQL support for complex reasoning and knowledge discovery. |
-| **Structured**  | N3-powered triple store for high-performance knowledge management.     |
-| **Agnostic**    | Bring Your Own Brain (BYOB). Works with any LLM, framework, or agent.  |
-| **Performance** | Designed for the edge. Low latency store operations.                   |
-| **AI native**   | First-class support for LLM tool-calling and context injection.        |
+- **Reasoning**: Built-in SPARQL support for complex reasoning and federated
+  knowledge discovery.
+- **Agnostic**: Bring Your Own Brain (BYOB). Works with any LLM, framework, or
+  agent.
+- **Performance**: Designed for the edge. Low latency store operations.
+- **AI-native**: First-class support for LLM tool-calling and context injection.
 
-All of this is delivered via a simple, unified API.
+Worlds delivers these features through a unified API.
 
 ---
 
@@ -60,6 +53,7 @@ Persistent context across all your AI assistants and tools.
 
 **[→ Open Worlds console](packages/console)**
 
+<br>
 </td>
 <td width="50%" valign="top">
 
@@ -67,19 +61,25 @@ Persistent context across all your AI assistants and tools.
 
 Add structured memory, RAG, and reasoning to your agents with the SDK.
 
-No RDF expertise required. Simple, powerful, and scalable.
+No RDF expertise required. Simple and modular.
 
-**[→ Jump to developer quickstart](#build-with-worlds-sdk)**
+**[→ Install CLI](https://docs.wazoo.dev/reference/cli)**
 
+<br>
 </td>
 </tr>
 </table>
 
 ---
 
-## Give your AI a Worlds model
+## Worlds for your AI
 
 The Worlds SDK and AI SDK provide AI agents with persistent, structured memory.
+
+> [!NOTE]
+> **World memory is not just RAG.** Worlds Platform focuses on symbolic memory.
+> It understands relationships, hierarchies, and logic, moving beyond similarity
+> matches to true reasoning.
 
 ### The console
 
@@ -162,45 +162,64 @@ const result = await sdk.worlds.sparql(
 
 ---
 
-## Under the hood
+## Command line interface
 
-```
-Your App / AI Agent
-        ↓
-    Worlds SDK
-        │
-        ├── World Model Engine    N3-powered triple store, high-perf edge operations
-        ├── SPARQL Processor      Complex reasoning, graph updates, and queries
-        ├── Search & Distill      FTS + Vector search across your knowledge graph
-        └── Tool Bridge           Automatic LLM tool generation and context injection
+Manage your worlds directly from the terminal.
+
+### Install
+
+```bash
+deno install -A --name worlds jsr:@wazoo/worlds-cli
 ```
 
-**Memory is not just RAG.** Worlds Platform focuses on symbolic memory. It
-understands relationships, hierarchies, and logic, moving beyond similarity
-matches to true reasoning.
+### Usage
+
+```bash
+# Create a new world
+worlds create --label "My First World"
+
+# List worlds
+worlds list
+
+# Run a SPARQL query
+worlds sparql "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10"
+```
+
+---
+
+## The architecture of memory
+
+Worlds Platform mirrors human cognitive systems to provide a "memory stack" for
+autonomous agents.
+
+| Memory type    | Agent perspective       | Worlds Platform implementation                                             |
+| :------------- | :---------------------- | :------------------------------------------------------------------------- |
+| **Semantic**   | What it **knows**       | **Triple Store**: Structured facts and SPARQL reasoning.                   |
+| **Episodic**   | What it **did**         | **Log System**: Temporal history of events and metadata.                   |
+| **Working**    | What it is **thinking** | **Scratchpad**: Live distillation of knowledge into prompts.               |
+| **Procedural** | What it **can do**      | **Tool Bridge**: Automated skills for graph operations, tools, and agents. |
+| **Sensory**    | What it **perceives**   | **Ingestion**: Raw data streams and vector indexing.                       |
 
 ---
 
 ## Research and documentation
 
-This work is inspired by the intersection of neuro-symbolic AI and knowledge
-graphs:
+The following research inspires this work:
 
 - [Thinking with Knowledge Graphs (Arxiv)](https://arxiv.org/abs/2412.10654)
 - [World Models (Ha & Schmidhuber)](https://worldmodels.github.io/)
 - [MemGPT: Towards LLMs as Operating Systems (Arxiv)](https://arxiv.org/abs/2310.08560)
 
-For further information, please refer to our
-[whitepaper](packages/docs/overview/whitepaper.mdx).
+See the [whitepaper](https://docs.wazoo.dev/overview/whitepaper).
 
 ---
 
 ## Links
 
-- [Documentation](packages/docs)
+- [Documentation](https://docs.wazoo.dev)
 - [Quickstart](#build-with-worlds-sdk)
-- [Wazoo Tech](https://github.com/wazootech)
-- [Support](https://deepwiki.com/wazootech/worlds)
+- [Wazoo Technologies](https://wazoo.dev)
+- [Support](https://github.com/wazootech/worlds/issues)
 
 ---
 
@@ -210,4 +229,4 @@ For further information, please refer to our
 
 ---
 
-Developed with [**@wazootech**](https://github.com/wazootech)
+Developed with 🧪 [**@wazootech**](https://github.com/wazootech)

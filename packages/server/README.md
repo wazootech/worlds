@@ -75,7 +75,8 @@ deno -A jsr:@wazoo/worlds-server [command]
 
 ## API Reference
 
-The API follows a standard RESTful structure.
+The API follows a standard RESTful structure. For full details, see the
+[official documentation](https://docs.wazoo.dev).
 
 ---
 

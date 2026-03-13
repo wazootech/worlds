@@ -3,9 +3,9 @@
 [![JSR](https://jsr.io/badges/@wazoo/worlds-ai-sdk)](https://jsr.io/@wazoo/worlds-ai-sdk)
 
 **Worlds Platform AI SDK** provides a set of tools for LLMs to interact with the
-[Worlds Platform](https://github.com/wazootech/worlds-api). It enables AI agents
-to discover schemas, execute SPARQL queries, search for entities, and generate
-IRIs within a knowledge base.
+[Worlds Platform](https://docs.wazoo.dev). It enables AI agents to discover
+schemas, execute SPARQL queries, search for entities, and generate IRIs within a
+knowledge base.
 
 ## Tools
 
@@ -53,7 +53,8 @@ const { text } = await generateText({
 
 ## Reference
 
-- https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling
+- [Worlds AI SDK Documentation](https://docs.wazoo.dev/reference/sdk-overview)
+- [Vercel AI SDK: Tools and Tool Calling](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling)
 
 ---
 

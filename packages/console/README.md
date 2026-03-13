@@ -1,6 +1,6 @@
 # Worlds
 
-The official web dashboard for [Worlds API](https://jsr.io/@fartlabs/worlds).
+The official web dashboard for [Worlds](https://docs.wazoo.dev).
 
 <img width="1490" height="1006" alt="Connect via SDK screen" src="https://github.com/user-attachments/assets/575c866d-72ec-4dec-b8a7-5dc4ed0aca6f" />
 
@@ -9,8 +9,8 @@ The official web dashboard for [Worlds API](https://jsr.io/@fartlabs/worlds).
 This project is built with modern web technologies to provide a premium user
 experience:
 
-- **[Worlds API SDK](https://jsr.io/@fartlabs/worlds)**: Powered by the official
-  Worlds API SDK.
+- **[Worlds SDK](https://jsr.io/@wazoo/worlds-sdk)**: Powered by the official
+  Worlds SDK.
 - **[Next.js](https://nextjs.org)**: The React framework for the web.
 - **[WorkOS AuthKit](https://workos.com/docs/authkit)**: Secure and seamless
   authentication.
@@ -33,7 +33,7 @@ experience:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/EthanThatOneKid/worlds.git
+   git clone https://github.com/wazootech/worlds.git
    cd ./packages/console
    ```
 
@@ -68,8 +68,8 @@ result.
 - **Type Check**: `npm run check`
 
 For more information on the background, research, and glossary, please visit the
-[Worlds API repository](https://github.com/FartLabs/worlds). Official
-documentation: <https://github.com/wazootech/docs>.
+[Worlds repository](https://github.com/wazootech/worlds). Official
+documentation: <https://docs.wazoo.dev>.
 
 ---
 
