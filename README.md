@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://jsr.io/@wazoo/worlds-sdk"><img src="https://jsr.io/badges/@wazoo/worlds-sdk" alt="JSR" /></a>
   <a href="https://jsr.io/@wazoo/worlds-sdk/score"><img src="https://jsr.io/badges/@wazoo/worlds-sdk/score" alt="JSR Score" /></a>
-  <a href="https://github.com/wazootech/worlds"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>
+  <a href="https://github.com/wazootech/worlds"><img src="https://img.shields.io/badge/GitHub-black?logo=github" alt="GitHub" /></a>
   <a href="https://deepwiki.com/wazootech/worlds"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" /></a>
 </p>
 
@@ -72,7 +72,7 @@ No RDF expertise required. Simple and modular.
 
 ---
 
-## Worlds for your AI
+## World memory for your AI
 
 The Worlds SDK and AI SDK provide AI agents with persistent, structured memory.
 
