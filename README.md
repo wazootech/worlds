@@ -1,13 +1,15 @@
 <p align="center">
-  <picture>
-    <source srcset="packages/docs/logo/dark.svg" media="(prefers-color-scheme: dark)">
-    <source srcset="packages/docs/logo/light.svg" media="(prefers-color-scheme: light)">
-    <img src="packages/docs/logo/dark.svg" alt="Worlds Platform" width="400" />
-  </picture>
+  <a href="https://docs.wazoo.dev">
+    <picture>
+      <source srcset="packages/docs/logo/dark.svg" media="(prefers-color-scheme: dark)">
+      <source srcset="packages/docs/logo/light.svg" media="(prefers-color-scheme: light)">
+      <img src="packages/docs/logo/dark.svg" alt="Worlds Platform" width="400" />
+    </picture>
+  </a>
 </p>
 
 <p align="center">
-  <strong>World Models as a Service. Context engine for AI.</strong>
+  <strong>World models as a Service. Context engine for AI.</strong>
 </p>
 
 <p align="center">
@@ -34,9 +36,7 @@ reasoning.
 - **Performance**: Designed for the edge. Low latency store operations.
 - **AI-native**: First-class support for LLM tool-calling and context injection.
 
-Worlds delivers these features through a unified API.
-
----
+Worlds delivers these features through a unified, open-source API.
 
 ## Use Worlds
 
@@ -69,8 +69,6 @@ No RDF expertise required. Simple and modular.
 </td>
 </tr>
 </table>
-
----
 
 ## World memory for your AI
 
@@ -110,8 +108,6 @@ const { text } = await generateText({
   prompt: "Find all people in the knowledge base and describe them.",
 });
 ```
-
----
 
 ## Build with Worlds SDK
 
@@ -160,8 +156,6 @@ const result = await sdk.worlds.sparql(
 );
 ```
 
----
-
 ## Command line interface
 
 Manage your worlds directly from the terminal.
@@ -185,8 +179,6 @@ worlds list
 worlds sparql "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10"
 ```
 
----
-
 ## The architecture of memory
 
 Worlds Platform mirrors human cognitive systems to provide a "memory stack" for
@@ -200,9 +192,7 @@ autonomous agents.
 | **Procedural** | What it **can do**      | **Tool Bridge**: Automated skills for graph operations, tools, and agents. |
 | **Sensory**    | What it **perceives**   | **Ingestion**: Raw data streams and vector indexing.                       |
 
----
-
-## Research and documentation
+## Prior research
 
 The following research inspires this work:
 
@@ -212,20 +202,12 @@ The following research inspires this work:
 
 See the [whitepaper](https://docs.wazoo.dev/overview/whitepaper).
 
----
-
-## Links
+## Quicklinks
 
 - [Documentation](https://docs.wazoo.dev)
 - [Quickstart](#build-with-worlds-sdk)
 - [Wazoo Technologies](https://wazoo.dev)
 - [Support](https://github.com/wazootech/worlds/issues)
-
----
-
-<p align="center">
-  <strong>Give your AI a Worlds model.</strong>
-</p>
 
 ---
 
