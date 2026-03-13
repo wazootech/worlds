@@ -3,8 +3,8 @@
 [![JSR](https://jsr.io/badges/@wazoo/worlds-cli)](https://jsr.io/@wazoo/worlds-cli)
 
 **Worlds Platform CLI** is a command-line tool for managing your Worlds Platform
-instances. It provides a convenient way to interact with worlds, organizations,
-and invites directly from your terminal.
+instances. It provides a way to interact with worlds directly from your
+terminal.
 
 ## Installation
 
@@ -26,24 +26,33 @@ deno -A jsr:@wazoo/worlds-cli [command] [options]
 worlds [command] [options]
 ```
 
+Use the `--help` flag with any command to see details about its usage and
+options:
+
+```sh
+worlds create --help
+```
+
 ### Commands
 
-- **create**: Create a new world.
-- **list**: List all available worlds.
-- **get**: Get details of a specific world.
-- **update**: Update an existing world's metadata.
-- **delete**: Remove a world.
-- **search**: Search for patterns within a world's knowledge graph.
-- **sparql**: Query a world using SPARQL.
-- **import/export**: Move data in and out of a world.
-- **chat**: Start an interactive chat with an AI assistant in a world.
+| Subcommand        | Description                                                |
+| ----------------- | ---------------------------------------------------------- |
+| **create**        | Create a new world.                                        |
+| **list**          | List all available worlds.                                 |
+| **get**           | Get details of a specific world.                           |
+| **update**        | Update an existing world's metadata.                       |
+| **delete**        | Remove a world.                                            |
+| **search**        | Search for patterns within a world's knowledge graph.      |
+| **sparql**        | Query a world using SPARQL.                                |
+| **import/export** | Move data in and out of a world.                           |
+| **chat**          | Start an interactive chat with an AI assistant in a world. |
 
-### Environment Variables
+### Environment variables
 
-The CLI can operate in two modes: **Remote** (connecting to an existing server)
-or **Local** (running an in-process server).
+The CLI can operate in two modes: **remote** (connecting to an existing server)
+or **local** (running an in-process server).
 
-#### Remote Mode
+#### Remote mode
 
 Used when connecting to a hosted Worlds API instance.
 
@@ -51,7 +60,7 @@ Used when connecting to a hosted Worlds API instance.
   `https://api.wazoo.dev`).
 - **WORLDS_API_KEY**: (Required) Your Worlds API key.
 
-#### Local Mode
+#### Local mode
 
 Used to run a local, in-process server using your machine's resources.
 
@@ -60,7 +69,7 @@ Used to run a local, in-process server using your machine's resources.
 - **GOOGLE_API_KEY**: (Required) API key for high-quality Gemini embeddings.
 - **WORLDS_API_KEY**: (Optional) API key for administrative access.
 
-#### AI Chat (Required for `chat` command)
+#### AI chat
 
 - **OPENROUTER_API_KEY**: (Required) Your OpenRouter API key.
 - **OPENROUTER_MODEL**: (Optional) The OpenRouter model ID to use (default:
@@ -68,7 +77,7 @@ Used to run a local, in-process server using your machine's resources.
 
 ### Examples
 
-#### Create a World
+#### Create a world
 
 ```sh
 worlds create --label "My First World"
@@ -79,7 +88,7 @@ Output:
 ```json
 {
   "id": "01KH6XAGQKJ1B9MR6WS76YKQK5",
-  "organizationId": null,
+  "slug": "my-first-world",
   "label": "My First World",
   "description": null,
   "createdAt": 1770832347891,
@@ -88,7 +97,7 @@ Output:
 }
 ```
 
-#### List Worlds
+#### List worlds
 
 ```sh
 worlds list
@@ -100,7 +109,7 @@ Output:
 [
   {
     "id": "01KH6XAGQKJ1B9MR6WS76YKQK5",
-    "organizationId": null,
+    "slug": "my-first-world",
     "label": "My First World",
     "description": null,
     "createdAt": 1770832347891,
@@ -110,7 +119,7 @@ Output:
 ]
 ```
 
-#### Update a World
+#### Update a world
 
 ```sh
 worlds update 01KH6XAGQKJ1B9MR6WS76YKQK5 --label "Updated Label"

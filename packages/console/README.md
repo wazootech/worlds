@@ -6,7 +6,7 @@ The official web dashboard for [Worlds](https://docs.wazoo.dev).
 
 ## Design
 
-This project is built with modern web technologies to provide a premium user
+This project is built with modern web technologies to provide a user
 experience:
 
 - **[Worlds SDK](https://jsr.io/@wazoo/worlds-sdk)**: Powered by the official
@@ -21,7 +21,7 @@ experience:
   with a local implementation of WorkOS features, enabling a self-hostable
   subset of functionality for offline development and faster feedback loops.
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 

@@ -7,7 +7,7 @@ querying, and reasoning over context graphs. It is built with
 [Deno](https://deno.land/) and leverages high-performance libraries for RDF
 operations and vector embeddings.
 
-## Key Features
+## Key features
 
 - **SPARQL Support**: Comprehensive support for querying and updating RDF data
   using [Comunica](https://comunica.dev/) and
@@ -16,10 +16,10 @@ operations and vector embeddings.
   [TensorFlow.js](https://www.tensorflow.org/js) and
   [OpenRouter](https://openrouter.ai).
 - **Edge-Ready**: Designed to run efficiently at the edge.
-- **Persistence**: Backed by [LibSQL](https://github.com/libsql/libsql) for
-  reliable data storage.
+- **Persistence**: Backed by [LibSQL](https://github.com/libsql/libsql) for data
+  storage.
 
-## Local Database Structure
+## Local database structure
 
 When running locally with the `FileDatabaseManager`, the server organizes data
 using a two-tier SQLite structure:
@@ -48,7 +48,7 @@ packages/console/
 This isolation ensures that world-specific operations (like SPARQL updates or
 log rotation) do not affect the main server registry or other worlds.
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
@@ -73,7 +73,7 @@ deno -A jsr:@wazoo/worlds-server [command]
 - **Start Development Server**: `deno task start`
 - **Generate SQL Schemas**: `deno task generate`
 
-## API Reference
+## API reference
 
 The API follows a standard RESTful structure. For full details, see the
 [official documentation](https://docs.wazoo.dev).
