@@ -15,7 +15,7 @@ In traditional RAG, you chunk and embed text for retrieval based on semantic
 similarity. This works for static information but fails to capture relationship
 dynamics or state changes.
 
-### Scenario: The evolving fact
+### The evolving fact
 
 1. **Monday:** "I am working on Project Apollo."
 2. **Wednesday:** "I am pausing Apollo to focus on Project Hermes."
@@ -38,7 +38,7 @@ When answering user queries:
 
 </Prompt>
 
-## Worlds solution: Stateful memory
+## Stateful memory
 
 Worlds maintains a **living knowledge graph**. Instead of storing raw text, it
 extracts meaning as **[triples](/glossary/triple)** (subject → predicate →
@@ -48,7 +48,7 @@ When facts change, Worlds updates the specific relationships in the graph. This
 allows you to resolve contradictions at the data layer rather than relying on
 probabilistic LLM reasoning.
 
-### Comparison: RAG and Worlds
+### RAG vs Worlds
 
 | Feature       | Traditional RAG     | Worlds, functioning as world memory            |
 | :------------ | :------------------ | :--------------------------------------------- |
