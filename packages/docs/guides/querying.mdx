@@ -5,10 +5,7 @@ description:
 ---
 
 The Worlds Platform utilizes the
-
-<Tooltip tip="Resource Description Framework: A standard model for structured data">
-  Resource Description Framework (RDF)
-</Tooltip>
+[Resource Description Framework (RDF)](https://en.wikipedia.org/wiki/Resource_Description_Framework)
 for its core data model and SPARQL for structured querying.
 
 ## RDF blob handling
@@ -30,10 +27,8 @@ Centralized in the core patch service, the system processes mutations for the
 world database:
 
 1.  **Deterministic identification**:
-    <Tooltip tip="Replacing existential variables with new constants">
-      Skolemizes
-    </Tooltip>
-    and hashes each quad to a unique triple ID.
+    [Skolemizes](https://en.wikipedia.org/wiki/Skolem_normal_form) and hashes
+    each quad to a unique triple ID.
 2.  **Relational storage**: Upserts the resulting triples into the `triples`
     table.
 3.  **Semantic indexing**: Chunks and embeds literal values for hybrid search.
