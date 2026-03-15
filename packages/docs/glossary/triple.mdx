@@ -1,0 +1,38 @@
+---
+title: "Triple"
+description:
+  "Subject → Predicate → Object — the atomic unit of knowledge in a World."
+---
+
+A **triple**, also called a _triplet_, is the smallest piece of information
+stored in a World. Every fact is expressed as three components:
+
+| Component     | Role                         | Example          |
+| :------------ | :--------------------------- | :--------------- |
+| **Subject**   | The entity being described   | `user:ethan`     |
+| **Predicate** | The relationship or property | `schema:worksAt` |
+| **Object**    | The target value or entity   | `org:wazoo`      |
+
+Together they read as a single statement: **Ethan works at Wazoo.**
+
+## Why triples?
+
+Triples follow the **RDF (Resource Description Framework)** standard. Because
+every fact shares the same structure, triples compose naturally into a graph—no
+schema migrations, no table joins.
+
+```mermaid
+graph LR
+    E["user:ethan"] -->|worksAt| W["org:wazoo"]
+    G["user:gregory"] -->|worksAt| W
+    W -->|locatedIn| S["geo:seattle"]
+```
+
+As the graph grows, the agent can traverse relationships to infer new knowledge
+(for example, that Ethan and Gregory share the same work location).
+
+## Learn more
+
+- [Academy: Symbolic graph architecture](/academy/graphs) — building graphs from
+  triples
+- [Knowledge Graphs guide](/guides/knowledge-graphs) — advanced graph topologies

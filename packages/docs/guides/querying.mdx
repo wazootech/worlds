@@ -6,7 +6,7 @@ description:
 
 The Worlds Platform utilizes the
 [Resource Description Framework (RDF)](https://en.wikipedia.org/wiki/Resource_Description_Framework)
-for its core data model and SPARQL for structured querying.
+for its core data model and [SPARQL](/glossary/sparql) for structured querying.
 
 ## RDF blob handling
 
@@ -29,9 +29,10 @@ world database:
 1.  **Deterministic identification**:
     [Skolemizes](https://en.wikipedia.org/wiki/Skolem_normal_form) and hashes
     each quad to a unique triple ID.
-2.  **Relational storage**: Upserts the resulting triples into the `triples`
-    table.
-3.  **Semantic indexing**: Chunks and embeds literal values for hybrid search.
+2.  **Relational storage**: Upserts the resulting [triples](/glossary/triple)
+    into the `triples` table.
+3.  **Semantic indexing**: Chunks and embeds literal values for
+    [hybrid search](/glossary/hybrid-search).
 4.  **Triggers**: SQL triggers synchronize `rdf:type` relations to the
     `entity_types` table.
 

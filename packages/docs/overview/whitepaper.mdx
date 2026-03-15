@@ -18,7 +18,7 @@ detachable hippocampus for AI agents. By combining a
 [SPARQL](https://en.wikipedia.org/wiki/SPARQL)-compatible
 [RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework) store with
 edge-distributed [SQLite](https://en.wikipedia.org/wiki/SQLite) for persistence,
-Worlds enables automatic memory (or auto-memory) for agents to maintain mutable,
+Worlds enables automatic memory, or auto-memory, for agents to maintain mutable,
 structured knowledge graphs. This system fuses vector search for semantic
 intuition with deterministic facts for precise data retrieval, empowering agents
 to navigate a persistent, interoperable map of reality rather than predicting
@@ -72,8 +72,8 @@ world where an assistant knows your relationships, history, and preferences with
 
 ### Cognitive architecture
 
-The Worlds Platform mirrors human cognitive systems
-([Memory](https://en.wikipedia.org/wiki/Memory)) to provide a structured "memory
+The Worlds Platform mirrors human cognitive systems, such as
+[Memory](https://en.wikipedia.org/wiki/Memory), to provide a structured "memory
 stack" for autonomous agents, implementing what is increasingly recognized as
 auto-memory—a system that self-organizes and recalls context without manual
 engineering.
@@ -105,7 +105,7 @@ Data ingestion follows a multi-stage transformation process:
 3.  **Relational Mapping**: Extracted triples are mapped to an established
     ontology, ensuring structural consistency across the global graph.
 4.  **Semantic Indexing**: Each chunk and triple is indexed simultaneously via
-    high-dimensional vector embeddings and full-text search (FTS) keys.
+    high-dimensional vector embeddings and full-text search keys.
 
 ### 2. State management
 
@@ -201,8 +201,9 @@ runtime, providing isolated, high-performance in-memory state.
 Persistence utilize a hybrid schema to avoid the overhead of general-purpose
 SPARQL engines on disk while maintaining semantic integrity.
 
-- **`triples` table**: Stores atomic units of knowledge (Subject, Predicate,
-  Object), targeting string literals and ranks derived from triple data.
+- **`triples` table**: Stores atomic units of knowledge, including Subject,
+  Predicate, and Object, targeting string literals and ranks derived from triple
+  data.
 - **`entity_types` table**: An optimized table for mapping entities to their
   `rdf:type` IRIs, enabling rapid structural filtering.
 - **`blobs` table**: Handles large-scale RDF data and file-based state.
@@ -293,8 +294,7 @@ When the system identifies low-confidence matches or multiple conflicting
 entities, the malleable nature of Worlds allows the UI to present
 [disambiguation](https://en.wikipedia.org/wiki/Entity_linking#Disambiguation)
 prompts to the user via a
-[Human-in-the-loop](https://en.wikipedia.org/wiki/Human-in-the-loop) (HITL)
-workflow.
+[Human-in-the-loop](https://en.wikipedia.org/wiki/Human-in-the-loop) workflow.
 
 ### Outcome-based determinism
 
@@ -359,8 +359,8 @@ The platform exposes a comprehensive REST API organized into management-oriented
 
 ### Access control
 
-- **Dynamic access**: Runtime enforcement of plan limits (e.g., Free vs. Pro
-  tiers) without code deployment.
+- **Dynamic access**: Runtime enforcement of plan limits, such as Free vs. Pro
+  tiers, without code deployment.
 - **Metering**: Asynchronous usage tracking aggregated by API key and time
   bucket, supporting finer-grained "pay-as-you-go" billing.
 - **Auth**: Dual-strategy authentication using WorkOS for humans and the Console

@@ -49,6 +49,16 @@
               "overview/features"
             ]
           },
+          {
+            "group": "Glossary",
+            "pages": [
+              "glossary/world",
+              "glossary/triple",
+              "glossary/neuro-symbolic",
+              "glossary/sparql",
+              "glossary/hybrid-search"
+            ]
+          },
 
           {
             "group": "Background",

@@ -21,9 +21,9 @@ At this stage, the data remains unstructured human language.
 ### Neuro-symbolic engine
 
 The Worlds engine uses LLMs to extract meaning and entities. It translates
-ambiguous language into structured **triples** (subject → predicate → object).
-These facts then merge into a **world**—an isolated container where the graph
-evolves through:
+ambiguous language into structured **[triples](/glossary/triple)** (subject →
+predicate → object). These facts then merge into a **world**—an isolated
+container where the graph evolves through:
 
 - **Updating** conflicting facts.
 - **Extending** existing entities with new context.
@@ -31,9 +31,10 @@ evolves through:
 
 ### Retrieval
 
-When an agent needs context, it performs a **hybrid search**. This process mixes
-semantic vector similarity with deterministic graph traversal to pull a
-high-precision slice of reality directly into the context window.
+When an agent needs context, it performs a
+**[hybrid search](/glossary/hybrid-search)**. This process mixes semantic vector
+similarity with deterministic graph traversal to pull a high-precision slice of
+reality directly into the context window.
 
 ```mermaid
 graph LR
@@ -48,9 +49,10 @@ graph LR
 To achieve both semantic flexibility and structural precision, the storage
 engine employs a hybrid strategy.
 
-Worlds utilizes an in-memory, WASM-compiled RDF store that supports SPARQL. The
-infrastructure supports any RDF store—including Apache Jena Fuseki or a local
-file system—that implements `rdf-patch` forward synchronization.
+Worlds utilizes an in-memory, WASM-compiled RDF store that supports
+[SPARQL](/glossary/sparql). The infrastructure supports any RDF store—including
+Apache Jena Fuseki or a local file system—that implements `rdf-patch` forward
+synchronization.
 
 `n3` is the preferred store because it runs entirely within the JavaScript
 runtime, providing isolated, high-performance in-memory state.
@@ -80,9 +82,9 @@ The platform utilizes **Reciprocal Rank Fusion (RRF)** to combine results from
 distinct indices into a single, unified relevance ranking:
 
 - **Semantic search**: Captures conceptual meaning using a vector index and
-  high-dimensional embeddings (1536-dim).
-- **Keyword search (FTS5)**: Provides exact term matching using the BM25 ranking
-  algorithm.
+  high-dimensional embeddings, specifically 1536-dim.
+- **Keyword search**, via FTS5: Provides exact term matching using the BM25
+  ranking algorithm.
 - **Graph context**: Restricts search results based on structural RDF
   relationships using subject or predicate filters.
 

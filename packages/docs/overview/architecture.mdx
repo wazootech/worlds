@@ -3,8 +3,9 @@ title: "Architecture"
 description: "High-level diagram and explanation of the Worlds architecture."
 ---
 
-The Worlds Platform utilizes a managed neuro-symbolic infrastructure designed
-for edge-distributed, agentic memory. Built on the [Deno](https://deno.com/)
+The Worlds Platform utilizes a managed
+[neuro-symbolic](/glossary/neuro-symbolic) infrastructure designed for
+edge-distributed, agentic memory. Built on the [Deno](https://deno.com/)
 runtime, it separates the **Worlds Console** for management from the **Worlds
 API** for high-performance execution.
 
@@ -70,8 +71,10 @@ instances.
   <div>
 ### Worlds API
 
-The **Worlds API Server** handles RDF graph management, SPARQL execution, and
-hybrid search. This is the API layer where your information lives.
+The **Worlds API Server** handles RDF graph management,
+[SPARQL](/glossary/sparql) execution, and
+[hybrid search](/glossary/hybrid-search). This is the API layer where your
+information lives.
 
   </div>
 </Columns>
@@ -161,7 +164,7 @@ graph LR
 Each World is a specific context or knowledge graph managed by the server.
 
 - **Dedicated storage**: Each World maintains its own secondary libSQL database
-  for triples, chunks, and embeddings.
+  for [triples](/glossary/triple), chunks, and embeddings.
 - **Isolation**: Worlds are accessed via `/v1/worlds/{id}`, ensuring zero
   cross-contamination between contexts.
 

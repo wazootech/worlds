@@ -33,7 +33,7 @@ navigation structure, theme, colors, links, API and specs.
 Understanding the project tells you:
 
 - What pages exist and how they're organized
-- What navigation groups are used (and their naming conventions)
+- What navigation groups are used, and their naming conventions
 - How the site navigation is structured
 - What theme and configuration the site uses
 
@@ -69,8 +69,9 @@ are working on.
 
 ### Required files
 
-- `docs.json` - Site configuration (navigation, theme, integrations, etc.). See
-  [global settings](https://mintlify.com/docs/settings/global) for all options.
+- `docs.json` - Site configuration, including navigation, theme, integrations,
+  etc. See [global settings](https://mintlify.com/docs/settings/global) for all
+  options.
 - `*.mdx` files - Documentation pages with YAML frontmatter
 
 ### Example file structure
@@ -107,8 +108,8 @@ Optional frontmatter fields:
 
 - `sidebarTitle`: Short title for sidebar navigation.
 - `icon`: Lucide or Font Awesome icon name, URL, or file path.
-- `tag`: Label next to the page title in the sidebar (for example, "NEW").
-- `mode`: Page layout mode (`default`, `wide`, `custom`).
+- `tag`: Label next to the page title in the sidebar, for example, "NEW".
+- `mode`: Page layout mode, such as `default`, `wide`, or `custom`.
 - `keywords`: Array of terms related to the page content for local search and
   SEO.
 - Any custom YAML fields for use with personalization or conditional content.
@@ -120,7 +121,7 @@ Optional frontmatter fields:
   kebab-case: `getting-started.mdx`, `api-reference.mdx`
 - Use root-relative paths without file extensions for internal links:
   `/overview/getting-started/quickstart`
-- Do not use relative paths (`../`) or absolute URLs for internal pages
+- Do not use relative paths, like `../`, or absolute URLs for internal pages
 - When you create a new page, add it to `docs.json` navigation or it won't
   appear in the sidebar
 
@@ -178,8 +179,8 @@ primary pattern at the root level, then nest others within it.
 #### Choose your primary pattern
 
 - Groups: Default. Single audience, straightforward hierarchy
-- Tabs: Distinct sections with different audiences (Guides vs API Reference) or
-  content types
+- Tabs: Distinct sections with different audiences, such as Guides vs API
+  Reference, or content types
 - Anchors: Want persistent section links at sidebar top. Good for separating
   docs from external resources
 - Dropdowns: Multiple doc sections users switch between, but not distinct enough
@@ -255,7 +256,7 @@ Use snippets for:
 
 Do not use snippets for:
 
-- Slight variations needed per page (leads to complex props)
+- Slight variations needed per page, which lead to complex props
 
 Import snippets with `import { Component } from "/path/to/snippet-name.jsx"`.
 
@@ -263,25 +264,27 @@ Import snippets with `import { Component } from "/path/to/snippet-name.jsx"`.
 
 ### Voice and structure
 
-- Second-person voice ("you")
+- Second-person voice, using "you"
 - Active voice, direct language
-- Sentence case for headings ("Getting started", not "Getting Started")
-- Sentence case for code block titles ("Expandable example", not "Expandable
-  Example")
+- Sentence case for headings, using "Getting started" and not "Getting Started"
+- Sentence case for code block titles, using "Expandable example" and not
+  "Expandable Example"
 - Lead with context: explain what something is before how to use it
 - Prerequisites at the start of procedural content
 
 ### What to avoid
 
-- Marketing language ("powerful", "seamless", "robust", "cutting-edge")
-- Filler phrases ("it's important to note", "in order to")
-- Excessive conjunctions ("moreover", "furthermore", "additionally")
-- Editorializing ("obviously", "simply", "just", "easily")
+- Marketing language like "powerful", "seamless", "robust", or "cutting-edge"
+- Filler phrases like "it's important to note" or "in order to"
+- Excessive conjunctions like "moreover", "furthermore", or "additionally"
+- Editorializing words like "obviously", "simply", "just", or "easily"
 - Generic introductions that don't add value
 - Concluding summaries that restate what was just said
 
 ### Formatting
 
+- Use parentheses sparingly and only for direct definitions, such as acronyms.
+  Otherwise, revise parenthetical thoughts into fluid, formal sentences.
 - All code blocks must have language tags
 - All images and media must have descriptive alt text
 - Use bold and italics only when they serve the reader's understanding--never
@@ -295,7 +298,7 @@ Import snippets with `import { Component } from "/path/to/snippet-name.jsx"`.
 ### Code examples
 
 - Keep examples simple and practical
-- Use realistic values (not "foo" or "bar")
+- Use realistic values rather than generic names like "foo" or "bar"
 - One clear example is better than multiple variations
 - Test that code works before including it
 
@@ -323,7 +326,7 @@ repository.
 - SEO indexing → Control with `"seo": {"indexing": "all"}` to include hidden
   pages in search
 
-### Requires dashboard setup (human task)
+### Requires dashboard setup, which is a human task
 
 - Custom domains and subdomains
 - Preview deployment settings
@@ -335,7 +338,7 @@ rewrite rules. See [/docs subpath](https://mintlify.com/docs/deploy/vercel).
 ## Workflow
 
 - **Understand task and project**: Review your core platform configuration
-  (`docs.json`). Know the navigation setup, theme, and routing constraints.
+  `docs.json`. Know the navigation setup, theme, and routing constraints.
 - **Check for existing content**: Always search first. Update an existing page
   instead of adding a new one.
 - **Read surrounding content**: Read two to three existing pages to internalize
@@ -357,7 +360,7 @@ your brand's authority. Translate technical signal into high-fidelity narrative.
 
 - Signal over noise: Skip marketing jargon. Identify the immediate value this
   update gives the user.
-- Reciprocity: Offer specific value (blueprints, code snippets, architectures)
+- Reciprocity: Offer specific value via blueprints, code snippets, architectures
   before asking for engagement.
 - Mimetic desire: Highlight adoption by high-impact engineers or ecosystem
   partners.

@@ -18,8 +18,8 @@ agents to handle complex jobs that take more than one session.
 **The solution: Linked memory**
 
 Instead of just hoping the AI finds the right data in a massive pile, Worlds
-creates a structured map (a graph). By linking related facts together, your
-agent can always follow the logical path from one piece of information to
+creates a structured map, acting as a graph. By linking related facts together,
+your agent can always follow the logical path from one piece of information to
 another, no matter how much data you add.
 
 </Note>
@@ -34,8 +34,9 @@ another, no matter how much data you add.
 
 ## Architecture
 
-A world functions as a **neuro-symbolic memory container**. It pairs an isolated
-RDF dataset with a high-performance vector search index.
+A world functions as a **[neuro-symbolic](/glossary/neuro-symbolic) memory
+container**. It pairs an isolated RDF dataset with a high-performance vector
+search index.
 
 ### Neural layer
 
@@ -44,9 +45,9 @@ the agent to navigate the world through natural language queries.
 
 ### Symbolic layer
 
-The symbolic layer uses RDF and SPARQL for deterministic facts. It provides
-deterministic validation, reducing the risk of hallucinations inherent in
-standalone LLMs.
+The symbolic layer uses RDF and [SPARQL](/glossary/sparql) for deterministic
+facts. It provides deterministic validation, reducing the risk of hallucinations
+inherent in standalone LLMs.
 
 ## Audit trails
 

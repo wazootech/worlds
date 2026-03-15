@@ -20,11 +20,11 @@ production deployments.
 | `DENO_DEPLOY_TOKEN`            | Production | Enables remote Deno Deploy orchestration.                          |
 | `TURSO_API_TOKEN`              | Production | Enables remote Turso database provisioning.                        |
 | `TURSO_ORG`                    | Production | Defines the Turso organization slug.                               |
-| `WORLDS_EMBEDDINGS_DIMENSIONS` | Both       | Sets unified vector dimensions for DB and AI (defaults to `768`).  |
+| `WORLDS_EMBEDDINGS_DIMENSIONS` | Both       | Sets unified vector dimensions for DB and AI. Defaults to `768`.   |
 | `OPENROUTER_API_KEY`           | Both       | Provides a global fallback for embeddings.                         |
 | `OPENROUTER_MANAGEMENT_KEY`    | Production | Enables automatic per-app API key generation via OpenRouter API.   |
-| `OLLAMA_BASE_URL`              | Both       | Sets Ollama API URL (defaults to `http://127.0.0.1:11434`).        |
-| `OLLAMA_EMBEDDINGS_MODEL`      | Both       | Sets Ollama model (defaults to `nomic-embed-text`).                |
+| `OLLAMA_BASE_URL`              | Both       | Sets Ollama API URL. Defaults to `http://127.0.0.1:11434`.         |
+| `OLLAMA_EMBEDDINGS_MODEL`      | Both       | Sets Ollama model. Defaults to `nomic-embed-text`.                 |
 
 ## World server
 
@@ -35,29 +35,29 @@ server.
 | Variable                       | Purpose                                                                                      |
 | :----------------------------- | :------------------------------------------------------------------------------------------- |
 | `WORLDS_API_KEY`               | Sets the **root admin key** for the server. If omitted, the server runs in unprotected mode. |
-| `WORLDS_EMBEDDINGS_DIMENSIONS` | Sets unified vector dimensions for DB and AI (defaults to `768`).                            |
-| `WORLDS_BASE_DIR`              | Defines the base directory for local world storage (defaults to `./worlds`).                 |
-| `LIBSQL_URL`                   | Defines the connection string (defaults to `file:./worlds.db`).                              |
+| `WORLDS_EMBEDDINGS_DIMENSIONS` | Sets unified vector dimensions for DB and AI. Defaults to `768`.                             |
+| `WORLDS_BASE_DIR`              | Defines the base directory for local world storage. Defaults to `./worlds`.                  |
+| `LIBSQL_URL`                   | Defines the connection string. Defaults to `file:./worlds.db`.                               |
 | `LIBSQL_AUTH_TOKEN`            | Provides the auth token for remote libSQL/Turso instances.                                   |
 | `TURSO_API_TOKEN`              | Enables remote Turso database provisioning for managed worlds.                               |
 | `TURSO_ORG`                    | Required if `TURSO_API_TOKEN` is set.                                                        |
 | `OPENROUTER_API_KEY`           | Enables high-quality OpenRouter embeddings.                                                  |
-| `OPENROUTER_EMBEDDINGS_MODEL`  | Sets OpenRouter model (defaults to `openai/text-embedding-3-small`).                         |
-| `OLLAMA_BASE_URL`              | Sets Ollama API URL (defaults to `http://127.0.0.1:11434`).                                  |
-| `OLLAMA_EMBEDDINGS_MODEL`      | Sets Ollama model (defaults to `nomic-embed-text`).                                          |
+| `OPENROUTER_EMBEDDINGS_MODEL`  | Sets OpenRouter model. Defaults to `openai/text-embedding-3-small`.                          |
+| `OLLAMA_BASE_URL`              | Sets Ollama API URL. Defaults to `http://127.0.0.1:11434`.                                   |
+| `OLLAMA_EMBEDDINGS_MODEL`      | Sets Ollama model. Defaults to `nomic-embed-text`.                                           |
 
 ## CLI
 
 The Worlds CLI utilizes environment variables for both remote and local
 operations.
 
-| Variable             | Mode   | Purpose                                                                 |
-| :------------------- | :----- | :---------------------------------------------------------------------- |
-| `WORLDS_API_KEY`     | Remote | Your API key for connecting to a remote server.                         |
-| `WORLDS_BASE_URL`    | Remote | API base URL for remote mode (e.g., `https://api.wazoo.dev`).           |
-| `LIBSQL_URL`         | Local  | Database connection URL for local in-process server mode.               |
-| `OPENROUTER_API_KEY` | Chat   | Enables AI chat functionality via OpenRouter.                           |
-| `OPENROUTER_MODEL`   | Chat   | Sets the model for AI chat (defaults to `google/gemini-2.0-flash-001`). |
+| Variable             | Mode   | Purpose                                                                |
+| :------------------- | :----- | :--------------------------------------------------------------------- |
+| `WORLDS_API_KEY`     | Remote | Your API key for connecting to a remote server.                        |
+| `WORLDS_BASE_URL`    | Remote | API base URL for remote mode (e.g., `https://api.wazoo.dev`).          |
+| `LIBSQL_URL`         | Local  | Database connection URL for local in-process server mode.              |
+| `OPENROUTER_API_KEY` | Chat   | Enables AI chat functionality via OpenRouter.                          |
+| `OPENROUTER_MODEL`   | Chat   | Sets the model for AI chat. Defaults to `google/gemini-2.0-flash-001`. |
 
 ## Embedding providers
 

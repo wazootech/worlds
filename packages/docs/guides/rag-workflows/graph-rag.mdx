@@ -31,7 +31,7 @@ increasingly noisy.
 ```text
 You are a deterministic agent connected to a Worlds knowledge graph.
 When answering user queries:
-1. Use your tools to perform a SPARQL query or Hybrid Search on the stateful memory.
+1. Use your tools to perform a [SPARQL](/glossary/sparql) query or [Hybrid Search](/glossary/hybrid-search) on the stateful memory.
 2. The retrieved relationships represent the CURRENT, VERIFIED state.
 3. Respond strictly utilizing the relationships extracted, overriding any probabilistic intuition.
 ```
@@ -41,7 +41,8 @@ When answering user queries:
 ## Worlds solution: Stateful memory
 
 Worlds maintains a **living knowledge graph**. Instead of storing raw text, it
-extracts meaning as **triples** (subject → predicate → object).
+extracts meaning as **[triples](/glossary/triple)** (subject → predicate →
+object).
 
 When facts change, Worlds updates the specific relationships in the graph. This
 allows you to resolve contradictions at the data layer rather than relying on
@@ -49,12 +50,12 @@ probabilistic LLM reasoning.
 
 ### Comparison: RAG and Worlds
 
-| Feature       | Traditional RAG     | Worlds (agent memory)                 |
-| :------------ | :------------------ | :------------------------------------ |
-| **Search**    | Semantic similarity | Hybrid (semantic + relational)        |
-| **State**     | Stateless           | Stateful (resolves contradictions)    |
-| **Inference** | Hallucination-prone | Deterministic reasoning               |
-| **Structure** | Unstructured chunks | Knowledge primitives (items, triples) |
+| Feature       | Traditional RAG     | Worlds, functioning as agent memory            |
+| :------------ | :------------------ | :--------------------------------------------- |
+| **Search**    | Semantic similarity | Hybrid, combining semantic and relational      |
+| **State**     | Stateless           | Stateful, resolving contradictions             |
+| **Inference** | Hallucination-prone | Deterministic reasoning                        |
+| **Structure** | Unstructured chunks | Knowledge primitives, namely items and triples |
 
 ## Implementing graph RAG
 
