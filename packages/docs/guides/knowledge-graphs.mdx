@@ -51,23 +51,23 @@ graph LR
 
 ![Table vs Node-Edge Graph](/images/table-vs-graph.png)
 
-### Knowledge representation vs decision infrastructure
+### Meaning at scale
 
-There is a fundamental difference between formalizing meaning and
-operationalizing context.
+Historically, there has been a trade-off between semantic interoperability and
+analytical performance.
 
-- **RDF** (Resource Description Framework) is a **knowledge representation
-  model**. It uses standard URI-based triples to define canonical vocabularies
-  and ensure global interoperability. It excels at semantic precision.
-- **LPG** (Labelled Property Graph) is an **operational decision
-  infrastructure**. It physically structures nodes and relationships as
-  property-bearing networks (e.g., weights, temporal validity), making it the
-  ideal computational substrate for traversing dense connections under pressure.
+- **Semantic precision**: **RDF** (Resource Description Framework) uses standard
+  URI-based triples to define canonical vocabularies and ensure global
+  interoperability. It is the gold standard for representing knowledge, but
+  traditional RDF databases can be slow for traversing dense connection paths.
+- **Analytical scale**: Continuous AI workflows (like GraphRAG) require
+  high-velocity, graph-native operational infrastructure to traverse complex
+  relationships quickly under pressure.
 
-**Worlds bridges this architectural gap.** It leverages the interoperable,
-atomic meaning of standard RDF triples while functioning underneath as the
-high-velocity, graph-native decision infrastructure required for continuous AI
-workflows (like GraphRAG).
+**Worlds bridges this gap.** It leverages the interoperable, atomic meaning of
+standard RDF triples while functioning underneath as the high-speed
+computational substrate required for agentic workflows, giving you both semantic
+precision and analytical scale.
 
 Knowledge graph statements represent facts. Unlike statistical LLM weights,
 Worlds retrieves specific, auditable relationships.
