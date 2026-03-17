@@ -30,20 +30,6 @@
         ]
       },
       {
-        "group": "Features",
-        "pages": [
-          "features/rest-api",
-          "features/managed-graphrag",
-          "features/byo-model",
-          "features/develop-your-world",
-          "features/query-and-reason",
-          "features/edge-first",
-          "features/hybrid-search",
-          "features/malleable-knowledge",
-          "features/agent-first"
-        ]
-      },
-      {
         "group": "Worlds",
         "pages": [
           "worlds/worlds",
@@ -85,19 +71,12 @@
       {
         "group": "Reference",
         "openapi": "openapi.yaml",
-        "pages": [
-          "reference/api",
-          "reference/cli",
-          "reference/sdk",
-          "reference/configuration",
-          "reference/request-flow"
-        ]
+        "pages": ["reference/api", "reference/sdk", "reference/cli"]
       },
       {
         "group": "Platform",
         "pages": [
           "platform/overview",
-          "platform/authentication",
           "platform/cli",
           "platform/sdk",
           "platform/api"
@@ -110,6 +89,20 @@
           "contribute/contributing-guide",
           "contribute/license",
           "contribute/security"
+        ]
+      },
+      {
+        "group": "Features",
+        "pages": [
+          "features/rest-api",
+          "features/managed-graphrag",
+          "features/byo-model",
+          "features/develop-your-world",
+          "features/query-and-reason",
+          "features/edge-first",
+          "features/hybrid-search",
+          "features/malleable-knowledge",
+          "features/agent-first"
         ]
       }
     ],
