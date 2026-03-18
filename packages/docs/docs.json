@@ -13,10 +13,7 @@
     "dark": "#78350F"
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view"
-    ]
+    "options": ["copy", "view"]
   },
   "seo": {
     "indexing": "all",
@@ -48,13 +45,8 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Console",
-          "href": "https://console.wazoo.dev",
-          "icon": "globe"
-        },
-        {
-          "anchor": "API Reference",
-          "href": "/reference/api",
+          "anchor": "Reference",
+          "href": "/reference/index",
           "icon": "code"
         }
       ]
@@ -134,9 +126,14 @@
         "group": "Reference",
         "openapi": "openapi.yaml",
         "pages": [
+          "reference/index",
+          "reference/api-basics/authentication",
           "reference/api",
+          "reference/rate-limits",
+          "reference/sdk-overview",
           "reference/sdk",
-          "reference/cli"
+          "reference/cli",
+          "reference/changelog"
         ]
       }
     ]
