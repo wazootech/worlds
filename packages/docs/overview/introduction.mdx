@@ -17,14 +17,14 @@ For more information for robots and LLMs, see
 
 </Note>
 
-Worlds provides you with an open-source
-[neuro-symbolic](/glossary/neuro-symbolic) infrastructure layer to build agents
-with persistent, verifiable memory and world models.
+Worlds provides you with an open-source [neuro-symbolic](/overview/introduction)
+infrastructure layer to build agents with persistent, verifiable memory and
+world models.
 
 Traditional memory systems rely on semantic search, which often causes agents to
 hallucinate or lose structural context. You can bridge this "Reasoning Gap" by
-fusing [hybrid search](/glossary/hybrid-search) with the precision of symbolic
-logic. Worlds ensures your agents navigate reality with deterministic precision.
+fusing [hybrid search](/worlds/search) with the precision of symbolic logic.
+Worlds ensures your agents navigate reality with deterministic precision.
 
 <Frame>
   <img
@@ -50,7 +50,7 @@ edge.
   </Card>
   <Card title="Construct your world" icon="hammer">
     Ingest data into isolated Worlds where facts live as queryable
-    [triples](/glossary/triple).
+    [triples](/worlds/facts).
   </Card>
   <Card title="Query and reason" icon="magnifying-glass">
     Retrieve verifiable logical relationships instead of semantic guesses.
@@ -476,7 +476,7 @@ Your agents' intelligence depends on the bridge between probabilistic generation
 and deterministic data. You can avoid unexplainable models by grounding your
 models in logic.
 
-- **Hybrid architecture**: Utilize a [neuro-symbolic](/glossary/neuro-symbolic)
+- **Hybrid architecture**: Utilize a [neuro-symbolic](/overview/introduction)
   framework. Pair neural network processing for meaning with symbolic precision
   for facts. This ensures your agents navigate a map of reality built on logical
   grounding rather than guesswork.
@@ -511,7 +511,7 @@ must remain your own.
 - **Edge-first autonomy**: Ensure knowledge resides on your local machine, a
   private server, or at the network edgeâ€”never trapped in a central cloud
   silo.
-- **Data sovereignty**: Own your [triples](/glossary/triple). Use open standards
+- **Data sovereignty**: Own your [triples](/worlds/facts). Use open standards
   like RDF to ensure your knowledge is never trapped in a proprietary vault.
 - **Swappable models**: Swap modelsâ€”OpenAI, Gemini, or localâ€”without losing
   your agent's persistent state.
@@ -572,7 +572,7 @@ another, no matter how much data you add.
 
 ## Architecture
 
-A world functions as a **[neuro-symbolic](/glossary/neuro-symbolic) memory
+A world functions as a **[neuro-symbolic](/overview/introduction) memory
 container**. It pairs an isolated RDF dataset with a high-performance vector
 search index.
 
@@ -583,8 +583,8 @@ the agent to navigate the world through natural language queries.
 
 ### Symbolic layer
 
-The symbolic layer uses RDF and [SPARQL](/glossary/sparql) for deterministic
-facts. It provides deterministic validation, reducing the risk of hallucinations
+The symbolic layer uses RDF and [SPARQL](/worlds/query) for deterministic facts.
+It provides deterministic validation, reducing the risk of hallucinations
 inherent in standalone LLMs.
 
 ## Audit trails
@@ -1153,16 +1153,16 @@ graph LR
 
 ## In practice
 
-1. **Ingestion** â€” An LLM extracts structured [triples](/glossary/triple) from
+1. **Ingestion** â€” An LLM extracts structured [triples](/worlds/facts) from
    raw text.
-2. **Retrieval** â€” [Hybrid search](/glossary/hybrid-search) combines vector
-   similarity with graph traversal.
-3. **Reasoning** â€” [SPARQL](/glossary/sparql) queries return verifiable facts
-   the agent can cite.
+2. **Retrieval** â€” [Hybrid search](/worlds/search) combines vector similarity
+   with graph traversal.
+3. **Reasoning** â€” [SPARQL](/worlds/query) queries return verifiable facts the
+   agent can cite.
 
 ## Learn more
 
-- [Philosophy](/overview/philosophy) â€” principles behind the approach
+- [Philosophy](/overview/introduction) â€” principles behind the approach
 - [Architecture](/overview/architecture) â€” system-level deep dive
 
 ## Features
@@ -1216,7 +1216,7 @@ At this stage, the data remains unstructured human language.
 ### Neuro-symbolic engine
 
 The Worlds engine uses LLMs to extract meaning and items. It translates
-ambiguous language into structured **[triples](/glossary/triple)** (subject â†’
+ambiguous language into structured **[triples](/worlds/facts)** (subject â†’
 predicate â†’ object). These facts then merge into a **world**â€”an isolated
 container where the graph evolves through:
 
@@ -1226,10 +1226,9 @@ container where the graph evolves through:
 
 ### Retrieval
 
-When an agent needs context, it performs a
-**[hybrid search](/glossary/hybrid-search)**. This process mixes semantic vector
-similarity with deterministic graph traversal to pull a high-precision slice of
-reality directly into the context window.
+When an agent needs context, it performs a **[hybrid search](/worlds/search)**.
+This process mixes semantic vector similarity with deterministic graph traversal
+to pull a high-precision slice of reality directly into the context window.
 
 ```mermaid
 graph LR
@@ -1245,9 +1244,9 @@ To achieve both semantic flexibility and structural precision, the storage
 engine employs a hybrid strategy.
 
 Worlds utilizes an in-memory, WASM-compiled RDF store that supports
-[SPARQL](/glossary/sparql). The infrastructure supports any RDF
-storeâ€”including Apache Jena Fuseki or a local file systemâ€”that implements
-`rdf-patch` forward synchronization.
+[SPARQL](/worlds/query). The infrastructure supports any RDF storeâ€”including
+Apache Jena Fuseki or a local file systemâ€”that implements `rdf-patch` forward
+synchronization.
 
 `n3` is the preferred store because it runs entirely within the JavaScript
 runtime, providing isolated, high-performance in-memory state.
@@ -1290,7 +1289,8 @@ $$score = \sum_{d \in D} \frac{1}{60 + rank(d)}$$
 ## Technical specifications
 
 For a deeper dive into the mathematical and philosophical foundations of the
-Worlds storage engine, refer to the [Whitepaper](/overview/whitepaper).
+Worlds storage engine, refer to the
+[Whitepaper](/overview/introduction#whitepaper).
 
 ## Information retrieval
 

@@ -1,16 +1,23 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
   "name": "Worlds Docs",
+  "theme": "mint",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "favicon": "/images/wazoo.svg",
   "colors": {
     "primary": "#D97706",
     "light": "#F59E0B",
     "dark": "#78350F"
   },
   "contextual": {
-    "options": ["copy", "view"]
+    "options": [
+      "copy",
+      "view"
+    ]
   },
-  "favicon": "/images/wazoo.svg",
   "seo": {
     "indexing": "all",
     "metatags": {
@@ -19,98 +26,10 @@
       "canonical": "https://docs.wazoo.dev"
     }
   },
-  "navigation": {
-    "groups": [
-      {
-        "group": "Welcome",
-        "pages": [
-          "overview/introduction",
-          "overview/getting-started/quickstart",
-          "overview/architecture"
-        ]
-      },
-      {
-        "group": "Worlds",
-        "pages": [
-          "worlds/worlds",
-          "worlds/items",
-          "worlds/facts",
-          "worlds/search",
-          "worlds/query",
-          "worlds/update",
-          "worlds/logs"
-        ]
-      },
-      {
-        "group": "Guides",
-        "pages": [
-          "guides/self-hosting",
-          "guides/automation-vibe-coding",
-          "guides/worlds-sdk",
-          "guides/vercel-ai-sdk",
-          "guides/openai-sdk",
-          "guides/langgraph",
-          "guides/openai-agents-sdk",
-          "guides/ms-agent-framework",
-          "guides/mastra",
-          "guides/langchain",
-          "guides/crewai",
-          "guides/agno",
-          "guides/claude-memory-tool",
-          "guides/gemini-api",
-          "guides/gemini-live-api",
-          "guides/n8n",
-          "guides/viasocket",
-          "guides/zapier",
-          "guides/openclaw",
-          "guides/claude-code",
-          "guides/opencode",
-          "guides/zo"
-        ]
-      },
-      {
-        "group": "Reference",
-        "openapi": "openapi.yaml",
-        "pages": ["reference/api", "reference/sdk", "reference/cli"]
-      },
-      {
-        "group": "Platform",
-        "pages": [
-          "platform/overview",
-          "platform/cli",
-          "platform/sdk",
-          "platform/api"
-        ]
-      },
-      {
-        "group": "Contribute",
-        "pages": [
-          "contribute/code-of-conduct",
-          "contribute/contributing-guide",
-          "contribute/license",
-          "contribute/security"
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Console",
-          "href": "https://console.wazoo.dev",
-          "icon": "globe"
-        }
-      ]
+  "integrations": {
+    "ga4": {
+      "measurementId": "G-V64G870T6Z"
     }
-  },
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/overview/introduction"
-    }
-  ],
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
   },
   "navbar": {
     "links": [
@@ -124,6 +43,108 @@
       "label": "Go to Console",
       "href": "https://console.wazoo.dev"
     }
+  },
+  "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Console",
+          "href": "https://console.wazoo.dev",
+          "icon": "globe"
+        }
+      ]
+    },
+    "tabs": [
+      {
+        "tab": "Docs",
+        "groups": [
+          {
+            "group": "Welcome",
+            "pages": [
+              "overview/introduction",
+              "overview/getting-started/quickstart",
+              "overview/architecture"
+            ]
+          },
+          {
+            "group": "Worlds",
+            "pages": [
+              "worlds/index",
+              "worlds/items",
+              "worlds/facts",
+              "worlds/search",
+              "worlds/query",
+              "worlds/update",
+              "worlds/logs"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/self-hosting",
+              "guides/automation-vibe-coding",
+              "guides/worlds-sdk"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "guides/vercel-ai-sdk",
+              "guides/openai-sdk",
+              "guides/langgraph",
+              "guides/openai-agents-sdk",
+              "guides/ms-agent-framework",
+              "guides/mastra",
+              "guides/langchain",
+              "guides/crewai",
+              "guides/agno",
+              "guides/claude-memory-tool",
+              "guides/gemini-api",
+              "guides/gemini-live-api",
+              "guides/n8n",
+              "guides/viasocket",
+              "guides/zapier",
+              "guides/openclaw",
+              "guides/claude-code",
+              "guides/opencode",
+              "guides/zo"
+            ]
+          },
+          {
+            "group": "Platform",
+            "pages": [
+              "platform/overview",
+              "platform/cli",
+              "platform/sdk",
+              "platform/api"
+            ]
+          },
+          {
+            "group": "Contribute",
+            "pages": [
+              "contribute/code-of-conduct",
+              "contribute/contributing-guide",
+              "contribute/license",
+              "contribute/security"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Reference",
+            "openapi": "openapi.yaml",
+            "pages": [
+              "reference/api",
+              "reference/sdk",
+              "reference/cli"
+            ]
+          }
+        ]
+      }
+    ]
   },
   "footer": {
     "links": [
@@ -164,9 +185,10 @@
       }
     ]
   },
-  "integrations": {
-    "ga4": {
-      "measurementId": "G-V64G870T6Z"
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/overview/introduction"
     }
-  }
+  ]
 }

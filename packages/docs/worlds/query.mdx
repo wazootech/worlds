@@ -6,7 +6,7 @@ description:
 
 **SPARQL** (SPARQL Protocol and RDF Query Language) is the W3C-standard query
 language for RDF graphs. In Worlds, it provides the **symbolic** half of the
-[neuro-symbolic](/glossary/neuro-symbolic) architecture.
+[neuro-symbolic](/overview/introduction) architecture.
 
 ## How it looks
 
@@ -30,18 +30,17 @@ exact results â€” no probabilistic guessing.
 | **Best for**  | Structured relationships | Semantic similarity        |
 | **Output**    | Verified facts           | Ranked candidates          |
 
-Worlds combines both via [hybrid search](/glossary/hybrid-search) so you get the
-best of each.
+Worlds combines both via [hybrid search](/worlds/search) so you get the best of
+each.
 
 ## Learn more
 
-- [Academy: Logical reasoning with SPARQL](/academy/sparql) â€” guided
-  walkthrough
-- [Querying guide](/guides/querying) â€” advanced query patterns
+- [Academy: Logical reasoning with SPARQL](/worlds/query) â€” guided walkthrough
+- [Querying guide](/worlds/query) â€” advanced query patterns
 
 The Worlds Platform utilizes the
 [Resource Description Framework (RDF)](https://en.wikipedia.org/wiki/Resource_Description_Framework)
-for its core data model and [SPARQL](/glossary/sparql) for structured querying.
+for its core data model and [SPARQL](/worlds/query) for structured querying.
 
 ## RDF blob handling
 
@@ -64,10 +63,10 @@ world database:
 1.  **Deterministic identification**:
     [Skolemizes](https://en.wikipedia.org/wiki/Skolem_normal_form) and hashes
     each quad to a unique triple ID.
-2.  **Relational storage**: Upserts the resulting [triples](/glossary/triple)
-    into the `triples` table.
+2.  **Relational storage**: Upserts the resulting [triples](/worlds/facts) into
+    the `triples` table.
 3.  **Semantic indexing**: Chunks and embeds literal values for
-    [hybrid search](/glossary/hybrid-search).
+    [hybrid search](/worlds/search).
 4.  **Triggers**: SQL triggers synchronize `rdf:type` relations to the
     `entity_types` table.
 
@@ -116,7 +115,7 @@ increasingly noisy.
 ```text
 You are a deterministic agent connected to a Worlds knowledge graph.
 When answering user queries:
-1. Use your tools to perform a [SPARQL](/glossary/sparql) query or [Hybrid Search](/glossary/hybrid-search) on the stateful memory.
+1. Use your tools to perform a [SPARQL](/worlds/query) query or [Hybrid Search](/worlds/search) on the stateful memory.
 2. The retrieved relationships represent the CURRENT, VERIFIED state.
 3. Respond strictly utilizing the relationships extracted, overriding any probabilistic generation.
 ```
@@ -126,7 +125,7 @@ When answering user queries:
 ## Stateful memory
 
 Worlds maintains a **living knowledge graph**. Instead of storing raw text, it
-extracts meaning as **[triples](/glossary/triple)** (subject â†’ predicate â†’
+extracts meaning as **[triples](/worlds/facts)** (subject â†’ predicate â†’
 object).
 
 When facts change, Worlds updates the specific relationships in the graph. This
@@ -147,8 +146,8 @@ probabilistic LLM reasoning.
 ## Implementing graph RAG
 
 To implement graph RAG with Worlds, follow the
-[ingestion pipeline](/overview/features#the-worlds-pipeline) to transform your
-unstructured data into a queryable graph.
+[ingestion pipeline](/overview/introduction#the-worlds-pipeline) to transform
+your unstructured data into a queryable graph.
 
 Ontology RAG leverages rigid, predefined schemas to guide agentic reasoning and
 data retrieval. This ensures your agents operate within a well-defined
