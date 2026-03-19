@@ -13,7 +13,10 @@
     "dark": "#78350F"
   },
   "contextual": {
-    "options": ["copy", "view"]
+    "options": [
+      "copy",
+      "view"
+    ]
   },
   "seo": {
     "indexing": "all",
@@ -88,7 +91,9 @@
           },
           {
             "group": "Platform",
-            "pages": ["platform/overview"]
+            "pages": [
+              "platform/overview"
+            ]
           },
           {
             "group": "Contribute",
@@ -103,33 +108,16 @@
         ]
       },
       {
-        "product": "CLI Reference",
-        "groups": [
-          {
-            "group": "CLI Commands",
-            "pages": [
-              "cli/index",
-              "cli/create",
-              "cli/get",
-              "cli/list",
-              "cli/update",
-              "cli/import",
-              "cli/export",
-              "cli/search",
-              "cli/sparql",
-              "cli/delete",
-              "cli/chat"
-            ]
-          }
-        ]
-      },
-      {
         "product": "API Reference",
         "groups": [
           {
             "group": "HTTP REST API",
             "openapi": "openapi.yaml",
-            "pages": ["reference/index", "reference/api", "reference/sdk"]
+            "pages": [
+              "reference/index",
+              "reference/api",
+              "reference/sdk"
+            ]
           }
         ]
       }
@@ -179,5 +167,15 @@
       "source": "/",
       "destination": "/worlds"
     }
-  ]
+  ],
+  "api": {
+    "examples": {
+      "languages": [
+        "javascript",
+        "python",
+        "curl",
+        "cli"
+      ]
+    }
+  }
 }

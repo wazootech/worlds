@@ -313,6 +313,10 @@ paths:
   /worlds:
     get:
       summary: List worlds
+      x-codeSamples:
+        - lang: cli
+          label: CLI
+          source: worlds list --page 1 --pageSize 20
       parameters:
         - name: page
           in: query
@@ -339,6 +343,10 @@ paths:
 
     post:
       summary: Create a world
+      x-codeSamples:
+        - lang: cli
+          label: CLI
+          source: worlds create --label "My New World"
       requestBody:
         required: true
         content:
@@ -372,6 +380,10 @@ paths:
           type: string
     get:
       summary: Get a world
+      x-codeSamples:
+        - lang: cli
+          label: CLI
+          source: worlds get <worldId>
       responses:
         "200":
           description: Success
@@ -386,6 +398,10 @@ paths:
 
     put:
       summary: Update a world
+      x-codeSamples:
+        - lang: cli
+          label: CLI
+          source: worlds update <worldId> --label "Renamed World"
       requestBody:
         required: true
         content:
@@ -404,6 +420,10 @@ paths:
 
     delete:
       summary: Delete a world
+      x-codeSamples:
+        - lang: cli
+          label: CLI
+          source: worlds delete <worldId>
       responses:
         "204":
           description: No Content
@@ -415,6 +435,10 @@ paths:
   /worlds/{world}/export:
     get:
       summary: Export world data
+      x-codeSamples:
+        - lang: cli
+          label: CLI
+          source: worlds export <worldId> --format turtle > backup.ttl
       parameters:
         - name: world
           in: path
@@ -449,6 +473,10 @@ paths:
   /worlds/{world}/import:
     post:
       summary: Import world data
+      x-codeSamples:
+        - lang: cli
+          label: CLI
+          source: worlds import <worldId> ./data.ttl --format turtle
       parameters:
         - name: world
           in: path
@@ -518,6 +546,10 @@ paths:
   /worlds/{world}/search:
     get:
       summary: Semantic search
+      x-codeSamples:
+        - lang: cli
+          label: CLI
+          source: worlds search <worldId> "chemical composition of water" --limit 5
       parameters:
         - name: world
           in: path
@@ -572,6 +604,10 @@ paths:
   /worlds/{world}/sparql:
     get:
       summary: Execute SPARQL query or get service description
+      x-codeSamples:
+        - lang: cli
+          label: CLI
+          source: worlds sparql <worldId> "SELECT * WHERE { ?s ?p ?o } LIMIT 10"
       parameters:
         - name: world
           in: path
@@ -614,6 +650,10 @@ paths:
 
     post:
       summary: Execute SPARQL query or update
+      x-codeSamples:
+        - lang: cli
+          label: CLI
+          source: worlds sparql <worldId> ./queries/update.rq
       parameters:
         - name: world
           in: path
