@@ -13,7 +13,10 @@
     "dark": "#78350F"
   },
   "contextual": {
-    "options": ["copy", "view"]
+    "options": [
+      "copy",
+      "view"
+    ]
   },
   "seo": {
     "indexing": "all",
@@ -57,30 +60,29 @@
           },
           {
             "group": "Platform",
-            "pages": ["platform/overview"]
+            "pages": [
+              "platform/overview"
+            ]
           },
           {
             "group": "Guides",
-            "pages": ["overview/getting-started/quickstart", "guides/self-host"]
+            "pages": [
+              "overview/getting-started/quickstart",
+              "guides/self-host"
+            ]
           },
           {
             "group": "Integrations",
             "pages": [
               "guides/ai-sdk",
               "guides/openai-sdk",
-              "guides/langgraph",
               "guides/openai-agents-sdk",
+              "guides/langchain",
+              "guides/langgraph",
               "guides/ms-agent-framework",
               "guides/mastra",
-              "guides/langchain",
-              "guides/crewai",
-              "guides/agno",
-              "guides/claude-memory-tool",
               "guides/gemini-api",
-              "guides/gemini-live-api",
               "guides/n8n",
-              "guides/viasocket",
-              "guides/zapier",
               "guides/openclaw",
               "guides/claude-code",
               "guides/opencode",
@@ -105,7 +107,9 @@
         "groups": [
           {
             "group": "Worlds CLI",
-            "pages": ["cli/index"]
+            "pages": [
+              "cli/index"
+            ]
           },
           {
             "group": "Subcommands",
@@ -131,7 +135,11 @@
           {
             "group": "HTTP REST API",
             "openapi": "openapi.yaml",
-            "pages": ["reference/index", "reference/api", "reference/sdk"]
+            "pages": [
+              "reference/index",
+              "reference/api",
+              "reference/sdk"
+            ]
           }
         ],
         "icon": "code"
