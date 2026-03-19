@@ -47,8 +47,6 @@
         "group": "Worlds",
         "pages": [
           "worlds/index",
-          "worlds/items",
-          "worlds/facts",
           "worlds/search",
           "worlds/sparql",
           "worlds/logs"
