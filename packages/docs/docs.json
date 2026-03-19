@@ -55,10 +55,8 @@
       {
         "group": "Guides",
         "pages": [
-          "guides/self-hosting",
-          "guides/automation-vibe-coding",
-          "guides/worlds-sdk",
-          "guides/cli"
+          "overview/getting-started/quickstart",
+          "guides/self-hosting"
         ]
       },
       {
