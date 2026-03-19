@@ -58,12 +58,9 @@
         "group": "Core Engine",
         "pages": [
           "worlds/index",
-          "worlds/items",
-          "worlds/facts",
+          "worlds/items-and-facts",
           "worlds/search",
-          "worlds/query",
-          "worlds/update",
-          "worlds/logs"
+          "worlds/query-and-updates"
         ]
       },
       {

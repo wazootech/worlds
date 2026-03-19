@@ -1,8 +1,28 @@
 ---
-title: "Facts"
-description:
-  "Subject → Predicate → Object — the atomic unit of knowledge in a World."
+title: "Items & Facts"
+description: "The core data model: distinct concepts (Items) connected by relationships (Triples / Facts)."
 ---
+
+## Items
+
+An **Item** (also known as an Entity in broader RDF contexts) is any distinct
+"thing" in your world—a person, a piece of code, a company, or a concept.
+
+Every item is represented as a node in the Worlds knowledge graph.
+
+### Attributes of an Item
+
+- **Identification**: A unique **IRI**, or Internationalized Resource
+  Identifier, identifies every item.
+- **Classes**: Items are categorized by their type using standard properties
+  like `rdf:type` (e.g., `User`, `Project`, or `Task`).
+
+Items are connected to each other via properties to form a
+Fact, establishing a relationship in the world.
+
+---
+
+## Facts (Triples)
 
 A **triple** is the smallest piece of information stored in a World. Every fact
 is expressed as three components:
@@ -33,13 +53,13 @@ When a named node (Object) is connected to another named node (Subject) via a
 named node (Predicate), the graph expands. When it connects to a literal node,
 the path terminates.
 
-## Etymology
+### Etymology
 
 A fact is a statement that is represented in a computer as a triple, in other
 literature also called a triplet, tuple, statement, quad, or edge. The term
 "triple" is used to emphasize that every fact is composed of three components.
 
-## Why triples?
+### Why triples?
 
 Triples follow the
 **[RDF (Resource Description Framework)](https://www.w3.org/TR/rdf-primer/)**
@@ -55,9 +75,3 @@ graph LR
 
 As the graph grows, the agent can traverse relationships to infer new knowledge
 (for example, that Ethan and Gregory share the same work location).
-
-## Learn more
-
-- [Academy: Symbolic graph architecture](/worlds/facts) — building graphs from
-  triples
-- [Knowledge Graphs guide](/guides/knowledge-graphs) — advanced graph topologies
