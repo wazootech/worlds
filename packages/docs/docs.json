@@ -75,17 +75,14 @@
             "group": "Integrations",
             "pages": [
               "guides/ai-sdk",
-              "guides/openai-sdk",
-              "guides/openai-agents-sdk",
-              "guides/langchain",
-              "guides/langgraph",
-              "guides/ms-agent-framework",
-              "guides/mastra",
+              "guides/claude-code",
               "guides/gemini-api",
+              "guides/mastra",
               "guides/n8n",
               "guides/openclaw",
-              "guides/claude-code",
               "guides/opencode",
+              "guides/openai-sdk",
+              "guides/zapier",
               "guides/zo"
             ]
           },
