@@ -13,7 +13,10 @@
     "dark": "#78350F"
   },
   "contextual": {
-    "options": ["copy", "view"]
+    "options": [
+      "copy",
+      "view"
+    ]
   },
   "seo": {
     "indexing": "all",
@@ -53,21 +56,20 @@
               "worlds/search",
               "worlds/query",
               "worlds/update"
-            ],
-            "icon": "globe"
+            ]
           },
           {
             "group": "Platform",
-            "pages": ["platform/overview"],
-            "icon": "server"
+            "pages": [
+              "platform/overview"
+            ]
           },
           {
             "group": "Guides",
             "pages": [
               "overview/getting-started/quickstart",
               "guides/self-host"
-            ],
-            "icon": "book-open"
+            ]
           },
           {
             "group": "Integrations",
@@ -91,8 +93,7 @@
               "guides/claude-code",
               "guides/opencode",
               "guides/zo"
-            ],
-            "icon": "plug"
+            ]
           },
           {
             "group": "Contribute",
@@ -102,8 +103,7 @@
               "contribute/license",
               "contribute/security",
               "contribute/changelog"
-            ],
-            "icon": "users"
+            ]
           }
         ],
         "icon": "globe"
@@ -113,8 +113,9 @@
         "groups": [
           {
             "group": "Worlds CLI",
-            "pages": ["cli/index"],
-            "icon": "terminal"
+            "pages": [
+              "cli/index"
+            ]
           },
           {
             "group": "Subcommands",
@@ -129,8 +130,7 @@
               "cli/sparql",
               "cli/delete",
               "cli/chat"
-            ],
-            "icon": "list-tree"
+            ]
           }
         ],
         "icon": "terminal"
@@ -141,8 +141,11 @@
           {
             "group": "HTTP REST API",
             "openapi": "openapi.yaml",
-            "pages": ["reference/index", "reference/api", "reference/sdk"],
-            "icon": "cloud"
+            "pages": [
+              "reference/index",
+              "reference/api",
+              "reference/sdk"
+            ]
           }
         ],
         "icon": "code"
