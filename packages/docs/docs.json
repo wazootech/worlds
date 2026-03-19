@@ -66,31 +66,31 @@
         "pages": [
           "guides/self-hosting",
           "guides/automation-vibe-coding",
-          "guides/worlds-sdk"
-        ]
-      },
-      {
-        "group": "Integrations",
-        "pages": [
-          "guides/vercel-ai-sdk",
-          "guides/openai-sdk",
-          "guides/langgraph",
-          "guides/openai-agents-sdk",
-          "guides/ms-agent-framework",
-          "guides/mastra",
-          "guides/langchain",
-          "guides/crewai",
-          "guides/agno",
-          "guides/claude-memory-tool",
-          "guides/gemini-api",
-          "guides/gemini-live-api",
-          "guides/n8n",
-          "guides/viasocket",
-          "guides/zapier",
-          "guides/openclaw",
-          "guides/claude-code",
-          "guides/opencode",
-          "guides/zo"
+          "guides/worlds-sdk",
+          {
+            "group": "Integrations",
+            "pages": [
+              "guides/vercel-ai-sdk",
+              "guides/openai-sdk",
+              "guides/langgraph",
+              "guides/openai-agents-sdk",
+              "guides/ms-agent-framework",
+              "guides/mastra",
+              "guides/langchain",
+              "guides/crewai",
+              "guides/agno",
+              "guides/claude-memory-tool",
+              "guides/gemini-api",
+              "guides/gemini-live-api",
+              "guides/n8n",
+              "guides/viasocket",
+              "guides/zapier",
+              "guides/openclaw",
+              "guides/claude-code",
+              "guides/opencode",
+              "guides/zo"
+            ]
+          }
         ]
       },
       {
