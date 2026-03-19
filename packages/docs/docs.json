@@ -78,6 +78,14 @@
             ]
           },
           {
+            "group": "API Reference",
+            "pages": [
+              "reference/sdk-overview",
+              "reference/sdk",
+              "reference/cli"
+            ]
+          },
+          {
             "group": "Contribute",
             "pages": [
               "contribute/code-of-conduct",
@@ -127,19 +135,6 @@
               "platform/cli",
               "platform/sdk",
               "platform/api"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Reference",
-        "groups": [
-          {
-            "group": "Reference",
-            "pages": [
-              "reference/sdk-overview",
-              "reference/sdk",
-              "reference/cli"
             ]
           },
           {
