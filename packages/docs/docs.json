@@ -46,15 +46,15 @@
       {
         "group": "Overview",
         "pages": [
-          "overview/introduction",
+          "worlds/index",
           "overview/getting-started/quickstart",
-          "overview/architecture"
+          "overview/architecture",
+          "overview/philosophy-history"
         ]
       },
       {
         "group": "Worlds",
         "pages": [
-          "worlds/index",
           "worlds/items",
           "worlds/facts",
           "worlds/search",
@@ -171,7 +171,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/overview/introduction"
+      "destination": "/worlds/index"
     }
   ]
 }
