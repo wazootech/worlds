@@ -1,0 +1,3 @@
+.dark img[src*="openai.svg"] {
+  filter: invert(1);
+}
