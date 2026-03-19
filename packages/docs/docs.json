@@ -44,21 +44,9 @@
   "navigation": {
     "groups": [
       {
-        "group": "Overview",
-        "pages": [
-          "worlds/index",
-          "overview/getting-started/quickstart",
-          "overview/architecture",
-          "overview/features",
-          "overview/philosophy",
-          "overview/history",
-          "overview/whitepaper",
-          "overview/roadmap"
-        ]
-      },
-      {
         "group": "Worlds",
         "pages": [
+          "worlds/index",
           "worlds/items",
           "worlds/facts",
           "worlds/search",
