@@ -102,8 +102,8 @@ world database:
 1.  **Deterministic identification**:
     [Skolemizes](https://en.wikipedia.org/wiki/Skolem_normal_form) and hashes
     each quad to a unique triple ID.
-2.  **Relational storage**: Upserts the resulting [triples](/worlds/items-and-facts) into
-    the `triples` table.
+2.  **Relational storage**: Upserts the resulting
+    [triples](/worlds/items-and-facts) into the `triples` table.
 3.  **Semantic indexing**: Chunks and embeds literal values for
     [hybrid search](/worlds/search).
 4.  **Triggers**: SQL triggers synchronize `rdf:type` relations to the
@@ -166,8 +166,8 @@ When answering user queries:
 ### Stateful memory
 
 Worlds maintains a **living knowledge graph**. Instead of storing raw text, it
-extracts meaning as **[triples](/worlds/items-and-facts)** (subject → predicate →
-object).
+extracts meaning as **[triples](/worlds/items-and-facts)** (subject → predicate
+→ object).
 
 When facts change, Worlds updates the specific relationships in the graph. This
 allows you to resolve contradictions at the data layer rather than relying on
@@ -214,6 +214,8 @@ conceptual boundary.
 ---
 
 ## Logs
-*Audit and Event History*
 
-This section is coming soon. Please check back later for comprehensive documentation on the append-only event history.
+_Audit and Event History_
+
+This section is coming soon. Please check back later for comprehensive
+documentation on the append-only event history.

@@ -41,87 +41,94 @@
       "href": "https://console.wazoo.dev"
     }
   },
-  "navigation": [
-    "overview/introduction",
-    "overview/getting-started/quickstart",
-    "overview/architecture",
-    {
-      "group": "Worlds",
-      "pages": [
-        "worlds/index",
-        "worlds/items",
-        "worlds/facts",
-        "worlds/search",
-        "worlds/query",
-        "worlds/update",
-        "worlds/logs"
-      ]
-    },
-    {
-      "group": "Platform",
-      "pages": [
-        "platform/overview",
-        "platform/cli",
-        "platform/sdk",
-        "platform/api"
-      ]
-    },
-    {
-      "group": "Guides",
-      "pages": [
-        "guides/self-hosting",
-        "guides/automation-vibe-coding",
-        "guides/worlds-sdk"
-      ]
-    },
-    {
-      "group": "Integrations",
-      "pages": [
-        "guides/vercel-ai-sdk",
-        "guides/openai-sdk",
-        "guides/langgraph",
-        "guides/openai-agents-sdk",
-        "guides/ms-agent-framework",
-        "guides/mastra",
-        "guides/langchain",
-        "guides/crewai",
-        "guides/agno",
-        "guides/claude-memory-tool",
-        "guides/gemini-api",
-        "guides/gemini-live-api",
-        "guides/n8n",
-        "guides/viasocket",
-        "guides/zapier",
-        "guides/openclaw",
-        "guides/claude-code",
-        "guides/opencode",
-        "guides/zo"
-      ]
-    },
-    {
-      "group": "API Reference",
-      "openapi": "openapi.yaml",
-      "pages": [
-        "reference/index",
-        "reference/api-basics/authentication",
-        "reference/api",
-        "reference/rate-limits",
-        "reference/changelog",
-        "reference/sdk-overview",
-        "reference/sdk",
-        "reference/cli"
-      ]
-    },
-    {
-      "group": "Contribute",
-      "pages": [
-        "contribute/contributing-guide",
-        "contribute/code-of-conduct",
-        "contribute/license",
-        "contribute/security"
-      ]
-    }
-  ],
+  "navigation": {
+    "groups": [
+      {
+        "group": "",
+        "pages": [
+          "overview/introduction",
+          "overview/getting-started/quickstart",
+          "overview/architecture"
+        ]
+      },
+      {
+        "group": "Worlds",
+        "pages": [
+          "worlds/index",
+          "worlds/items",
+          "worlds/facts",
+          "worlds/search",
+          "worlds/query",
+          "worlds/update",
+          "worlds/logs"
+        ]
+      },
+      {
+        "group": "Platform",
+        "pages": [
+          "platform/overview",
+          "platform/cli",
+          "platform/sdk",
+          "platform/api"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/self-hosting",
+          "guides/automation-vibe-coding",
+          "guides/worlds-sdk"
+        ]
+      },
+      {
+        "group": "Integrations",
+        "pages": [
+          "guides/vercel-ai-sdk",
+          "guides/openai-sdk",
+          "guides/langgraph",
+          "guides/openai-agents-sdk",
+          "guides/ms-agent-framework",
+          "guides/mastra",
+          "guides/langchain",
+          "guides/crewai",
+          "guides/agno",
+          "guides/claude-memory-tool",
+          "guides/gemini-api",
+          "guides/gemini-live-api",
+          "guides/n8n",
+          "guides/viasocket",
+          "guides/zapier",
+          "guides/openclaw",
+          "guides/claude-code",
+          "guides/opencode",
+          "guides/zo"
+        ]
+      },
+      {
+        "group": "API Reference",
+        "openapi": "openapi.yaml",
+        "pages": [
+          "reference/index",
+          "reference/api-basics/authentication",
+          "reference/api",
+          "reference/rate-limits",
+          "reference/changelog",
+          "reference/sdk-overview",
+          "reference/sdk",
+          "reference/cli"
+        ]
+      },
+      {
+        "group": "Contribute",
+        "pages": [
+          "contribute/contributing-guide",
+          "contribute/code-of-conduct",
+          "contribute/license",
+          "contribute/security"
+        ]
+      }
+    ]
+  },
   "footer": {
     "links": [
       {
