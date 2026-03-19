@@ -13,7 +13,10 @@
     "dark": "#78350F"
   },
   "contextual": {
-    "options": ["copy", "view"]
+    "options": [
+      "copy",
+      "view"
+    ]
   },
   "seo": {
     "indexing": "all",
@@ -53,15 +56,23 @@
               "worlds/search",
               "worlds/query",
               "worlds/update"
-            ]
+            ],
+            "icon": "globe"
           },
           {
             "group": "Platform",
-            "pages": ["platform/overview"]
+            "pages": [
+              "platform/overview"
+            ],
+            "icon": "server"
           },
           {
             "group": "Guides",
-            "pages": ["overview/getting-started/quickstart", "guides/self-host"]
+            "pages": [
+              "overview/getting-started/quickstart",
+              "guides/self-host"
+            ],
+            "icon": "book-open"
           },
           {
             "group": "Integrations",
@@ -85,7 +96,8 @@
               "guides/claude-code",
               "guides/opencode",
               "guides/zo"
-            ]
+            ],
+            "icon": "plug"
           },
           {
             "group": "Contribute",
@@ -95,16 +107,21 @@
               "contribute/license",
               "contribute/security",
               "contribute/changelog"
-            ]
+            ],
+            "icon": "users"
           }
-        ]
+        ],
+        "icon": "globe"
       },
       {
         "product": "Worlds CLI",
         "groups": [
           {
             "group": "Worlds CLI",
-            "pages": ["cli/index"]
+            "pages": [
+              "cli/index"
+            ],
+            "icon": "terminal"
           },
           {
             "group": "Subcommands",
@@ -119,9 +136,11 @@
               "cli/sparql",
               "cli/delete",
               "cli/chat"
-            ]
+            ],
+            "icon": "list-tree"
           }
-        ]
+        ],
+        "icon": "terminal"
       },
       {
         "product": "Worlds API",
@@ -129,9 +148,15 @@
           {
             "group": "HTTP REST API",
             "openapi": "openapi.yaml",
-            "pages": ["reference/index", "reference/api", "reference/sdk"]
+            "pages": [
+              "reference/index",
+              "reference/api",
+              "reference/sdk"
+            ],
+            "icon": "cloud"
           }
-        ]
+        ],
+        "icon": "code"
       }
     ]
   },
@@ -179,5 +204,8 @@
       "source": "/",
       "destination": "/worlds"
     }
-  ]
+  ],
+  "icons": {
+    "library": "lucide"
+  }
 }
