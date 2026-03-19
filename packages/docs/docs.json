@@ -13,10 +13,7 @@
     "dark": "#78350F"
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view"
-    ]
+    "options": ["copy", "view"]
   },
   "seo": {
     "indexing": "all",
@@ -61,9 +58,7 @@
           },
           {
             "group": "Platform",
-            "pages": [
-              "platform/overview"
-            ],
+            "pages": ["platform/overview"],
             "icon": "server"
           },
           {
@@ -77,7 +72,7 @@
           {
             "group": "Integrations",
             "pages": [
-              "guides/vercel-ai-sdk",
+              "guides/ai-sdk",
               "guides/openai-sdk",
               "guides/langgraph",
               "guides/openai-agents-sdk",
@@ -118,9 +113,7 @@
         "groups": [
           {
             "group": "Worlds CLI",
-            "pages": [
-              "cli/index"
-            ],
+            "pages": ["cli/index"],
             "icon": "terminal"
           },
           {
@@ -148,11 +141,7 @@
           {
             "group": "HTTP REST API",
             "openapi": "openapi.yaml",
-            "pages": [
-              "reference/index",
-              "reference/api",
-              "reference/sdk"
-            ],
+            "pages": ["reference/index", "reference/api", "reference/sdk"],
             "icon": "cloud"
           }
         ],
