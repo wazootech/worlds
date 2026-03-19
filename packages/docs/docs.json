@@ -13,10 +13,7 @@
     "dark": "#78350F"
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view"
-    ]
+    "options": ["copy", "view"]
   },
   "seo": {
     "indexing": "all",
@@ -60,16 +57,11 @@
           },
           {
             "group": "Platform",
-            "pages": [
-              "platform/overview"
-            ]
+            "pages": ["platform/overview"]
           },
           {
             "group": "Guides",
-            "pages": [
-              "overview/getting-started/quickstart",
-              "guides/self-host"
-            ]
+            "pages": ["overview/getting-started/quickstart", "guides/self-host"]
           },
           {
             "group": "Integrations",
@@ -112,9 +104,7 @@
         "groups": [
           {
             "group": "Worlds CLI",
-            "pages": [
-              "cli/index"
-            ]
+            "pages": ["cli/index"]
           },
           {
             "group": "Subcommands",
@@ -139,11 +129,7 @@
           {
             "group": "HTTP REST API",
             "openapi": "openapi.yaml",
-            "pages": [
-              "reference/index",
-              "reference/api",
-              "reference/sdk"
-            ]
+            "pages": ["reference/index", "reference/api", "reference/sdk"]
           }
         ]
       }
