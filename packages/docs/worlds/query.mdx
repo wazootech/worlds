@@ -1,0 +1,174 @@
+---
+title: "Query"
+description:
+  "The standard query language for retrieving and reasoning over graph data."
+---
+
+**SPARQL** (SPARQL Protocol and RDF Query Language) is the W3C-standard query
+language for RDF graphs. In Worlds, it provides the **symbolic** half of the
+[neuro-symbolic](/overview/introduction) architecture.
+
+## How it looks
+
+Given triples such as `user:ethan schema:worksAt org:wazoo`, you can query for
+all employees:
+
+```sparql
+SELECT ?person WHERE {
+  ?person <http://schema.org/worksAt> <http://example.com/wazoo> .
+}
+```
+
+SPARQL matches **patterns** against the graph, following relationships to return
+exact results â€” no probabilistic guessing.
+
+## SPARQL vs. vector search
+
+| Dimension     | SPARQL                   | Vector search              |
+| :------------ | :----------------------- | :------------------------- |
+| **Precision** | Exact, deterministic     | Approximate, probabilistic |
+| **Best for**  | Structured relationships | Semantic similarity        |
+| **Output**    | Verified facts           | Ranked candidates          |
+
+Worlds combines both via [hybrid search](/worlds/search) so you get the best of
+each.
+
+## Learn more
+
+- [Academy: Logical reasoning with SPARQL](/worlds/query) â€” guided walkthrough
+- [Querying guide](/worlds/query) â€” advanced query patterns
+
+The Worlds Platform utilizes the
+[Resource Description Framework (RDF)](https://en.wikipedia.org/wiki/Resource_Description_Framework)
+for its core data model and [SPARQL](/worlds/query) for structured querying.
+
+## RDF blob handling
+
+The system manages RDF data through several core utilities:
+
+- **N3 utility**: Provides functions to convert between RDF blobs (e.g., N-Quads
+  strings) and in-memory N3 stores.
+- **SPARQL utility**: Executes SPARQL queries using the Comunica engine over an
+  N3 store.
+  <Info>
+    **Comunica** is a highly modular, open-source SPARQL query engine built for
+    the web. It is flexible and handles large RDF data sources efficiently.
+  </Info>
+
+## RDF patching
+
+Centralized in the core patch service, the system processes mutations for the
+world database:
+
+1.  **Deterministic identification**:
+    [Skolemizes](https://en.wikipedia.org/wiki/Skolem_normal_form) and hashes
+    each quad to a unique triple ID.
+2.  **Relational storage**: Upserts the resulting [triples](/worlds/facts) into
+    the `triples` table.
+3.  **Semantic indexing**: Chunks and embeds literal values for
+    [hybrid search](/worlds/search).
+4.  **Triggers**: SQL triggers synchronize `rdf:type` relations to the
+    `entity_types` table.
+
+## SPARQL execution pipeline
+
+When you execute a SPARQL query via the API, the system follows this pipeline:
+
+1.  Loads the world metadata from the main database.
+2.  Resolves the world-specific database client via
+    `databaseManager.get(worldId)`.
+3.  Executes `handlePatch` with a handler that applies updates to the world
+    client.
+    <ParamField path="worldId" type="string" required>
+      The specific World ID to target for the patch context.
+    </ParamField>
+    <ParamField path="patch" type="Quad[]" required>
+      The array of RDF Quads representing the changes to be applied.
+    </ParamField>
+4.  Executes the SPARQL query over the resulting RDF blob.
+5.  Updates the world metadata in the main database if the blob changed during a
+    SPARQL update.
+
+Standard retrieval-augmented generation (RAG) often struggles with evolving
+facts and complex relational queries. **Graph RAG** in Worlds addresses these
+limitations by maintaining a stateful, structured memory.
+
+## Limits of stateless RAG
+
+In traditional RAG, you chunk and embed text for retrieval based on semantic
+similarity. This works for static information but fails to capture relationship
+dynamics or state changes.
+
+### The evolving fact
+
+1. **Monday:** "I am working on Project Apollo."
+2. **Wednesday:** "I am pausing Apollo to focus on Project Hermes."
+3. **Friday:** "What am I working on?"
+
+A traditional RAG system often retrieves both chunks, forcing the LLM to resolve
+the contradiction through heuristics. As your data grows, retrieval becomes
+increasingly noisy.
+
+<Prompt>
+  **Worlds system prompt template:**
+
+```text
+You are a deterministic agent connected to a Worlds knowledge graph.
+When answering user queries:
+1. Use your tools to perform a [SPARQL](/worlds/query) query or [Hybrid Search](/worlds/search) on the stateful memory.
+2. The retrieved relationships represent the CURRENT, VERIFIED state.
+3. Respond strictly utilizing the relationships extracted, overriding any probabilistic generation.
+```
+
+</Prompt>
+
+## Stateful memory
+
+Worlds maintains a **living knowledge graph**. Instead of storing raw text, it
+extracts meaning as **[triples](/worlds/facts)** (subject â†’ predicate â†’
+object).
+
+When facts change, Worlds updates the specific relationships in the graph. This
+allows you to resolve contradictions at the data layer rather than relying on
+probabilistic LLM reasoning.
+
+### RAG vs Worlds
+
+![RAG vs Graph RAG](/images/rag-vs-worlds.png)
+
+| Feature       | Traditional RAG     | Worlds, functioning as world memory            |
+| :------------ | :------------------ | :--------------------------------------------- |
+| **Search**    | Semantic similarity | Hybrid, combining semantic and relational      |
+| **State**     | Stateless           | Stateful, resolving contradictions             |
+| **Inference** | Hallucination-prone | Deterministic reasoning                        |
+| **Structure** | Unstructured chunks | Knowledge primitives, namely items and triples |
+
+## Implementing graph RAG
+
+To implement graph RAG with Worlds, follow the
+[ingestion pipeline](/overview/introduction#the-worlds-pipeline) to transform
+your unstructured data into a queryable graph.
+
+Ontology RAG leverages rigid, predefined schemas to guide agentic reasoning and
+data retrieval. This ensures your agents operate within a well-defined
+conceptual boundary.
+
+## Grounding agents in ontologies
+
+By using `discover-schema`, your agent can introspect the available classes and
+properties of a world before attempting to query it.
+
+1.  **Discovery**: Agent retrieves the world's ontology.
+2.  **Mapping**: Agent maps the user's natural language request to specific RDF
+    classes and predicates.
+3.  **Querying**: Agent executes precise SPARQL queries instead of depending
+    solely on vector similarity.
+
+## Why use Ontology RAG?
+
+- **Zero Hallucination**: Agents only use terms that actually exist in the
+  world's schema.
+- **Complex Logic**: Handle transitive relationships and inverse properties that
+  are invisible to vector searches.
+- **Deterministic Reliability**: Ensure the agent's mental model matches the
+  actual data structure.

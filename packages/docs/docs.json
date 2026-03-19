@@ -48,8 +48,8 @@
         "pages": [
           "worlds/index",
           "worlds/search",
-          "worlds/sparql",
-          "worlds/logs"
+          "worlds/query",
+          "worlds/update"
         ]
       },
       {
