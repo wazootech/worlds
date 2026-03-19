@@ -3,10 +3,19 @@ title: "API Reference"
 description: "Strict technical documentation for the Worlds endpoints."
 ---
 
-Explore the full HTTP API specifications.
+The API Reference provides the definitive technical specifications for interacting with the Worlds engine programmatically. It is purposely segregated from high-level usage guides to focus purely on networking boundaries, raw inputs, and response structures.
+
+## Core specifications
+
+This documentation explicitly covers:
+
+- **[REST Architecture](/reference/api)**: The foundational HTTP definitions, including base URLs and core resource paths.
+- **[Authentication](/reference/api#authentication)**: Security protocols, header requirements, and API key management for Cloud and local instances.
+- **[Rate Limits](/reference/api#rate-limits)**: Threshold policies, safe usage bounds, and standardized `429` error handling metrics.
+- **OpenAPI Endpoints**: Fully interactive, auto-generated definitions mapping to every single available router endpoint.
 
 <CardGroup cols={2}>
-  <Card title="HTTP REST API" icon="cloud" href="/reference/api">
-    Direct HTTP endpoints, authentication, and rate limiting logic.
+  <Card title="HTTP Specifications" icon="cloud" href="/reference/api">
+    Authentication, rate limits, and HTTP REST design principles.
   </Card>
 </CardGroup>

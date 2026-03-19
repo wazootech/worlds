@@ -53,14 +53,6 @@
         ]
       },
       {
-        "group": "API Reference",
-        "openapi": "openapi.yaml",
-        "pages": [
-          "reference/index",
-          "reference/api"
-        ]
-      },
-      {
         "group": "Guides",
         "pages": [
           "guides/self-hosting",
@@ -68,6 +60,11 @@
           "guides/worlds-sdk",
           "guides/cli"
         ]
+      },
+      {
+        "group": "API Reference",
+        "openapi": "openapi.yaml",
+        "pages": ["reference/index", "reference/api"]
       },
       {
         "group": "Integrations",
@@ -94,6 +91,15 @@
         ]
       },
       {
+        "group": "Platform",
+        "pages": [
+          "platform/overview",
+          "platform/cli",
+          "platform/sdk",
+          "platform/api"
+        ]
+      },
+      {
         "group": "Contribute",
         "pages": [
           "contribute/contributing-guide",
@@ -101,15 +107,6 @@
           "contribute/license",
           "contribute/security",
           "contribute/changelog"
-        ]
-      },
-      {
-        "group": "Platform",
-        "pages": [
-          "platform/overview",
-          "platform/cli",
-          "platform/sdk",
-          "platform/api"
         ]
       }
     ]
@@ -156,7 +153,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/worlds/index"
+      "destination": "/worlds"
     }
   ]
 }
