@@ -44,7 +44,7 @@
   "navigation": {
     "products": [
       {
-        "product": "Overview",
+        "product": "Worlds",
         "groups": [
           {
             "group": "Worlds",
@@ -59,7 +59,7 @@
             "group": "Guides",
             "pages": [
               "overview/getting-started/quickstart",
-              "guides/self-hosting"
+              "guides/self-host"
             ]
           },
           {
@@ -103,12 +103,15 @@
         ]
       },
       {
-        "product": "CLI Reference",
+        "product": "Worlds CLI",
         "groups": [
           {
-            "group": "CLI Commands",
+            "group": "Worlds CLI",
+            "pages": ["cli/index"]
+          },
+          {
+            "group": "Subcommands",
             "pages": [
-              "cli/index",
               "cli/create",
               "cli/get",
               "cli/list",
@@ -124,7 +127,7 @@
         ]
       },
       {
-        "product": "API Reference",
+        "product": "Worlds API",
         "groups": [
           {
             "group": "HTTP REST API",
