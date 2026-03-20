@@ -6,16 +6,15 @@ icon: "pen-nib"
 ---
 
 The Worlds documentation follows a strict, highly-opinionated set of editorial
-guidelines. We optimize for **developer momentum, absolute technical authority,
-and zero marketing fluff.**
+guidelines. These guidelines optimize for **developer momentum, absolute
+technical authority, and zero marketing fluff.**
 
-If you are contributing to the docs, please adhere to the following 5-part
-rubric.
+If you are contributing to the docs, please adhere to the following rubric.
 
-## 1. Architecture & structural integrity
+## Architecture & structural integrity
 
 - **Entity-First Organization**: Group content around the "entities" a user
-  encounters (e.g., Worlds, Agents), not the delivery method (CLI vs. API).
+  encounters, such as Worlds or Agents, rather than the delivery method.
 - **Quality over Quantity**: Prioritize concision. If it can be said in fewer
   words, it should be. Eliminate filler sections and ensure every page earns its
   place.
@@ -25,20 +24,21 @@ rubric.
 - **The Navigable Triangle**: Every major page must conclude by pointing the
   user to the CLI Guide and the API Reference, ensuring no page is a dead end.
 
-## 2. The "Code-Forward" pattern
+## The "Code-Forward" pattern
 
 Developers come to the docs to copy code. Give it to them immediately.
 
 - **2-Sentence Opener**: Start the page with a maximum of two sentences defining
   what the entity is, using active voice.
 - **Immediate `<CodeGroup>`**: The very next element must be a multi-language
-  (TypeScript, Python, cURL) code snippet showing the entity in action.
+  code snippet, including TypeScript, Python, and cURL, showing the entity in
+  action.
 - **API at a Glance**: Follow the code block with a Markdown table summarizing
   the core methods.
 - **Deep Dive Below the Fold**: Place architectural explanations, concepts, and
   diagrams below the usable code and API tables.
 
-## 3. Voice & tone
+## Voice & tone
 
 - **Positive Phrasing**: State what to do rather than what to avoid. Affirmative
   framing aids comprehension and maintains a constructive, clear tone.
@@ -58,19 +58,20 @@ Developers come to the docs to copy code. Give it to them immediately.
   slang, and exclusionary terms (e.g., favor _allowlist_ over _whitelist_).
 - **Factual AI Terminology**: Use precise, mechanical verbs. Models process,
   understand, and generate, rather than _think_, _feel_, or have _intuition_.
-  Keep prompts vendor-agnostic (e.g., "OpenAI to Gemini or a local model").
+  Keep prompts vendor-agnostic, favoring general phrases like "OpenAI to Gemini
+  or a local model".
 
-## 4. Terminology & formatting hygiene
+## Terminology & formatting hygiene
 
 - **Item vs. Entity**: Use **Item** consistently in standard copy. Reserve the
   word "Entity" strictly for formal RDF definitions.
 - **World Memory**: Refer to the stateful graph as **World memory** rather than
   "agent memory".
-- **Sentence-Case Headings**: Use sentence case for every header (e.g.,
-  `## The core engine`). Reserve Title Case for proper nouns, and omit colons
+- **Sentence-Case Headings**: Use sentence case for every header, such as
+  `## The core engine`. Reserve Title Case for proper nouns, and omit colons
   entirely.
 - **Parentheses for Definitions Only**: Use commas for generic clauses. Reserve
-  parentheses strictly for acronyms (e.g., RDF) and defining terminology.
+  parentheses strictly for acronyms and defining terminology.
 - **Ordered Lists**: Use ordered or numbered lists specifically for deliberate
   sequences, step-by-step procedures, or strict hierarchies. Default to
   unordered bullet points for general collections.
@@ -78,7 +79,7 @@ Developers come to the docs to copy code. Give it to them immediately.
   phrases like "click here". Provide meaningful `alt` text for all images and
   diagrams.
 
-## 5. Technical authority & transparency
+## Technical authority & transparency
 
 - **Source-Truth Alignment**: Ensure every method signature and property in code
   blocks perfectly mirrors the live `@wazoo/worlds-sdk` TypeScript definitions.
@@ -88,3 +89,12 @@ Developers come to the docs to copy code. Give it to them immediately.
   immediately after the frontmatter to surface the friction prominently.
 - **Actionable Documentation**: Publish pages only when they contain actionable
   technical value. Document what exists, or omit the page entirely.
+
+<CardGroup cols={2}>
+  <Card title="CLI Guide" icon="terminal" href="/reference/cli">
+    Manage Worlds directly from your terminal.
+  </Card>
+  <Card title="API Reference" icon="code" href="/reference">
+    Explore the exhaustive OpenAPI specifications.
+  </Card>
+</CardGroup>
