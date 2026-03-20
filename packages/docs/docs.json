@@ -68,103 +68,85 @@
     }
   },
   "navigation": {
-    "products": [
+    "groups": [
       {
-        "product": "Worlds",
-        "icon": "globe",
-        "groups": [
-          {
-            "group": "Welcome",
-            "pages": ["introduction", "quickstart", "platform", "manifesto"]
-          },
-          {
-            "group": "Worlds",
-            "pages": [
-              "worlds/index",
-              "worlds/search",
-              "worlds/query",
-              "worlds/update"
-            ]
-          },
-          {
-            "group": "Integrations",
-            "pages": [
-              "guides/ai-sdk",
-              "guides/claude-code",
-              "guides/gemini-api",
-              "guides/mastra",
-              "guides/n8n",
-              "guides/openclaw",
-              "guides/opencode",
-              "guides/openai",
-              "guides/zapier",
-              "guides/zo"
-            ]
-          },
-          {
-            "group": "Open Source",
-            "pages": [
-              "contribute/architecture",
-              "guides/self-host",
-              "contribute/security",
-              "contribute/index",
-              "contribute/coc",
-              "contribute/license"
-            ]
-          }
+        "group": "Welcome",
+        "pages": ["introduction", "quickstart", "platform", "manifesto"]
+      },
+      {
+        "group": "Worlds",
+        "pages": [
+          "worlds/index",
+          "worlds/search",
+          "worlds/query",
+          "worlds/update"
         ]
       },
       {
-        "product": "Worlds API",
-        "icon": "code",
-        "groups": [
-          {
-            "group": "Worlds API",
-            "pages": ["reference/index"]
-          },
-          {
-            "group": "API Reference",
-            "openapi": "openapi.yaml",
-            "pages": [
-              "GET /worlds",
-              "POST /worlds",
-              "GET /worlds/{world}",
-              "PUT /worlds/{world}",
-              "DELETE /worlds/{world}",
-              "GET /worlds/{world}/export",
-              "POST /worlds/{world}/import",
-              "GET /worlds/{world}/logs",
-              "GET /worlds/{world}/search",
-              "GET /worlds/{world}/sparql",
-              "POST /worlds/{world}/sparql"
-            ]
-          }
+        "group": "Guides",
+        "pages": [
+          "integrations/ai-sdk",
+          "integrations/claude-code",
+          "integrations/gemini-api",
+          "integrations/mastra",
+          "integrations/n8n",
+          "integrations/openclaw",
+          "integrations/opencode",
+          "integrations/openai",
+          "integrations/zapier",
+          "integrations/zo"
         ]
       },
       {
-        "product": "Worlds CLI",
+        "group": "Open Source",
+        "pages": [
+          "contribute/architecture",
+          "platform/self-host",
+          "contribute/security",
+          "contribute/index",
+          "contribute/coc",
+          "contribute/license"
+        ]
+      },
+      {
+        "group": "Worlds API",
+        "pages": ["reference/index"]
+      },
+      {
+        "group": "API Reference",
+        "openapi": "openapi.yaml",
+        "pages": [
+          "GET /worlds",
+          "POST /worlds",
+          "GET /worlds/{world}",
+          "PUT /worlds/{world}",
+          "DELETE /worlds/{world}",
+          "GET /worlds/{world}/export",
+          "POST /worlds/{world}/import",
+          "GET /worlds/{world}/logs",
+          "GET /worlds/{world}/search",
+          "GET /worlds/{world}/sparql",
+          "POST /worlds/{world}/sparql"
+        ]
+      },
+      {
+        "group": "Worlds CLI",
+        "pages": ["reference/cli/index"]
+      },
+      {
+        "group": "CLI Reference",
         "icon": "terminal",
-        "groups": [
-          {
-            "group": "Worlds CLI",
-            "pages": ["reference/cli/index"]
-          },
-          {
-            "group": "CLI Reference",
-            "icon": "terminal",
-            "pages": [
-              "reference/cli/create",
-              "reference/cli/get",
-              "reference/cli/list",
-              "reference/cli/update",
-              "reference/cli/import",
-              "reference/cli/export",
-              "reference/cli/search",
-              "reference/cli/sparql",
-              "reference/cli/delete",
-              "reference/cli/chat"
-            ]
-          }
+        "pages": [
+          "reference/cli/create",
+          "reference/cli/get",
+          "reference/cli/list",
+          "reference/cli/update",
+          "reference/cli/import",
+          "reference/cli/export",
+          "reference/cli/search",
+          "reference/cli/sparql",
+          "reference/cli/delete",
+          "reference/cli/chat"
         ]
       }
     ]

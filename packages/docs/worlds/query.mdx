@@ -8,7 +8,63 @@ description:
 language for RDF graphs. In Worlds, it provides the **symbolic** half of the
 [neuro-symbolic](/manifesto) architecture.
 
-## How it looks
+<CodeGroup>
+
+```typescript TypeScript
+import { WorldsClient } from "@wazoo/worlds-sdk";
+
+const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
+
+// Execute a SPARQL query on a specific world
+const results = await client.worlds.sparql("world-id", {
+  query: `
+    SELECT ?person WHERE {
+      ?person <http://schema.org/worksAt> <http://example.com/wazoo> .
+    }
+  `,
+});
+
+console.log(results);
+```
+
+```python Python
+from worlds import WorldsClient
+import os
+
+client = WorldsClient(token=os.environ.get("WORLDS_API_KEY"))
+
+# Execute a SPARQL query on a specific world
+results = client.worlds.sparql("world-id",
+    query="""
+    SELECT ?person WHERE {
+      ?person <http://schema.org/worksAt> <http://example.com/wazoo> .
+    }
+    """
+)
+
+print(results)
+```
+
+```bash HTTP API
+curl -X POST "https://api.wazoo.dev/v1/worlds/world-id/sparql" \
+  -H "Authorization: Bearer $WORLDS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "SELECT ?person WHERE { ?person <http://schema.org/worksAt> <http://example.com/wazoo> . }"
+  }'
+```
+
+</CodeGroup>
+
+## Core methods
+
+| Method   | Description                                         |
+| :------- | :-------------------------------------------------- |
+| `sparql` | Execute a raw SPARQL query against the world graph. |
+
+## Deep dive
+
+### How it looks
 
 Given triples such as `user:ethan schema:worksAt org:wazoo`, you can query for
 all employees:
@@ -20,9 +76,9 @@ SELECT ?person WHERE {
 ```
 
 SPARQL matches **patterns** against the graph, following relationships to return
-exact results â€” no probabilistic guessing.
+exact results — no probabilistic guessing.
 
-## SPARQL vs. vector search
+### SPARQL vs. vector search
 
 | Dimension     | SPARQL                   | Vector search              |
 | :------------ | :----------------------- | :------------------------- |
@@ -33,16 +89,11 @@ exact results â€” no probabilistic guessing.
 Worlds combines both via [hybrid search](/worlds/search) so you get the best of
 each.
 
-## Learn more
-
-- [Academy: Logical reasoning with SPARQL](/worlds/query) â€” guided walkthrough
-- [Querying guide](/worlds/query) â€” advanced query patterns
-
 The Worlds Platform utilizes the
 [Resource Description Framework (RDF)](https://en.wikipedia.org/wiki/Resource_Description_Framework)
 for its core data model and [SPARQL](/worlds/query) for structured querying.
 
-## RDF blob handling
+### RDF blob handling
 
 The system manages RDF data through several core utilities:
 
@@ -55,7 +106,7 @@ The system manages RDF data through several core utilities:
     the web. It is flexible and handles large RDF data sources efficiently.
   </Info>
 
-## RDF patching
+### RDF patching
 
 Centralized in the core patch service, the system processes mutations for the
 world database:
@@ -70,7 +121,7 @@ world database:
 4.  **Triggers**: SQL triggers synchronize `rdf:type` relations to the
     `entity_types` table.
 
-## SPARQL execution pipeline
+### SPARQL execution pipeline
 
 When you execute a SPARQL query via the API, the system follows this pipeline:
 
@@ -93,13 +144,13 @@ Standard retrieval-augmented generation (RAG) often struggles with evolving
 facts and complex relational queries. **Graph RAG** in Worlds addresses these
 limitations by maintaining a stateful, structured memory.
 
-## Limits of stateless RAG
+### Limits of stateless RAG
 
 In traditional RAG, you chunk and embed text for retrieval based on semantic
 similarity. This works for static information but fails to capture relationship
 dynamics or state changes.
 
-### The evolving fact
+#### The evolving fact
 
 1. **Monday:** "I am working on Project Apollo."
 2. **Wednesday:** "I am pausing Apollo to focus on Project Hermes."
@@ -122,7 +173,7 @@ When answering user queries:
 
 </Prompt>
 
-## Stateful memory
+### Stateful memory
 
 Worlds maintains a **living knowledge graph**. Instead of storing raw text, it
 extracts meaning as **[triples](/worlds)** (subject → predicate → object).
@@ -131,7 +182,7 @@ When facts change, Worlds updates the specific relationships in the graph. This
 allows you to resolve contradictions at the data layer rather than relying on
 probabilistic LLM reasoning.
 
-### RAG vs Worlds
+#### RAG vs Worlds
 
 ![RAG vs Graph RAG](/images/rag-vs-worlds.png)
 
@@ -142,7 +193,7 @@ probabilistic LLM reasoning.
 | **Inference** | Hallucination-prone | Deterministic reasoning                        |
 | **Structure** | Unstructured chunks | Knowledge primitives, namely items and triples |
 
-## Implementing graph RAG
+### Implementing graph RAG
 
 To implement graph RAG with Worlds, follow the
 [ingestion pipeline](/contribute/architecture) to transform your unstructured
@@ -152,7 +203,7 @@ Ontology RAG leverages rigid, predefined schemas to guide agentic reasoning and
 data retrieval. This ensures your agents operate within a well-defined
 conceptual boundary.
 
-## Grounding agents in ontologies
+### Grounding agents in ontologies
 
 By using `discover-schema`, your agent can introspect the available classes and
 properties of a world before attempting to query it.
@@ -163,7 +214,7 @@ properties of a world before attempting to query it.
 3.  **Querying**: Agent executes precise SPARQL queries instead of depending
     solely on vector similarity.
 
-## Why use Ontology RAG?
+### Why use Ontology RAG?
 
 - **Zero Hallucination**: Agents only use terms that actually exist in the
   world's schema.
@@ -171,3 +222,17 @@ properties of a world before attempting to query it.
   are invisible to vector searches.
 - **Deterministic Reliability**: Ensure the agent's mental model matches the
   actual data structure.
+
+## Learn more
+
+- [Academy: Logical reasoning with SPARQL](/worlds/query) — guided walkthrough
+- [Querying guide](/worlds/query) — advanced query patterns
+
+<CardGroup cols={2}>
+  <Card title="CLI Guide" icon="terminal" href="/reference/cli">
+    Manage Worlds directly from your terminal.
+  </Card>
+  <Card title="API Reference" icon="code" href="/reference">
+    Explore the exhaustive OpenAPI specifications.
+  </Card>
+</CardGroup>

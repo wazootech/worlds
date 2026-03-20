@@ -9,7 +9,61 @@ A **World** is the foundational resource of the Worlds Platform. It is an
 isolated container where an agent's relationships, history, and facts live as a
 queryable graph.
 
-## Key properties
+<CodeGroup>
+
+```typescript TypeScript
+import { WorldsClient } from "@wazoo/worlds-sdk";
+
+const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
+
+// Create a new isolated world
+const world = await client.worlds.create({
+  name: "Assistant Context",
+  description: "Persistent memory for personal assistant agent.",
+});
+
+console.log(`Created world: ${world.id}`);
+```
+
+```python Python
+from worlds import WorldsClient
+import os
+
+client = WorldsClient(token=os.environ.get("WORLDS_API_KEY"))
+
+# Create a new isolated world
+world = client.worlds.create(
+    name="Assistant Context",
+    description="Persistent memory for personal assistant agent."
+)
+
+print(f"Created world: {world.id}")
+```
+
+```bash HTTP API
+curl -X POST "https://api.wazoo.dev/v1/worlds" \
+  -H "Authorization: Bearer $WORLDS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Assistant Context",
+    "description": "Persistent memory for personal assistant agent."
+  }'
+```
+
+</CodeGroup>
+
+## Core methods
+
+| Method   | Description                                        |
+| :------- | :------------------------------------------------- |
+| `create` | Provision a new isolated world container.          |
+| `get`    | Retrieve metadata and status of an existing world. |
+| `list`   | List all worlds associated with your account.      |
+| `delete` | Permanently destroy a world and all its memory.    |
+
+## Deep dive
+
+### Key properties
 
 | Property         | Description                                                                 |
 | :--------------- | :-------------------------------------------------------------------------- |
@@ -17,7 +71,7 @@ queryable graph.
 | **Portability**  | Memory persists across model swaps, from OpenAI to Gemini or a local model. |
 | **Statefulness** | Facts are mutable and versioned, not static snapshots.                      |
 
-## How it works
+### How it works
 
 A World pairs an **RDF dataset**, functioning as the symbolic layer, with a
 **vector search index**, which acts as the neural layer. Together they allow an
@@ -34,14 +88,14 @@ graph LR
 Inside every World, the knowledge graph is constructed entirely of **Items**
 connected by **Facts**.
 
-## Items
+### Items
 
 An **Item** (also known as an Entity in broader RDF contexts) is any distinct
 "thing" in your world—a person, a piece of code, a company, or a concept.
 
 Every item is represented as a node in the Worlds knowledge graph.
 
-### Attributes of an Item
+#### Attributes of an Item
 
 - **Identification**: A unique **IRI**, or Internationalized Resource
   Identifier, identifies every item.
@@ -51,7 +105,7 @@ Every item is represented as a node in the Worlds knowledge graph.
 Items are connected to each other via properties to form a [Triple](/worlds),
 establishing a fact in the world.
 
-## Facts
+### Facts
 
 Every world starts empty. You populate it by adding facts.
 
@@ -107,8 +161,17 @@ graph LR
 As the graph grows, the agent can traverse relationships to infer new knowledge
 (for example, that Ethan and Gregory share the same work location).
 
-### Learn more
+## Learn more
 
 - [Academy: Symbolic graph architecture](/contribute/architecture) — building
   graphs from triples
 - [Knowledge Graphs guide](/guides/knowledge-graphs) — advanced graph topologies
+
+<CardGroup cols={2}>
+  <Card title="CLI Guide" icon="terminal" href="/reference/cli">
+    Manage Worlds directly from your terminal.
+  </Card>
+  <Card title="API Reference" icon="code" href="/reference">
+    Explore the exhaustive OpenAPI specifications.
+  </Card>
+</CardGroup>

@@ -9,13 +9,61 @@ description:
 [World](/worlds/index) for an agent's context window. Rather than relying on a
 single index, it fuses three complementary signals:
 
+<CodeGroup>
+
+```typescript TypeScript
+import { WorldsClient } from "@wazoo/worlds-sdk";
+
+const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
+
+// Perform hybrid search over a knowledge graph
+const results = await client.worlds.search("world-id", {
+  query: "Who works at Wazoo?",
+  limit: 5,
+});
+
+console.log(results);
+```
+
+```python Python
+from worlds import WorldsClient
+import os
+
+client = WorldsClient(token=os.environ.get("WORLDS_API_KEY"))
+
+# Perform hybrid search over a knowledge graph
+results = client.worlds.search("world-id",
+    query="Who works at Wazoo?",
+    limit=5
+)
+
+print(results)
+```
+
+```bash HTTP API
+curl -X GET "https://api.wazoo.dev/v1/worlds/world-id/search?query=Who+works+at+Wazoo%3F&limit=5" \
+  -H "Authorization: Bearer $WORLDS_API_KEY"
+```
+
+</CodeGroup>
+
+## Core methods
+
+| Method   | Description                                            |
+| :------- | :----------------------------------------------------- |
+| `search` | Perform hybrid semantic and relational search queries. |
+
+## Deep dive
+
+### Signals
+
 | Signal            | Technique                   | What it captures         |
 | :---------------- | :-------------------------- | :----------------------- |
 | **Semantic**      | Vector embeddings, 1536-dim | Conceptual meaning       |
 | **Keyword**       | FTS5 / BM25                 | Exact term matches       |
 | **Graph context** | RDF relationship filters    | Structural relationships |
 
-## Reciprocal Rank Fusion
+### Reciprocal Rank Fusion
 
 Results from each signal are merged using **Reciprocal Rank Fusion (RRF)**, an
 industry-standard algorithm that produces a single unified ranking:
@@ -25,7 +73,7 @@ $$score = \sum_{d \in D} \frac{1}{60 + rank(d)}$$
 This ensures that a result ranked highly by _multiple_ signals surfaces to the
 top, while noise from any single signal is suppressed.
 
-## Why not just vector search?
+### Why not just vector search?
 
 Vector search alone can return semantically _similar_ but factually _wrong_
 results. By adding keyword precision and graph-aware structural filters, hybrid
@@ -35,3 +83,12 @@ search dramatically improves retrieval accuracy for agentic workloads.
 
 - [Pipeline](/contribute/architecture) — full retrieval pipeline breakdown
 - [Semantic Search guide](/guides/semantic-search) — tuning hybrid search
+
+<CardGroup cols={2}>
+  <Card title="CLI Guide" icon="terminal" href="/reference/cli">
+    Manage Worlds directly from your terminal.
+  </Card>
+  <Card title="API Reference" icon="code" href="/reference">
+    Explore the exhaustive OpenAPI specifications.
+  </Card>
+</CardGroup>
