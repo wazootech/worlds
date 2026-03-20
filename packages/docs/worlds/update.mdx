@@ -9,7 +9,8 @@ Worlds supports multiple strategies for ingesting and continuously updating data
 within an isolated world memory container.
 
 <Note>
-  You'll need an [API Key](/reference) and the [Worlds SDK](/quickstart) installed to run these examples.
+  You'll need an [API Key](/reference) and the [Worlds SDK](/quickstart)
+  installed to run these examples.
 </Note>
 
 <CodeGroup>
@@ -23,7 +24,7 @@ const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
 await client.worlds.import(
   "world-id",
   "<ex:User123> <rdf:type> <ex:Contributor> .",
-  { format: "turtle" }
+  { format: "turtle" },
 );
 ```
 

@@ -100,12 +100,9 @@
       {
         "group": "Open Source",
         "pages": [
-          "contribute/index",
           "contribute/architecture",
           "contribute/style",
           "contribute/security",
-          "contribute/coc",
-          "contribute/license",
           "platform/self-host"
         ]
       },

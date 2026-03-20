@@ -9,7 +9,8 @@ language for RDF graphs. In Worlds, it provides the **symbolic** half of the
 [neuro-symbolic](/manifesto) architecture.
 
 <Note>
-  You'll need an [API Key](/reference) and the [Worlds SDK](/quickstart) installed to run these examples.
+  You'll need an [API Key](/reference) and the [Worlds SDK](/quickstart)
+  installed to run these examples.
 </Note>
 
 <CodeGroup>
@@ -20,11 +21,14 @@ import { WorldsClient } from "@wazoo/worlds-sdk";
 const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
 
 // Execute a SPARQL query on a specific world
-const results = await client.worlds.sparql("world-id", `
+const results = await client.worlds.sparql(
+  "world-id",
+  `
   SELECT ?person WHERE {
     ?person <http://schema.org/worksAt> <http://example.com/wazoo> .
   }
-`);
+`,
+);
 
 console.log(results);
 ```
