@@ -1,8 +1,6 @@
 ---
 title: "Worlds"
-description:
-  "An isolated, stateful memory container that gives an AI agent persistent
-  context."
+description: "Core knowledge graph primitives"
 ---
 
 A **World** is the foundational resource of the Worlds Platform. It is an
@@ -25,7 +23,7 @@ const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
 const world = await client.worlds.create({
   slug: "assistant-context",
   label: "Assistant Context",
-  description: "Persistent memory for personal assistant agent.",
+  description: "Core knowledge graph primitives",
 });
 
 console.log(`Created world: ${world.id}`);

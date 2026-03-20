@@ -163,7 +163,7 @@
             "href": "/reference/cli"
           },
           {
-            "label": "SDK (JSR)",
+            "label": "TypeScript Reference",
             "href": "https://jsr.io/@wazoo/worlds-sdk"
           }
         ]
@@ -189,7 +189,7 @@
             "href": "https://github.com/wazootech/worlds"
           },
           {
-            "label": "X (Twitter)",
+            "label": "X/Twitter",
             "href": "https://x.com/wazootech"
           }
         ]
