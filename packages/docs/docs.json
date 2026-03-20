@@ -49,6 +49,11 @@
       "measurementId": "G-V64G870T6Z"
     }
   },
+  "api": {
+    "params": {
+      "expanded": "all"
+    }
+  },
   "navbar": {
     "links": [
       {
@@ -63,6 +68,18 @@
     }
   },
   "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Worlds API",
+          "href": "/reference"
+        },
+        {
+          "anchor": "Worlds CLI",
+          "href": "/reference/cli"
+        }
+      ]
+    },
     "products": [
       {
         "product": "Worlds",
