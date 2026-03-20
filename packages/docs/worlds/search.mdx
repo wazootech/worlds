@@ -20,8 +20,7 @@ import { WorldsClient } from "@wazoo/worlds-sdk";
 const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
 
 // Perform hybrid search over a knowledge graph
-const results = await client.worlds.search("world-id", {
-  query: "Who works at Wazoo?",
+const results = await client.worlds.search("world-id", "Who works at Wazoo?", {
   limit: 5,
 });
 
@@ -35,10 +34,7 @@ import os
 client = WorldsClient(token=os.environ.get("WORLDS_API_KEY"))
 
 # Perform hybrid search over a knowledge graph
-results = client.worlds.search("world-id",
-    query="Who works at Wazoo?",
-    limit=5
-)
+results = client.worlds.search("world-id", "Who works at Wazoo?", limit=5)
 
 print(results)
 ```

@@ -20,11 +20,11 @@ import { WorldsClient } from "@wazoo/worlds-sdk";
 const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
 
 // Insert a single triple fact into the world
-await client.worlds.triples.insert("world-id", {
-  subject: "ex:User123",
-  predicate: "rdf:type",
-  object: "ex:Contributor",
-});
+await client.worlds.import(
+  "world-id",
+  "<ex:User123> <rdf:type> <ex:Contributor> .",
+  { format: "turtle" }
+);
 ```
 
 ```python Python
@@ -34,33 +34,28 @@ import os
 client = WorldsClient(token=os.environ.get("WORLDS_API_KEY"))
 
 # Insert a single triple fact into the world
-client.worlds.triples.insert("world-id",
-    subject="ex:User123",
-    predicate="rdf:type",
-    object="ex:Contributor"
+client.worlds.import_data(
+    "world-id",
+    data="<ex:User123> <rdf:type> <ex:Contributor> .",
+    format="turtle"
 )
 ```
 
 ```bash HTTP API
-curl -X POST "https://api.wazoo.dev/v1/worlds/world-id/triples" \
+curl -X POST "https://api.wazoo.dev/v1/worlds/world-id/import?format=turtle" \
   -H "Authorization: Bearer $WORLDS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "subject": "ex:User123",
-    "predicate": "rdf:type",
-    "object": "ex:Contributor"
-  }'
+  -H "Content-Type: text/turtle" \
+  -d '<ex:User123> <rdf:type> <ex:Contributor> .'
 ```
 
 </CodeGroup>
 
 ## Core methods
 
-| Method           | Description                                        |
-| :--------------- | :------------------------------------------------- |
-| `import`         | Ingest bulk RDF files or text representations.     |
-| `triples.insert` | Synchronously insert discrete items or properties. |
-| `triples.delete` | Remove facts from the stateful world memory.       |
+| Method   | Description                                    |
+| :------- | :--------------------------------------------- |
+| `import` | Ingest bulk RDF files or single triple blocks. |
+| `export` | Export a world's graph to an RDF string.       |
 
 ## Deep dive
 

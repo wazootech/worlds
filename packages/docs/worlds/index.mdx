@@ -21,7 +21,8 @@ const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
 
 // Create a new isolated world
 const world = await client.worlds.create({
-  name: "Assistant Context",
+  slug: "assistant-context",
+  label: "Assistant Context",
   description: "Persistent memory for personal assistant agent.",
 });
 
@@ -36,7 +37,8 @@ client = WorldsClient(token=os.environ.get("WORLDS_API_KEY"))
 
 # Create a new isolated world
 world = client.worlds.create(
-    name="Assistant Context",
+    slug="assistant-context",
+    label="Assistant Context",
     description="Persistent memory for personal assistant agent."
 )
 
@@ -48,7 +50,8 @@ curl -X POST "https://api.wazoo.dev/v1/worlds" \
   -H "Authorization: Bearer $WORLDS_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Assistant Context",
+    "slug": "assistant-context",
+    "label": "Assistant Context",
     "description": "Persistent memory for personal assistant agent."
   }'
 ```

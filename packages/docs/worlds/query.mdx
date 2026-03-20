@@ -20,13 +20,11 @@ import { WorldsClient } from "@wazoo/worlds-sdk";
 const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
 
 // Execute a SPARQL query on a specific world
-const results = await client.worlds.sparql("world-id", {
-  query: `
-    SELECT ?person WHERE {
-      ?person <http://schema.org/worksAt> <http://example.com/wazoo> .
-    }
-  `,
-});
+const results = await client.worlds.sparql("world-id", `
+  SELECT ?person WHERE {
+    ?person <http://schema.org/worksAt> <http://example.com/wazoo> .
+  }
+`);
 
 console.log(results);
 ```
@@ -39,7 +37,7 @@ client = WorldsClient(token=os.environ.get("WORLDS_API_KEY"))
 
 # Execute a SPARQL query on a specific world
 results = client.worlds.sparql("world-id",
-    query="""
+    """
     SELECT ?person WHERE {
       ?person <http://schema.org/worksAt> <http://example.com/wazoo> .
     }
