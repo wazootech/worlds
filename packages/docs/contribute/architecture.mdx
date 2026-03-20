@@ -8,6 +8,24 @@ infrastructure designed for edge-distributed, agentic memory. Built on the
 [Deno](https://deno.com/) runtime, it separates the **Worlds Console** for
 management from the **Worlds API** for high-performance execution.
 
+## The connection model
+
+Before diving into the underlying engine, it's helpful to understand the basic
+connection model. The platform is built around three simple pillars:
+
+1. **Your AI Agent (The Client):** You use the `@wazoo/worlds-sdk` or standard
+   HTTP requests inside your agent (like Claude, Gemini, or a custom script) to
+   connect to the platform.
+2. **The World (The Memory):** A "World" is simply an isolated, secure sandbox
+   for your agent's memories. Every request from your agent securely targets a
+   specific World using an API key and the World's unique ID.
+3. **The Console (The Dashboard):** You use the Worlds Console to generate those
+   API keys, visually explore the data your agent has stored, and manage
+   billing.
+
+In short: **Your agent uses an API key to read and write facts to a specific
+World.**
+
 ## High-level overview
 
 The following diagram illustrates the relationship between the management layer,
