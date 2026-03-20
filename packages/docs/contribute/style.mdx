@@ -17,7 +17,8 @@ rubric.
 - **Entity-First Organization**: Group content around the "entities" a user
   encounters (e.g., Worlds, Agents), not the delivery method (CLI vs. API).
 - **The "Single Source of Truth" Navigation**: Every page must live in a single
-  unified navigation tree. Do not use top-level tabs that hide content.
+  unified navigation tree. Display all groups directly in the sidebar to ensure
+  complete visibility.
 - **The Navigable Triangle**: Every major page must conclude by pointing the
   user to the CLI Guide and the API Reference, ensuring no page is a dead end.
 
@@ -31,44 +32,46 @@ Developers come to the docs to copy code. Give it to them immediately.
   (TypeScript, Python, cURL) code snippet showing the entity in action.
 - **API at a Glance**: Follow the code block with a Markdown table summarizing
   the core methods.
-- **Deep Dive Below the Fold**: Only after the usable code should you delve into
-  architectural explanations, concepts, and diagrams.
+- **Deep Dive Below the Fold**: Place architectural explanations, concepts, and
+  diagrams below the usable code and API tables.
 
 ## 3. Voice & tone
 
-- **Second-Person Active**: Use "You can write...", not "Developers can
+- **Positive Phrasing**: State what to do rather than what to avoid. Affirmative
+  framing aids comprehension and maintains a constructive, clear tone.
+- **Second-Person Active**: Use "You can write..." rather than "Developers can
   write..." or "We believe...".
-- **Zero Marketing Adjectives**: Words like _powerful_, _seamless_, _robust_,
-  and _cutting-edge_ are strictly banned. The product must speak for itself.
-- **No Editorializing**: Words like _simply_, _just_, _easily_, and _obviously_
-  are banned. If a task isn't easy, saying "just do this" is condescending.
-- **Factual AI Terminology**: Avoid anthropomorphizing. Models do not _think_,
-  _feel_, or have _intuition_. They process, understand, and generate. Keep
-  prompts vendor-agnostic (e.g., "OpenAI to Gemini or a local model").
+- **Zero Marketing Adjectives**: Let the product speak for itself. Omit filler
+  adjectives like _powerful_, _seamless_, _robust_, and _cutting-edge_.
+- **Objective Explanations**: State facts directly. Omit editorial words like
+  _simply_, _just_, _easily_, and _obviously_. Acknowledging complexity respects
+  the user.
+- **Factual AI Terminology**: Use precise, mechanical verbs. Models process,
+  understand, and generate, rather than _think_, _feel_, or have _intuition_.
+  Keep prompts vendor-agnostic (e.g., "OpenAI to Gemini or a local model").
 
 ## 4. Terminology & formatting hygiene
 
 - **Item vs. Entity**: Use **Item** consistently in standard copy. Reserve the
   word "Entity" strictly for formal RDF definitions.
-- **World Memory**: Refer to the stateful graph as **World memory**, not "agent
-  memory".
+- **World Memory**: Refer to the stateful graph as **World memory** rather than
+  "agent memory".
 - **Sentence-Case Headings**: Use sentence case for every header (e.g.,
-  `## The core engine`). Do not use Title Case (`The Core Engine`). Never use
-  colons in headings.
-- **Parentheses for Definitions Only**: Do not use parentheses for generic
-  clauses. Use commas instead. Parentheses are strictly reserved for acronyms
-  (e.g., RDF) and defining terminology.
-- **Ordered Lists**: Do not use ordered or numbered lists unless there is a
-  deliberate sequence, step-by-step procedure, or strict hierarchy being
-  communicated. Default to unordered bullet points.
+  `## The core engine`). Reserve Title Case for proper nouns, and omit colons
+  entirely.
+- **Parentheses for Definitions Only**: Use commas for generic clauses. Reserve
+  parentheses strictly for acronyms (e.g., RDF) and defining terminology.
+- **Ordered Lists**: Use ordered or numbered lists specifically for deliberate
+  sequences, step-by-step procedures, or strict hierarchies. Default to
+  unordered bullet points for general collections.
 
 ## 5. Technical authority & transparency
 
-- **Source-Truth Alignment**: Never hallucinate method signatures or properties
-  in code blocks. Every code snippet must perfectly mirror the live
-  `@wazoo/worlds-sdk` TypeScript definitions.
+- **Source-Truth Alignment**: Ensure every method signature and property in code
+  blocks perfectly mirrors the live `@wazoo/worlds-sdk` TypeScript definitions.
+  Extract code examples strictly from functional reality.
 - **Friction Transparency**: Be fiercely honest about gaps. If a feature is
   experimental, beta, or lacks language parity, place a `<Warning>` block
-  immediately after the frontmatter. Do not hide the friction.
-- **No Ghost Docs**: If a section isn't ready, don't publish a "Coming soon"
-  placeholder. Document what exists, or omit the page entirely.
+  immediately after the frontmatter to surface the friction prominently.
+- **Actionable Documentation**: Publish pages only when they contain actionable
+  technical value. Document what exists, or omit the page entirely.
