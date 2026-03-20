@@ -96,7 +96,7 @@ connected by **Facts**.
 
 ### Items
 
-An **Item** (also known as an Entity in broader RDF contexts) is any distinct
+An **Item**, also known as an Entity in broader RDF contexts, is any distinct
 "thing" in your world—a person, a piece of code, a company, or a concept.
 
 Every item is represented as a node in the Worlds knowledge graph.
@@ -106,7 +106,7 @@ Every item is represented as a node in the Worlds knowledge graph.
 - **Identification**: A unique **IRI**, or Internationalized Resource
   Identifier, identifies every item.
 - **Classes**: Items are categorized by their type using standard properties
-  like `rdf:type` (e.g., `User`, `Project`, or `Task`).
+  like `rdf:type`, such as `User`, `Project`, or `Task`.
 
 Items are connected to each other via properties to form a [Triple](/worlds),
 establishing a fact in the world.
@@ -137,12 +137,12 @@ There are two primary types of nodes that make up these terms:
   items or properties. Subjects and Predicates must always be named nodes,
   allowing them to explicitly link to other parts of the graph.
 - **Literal nodes (Values)**: Raw data values, such as strings, numbers, or
-  dates (e.g., `"Ethan"`, `42`). Literals can only ever be Objects. They sit at
+  dates like `"Ethan"` or `42`. Literals can only ever be Objects. They sit at
   the edge of the graph and cannot have outbound relationships.
 
-When a named node (Object) is connected to another named node (Subject) via a
-named node (Predicate), the graph expands. When it connects to a literal node,
-the path terminates.
+When an object named node is connected to a subject named node via a predicate
+named node, the graph expands. When it connects to a literal node, the path
+terminates.
 
 ### Etymology
 
@@ -164,8 +164,8 @@ graph LR
     W -->|locatedIn| S["geo:san-francisco"]
 ```
 
-As the graph grows, the agent can traverse relationships to infer new knowledge
-(for example, that Ethan and Gregory share the same work location).
+As the graph grows, the agent can traverse relationships to infer new knowledge,
+for example, that Ethan and Gregory share the same work location.
 
 ## Learn more
 
