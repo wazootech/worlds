@@ -1,0 +1,44 @@
+---
+title: "Documentation Style Guide"
+description: "How to write, format, and structure documentation for the Worlds project."
+icon: "pen-nib"
+---
+
+The Worlds documentation follows a strict, highly-opinionated set of editorial guidelines. We optimize for **developer momentum, absolute technical authority, and zero marketing fluff.** 
+
+If you are contributing to the docs, please adhere to the following 5-part rubric.
+
+## 1. Architecture & structural integrity
+
+* **Entity-First Organization**: Group content around the "entities" a user encounters (e.g., Worlds, Agents), not the delivery method (CLI vs. API).
+* **The "Single Source of Truth" Navigation**: Every page must live in a single unified navigation tree. Do not use top-level tabs that hide content.
+* **The Navigable Triangle**: Every major page must conclude by pointing the user to the CLI Guide and the API Reference, ensuring no page is a dead end.
+
+## 2. The "Code-Forward" pattern
+
+Developers come to the docs to copy code. Give it to them immediately.
+
+* **2-Sentence Opener**: Start the page with a maximum of two sentences defining what the entity is, using active voice.
+* **Immediate `<CodeGroup>`**: The very next element must be a multi-language (TypeScript, Python, cURL) code snippet showing the entity in action. 
+* **API at a Glance**: Follow the code block with a Markdown table summarizing the core methods.
+* **Deep Dive Below the Fold**: Only after the usable code should you delve into architectural explanations, concepts, and diagrams. 
+
+## 3. Voice & tone
+
+* **Second-Person Active**: Use "You can write...", not "Developers can write..." or "We believe...". 
+* **Zero Marketing Adjectives**: Words like *powerful*, *seamless*, *robust*, and *cutting-edge* are strictly banned. The product must speak for itself.
+* **No Editorializing**: Words like *simply*, *just*, *easily*, and *obviously* are banned. If a task isn't easy, saying "just do this" is condescending.
+* **Factual AI Terminology**: Avoid anthropomorphizing. Models do not *think*, *feel*, or have *intuition*. They process, understand, and generate. Keep prompts vendor-agnostic (e.g., "OpenAI to Gemini or a local model").
+
+## 4. Terminology & formatting hygiene
+
+* **Item vs. Entity**: Use **Item** consistently in standard copy. Reserve the word "Entity" strictly for formal RDF definitions.
+* **World Memory**: Refer to the stateful graph as **World memory**, not "agent memory".
+* **Sentence-Case Headings**: Use sentence case for every header (e.g., `## The core engine`). Do not use Title Case (`The Core Engine`). Never use colons in headings.
+* **Parentheses for Definitions Only**: Do not use parentheses for generic clauses. Use commas instead. Parentheses are strictly reserved for acronyms (e.g., RDF) and defining terminology. 
+
+## 5. Technical authority & transparency
+
+* **Source-Truth Alignment**: Never hallucinate method signatures or properties in code blocks. Every code snippet must perfectly mirror the live `@wazoo/worlds-sdk` TypeScript definitions.
+* **Friction Transparency**: Be fiercely honest about gaps. If a feature is experimental, beta, or lacks language parity, place a `<Warning>` block immediately after the frontmatter. Do not hide the friction.
+* **No Ghost Docs**: If a section isn't ready, don't publish a "Coming soon" placeholder. Document what exists, or omit the page entirely.
