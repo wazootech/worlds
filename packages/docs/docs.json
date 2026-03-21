@@ -83,18 +83,18 @@
         ]
       },
       {
-        "group": "Guides",
+        "group": "Integrations",
         "pages": [
-          "integrations/ai-sdk",
-          "integrations/claude-code",
-          "integrations/gemini-api",
-          "integrations/mastra",
-          "integrations/n8n",
-          "integrations/openclaw",
-          "integrations/opencode",
-          "integrations/openai",
-          "integrations/zapier",
-          "integrations/zo"
+          "guides/ai-sdk",
+          "guides/claude-code",
+          "guides/gemini-api",
+          "guides/mastra",
+          "guides/n8n",
+          "guides/openclaw",
+          "guides/opencode",
+          "guides/openai",
+          "guides/zapier",
+          "guides/zo"
         ]
       },
       {
@@ -103,15 +103,11 @@
           "contribute/architecture",
           "contribute/style",
           "contribute/security",
-          "platform/self-host"
+          "contribute/self-host"
         ]
       },
       {
         "group": "Worlds API",
-        "pages": ["reference/index"]
-      },
-      {
-        "group": "API reference",
         "openapi": "openapi.yaml",
         "pages": [
           "GET /worlds",
@@ -128,12 +124,8 @@
         ]
       },
       {
-        "group": "Worlds CLI",
-        "pages": ["reference/cli/index"]
-      },
-      {
         "group": "CLI reference",
-        "icon": "terminal",
+        "icon": "book-open",
         "pages": [
           "reference/cli/create",
           "reference/cli/get",

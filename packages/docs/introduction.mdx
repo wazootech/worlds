@@ -3,12 +3,35 @@ title: "Introduction"
 description: "The open-source context engine for AI"
 ---
 
-Worlds is a REST API designed to manage, query, update, and reason over
-interoperable knowledge bases at the edge. It provides an interoperable context
-graph to natively improve agent reasoning without relying on probabilistic
-guessing.
+Worlds is an open-source context engine designed to manage, query, update, and
+reason over interoperable knowledge bases at the edge. It provides agents with a
+deterministic, graph-based memory system that continually improves output
+quality and consistency.
 
-## Platform features
+## Quicklinks
+
+Give your agents persistent memory or explore the platform visually.
+
+<CardGroup cols={2}>
+  <Card title="Worlds API" icon="code" href="/reference">
+    Explore the full REST OpenAPI specification endpoints.
+  </Card>
+  <Card title="Worlds CLI" icon="terminal" href="/reference/cli">
+    Manage your knowledge graphs right from the terminal.
+  </Card>
+  <Card title="Self-hosting" icon="server" href="/contribute/self-host">
+    Deploy Worlds persistently using Docker and Turso.
+  </Card>
+  <Card
+    title="Worlds Console"
+    icon="app-window"
+    href="https://console.wazoo.dev"
+  >
+    Our visual web platform for exploring and managing graphs.
+  </Card>
+</CardGroup>
+
+## Features
 
 <CardGroup cols={2}>
   <Card title="REST API & SDKs" icon="server" href="/reference">
@@ -16,18 +39,18 @@ guessing.
   </Card>
   <Card
     title="Managed GraphRAG"
-    icon="diagram-project"
+    icon="workflow"
     href="/contribute/architecture"
   >
     Retrieval augmented generation powered by deterministic graph logic.
   </Card>
-  <Card title="Agent-native" icon="robot" href="/guides/ai-sdk">
-    Vercel AI SDK, MCP, CLI, and type-safe SDK integrations.
+  <Card title="Agent-native" icon="bot" href="/guides/ai-sdk">
+    Vercel AI SDK, MCP, CLI, and type-safe SDKs.
   </Card>
   <Card title="Malleable knowledge" icon="recycle" href="/worlds/update">
     Continual learning system that dynamically updates and repairs facts.
   </Card>
-  <Card title="Query and reason" icon="magnifying-glass" href="/worlds/query">
+  <Card title="Query and reason" icon="search" href="/worlds/query">
     Ontology-first domains, SPARQL, RDF, OWL, and Hylar.
   </Card>
   <Card title="BYO platform" icon="brain" href="/manifesto">
@@ -41,25 +64,6 @@ guessing.
   </Card>
   <Card title="Edge-first" icon="cloud" href="/contribute/architecture">
     Serverless-native, global low-latency graph architecture.
-  </Card>
-</CardGroup>
-
-## Quicklinks
-
-Give your agents persistent memory or explore the platform visually.
-
-<CardGroup cols={2}>
-  <Card title="Worlds API" icon="code" href="/reference">
-    Explore the full REST OpenAPI specification endpoints.
-  </Card>
-  <Card title="Worlds CLI" icon="terminal" href="/reference/cli">
-    Manage your knowledge graphs right from the terminal.
-  </Card>
-  <Card title="Self-hosting" icon="server" href="/guides/self-host">
-    Deploy Worlds persistently using Docker and Turso.
-  </Card>
-  <Card title="Worlds Console" icon="browser" href="https://console.wazoo.dev">
-    Our visual web platform for exploring and managing graphs.
   </Card>
 </CardGroup>
 
