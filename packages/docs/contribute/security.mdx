@@ -32,8 +32,8 @@ organizations. This layer handles MFA, SSO, and team-based access control.
 Security is enforced at the organization level. Provisioning an organization
 initializes a dedicated API server instance and a primary metadata database.
 
-- **Dedicated Worlds**: Each World maintains its own isolated libSQL database
-  for triples and embeddings.
+- **Dedicated Worlds**: Each World maintains its own SQLite database for triples
+  and embeddings.
 - **Resource boundaries**: Agents only access Worlds within their authorized
   organization. Zero cross-contamination occurs between different tenants.
 

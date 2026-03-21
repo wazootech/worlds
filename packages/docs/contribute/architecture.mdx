@@ -52,7 +52,7 @@ graph LR
 
     subgraph State ["Persistence"]
         direction TB
-        DB[("Isolated libSQL DB")]
+        DB[("SQLite DB")]
     end
 
     %% Human/Control Flow
@@ -176,7 +176,7 @@ graph LR
 
 Each World is a specific context or knowledge graph managed by the server.
 
-- **Dedicated storage**: Each World maintains its own secondary libSQL database
+- **Dedicated storage**: Each World maintains its own secondary SQLite database
   for [triples](/worlds#facts), chunks, and embeddings.
 - **Isolation**: Worlds are accessed via `/v1/worlds/{id}`, ensuring zero
   cross-contamination between contexts.
@@ -250,7 +250,7 @@ environment:
 | Resource     | Local development     | Production               |
 | :----------- | :-------------------- | :----------------------- |
 | **Compute**  | Local child processes | Deno Deploy edge runtime |
-| **Storage**  | Local SQLite files    | Remote libSQL / Turso    |
+| **Storage**  | Local SQLite files    | SQLite / Turso           |
 | **Identity** | Mock identity file    | WorkOS Identity Service  |
 
 This pattern allows the entire stack to run locally with zero cloud
