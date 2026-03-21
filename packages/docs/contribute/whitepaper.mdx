@@ -219,12 +219,13 @@ runtime, providing isolated, high-performance in-memory state.
 
 ### SQLite storage
 
-Persistence utilize a hybrid schema to avoid the overhead of general-purpose
+Persistence utilizes a hybrid schema to avoid the overhead of general-purpose
 SPARQL engines on disk while maintaining semantic integrity.
 
-- **`triples` table**: Stores atomic units of knowledge, including Subject,
-  Predicate, and Object, targeting string literals and ranks derived from triple
-  data.
+- **`triples` table**: Stores atomic units of knowledge (Subject, Predicate,
+  Object).
+- **`chunks` table**: Stores overlapping text segments with vector embeddings
+  targeting string literals, and ranks derived from triple data.
 - **`entity_types` table**: An optimized table for mapping items to their
   `rdf:type` IRIs, enabling rapid structural filtering.
 - **`blobs` table**: Handles large-scale RDF data and file-based state.
