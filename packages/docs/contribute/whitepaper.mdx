@@ -25,12 +25,15 @@ understanding with deterministic facts for precise data retrieval, empowering
 agents to navigate a persistent, interoperable map of reality rather than
 predicting the next token.
 
-By 2026, the artificial intelligence industry has realigned around fluid
-intelligence and outcome-based results. Worlds provides the structural
-scaffolding to guarantee reliable, auditable, and explainable results even
-within probabilistic agentic workflows. This infrastructure serves as the
-backbone of the "small web," enabling data ownership and high-precision
-knowledge retrieval.
+The industry remains constrained by a model-centric scaling race. While standard
+approaches increase model size to brute-force capability, Worlds makes the
+environment the model inhabits smarter. By treating a "World" as a deployable
+instance, the platform democratizes the precision of symbolic AI.
+
+Worlds provides the structural scaffolding to guarantee reliable, auditable, and
+explainable results even within probabilistic agentic workflows. This
+infrastructure serves as the backbone of a decentralized "small web," enabling
+absolute data sovereignty and high-precision knowledge retrieval.
 
 ## Introduction
 
@@ -46,9 +49,10 @@ both accessible and mutable.
 
 Current industry standards rely on vector databases to provide long-term memory,
 creating a quantifiable "Hallucination Gap." Recent 2026 benchmarks demonstrate
-that standard semantic RAG systems score 0% accuracy on complex, schema-bound
-queries. In contrast, systems utilizing a deterministic graph achieve over 90%
-accuracy. The reasoning gap occurs because vector search exacerbates two
+that naive semantic RAG over raw tables hits a rigid ~80% accuracy ceiling—often
+collapsing to just 20% on complex, multi-hop queries. In contrast, systems
+utilizing a deterministic context graph consistently achieve 90–99% accuracy.
+The reasoning gap occurs because disparate vector search exacerbates two
 critical AI failure modes:
 
 - **Sycophancy**: LLMs natively attempt to appease the user, agreeing with
@@ -102,7 +106,11 @@ logic of symbolic systems.
 The historical "PhD bottleneck" of manual knowledge engineering is solved using
 **Large Ontology Models (LOMs)**. Worlds employs a **Construct-Align-Reason
 (CAR)** pipeline where autonomous processors achieve SOTA accuracy in ontology
-synthesis. Ingestion follows a multi-stage transformation process:
+synthesis. Rather than relying on massive, brittle semantic pipelines, Worlds
+provides **Low-ETL** interoperability. Because W3C RDF is a universal standard,
+existing legacy databases comply natively.
+
+Ingestion follows a multi-stage transformation process:
 
 1.  **Segmentation**: Unstructured text is decomposed into semantically coherent
     chunks.
@@ -303,11 +311,14 @@ agent's context.
 
 ### Human-in-the-loop (HITL)
 
-When the system identifies low-confidence matches or multiple conflicting items,
-the malleable nature of Worlds allows the UI to present
+While LOMs accelerate auto-ontology generation, LLMs alone remain unreliable
+ontology engineers. When the system identifies low-confidence mappings,
+contradictory axioms, or multiple conflicting items, the malleable nature of
+Worlds allows the UI to present
 [disambiguation](https://en.wikipedia.org/wiki/Entity_linking#Disambiguation)
 prompts to the user via a
 [Human-in-the-loop](https://en.wikipedia.org/wiki/Human-in-the-loop) workflow.
+This absolute verification guarantees structural integrity.
 
 ### Outcome-based determinism
 
@@ -338,10 +349,14 @@ The SDK provides drop-in tools for the Vercel AI SDK and other agent frameworks:
 ### Interoperability
 
 Worlds is agent-ready from the first request. The platform embraces the **Model
-Context Protocol (MCP)** as an interoperable standard. As a dedicated context
-layer, Worlds allows host applicationsâ€”such as contextual coding agentsâ€”to
-securely interface with private knowledge graphs and autonomously index raw SDK
-source code without hallucinations.
+Context Protocol (MCP)** as an interoperable standard. By relying on open RDF
+structures, agents from entirely separate ecosystems—such as a Claude coding
+agent and a Gemini researcher—can share facts natively. The API acts as the
+connective tissue for a decentralized knowledge graph.
+
+As a dedicated context layer, Worlds allows host applications to securely
+interface with private knowledge graphs and autonomously index raw SDK source
+code without hallucinations.
 
 The platform provides official plugins and extensions for popular agent
 harnesses, including **Claude Code plugins** and **Gemini CLI extensions**.
