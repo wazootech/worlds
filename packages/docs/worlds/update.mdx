@@ -14,12 +14,15 @@ within an isolated world memory container.
 <CodeGroup>
 
 ```typescript TypeScript
-import { WorldsClient } from "@wazoo/worlds-sdk";
+import { WorldsSdk } from "@wazoo/worlds-sdk";
 
-const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
+const sdk = new WorldsSdk({
+  baseUrl: "https://api.wazoo.dev",
+  apiKey: process.env.WORLDS_API_KEY!,
+});
 
 // Insert a single triple fact into the world
-await client.worlds.import(
+await sdk.worlds.import(
   "world-id",
   "<ex:User123> <rdf:type> <ex:Contributor> .",
   { format: "turtle" },

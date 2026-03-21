@@ -4,10 +4,12 @@ description: "The open-source context engine for AI"
 ---
 
 Worlds is an open-source context engine designed to manage, query, update, and
-reason over interoperable knowledge bases at the edge. At its core, Worlds is an
-RDF store in sync with a search index where every triple is indexed. It provides
-agents with a deterministic, graph-based memory system that continually improves
-output quality and consistency.
+reason over interoperable knowledge bases at the edge.
+
+At its core, Worlds is a knowledge graph where every fact is indexed. It
+provides agents with a deterministic context graph that offers complete
+explainability and source provenance, ensuring continually improving output
+quality and traceable reasoning.
 
 ## Quicklinks
 
@@ -43,7 +45,8 @@ Give your agents persistent memory or explore the platform visually.
     icon="workflow"
     href="/contribute/architecture"
   >
-    Retrieval augmented generation powered by deterministic graph logic.
+    Retrieval augmented generation powered by deterministic graph logic and
+    verifiable decision traces.
   </Card>
   <Card title="Agent-native" icon="bot" href="/guides/ai-sdk">
     Vercel AI SDK, MCP, CLI, and type-safe SDKs.

@@ -15,12 +15,15 @@ three complementary signals:
 <CodeGroup>
 
 ```typescript TypeScript
-import { WorldsClient } from "@wazoo/worlds-sdk";
+import { WorldsSdk } from "@wazoo/worlds-sdk";
 
-const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
+const sdk = new WorldsSdk({
+  baseUrl: "https://api.wazoo.dev",
+  apiKey: process.env.WORLDS_API_KEY!,
+});
 
 // Perform hybrid search over a knowledge graph
-const results = await client.worlds.search("world-id", "Who works at Wazoo?", {
+const results = await sdk.worlds.search("world-id", "Who works at Wazoo?", {
   limit: 5,
 });
 

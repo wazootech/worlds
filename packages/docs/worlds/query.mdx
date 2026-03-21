@@ -15,12 +15,15 @@ language for RDF graphs. In Worlds, it provides the **symbolic** half of the
 <CodeGroup>
 
 ```typescript TypeScript
-import { WorldsClient } from "@wazoo/worlds-sdk";
+import { WorldsSdk } from "@wazoo/worlds-sdk";
 
-const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
+const sdk = new WorldsSdk({
+  baseUrl: "https://api.wazoo.dev",
+  apiKey: process.env.WORLDS_API_KEY!,
+});
 
 // Execute a SPARQL query on a specific world
-const results = await client.worlds.sparql(
+const results = await sdk.worlds.sparql(
   "world-id",
   `
   SELECT ?person WHERE {

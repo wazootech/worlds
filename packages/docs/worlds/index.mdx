@@ -15,12 +15,15 @@ its own dedicated SQLite database.
 <CodeGroup>
 
 ```typescript TypeScript
-import { WorldsClient } from "@wazoo/worlds-sdk";
+import { WorldsSdk } from "@wazoo/worlds-sdk";
 
-const client = new WorldsClient({ token: process.env.WORLDS_API_KEY });
+const sdk = new WorldsSdk({
+  baseUrl: "https://api.wazoo.dev",
+  apiKey: process.env.WORLDS_API_KEY!,
+});
 
 // Create a new isolated world
-const world = await client.worlds.create({
+const world = await sdk.worlds.create({
   slug: "assistant-context",
   label: "Assistant Context",
   description: "Core knowledge graph primitives",
@@ -150,12 +153,16 @@ A fact is a statement that is represented in a computer as a triple, in other
 literature also called a triplet, tuple, statement, quad, or edge. The term
 "triple" is used to emphasize that every fact is composed of three components.
 
-### Why triples?
+### Why triples and ontologies?
 
 Triples follow the
 **[RDF (Resource Description Framework)](https://www.w3.org/TR/rdf-primer/)**
 standard. Because every fact shares the same structure, triples compose
 naturally into a graph—no schema migrations, no table joins.
+
+Applying formal ontologies to these triples resolves semantic disambiguation and
+contextual ambiguity. By rigidly defining properties and classes, Worlds
+intercepts context-blind misinterpretations from the underlying language model.
 
 ```mermaid
 graph LR
