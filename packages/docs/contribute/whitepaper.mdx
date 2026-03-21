@@ -47,12 +47,18 @@ both accessible and mutable.
 
 ### Reasoning gap
 
-The industry is undergoing a fundamental shift: AI agents do not need human-facing dashboards; they need "Context Engineering." Traditional data systems record decisions but fail to capture the reasoning behind them, creating a **Context Gap**.
+The industry is undergoing a fundamental shift: AI agents do not need
+human-facing dashboards; they need "Context Engineering." Traditional data
+systems record decisions but fail to capture the reasoning behind them, creating
+a **Context Gap**.
 
 Current industry standards rely on vector databases to provide long-term memory,
 creating a quantifiable "Hallucination Gap." Recent 2026 benchmarks demonstrate
 that naive semantic RAG over raw tables hits a rigid ~80% accuracy ceiling—often
-collapsing to 20% on complex, multi-hop queries. Moving from a metrics-first to a knowledge-first architecture using deterministic context graphs consistently achieves 90–99% accuracy. The reasoning gap occurs because disparate vector search exacerbates several critical AI failure modes:
+collapsing to 20% on complex, multi-hop queries. Moving from a metrics-first to
+a knowledge-first architecture using deterministic context graphs consistently
+achieves 90–99% accuracy. The reasoning gap occurs because disparate vector
+search exacerbates several critical AI failure modes:
 
 - **Sycophancy**: LLMs natively attempt to appease the user, agreeing with
   fundamentally incorrect logical structures unless constrained by an ontology.
@@ -102,12 +108,17 @@ logic of symbolic systems.
 
 ### 1. Neuro-symbolic pipeline
 
-While traditional semantic layers (like LookML or dbt) use YAML to standardize metric calculations for human dashboards, they cannot encode complex business logic. AI requires **ontologies**, built on standards like OWL and W3C RDF, which define the hierarchies and relationships necessary for machines to autonomously reason.
+While traditional semantic layers (like LookML or dbt) use YAML to standardize
+metric calculations for human dashboards, they cannot encode complex business
+logic. AI requires **ontologies**, built on standards like OWL and W3C RDF,
+which define the hierarchies and relationships necessary for machines to
+autonomously reason.
 
 The historical "PhD bottleneck" of manual knowledge engineering is solved using
 **Large Ontology Models (LOMs)**. Worlds employs a **Construct-Align-Reason
 (CAR)** pipeline where autonomous processors achieve SOTA accuracy in ontology
-synthesis. By creating a living record of business logic, Worlds provides **Low-ETL** interoperability where existing legacy databases comply natively.
+synthesis. By creating a living record of business logic, Worlds provides
+**Low-ETL** interoperability where existing legacy databases comply natively.
 
 Ingestion follows a multi-stage transformation process:
 
@@ -122,7 +133,13 @@ Ingestion follows a multi-stage transformation process:
 
 ### 2. State management and Policy-as-Code
 
-The proliferation of AI agents exposes the flaw in "malleable software." Highly customizable platforms expand the context an agent must parse, directly increasing latency, token costs, and failure rates. Effective neuro-symbolic systems are strictly opinionated at the core. By defining clear objects and explicit workflows through a rigid ontology, the system carries the computational burden, allowing agents to execute efficiently without requiring users to architect the tool itself.
+The proliferation of AI agents exposes the flaw in "malleable software." Highly
+customizable platforms expand the context an agent must parse, directly
+increasing latency, token costs, and failure rates. Effective neuro-symbolic
+systems are strictly opinionated at the core. By defining clear objects and
+explicit workflows through a rigid ontology, the system carries the
+computational burden, allowing agents to execute efficiently without requiring
+users to architect the tool itself.
 
 Unlike stateless RAG systems, Worlds treats memory as a dynamic, mutable state.
 Crucially, this strict ontology acts as a hard guardrail. Under stringent laws
@@ -490,4 +507,3 @@ the opaque nature of pure vector retrieval.
    https://metadataweekly.substack.com/p/ontologies-context-graphs-and-semantic
 9. **Saarinen, K.** (2025). The Malleable Software That Never Was. X.
    https://x.com/karrisaarinen/status/2034845387488731585
-
