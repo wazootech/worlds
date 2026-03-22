@@ -19,9 +19,6 @@
   "fonts": {
     "body": {
       "family": "Geist"
-    },
-    "heading": {
-      "family": "IBM Plex Mono"
     }
   },
   "background": {

@@ -5,59 +5,9 @@ description: "Continuous similarity evaluation and retrieval"
 
 **Hybrid search** allows Worlds to locate the most relevant facts and chunks
 given a natural language query. Rather than relying on a single index, it fuses
-three complementary signals:
+three complementary signals.
 
-<Note>
-  You'll need an [API Key](/reference#authentication) and the [Worlds
-  SDK](/quickstart) installed to run these examples.
-</Note>
-
-<CodeGroup>
-
-```typescript TypeScript
-import { WorldsSdk } from "@wazoo/worlds-sdk";
-
-const sdk = new WorldsSdk({
-  baseUrl: "https://api.wazoo.dev",
-  apiKey: process.env.WORLDS_API_KEY!,
-});
-
-// Perform hybrid search over a knowledge graph
-const results = await sdk.worlds.search("world-id", "Who works at Wazoo?", {
-  limit: 5,
-});
-
-console.log(results);
-```
-
-```python Python
-from worlds import WorldsClient
-import os
-
-client = WorldsClient(token=os.environ.get("WORLDS_API_KEY"))
-
-# Perform hybrid search over a knowledge graph
-results = client.worlds.search("world-id", "Who works at Wazoo?", limit=5)
-
-print(results)
-```
-
-```bash HTTP API
-curl -X GET "https://api.wazoo.dev/v1/worlds/world-id/search?query=Who+works+at+Wazoo%3F&limit=5" \
-  -H "Authorization: Bearer $WORLDS_API_KEY"
-```
-
-</CodeGroup>
-
-## Core methods
-
-| Method   | Description                                            |
-| :------- | :----------------------------------------------------- |
-| `search` | Perform hybrid semantic and relational search queries. |
-
-## Deep dive
-
-### Signals
+## Signals
 
 | Signal            | Technique                   | What it captures         |
 | :---------------- | :-------------------------- | :----------------------- |
@@ -65,7 +15,7 @@ curl -X GET "https://api.wazoo.dev/v1/worlds/world-id/search?query=Who+works+at+
 | **Keyword**       | FTS5 / BM25                 | Exact term matches       |
 | **Graph context** | RDF relationship filters    | Structural relationships |
 
-### Reciprocal rank fusion
+## Reciprocal rank fusion
 
 Results from each signal are merged using **Reciprocal Rank Fusion (RRF)**, an
 industry-standard algorithm that produces a single unified ranking:
@@ -75,13 +25,16 @@ $$score = \sum_{d \in D} \frac{1}{60 + rank(d)}$$
 This ensures that a result ranked highly by _multiple_ signals surfaces to the
 top, while noise from any single signal is suppressed.
 
-### Why not only vector search?
+## Why not only vector search?
 
 Vector search alone can return semantically _similar_ but factually _wrong_
 results. By adding keyword precision and graph-aware structural filters, hybrid
-search dramatically improves retrieval accuracy for agentic workloads.
+search improves retrieval accuracy for agentic workloads.
 
 ## Learn more
 
 - [Pipeline](/contribute/architecture) — full retrieval pipeline breakdown
 - [Semantic Search guide](/guides/semantic-search) — tuning hybrid search
+
+- [API Reference](/reference) — manage worlds via HTTP API
+- [Worlds SDK Quickstart](/quickstart) — automate worlds programmatically

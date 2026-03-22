@@ -7,75 +7,10 @@ description: "Deterministic retrieval and semantic queries"
 language for RDF graphs. In Worlds, it provides the **symbolic** half of the
 [neuro-symbolic](/manifesto) architecture.
 
-<Note>
-  You'll need an [API Key](/reference#authentication) and the [Worlds
-  SDK](/quickstart) installed to run these examples.
-</Note>
+## How it looks
 
-<CodeGroup>
-
-```typescript TypeScript
-import { WorldsSdk } from "@wazoo/worlds-sdk";
-
-const sdk = new WorldsSdk({
-  baseUrl: "https://api.wazoo.dev",
-  apiKey: process.env.WORLDS_API_KEY!,
-});
-
-// Execute a SPARQL query on a specific world
-const results = await sdk.worlds.sparql(
-  "world-id",
-  `
-  SELECT ?person WHERE {
-    ?person <http://schema.org/worksAt> <http://example.com/wazoo> .
-  }
-`,
-);
-
-console.log(results);
-```
-
-```python Python
-from worlds import WorldsClient
-import os
-
-client = WorldsClient(token=os.environ.get("WORLDS_API_KEY"))
-
-# Execute a SPARQL query on a specific world
-results = client.worlds.sparql("world-id",
-    """
-    SELECT ?person WHERE {
-      ?person <http://schema.org/worksAt> <http://example.com/wazoo> .
-    }
-    """
-)
-
-print(results)
-```
-
-```bash HTTP API
-curl -X POST "https://api.wazoo.dev/v1/worlds/world-id/sparql" \
-  -H "Authorization: Bearer $WORLDS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "SELECT ?person WHERE { ?person <http://schema.org/worksAt> <http://example.com/wazoo> . }"
-  }'
-```
-
-</CodeGroup>
-
-## Core methods
-
-| Method   | Description                                         |
-| :------- | :-------------------------------------------------- |
-| `sparql` | Execute a raw SPARQL query against the world graph. |
-
-## Deep dive
-
-### How it looks
-
-Given triples such as `user:ethan schema:worksAt org:wazoo`, you can query for
-all employees:
+Given triples such as `user:ethan schema:worksAt org:wazoo`, query for all
+employees:
 
 ```sparql
 SELECT ?person WHERE {
@@ -86,7 +21,7 @@ SELECT ?person WHERE {
 SPARQL matches **patterns** against the graph, following relationships to return
 exact results — no probabilistic guessing.
 
-### SPARQL vs. vector search
+## SPARQL vs. vector search
 
 | Dimension     | SPARQL                   | Vector search              |
 | :------------ | :----------------------- | :------------------------- |
@@ -101,20 +36,20 @@ The Worlds Platform utilizes the
 [Resource Description Framework (RDF)](https://en.wikipedia.org/wiki/Resource_Description_Framework)
 for its core data model and SPARQL for structured querying.
 
-### RDF blob handling
+## RDF blob handling
 
 The system manages RDF data through several core utilities:
 
-- **N3 utility**: Provides functions to convert between RDF blobs (e.g., N-Quads
-  strings) and in-memory N3 stores.
+- **N3 utility**: Provides functions to convert between RDF blobs, such as
+  N-Quads strings, and in-memory N3 stores.
 - **SPARQL utility**: Executes SPARQL queries using the Comunica engine over an
   N3 store.
   <Info>
-    **Comunica** is a highly modular, open-source SPARQL query engine built for
-    the web. It is flexible and handles large RDF data sources efficiently.
+    **Comunica** is an open-source SPARQL query engine built for the web. It
+    handles large RDF data sources efficiently.
   </Info>
 
-### RDF patching
+## RDF patching
 
 Centralized in the core patch service, the system processes mutations for the
 world database:
@@ -129,7 +64,7 @@ world database:
 4.  **Triggers**: SQL triggers synchronize `rdf:type` relations to the
     `entity_types` table.
 
-### SPARQL execution pipeline
+## SPARQL execution pipeline
 
 When you execute a SPARQL query via the API, the system follows this pipeline:
 
@@ -152,13 +87,13 @@ Standard retrieval-augmented generation (RAG) often struggles with evolving
 facts and complex relational queries. **Graph RAG** in Worlds addresses these
 limitations by maintaining a stateful, structured memory.
 
-### Limits of stateless RAG
+## Limits of stateless RAG
 
 In traditional RAG, you chunk and embed text for retrieval based on semantic
 similarity. This works for static information but fails to capture relationship
 dynamics or state changes.
 
-#### The evolving fact
+### The evolving fact
 
 1. **Monday:** "I am working on Project Apollo."
 2. **Wednesday:** "I am pausing Apollo to focus on Project Hermes."
@@ -181,7 +116,7 @@ When answering user queries:
 
 </Prompt>
 
-### Stateful memory
+## Stateful memory
 
 Worlds maintains a **living knowledge graph**. Instead of storing raw text, it
 extracts meaning as **[triples](/worlds#facts)**, namely subject → predicate →
@@ -191,7 +126,7 @@ When facts change, Worlds updates the specific relationships in the graph. This
 allows you to resolve contradictions at the data layer rather than relying on
 probabilistic LLM reasoning.
 
-#### RAG vs Worlds
+### RAG vs Worlds
 
 ![RAG vs Graph RAG](/images/rag-vs-worlds.png)
 
@@ -202,7 +137,7 @@ probabilistic LLM reasoning.
 | **Inference** | Hallucination-prone | Deterministic reasoning                        |
 | **Structure** | Unstructured chunks | Knowledge primitives, namely items and triples |
 
-### Implementing graph RAG
+## Implementing graph RAG
 
 To implement graph RAG with Worlds, follow the
 [ingestion pipeline](/contribute/architecture) to transform your unstructured
@@ -212,7 +147,7 @@ Ontology RAG leverages rigid, predefined schemas to guide agentic reasoning and
 data retrieval. This ensures your agents operate within a well-defined
 conceptual boundary.
 
-### Grounding agents in ontologies
+## Grounding agents in ontologies
 
 By using `discover-schema`, your agent can introspect the available classes and
 properties of a world before attempting to query it.
@@ -223,11 +158,31 @@ properties of a world before attempting to query it.
 3.  **Querying**: Agent executes precise SPARQL queries instead of depending
     solely on vector similarity.
 
-### Why use ontology RAG?
+## Why use ontology RAG?
 
-- **Zero Hallucination**: Agents only use terms that actually exist in the
+Traditional deep learning attempts to resolve queries by feeding massive amounts
+of unstructured data and compute into neural networks, hoping the model reliably
+infers ground truth. In contrast, the neuro-symbolic AI approach used by Worlds
+explicitly grounds language models in richer semantic structures.
+
+By forcefully steering the language model into predefined conceptual boundaries
+(an ontology), you provide the strict contextual setting required to
+definitively map semantic intent to logical execution.
+
+- **Complex logic and inference**: Consider the relationship between relatives.
+  If the graph knows that user A is the parent of user B, and user B is the
+  parent of user C, a standard vector search cannot reliably infer that user A
+  is the grandparent of user C because it relies on superficial text similarity.
+  Through SPARQL and a defined ontology, the system deterministically handles
+  these transitive relationships. It executes the precise logic needed to
+  traverse the graph and return the grandparent, a multi-hop feat that is
+  largely invisible to standard vector retrieval.
+- **Zero hallucination**: Agents only use terms that actually exist in the
   world's schema.
-- **Complex Logic**: Handle transitive relationships and inverse properties that
-  are invisible to vector searches.
-- **Deterministic Reliability**: Ensure the agent's mental model matches the
-  actual data structure.
+- **Deterministic reliability**: Ensure the agent's mental model strictly
+  matches the actual data structure.
+
+## Learn more
+
+- [API Reference](/reference) — manage worlds via HTTP API
+- [Worlds SDK Quickstart](/quickstart) — automate worlds programmatically
