@@ -2,8 +2,6 @@
 title: "Whitepaper"
 ---
 
-## Whitepaper
-
 ## Abstract
 
 Large Language Models (LLMs) demonstrate remarkable capabilities in natural
@@ -437,7 +435,11 @@ a user may navigate to a specific world.
 To validate the effectiveness of the Worlds architecture, we utilize the
 **MemoryBench** framework. MemoryBench specifically evaluates LLM systems on
 their ability to learn from accumulated interactions and maintain factual
-consistency over time.
+consistency over time. The framework comprises three benchmarks:
+
+- **LongMemEval**: Tests long-term conversational memory using temporal reasoning.
+- **LoCoMo**: Tests multimodal conversational memory using session structures and event summaries.
+- **RAG-template**: Tests question answering using document arrays and expected answers.
 
 | Metric                 | Traditional RAG | Worlds (Neuro-Symbolic) | Delta  |
 | :--------------------- | :-------------- | :---------------------- | :----- |
@@ -445,6 +447,13 @@ consistency over time.
 | **Procedural Memory**  | 42.1%           | 76.5%                   | +34.4% |
 | **On-Policy Learning** | Low             | High                    | N/A    |
 | **Efficiency (ms)**    | 120ms           | 45ms (Edge)             | -62.5% |
+
+### BEAM
+
+The BEAM benchmark evaluates memory systems using a 10-million token context
+window. Previous benchmarks like LongMemEval use 1.5-million token limits that
+fit entirely within modern model contexts. Worlds uses BEAM to guarantee
+evaluations exceed standard context capacities.
 
 ### Journey to SOTA
 

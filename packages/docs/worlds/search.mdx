@@ -3,10 +3,9 @@ title: "Search"
 description: "Semantic disambiguation and hybrid retrieval"
 ---
 
-Before an agent can reason about the facts in a world, it must find the correct
-starting point. **Hybrid search** acts as a powerful disambiguation tool,
-allowing the agent to evaluate a natural language query and instantly resolve it
-to the correct item (IRI).
+Before reasoning about facts, agents must find the correct starting point.
+**Hybrid search** disambiguates natural language queries, instantly resolving
+them to the correct item (IRI).
 
 Rather than relying on a single vector index, Worlds fuses three complementary
 signals to guarantee retrieval accuracy.
@@ -33,8 +32,8 @@ top, while noise from any single signal is suppressed.
 
 Standard vector search excels at finding semantically similar text, but agents
 require factual precision. If an agent searches for "Ethan's manager", a pure
-vector query might return "Gregory's manager" simply because the sentence
-structures are nearly identical in vector space.
+vector query might return "Gregory's manager" because the sentences are
+identical in vector space.
 
 By layering keyword precision (BM25) and structural graph filters on top of the
 vector embeddings, hybrid search guarantees the agent disambiguates the exact

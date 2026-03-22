@@ -3,15 +3,13 @@ title: "Quickstart"
 description: "Build a world in 2 minutes"
 ---
 
-The quickest way to understand Worlds is to watch it run. Bypass environment
-configuration and authentication entirely to generate concrete results using a
-zero-stakes, in-memory sandbox.
+Watch Worlds run to understand it. Bypass environment configuration and
+authentication to generate exact results using a zero-stakes, in-memory sandbox.
 
 ## Zero-stakes sandbox
 
-Follow this mandatory sequence to train yourself on the core interaction loop:
-create a world, inject a fact, and retrieve it deterministically. Expect to
-observe and mimic.
+Follow this sequence to train on the core interaction loop: create a world,
+inject a fact, and retrieve it deterministically.
 
 <Steps>
   <Step title="Initialize the sandbox">
@@ -32,12 +30,12 @@ observe and mimic.
   </Step>
 
   <Step title="Observe the execution">
-    Copy and run the following self-contained script. This script executes a complete neuro-symbolic thought loop:
+    Run the following self-contained script to execute a complete neuro-symbolic loop:
     
-    1. It connects to the SDK.
-    2. It creates an isolated World.
-    3. It injects a semantic fact, specifically a [Triple](/worlds#facts).
-    4. It queries that fact deterministically using [SPARQL](/worlds/query).
+    1. Connect to the SDK.
+    2. Create an isolated World.
+    3. Inject a semantic fact ([Triple](/worlds#facts)).
+    4. Query that fact deterministically using [SPARQL](/worlds/query).
 
     ```typescript sandbox.ts
     import { WorldsSdk } from "@wazoo/worlds-sdk";
@@ -73,7 +71,7 @@ observe and mimic.
   </Step>
 
   <Step title="Analyze the output">
-    When you run the script, the system executes the highly optimized query and returns the fact exactly as you injected it—no probabilistic guessing.
+    The system executes the query and returns the fact exactly as you injected it, without guessing.
     
     ```json
     Memory retrieved:
@@ -86,7 +84,7 @@ observe and mimic.
     ]
     ```
 
-    You have completed the fundamental loop of interacting with an autonomous, stateful memory container.
+    You have completed the fundamental loop of interacting with stateful World memory.
 
   </Step>
 </Steps>
