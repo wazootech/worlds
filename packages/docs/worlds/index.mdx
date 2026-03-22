@@ -1,44 +1,32 @@
 ---
 title: "Worlds"
-description: "Neuro-symbolic knowledge graph primitives"
+description: "The neuro-symbolic building blocks of agentic memory."
 ---
 
-A **World** is an isolated database for agents to store and query context. It
-pairs an **RDF graph**, functioning as the symbolic layer, with a **search
-index** layer. Together they allow an agent to reason over structured facts
-_and_ perform natural-language retrieval within the same container.
+A world is a dedicated space where an agent stores what it knows. Think of it as a sandbox that combines two ways of "knowing":
+
+1.  **The symbolic layer (RDF graph):** Precise, structured facts (e.g., "Ethan works at Wazoo").
+2.  **The neural layer (search index):** Fuzzy, natural-language retrieval (e.g., "Find notes about Ethan's job").
+
+By pairing these, an agent doesn't just "find" information—it *understands* the relationships between the entities it discovers.
 
 ```mermaid
 graph LR
-    Agent([AI agent]) -->|query / update| W[(World)]
-    W --> RDF[RDF graph]
-    W --> SEARCH[Search index]
-```
-
-Inside every World, the knowledge graph is constructed entirely of **items**
-connected by **facts**.
-
-```mermaid
-graph TD
-  subgraph "RDF Graph"
-    direction TB
-    A((Item A))
-    B((Item B))
-    C((Item C))
-  end
+    Agent([AI Agent]) -->|query / update| W[(World)]
+    subgraph W [World]
+        RDF[RDF Graph: Symbolic Logic] 
+        SEARCH[Search Index: Neural Retrieval]
+    end
 ```
 
 ## Items
 
-An item is any distinct "thing" in your world, such as a person, a book, a
-company, a workspace, or a concept. Every item is represented as a structural
-node within the knowledge graph.
+In a world, every distinct entity—a person, a document, a project, or even a specific concept—is an item.
 
-An item can be identified by a unique
-[IRI](https://en.wikipedia.org/wiki/Internationalized_Resource_Identifier) and
-can be classified by types.
+If your knowledge base were a house, the items would be the furniture, the people living there, and the house itself. On their own, items are just isolated points of data. To make them useful, we give them a unique identification (an IRI) and a classification.
 
-For example, the item of IRI `user:ethan` is of the type `schema:Person`.
+**Example:**
+To the system, "Ethan" isn't just a string of text; he is an item of the type `Person`.
 
 <CodeGroup>
 
@@ -48,109 +36,54 @@ user:ethan a schema:Person .
 
 </CodeGroup>
 
-Items can be formalized graphically as nodes or mathematically mapped using
-standard RDF serialization like Turtle. The type of every item is also
-represented as a fact—it's facts all the way down.
-
-While items represent the core entities in your world, they don't mean much on
-their own.
+<Note>
+  In a world, everything is an item—including the types themselves. This "recursive" structure allows the agent to reason about the *category* of a person just as easily as the person themselves.
+</Note>
 
 ## Facts
 
-Every world starts empty—you populate it by creating items and connecting them
-together using **facts**.
+You build a world by connecting items together using facts.
+
+A fact is the smallest unit of truth in a world. We represent these as triples, a three-part structure that functions exactly like a simple sentence: **Subject → Predicate → Object.**
+
+| Component | Analogy | Description | Example |
+| :--- | :--- | :--- | :--- |
+| **Subject** | The "Who" | The item you are describing. | `user:ethan` |
+| **Predicate** | The "Does" | The relationship or property. | `schema:worksAt` |
+| **Object** | The "What" | Another item or a raw value. | `org:wazoo` |
+
+Together, these form a clear statement: **"Ethan works at Wazoo."**
+
+### Anatomy of a fact
+
+Facts aren't just limited to connecting two items. They can also attach raw data (literals) to an item.
+
+- **Item-to-item:** Connects two nodes (e.g., `Ethan` → `works at` → `Wazoo`). This expands the graph.
+- **Item-to-value:** Connects a node to a "literal" (e.g., `Ethan` → `has name` → `"Ethan"`). This adds detail but terminates the path.
 
 ```mermaid
 graph LR
-  subgraph "RDF Graph"
-    direction LR
-    A((Item A)) -->|Fact 1| B((Item B))
-    A -->|Fact 2| C["Literal Value"]
-  end
+    subgraph "The Knowledge Graph"
+    A((user:ethan)) -->|schema:worksAt| B((org:wazoo))
+    A -->|schema:name| C[/"Ethan"/]
+    end
+    style C stroke-dasharray: 5 5
 ```
 
-A fact is a single unit of information expressed as a structured statement.
-Facts are stored as triples (though in other literature they may be referred to
-as triplets, quads, edges, or tuples). The term "triple" emphasizes that every
-fact comprises three components:
+## Why this matters for Agents
 
-```mermaid
-graph TD
-    A[Fact] -->|Subject| B[Subject]
-    A -->|Predicate| C[Predicate]
-    A -->|Object| D[Object]
-```
+Standard databases see text; Worlds see context.
 
-| Component     | Role                         | Example          |
-| :------------ | :--------------------------- | :--------------- |
-| **Subject**   | The item being described     | `user:ethan`     |
-| **Predicate** | The relationship or property | `schema:worksAt` |
-| **Object**    | The target value or item     | `org:wazoo`      |
+Because every fact shares the exact same triple structure, the graph grows organically without the need for complex table joins or schema migrations. When an agent queries a world, it can "walk" the facts to discover non-obvious knowledge. 
 
-Together they read as a single statement: **Ethan works at Wazoo.**
+<Info>
+**Inference Example**
 
-Expanding on our `user:ethan` item from earlier, we can add a fact that asserts
-his name.
+1.  **Fact A**: Ethan works at Wazoo.
+2.  **Fact B**: Wazoo is located in San Francisco.
+3.  **Agent Inference**: Ethan is likely located in (or associated with) San Francisco.
+</Info>
 
-<CodeGroup>
+By combining these logical, structured facts with a search index, your agent can use semantic search to instantly find the right item, and then transition cleanly into using the RDF graph to reason about everything connected to it.
 
-```turtle Turtle
-user:ethan a schema:Person ;
-  schema:name "Ethan" .
-```
 
-</CodeGroup>
-
-```mermaid
-graph LR
-    A[user:ethan] -->|@type| B[schema:Person]
-    A -->|schema:name| C["&quot;Ethan&quot;"]
-```
-
-### Anatomy of a triple
-
-![Anatomy of an RDF triple](/images/rdf-molecules.png)
-
-A triple statement is built from fundamental components called **RDF Terms**.
-There are two primary types of nodes that make up these terms:
-
-- **Named nodes (URIs/IRIs)**: Unique identifiers that point to specific, global
-  items or properties. Subjects and Predicates must always be named nodes,
-  allowing them to explicitly link to other parts of the graph.
-- **Literal nodes (Values)**: Raw data values, such as strings, numbers, or
-  dates like `"Ethan"` or `42`. Literals can only ever be Objects. They sit at
-  the edge of the graph and cannot have outbound relationships.
-
-When an object named node is connected to a subject named node via a predicate
-named node, the graph expands. When it connects to a literal node, the path
-terminates.
-
-### Why triples and ontologies?
-
-Triples follow the
-**[RDF (Resource Description Framework)](https://www.w3.org/TR/rdf-primer/)**
-standard. Because every fact shares the same structure, triples compose
-naturally into a graph—no schema migrations, no table joins.
-
-Applying formal ontologies to these triples resolves semantic disambiguation and
-contextual ambiguity. By rigidly defining properties and classes, Worlds
-intercepts context-blind misinterpretations from the underlying language model.
-
-```mermaid
-graph LR
-    E["user:ethan"] -->|worksAt| W["org:wazoo"]
-    G["user:gregory"] -->|worksAt| W
-    W -->|locatedIn| S["geo:san-francisco"]
-```
-
-As the graph grows, the agent can traverse relationships to infer new knowledge,
-for example, that Ethan and Gregory share the same work location.
-
-## Learn more
-
-- [Academy: Symbolic graph architecture](/contribute/architecture) — building
-  graphs from triples
-- [Knowledge Graphs guide](/guides/knowledge-graphs) — advanced graph topologies
-
-- [API Reference](/reference) — manage worlds via HTTP API
-- [Worlds SDK Quickstart](/quickstart) — automate worlds programmatically

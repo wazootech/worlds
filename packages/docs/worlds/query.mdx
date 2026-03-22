@@ -1,11 +1,11 @@
 ---
 title: "Query"
-description: "Deterministic retrieval and semantic queries"
+description: "Deterministic reasoning and semantic traversal"
 ---
 
-**SPARQL** (SPARQL Protocol and RDF Query Language) is the W3C-standard query
-language for RDF graphs. In Worlds, it provides the **symbolic** half of the
-[neuro-symbolic](/manifesto) architecture.
+After an agent uses [Hybrid search](/worlds/search) to disambiguate its starting item, it needs a way to traverse the facts connected to it. 
+
+**SPARQL** (SPARQL Protocol and RDF Query Language) is the W3C-standard query language for knowledge graphs. In Worlds, it provides the strict **symbolic** logic required to perform deterministic reasoning.
 
 ## How it looks
 
@@ -18,8 +18,7 @@ SELECT ?person WHERE {
 }
 ```
 
-SPARQL matches **patterns** against the graph, following relationships to return
-exact results — no probabilistic guessing.
+SPARQL matches **patterns** against the facts in the graph, deterministically following relationships to return exact results — no probabilistic guessing.
 
 ## SPARQL vs. vector search
 
@@ -31,57 +30,6 @@ exact results — no probabilistic guessing.
 
 Worlds combines both via [hybrid search](/worlds/search) so you get the best of
 each.
-
-The Worlds Platform utilizes the
-[Resource Description Framework (RDF)](https://en.wikipedia.org/wiki/Resource_Description_Framework)
-for its core data model and SPARQL for structured querying.
-
-## RDF blob handling
-
-The system manages RDF data through several core utilities:
-
-- **N3 utility**: Provides functions to convert between RDF blobs, such as
-  N-Quads strings, and in-memory N3 stores.
-- **SPARQL utility**: Executes SPARQL queries using the Comunica engine over an
-  N3 store.
-  <Info>
-    **Comunica** is an open-source SPARQL query engine built for the web. It
-    handles large RDF data sources efficiently.
-  </Info>
-
-## RDF patching
-
-Centralized in the core patch service, the system processes mutations for the
-world database:
-
-1.  **Deterministic identification**:
-    [Skolemizes](https://en.wikipedia.org/wiki/Skolem_normal_form) and hashes
-    each quad to a unique triple ID.
-2.  **Relational storage**: Upserts the resulting [triples](/worlds#facts) into
-    the `triples` table.
-3.  **Semantic indexing**: Chunks and embeds literal values for
-    [hybrid search](/worlds/search).
-4.  **Triggers**: SQL triggers synchronize `rdf:type` relations to the
-    `entity_types` table.
-
-## SPARQL execution pipeline
-
-When you execute a SPARQL query via the API, the system follows this pipeline:
-
-1.  Loads the world metadata from the main database.
-2.  Resolves the world-specific database client via
-    `databaseManager.get(worldId)`.
-3.  Executes `handlePatch` with a handler that applies updates to the world
-    client.
-    <ParamField path="worldId" type="string" required>
-      The specific World ID to target for the patch context.
-    </ParamField>
-    <ParamField path="patch" type="Quad[]" required>
-      The array of RDF Quads representing the changes to be applied.
-    </ParamField>
-4.  Executes the SPARQL query over the resulting RDF blob.
-5.  Updates the world metadata in the main database if the blob changed during a
-    SPARQL update.
 
 Standard retrieval-augmented generation (RAG) often struggles with evolving
 facts and complex relational queries. **Graph RAG** in Worlds addresses these
@@ -119,7 +67,7 @@ When answering user queries:
 ## Stateful memory
 
 Worlds maintains a **living knowledge graph**. Instead of storing raw text, it
-extracts meaning as **[triples](/worlds#facts)**, namely subject → predicate →
+extracts meaning as [triples](/worlds#facts), namely subject → predicate →
 object.
 
 When facts change, Worlds updates the specific relationships in the graph. This
@@ -182,7 +130,37 @@ definitively map semantic intent to logical execution.
 - **Deterministic reliability**: Ensure the agent's mental model strictly
   matches the actual data structure.
 
-## Learn more
+## Under the hood
 
-- [API Reference](/reference) — manage worlds via HTTP API
-- [Worlds SDK Quickstart](/quickstart) — automate worlds programmatically
+While agents interact with Worlds abstractly, the platform manages the underlying RDF data through a highly optimized pipeline.
+
+### RDF blob handling
+The system manages RDF data through several core utilities:
+- **N3 utility**: Provides functions to convert between RDF blobs, such as N-Quads strings, and in-memory N3 stores.
+- **SPARQL utility**: Executes SPARQL queries using the Comunica engine over an N3 store.
+  <Info>
+    **Comunica** is an open-source SPARQL query engine built for the web. It handles large RDF data sources efficiently.
+  </Info>
+
+### RDF patching
+Centralized in the core patch service, the system processes mutations for the world database:
+1.  **Deterministic identification**: [Skolemizes](https://en.wikipedia.org/wiki/Skolem_normal_form) and hashes each quad to a unique triple ID.
+2.  **Relational storage**: Upserts the resulting [triples](/worlds#facts) into the `triples` table.
+3.  **Semantic indexing**: Chunks and embeds literal values for [hybrid search](/worlds/search).
+4.  **Triggers**: SQL triggers synchronize `rdf:type` relations to the `entity_types` table.
+
+### SPARQL execution pipeline
+When you execute a SPARQL query via the API, the system follows this pipeline:
+1.  Loads the world metadata from the main database.
+2.  Resolves the world-specific database client via `databaseManager.get(worldId)`.
+3.  Executes `handlePatch` with a handler that applies updates to the world client.
+    <ParamField path="worldId" type="string" required>
+      The specific world ID to target for the patch context.
+    </ParamField>
+    <ParamField path="patch" type="Quad[]" required>
+      The array of RDF Quads representing the changes to be applied.
+    </ParamField>
+4.  Executes the SPARQL query over the resulting RDF blob.
+5.  Updates the world metadata in the main database if the blob changed during a SPARQL update.
+
+

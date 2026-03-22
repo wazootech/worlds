@@ -1,11 +1,11 @@
 ---
 title: "Search"
-description: "Continuous similarity evaluation and retrieval"
+description: "Semantic disambiguation and hybrid retrieval"
 ---
 
-**Hybrid search** allows Worlds to locate the most relevant facts and chunks
-given a natural language query. Rather than relying on a single index, it fuses
-three complementary signals.
+Before an agent can reason about the facts in a world, it must find the correct starting point. **Hybrid search** acts as a powerful disambiguation tool, allowing the agent to evaluate a natural language query and instantly resolve it to the correct item (IRI).
+
+Rather than relying on a single vector index, Worlds fuses three complementary signals to guarantee retrieval accuracy.
 
 ## Signals
 
@@ -27,14 +27,8 @@ top, while noise from any single signal is suppressed.
 
 ## Why not only vector search?
 
-Vector search alone can return semantically _similar_ but factually _wrong_
-results. By adding keyword precision and graph-aware structural filters, hybrid
-search improves retrieval accuracy for agentic workloads.
+Standard vector search excels at finding semantically similar text, but agents require factual precision. If an agent searches for "Ethan's manager", a pure vector query might return "Gregory's manager" simply because the sentence structures are nearly identical in vector space. 
 
-## Learn more
+By layering keyword precision (BM25) and structural graph filters on top of the vector embeddings, hybrid search guarantees the agent disambiguates the exact item it needs before executing strict symbolic logic.
 
-- [Pipeline](/contribute/architecture) — full retrieval pipeline breakdown
-- [Semantic Search guide](/guides/semantic-search) — tuning hybrid search
 
-- [API Reference](/reference) — manage worlds via HTTP API
-- [Worlds SDK Quickstart](/quickstart) — automate worlds programmatically
