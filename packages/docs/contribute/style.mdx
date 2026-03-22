@@ -15,9 +15,19 @@ technical authority, and zero marketing fluff.**
 
 ## Architecture & structural integrity
 
-- **Quality over Quantity**: Prioritize concision. If it can be said in fewer
-  words, it should be. Eliminate filler sections and ensure every page earns its
-  place.
+- **Quality over Quantity**: Prioritize concision and ruthless word economy.
+  Every word must earn its keep. Strip stylistic adjectives (e.g., "these
+  logical, structured facts" -> "facts") and reduce verbose transitional phrases
+  (e.g., "transition cleanly into using" -> "switch to"). If a sentence delivers
+  the same technical weight in fewer words, it _must_ be rewritten. Eliminate
+  filler sections and ensure every page earns its place.
+  - _Bad:_ "By combining these logical, structured facts with a search index,
+    your agent can use semantic search to instantly find the right item, and
+    then transition cleanly into using the RDF graph to reason about everything
+    connected to it."
+  - _Good:_ "By combining facts with a search index, agents can use semantic
+    search to instantly find the right item, and then switch to reasoning over
+    the RDF graph."
 - **Actionable Documentation**: Publish pages only when they contain actionable
   technical value. Document what exists, or omit the page entirely.
 
@@ -82,13 +92,6 @@ Developers come to the docs to copy code. Give it to them immediately.
   descriptions).
 - **Single-model references**: Discuss general AI capabilities with future-proof
   lists (e.g., "Gemini, Claude, or ChatGPT" instead of just "GPT-4").
-
-### Terminology
-
-- **World memory**: Use instead of "agent memory".
-- **Item / items**: Use in narrative text instead of "entity / entities"
-  (exceptions apply to formal RDF definitions or internal API/database names
-  like the `entity_types` table or `search-entities` tools).
 
 ### Formatting
 

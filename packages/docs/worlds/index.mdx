@@ -12,7 +12,7 @@ operates on a neuro-symbolic architecture linking two storage layers:
   "Find notes about Ethan's job").
 
 By pairing these layers, an agent doesn't just "find" information. It creates a
-substrate that understands the relationships between the entities it discovers.
+substrate that understands the relationships between the items it discovers.
 
 ```mermaid
 graph LR
@@ -25,16 +25,15 @@ graph LR
 
 ## Items
 
-In a world, every distinct entity is an item. This includes people, documents,
-projects, and specific concepts.
+An item is any distinct "thing" in your world, such as a person, a book, a
+company, a workspace, or a concept. Every item is represented as a structural
+node within the knowledge graph.
 
-If your knowledge base were a house, the items would be the furniture, the
-people living there, and the house itself. On their own, items are just isolated
-points of data. To make them useful, we give them a unique identification (an
-IRI) and a classification.
+On their own, items are just isolated points of data. To make them useful, we
+give them a unique identification (an IRI) and a classification.
 
-**Example:** To the system, "Ethan" isn't just a string of text; he is an item
-of the type `Person`.
+**Example:** To the system, "Ethan" isn't just a string of text. He is an item
+of the type `schema:Person`.
 
 <CodeGroup>
 
@@ -54,9 +53,9 @@ user:ethan a schema:Person .
 
 You build a world by connecting items together using facts.
 
-A fact is the smallest unit of truth in a world. We represent these as triples,
-a three-part structure that functions exactly like a simple sentence: **Subject
-→ Predicate → Object.**
+A fact is a single unit of information expressed as a structured statement. We
+represent these as triples, a three-part structure that functions exactly like a
+simple sentence: **Subject -> Predicate -> Object.**
 
 | Component     | Analogy    | Description                   | Example          |
 | :------------ | :--------- | :---------------------------- | :--------------- |
@@ -66,15 +65,31 @@ a three-part structure that functions exactly like a simple sentence: **Subject
 
 Together, these form a clear statement: **"Ethan works at Wazoo."**
 
+Expanding on our `user:ethan` item from earlier, we can add a fact that asserts
+his name.
+
+<CodeGroup>
+
+```turtle Turtle
+user:ethan a schema:Person ;
+  schema:name "Ethan" .
+```
+
+</CodeGroup>
+
 ### Anatomy of a fact
+
+![Anatomy of an RDF triple](/images/rdf-molecules.png)
 
 Facts aren't just limited to connecting two items. They can also attach raw data
 (literals) to an item.
 
-- **Item-to-item:** Connects two nodes (e.g., `Ethan` → `works at` → `Wazoo`).
-  This expands the graph.
-- **Item-to-value:** Connects a node to a "literal" (e.g., `Ethan` → `has name`
-  → `"Ethan"`). This adds detail but terminates the path.
+- **Item-to-item (Named node):** Connects two nodes (e.g., `user:ethan` ->
+  `schema:worksAt` -> `org:wazoo`). This explicitly links to other parts of the
+  graph and expands it.
+- **Item-to-value (Literal node):** Connects a node to a raw data value (e.g.,
+  `user:ethan` -> `schema:name` -> `"Ethan"`). This adds detail but terminates
+  the path.
 
 ```mermaid
 graph LR
@@ -87,7 +102,7 @@ graph LR
 
 ## Why this matters for Agents
 
-Standard databases see text; Worlds see context.
+Standard databases see text. Worlds see context.
 
 Because every fact shares the exact same triple structure, the graph grows
 organically without the need for complex table joins or schema migrations. When
@@ -104,6 +119,5 @@ knowledge.
 
 </Info>
 
-By combining these logical, structured facts with a search index, your agent can
-use semantic search to instantly find the right item, and then transition
-cleanly into using the RDF graph to reason about everything connected to it.
+By combining facts with a search index, agents can use semantic search to
+instantly find the right item, and then switch to reasoning over the RDF graph.
