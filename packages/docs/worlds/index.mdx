@@ -3,11 +3,10 @@ title: "Worlds"
 description: "Neuro-symbolic knowledge graph primitives"
 ---
 
-A **World** is a knowledge store for agent world memory and reasoning. It pairs
-an **RDF graph**, functioning as the symbolic layer, with a **search index**,
-acting as the neural layer.
-
-A World acts as a bridge between structured knowledge and semantic search.
+A **World** is an isolated database for agents to store and query context. It
+pairs an **RDF graph**, functioning as the symbolic layer, with a **search
+index** layer. Together they allow an agent to reason over structured facts
+_and_ perform natural-language retrieval within the same container.
 
 ```mermaid
 graph LR
@@ -16,56 +15,71 @@ graph LR
     W --> SEARCH[Search index]
 ```
 
-## Items
-
-An item is any distinct "thing" in your world, such as a person, a document, a
-company, or a concept. Every world is composed entirely of items connected by
-**facts**.
-
-An item is identified by a unique
-[IRI](https://en.wikipedia.org/wiki/Internationalized_Resource_Identifier) and
-can be categorized by a type.
-
-<CodeGroup>
-```turtle Turtle
-user:ethan a schema:Person .
-```
-</CodeGroup>
+Inside every World, the knowledge graph is constructed entirely of **items**
+connected by **facts**.
 
 ```mermaid
-graph LR
-    A[user:ethan] -->|rdf:type| B[schema:Person]
-```
-
-## Facts
-
-Every world starts empty. You populate it by connecting items together using
-facts.
-
-A fact is a discrete unit of information expressed as a structured statement.
-
-## Triples
-
-<Note>
-  **Mental model:** Everything in a World reduces to triples. There are no
-  tables, rows, or document bodies—just statements.
-</Note>
-
-Each fact is represented as a triple, the fundamental unit of meaning in RDF
-graphs.
-
-You construct these statements as "triples" because every fact always comprises
-exactly three components:
-
-```mermaid
-graph LR
-  subgraph "Fact"
-    direction LR
-    A[Subject] -->|Predicate| B[Object]
+graph TD
+  subgraph "RDF Graph"
+    direction TB
+    A((Item A))
+    B((Item B))
+    C((Item C))
   end
 ```
 
-A triple reads exactly like a simple sentence: Subject -> Predicate -> Object.
+## Items
+
+An item is any distinct "thing" in your world, such as a person, a book, a
+company, a workspace, or a concept. Every item is represented as a structural
+node within the knowledge graph.
+
+An item can be identified by a unique
+[IRI](https://en.wikipedia.org/wiki/Internationalized_Resource_Identifier) and
+can be classified by types.
+
+For example, the item of IRI `user:ethan` is of the type `schema:Person`.
+
+<CodeGroup>
+
+```turtle Turtle
+user:ethan a schema:Person .
+```
+
+</CodeGroup>
+
+Items can be formalized graphically as nodes or mathematically mapped using
+standard RDF serialization like Turtle. The type of every item is also
+represented as a fact—it's facts all the way down.
+
+While items represent the core entities in your world, they don't mean much on
+their own.
+
+## Facts
+
+Every world starts empty—you populate it by creating items and connecting them
+together using **facts**.
+
+```mermaid
+graph LR
+  subgraph "RDF Graph"
+    direction LR
+    A((Item A)) -->|Fact 1| B((Item B))
+    A -->|Fact 2| C["Literal Value"]
+  end
+```
+
+A fact is a single unit of information expressed as a structured statement.
+Facts are stored as triples (though in other literature they may be referred to
+as triplets, quads, edges, or tuples). The term "triple" emphasizes that every
+fact comprises three components:
+
+```mermaid
+graph TD
+    A[Fact] -->|Subject| B[Subject]
+    A -->|Predicate| C[Predicate]
+    A -->|Object| D[Object]
+```
 
 | Component     | Role                         | Example          |
 | :------------ | :--------------------------- | :--------------- |
@@ -73,71 +87,70 @@ A triple reads exactly like a simple sentence: Subject -> Predicate -> Object.
 | **Predicate** | The relationship or property | `schema:worksAt` |
 | **Object**    | The target value or item     | `org:wazoo`      |
 
-Together they read as a simple statement: **Ethan works at Wazoo.**
+Together they read as a single statement: **Ethan works at Wazoo.**
 
-The subject and predicate must always be unique identifiers (IRIs). The object
-can either reference another item's IRI, or be a literal value, such as a
-string, number, or date.
+Expanding on our `user:ethan` item from earlier, we can add a fact that asserts
+his name.
+
+<CodeGroup>
+
+```turtle Turtle
+user:ethan a schema:Person ;
+  schema:name "Ethan" .
+```
+
+</CodeGroup>
+
+```mermaid
+graph LR
+    A[user:ethan] -->|@type| B[schema:Person]
+    A -->|schema:name| C["&quot;Ethan&quot;"]
+```
 
 ### Anatomy of a triple
 
 ![Anatomy of an RDF triple](/images/rdf-molecules.png)
 
-A triple statement is built from fundamental components called RDF terms. There
-are two primary types of nodes that make up these terms:
+A triple statement is built from fundamental components called **RDF Terms**.
+There are two primary types of nodes that make up these terms:
 
 - **Named nodes (URIs/IRIs)**: Unique identifiers that point to specific, global
   items or properties. Subjects and Predicates must always be named nodes,
   allowing them to explicitly link to other parts of the graph.
 - **Literal nodes (Values)**: Raw data values, such as strings, numbers, or
-  dates, like `"Ethan"` or `42`. Literals can only ever be Objects. They sit at
+  dates like `"Ethan"` or `42`. Literals can only ever be Objects. They sit at
   the edge of the graph and cannot have outbound relationships.
 
-## Building a world
+When an object named node is connected to a subject named node via a predicate
+named node, the graph expands. When it connects to a literal node, the path
+terminates.
 
-To collapse these concepts into a single, progressive example: create an item,
-give it a type, assign it a name, and connect it to a company.
+### Why triples and ontologies?
 
-Here is the complete journey represented visually and in code:
+Triples follow the
+**[RDF (Resource Description Framework)](https://www.w3.org/TR/rdf-primer/)**
+standard. Because every fact shares the same structure, triples compose
+naturally into a graph—no schema migrations, no table joins.
 
-<CodeGroup>
-```turtle Turtle
-# 1. Create the user item and its type
-user:ethan a schema:Person ;
-  # 2. Add a literal fact (name)
-  schema:name "Ethan" ;
-  # 3. Add a relational fact (works at)
-  schema:worksAt org:wazoo .
-
-# 4. Create the company item and its type
-
-org:wazoo a schema:Organization .
-```
-</CodeGroup>
+Applying formal ontologies to these triples resolves semantic disambiguation and
+contextual ambiguity. By rigidly defining properties and classes, Worlds
+intercepts context-blind misinterpretations from the underlying language model.
 
 ```mermaid
 graph LR
-    A[user:ethan] -->|rdf:type| B[schema:Person]
-    A -->|schema:name| C["Ethan"]
-    A -->|schema:worksAt| D[org:wazoo]
-    D -->|rdf:type| E[schema:Organization]
+    E["user:ethan"] -->|worksAt| W["org:wazoo"]
+    G["user:gregory"] -->|worksAt| W
+    W -->|locatedIn| S["geo:san-francisco"]
 ```
 
-## Ontologies and reasoning
+As the graph grows, the agent can traverse relationships to infer new knowledge,
+for example, that Ethan and Gregory share the same work location.
 
-Why use triples instead of standard database rows? Because applying formal
-ontologies—which act as strict definitions of properties and classes—to these
-triples resolves semantic ambiguity.
+## Learn more
 
-By rigidly defining how items can relate to each other, Worlds intercepts
-context-blind misinterpretations from underlying language models.
+- [Academy: Symbolic graph architecture](/contribute/architecture) — building
+  graphs from triples
+- [Knowledge Graphs guide](/guides/knowledge-graphs) — advanced graph topologies
 
-```mermaid
-graph LR
-    E[user:ethan] -->|schema:worksAt| W[org:wazoo]
-    G[user:gregory] -->|schema:worksAt| W
-    W -->|schema:location| S[geo:san-francisco]
-```
-
-Structured ontologies allow agents to perform deterministic, multi-hop
-reasoning; inferring new knowledge deterministically from existing facts.
+- [API Reference](/reference) — manage worlds via HTTP API
+- [Worlds SDK Quickstart](/quickstart) — automate worlds programmatically
