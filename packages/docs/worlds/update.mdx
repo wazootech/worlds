@@ -12,8 +12,11 @@ updating data within an isolated world.
 ## SPARQL updates
 
 A world mutates its graph state using RDF patches (granular additions and
-deletions of facts). However, agents and developers rarely write these patches
-manually.
+deletions of facts). Because Worlds functions internally as a chronological,
+append-only ledger, these discrete patches permanently preserve historical
+truth and temporal evolution.
+
+However, agents and developers rarely write these patches manually.
 
 The most common way to mutate graph state is executing SPARQL updates. When an
 agent runs an `INSERT` or `DELETE` command, Worlds translates it into a

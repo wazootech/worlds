@@ -38,14 +38,16 @@ An item is...
 ## Properties
 
 Properties are the relationships that connect items together. Just as items are
-the "nouns" of your world, properties are the "verbs" (e.g., `worksAt` or `isA`).
-The set of all valid properties forms the **ontology**—the grammar your agents
-use to interact.
+the "nouns" of your world, properties are the "verbs" (e.g., `worksAt` or
+`isA`). The set of all valid properties forms the **ontology**—the grammar your
+agents use to interact.
 
 ## Facts
 
 A fact is a unit of data expressed as a structured statement that connects two
-items using a property.
+items using a property. Every fact is inherently bound to the dimension of
+**time**. Worlds maintains an append-only, chronological ledger of facts,
+allowing agents to understand exactly how state and information evolve.
 
 Conceptually, a fact functions exactly like a simple sentence. For example, the
 sentence, "Ethan is a person", can be represented as:
