@@ -1,0 +1,257 @@
+---
+title: "Architecture"
+description: "System architecture and data flow"
+---
+
+The Worlds Platform utilizes a managed [neuro-symbolic](/manifesto)
+infrastructure designed for edge-distributed, agentic memory. Built on the
+[Deno](https://deno.com/) runtime, it separates the **Worlds Console** for
+management from the **Worlds API** for high-performance execution.
+
+## The connection model
+
+The platform connection model relies on three core pillars:
+
+- **Your AI Agent (The Client):** Use the `@wazoo/worlds-sdk` or standard HTTP
+  requests inside your agent (e.g., Claude, Gemini, or a custom script) to
+  connect to the platform.
+- **The World (The Memory):** A "World" is an isolated, secure sandbox for your
+  agent's memories. Every request securely targets a specific World using an API
+  key and the World's unique ID.
+- **The Console (The Dashboard):** Use the Worlds Console to generate API keys,
+  visually explore stored data, and manage billing.
+
+In short: **Your agent uses an API key to read and write facts to a specific
+World.**
+
+## High-level overview
+
+The diagram illustrates the relationship between the management layer, reasoning
+engine, and isolated persistent state.
+
+```mermaid
+graph LR
+    subgraph Clients ["Ingestion"]
+        direction TB
+        Dev([Developer])
+        Agent([AI Agent])
+        SDK["Worlds SDK"]
+    end
+
+    subgraph Console ["Worlds Console"]
+        direction TB
+        ConsoleView[Console UI]
+        Auth[Identity Service]
+    end
+
+    subgraph API ["Worlds API (World Engine)"]
+        direction TB
+        Engine["Reasoning Engine<br/><i>Hot RDF Memory</i>"]
+        Sync["Forward-Sync"]
+    end
+
+    subgraph State ["Persistence"]
+        direction TB
+        DB[("SQLite DB")]
+    end
+
+    %% Human/Control Flow
+    Dev ==>|HTTPS| ConsoleView
+    ConsoleView <==>|Management| Auth
+
+    %% Agent/Data Flow
+    Agent <==>|SDK / MCP| Engine
+    SDK --- Engine
+
+    %% Internal Processing
+    Engine -.->|Hydrate / Flush| DB
+    Engine -->|Patches| Sync
+    Sync -->|Index Update| DB
+```
+
+## Worlds Console vs. Worlds API
+
+The platform splits operations into two primary layers:
+
+<Columns>
+  <div>
+### Worlds Console
+
+The **Worlds Console** acts as the system's control plane. It manages identity
+through WorkOS, handles organization-level provisioning, and orchestrates
+**Worlds API** instances.
+
+  </div>
+
+  <div>
+### Worlds API
+
+The **Worlds API Server** handles RDF graph management, [SPARQL](/worlds/query)
+execution, and [hybrid search](/worlds/search). This is the API layer where your
+information lives.
+
+  </div>
+</Columns>
+
+## Worlds API deep dive
+
+<Accordion title="Deep dive: API Data Flow">
+  The World Engine follows a multi-tiered data transformation journey, fusing
+  diverse input sources into a verifiable neuro-symbolic knowledge state.
+
+```mermaid
+flowchart TD
+    %% Global Styling
+    classDef engine fill:#D97706,stroke:#78350F,stroke-width:2px,color:#fff;
+    classDef persistence fill:#1a1510,stroke:#D97706,stroke-width:1px,color:#f2f2f2;
+    classDef process fill:#F59E0B,stroke:#78350F,stroke-dasharray: 5 5,color:#333;
+
+    subgraph Sources ["DATA SOURCES & INTEGRATIONS"]
+        RAW["Raw Data<br/>Text, Files, Chats"]
+        CLOUD["Cloud Connectors<br/>Notion, Obsidian, GDrive"]
+    end
+
+    subgraph Ingestion ["AGENT-NATIVE SDK"]
+        SDK["Worlds SDK<br/>search / sparql / discover"]
+        MCP["MCP Protocol<br/>Claude, Cursor, Gemini"]
+    end
+
+    subgraph Core ["NEURO-SYMBOLIC REASONING"]
+        SPARQL["Comunica Engine<br/>SPARQL 1.1/1.2"]
+        PROXY["Forward-Sync Proxy<br/>Mutation Interceptor"]
+    end
+
+    subgraph Pipeline ["RDF-PATCH PIPELINE"]
+        SKOLEM["Skolemization (RDFC-1.0)"]
+        EMBED["Multimodal Embeddings"]
+        CHUNK["Dynamic Chunking"]
+    end
+
+    subgraph State ["WORLD STATE"]
+        BLOBS[("RDF Store<br/>System of Record")]
+        TRIPLES[("triples<br/>SQLite table")]
+        CHUNKS[("chunks<br/>SQLite table")]
+    end
+
+    %% Data Flow
+    RAW --> SDK
+    CLOUD --> SDK
+    SDK <--> MCP
+
+    SDK -->|SPARQL Update| SPARQL
+    SPARQL --> PROXY
+
+    PROXY -->|Quad Patches| SKOLEM
+    SKOLEM --> EMBED
+    EMBED --> CHUNK
+
+    SKOLEM -->|Atomic Commit| TRIPLES
+    CHUNK -->|Atomic Commit| CHUNKS
+
+    SPARQL -->|Serialized Flush| BLOBS
+
+    %% Assignments
+    class Core,SPARQL,N3 engine;
+    class State,BLOBS,TRIPLES,CHUNKS persistence;
+    class Pipeline,SKOLEM,EMBED,CHUNK process;
+```
+
+</Accordion>
+
+## Resource hierarchy
+
+**Organizations** host **Worlds** to ensure strict data isolation and scale.
+
+```mermaid
+graph LR
+    Org[Organization] --> Server[API Server]
+    Org --> MetaDB[(Primary DB)]
+    Server --> W1[World 1]
+    Server --> W2[World 2]
+    W1 --> W1DB[(World 1 DB)]
+    W2 --> W2DB[(World 2 DB)]
+```
+
+### Worlds
+
+Each World is a specific context or knowledge graph managed by the server.
+
+- **Dedicated storage**: Each World maintains its own secondary SQLite database
+  for [triples](/worlds#facts), chunks, and embeddings.
+- **Isolation**: Worlds are accessed via `/v1/worlds/{id}`, ensuring zero
+  cross-contamination between contexts.
+
+## Deno runtime
+
+The Worlds Platform is built on [Deno](https://deno.com/), which provides
+several advantages for a
+[security-sensitive](https://docs.deno.com/runtime/fundamentals/security/)
+knowledge platform:
+
+- **Secure by default**: Deno's permission model requires explicit grants for
+  network, file system, and environment access — reducing the attack surface of
+  each deployment.
+- **Web-standard APIs**: The server exports a standard `fetch` handler, making
+  it natively compatible with Deno Deploy and other edge runtimes.
+- **TypeScript-native**: No build step or transpiler configuration required. The
+  entire codebase is TypeScript from source to execution.
+- **Edge-ready**: First-class support for Deno Deploy enables low-latency
+  deployments close to users.
+
+## Monorepo topology
+
+The ecosystem uses a Deno workspace. The `sdk` package serves as the primary
+bridge for the CLI, AI-SDK, and Console to communicate with the API Server.
+
+```mermaid
+graph TD
+    ROOT["Deno Workspace Root"]
+    SERVER["@wazoo/worlds-server"]
+    SDK["@wazoo/worlds-sdk"]
+    AISDK["@wazoo/worlds-ai-sdk"]
+    CLI["@wazoo/worlds-cli"]
+    CONSOLE["worlds-console<br/>Next.js"]
+
+    ROOT --> SERVER
+    ROOT --> SDK
+    ROOT --> AISDK
+    ROOT --> CLI
+    ROOT -.-> CONSOLE
+
+    CLI --> SDK
+    AISDK --> SDK
+    CONSOLE --> SDK
+    SDK --> SERVER
+```
+
+### Repository layout
+
+The server follows a modular layout organized by service and resource:
+
+- `lib/`: Shared logic for RDF/SPARQL handling, database management, and
+  embeddings.
+- `middleware/`: Authentication guards.
+- `routes/`: Implementation of the v1 API endpoints.
+
+## Request flow
+
+The Worlds Server follows a structured lifecycle for initialization and request
+handling. For a detailed breakdown, refer to the [Request flow](#request-flow)
+reference.
+
+## Design principles
+
+### Polymorphic resource managers
+
+A key design feature is the use of hot-swappable resource managers. The core
+logic remains identical, while the implementation swaps based on the
+environment:
+
+| Resource     | Local development     | Production               |
+| :----------- | :-------------------- | :----------------------- |
+| **Compute**  | Local child processes | Deno Deploy edge runtime |
+| **Storage**  | Local SQLite files    | SQLite / Turso           |
+| **Identity** | Mock identity file    | WorkOS Identity Service  |
+
+This pattern allows the entire stack to run locally with zero cloud
+dependencies.

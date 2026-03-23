@@ -1,0 +1,25 @@
+---
+title: "create"
+description: "Create a new knowledge graph context"
+---
+
+The `create` command requests a new persistent World instance on the server.
+
+<ParamField path="--label" type="string" required>
+  The human-readable title of your world. *Alias:* `-l`
+</ParamField>
+
+<ParamField path="--slug" type="string">
+  A unique URL-friendly string identifier. If omitted, the CLI will
+  automatically slugify your `--label`. *Alias:* `-s`
+</ParamField>
+
+<ParamField path="--description" type="string">
+  An optional descriptive summary of the world's purpose. *Alias:* `-d`
+</ParamField>
+
+### Usage
+
+```bash
+worlds create --label "My First World" --description "A test environment."
+```

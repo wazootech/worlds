@@ -1,0 +1,115 @@
+---
+title: "API Reference"
+icon: "book"
+description: "Worlds API and SDK technical reference"
+---
+
+Explore the comprehensive technical interfaces for interacting with the Worlds
+engine. These references are completely devoid of tutorials and focus
+exclusively on exact specifications, parameters, types, and flags.
+
+<CardGroup>
+  <Card title="Worlds CLI Reference" icon="terminal" href="/reference/cli">
+    Command-line argument dictionaries, flags, and environment variables.
+  </Card>
+</CardGroup>
+
+Worlds is a REST API designed to manage and query RDF-based world models.
+
+## Base URL
+
+All API requests should be made to:
+
+```text
+https://api.wazoo.dev
+```
+
+## Authentication
+
+All requests require a Bearer token in the `Authorization` header. For more
+details, see the [Authentication](#authentication) section below.
+
+## Resources
+
+The API is organized around the following core resources:
+
+- **Worlds**: Create, list, update, and delete world instances.
+- **[SPARQL](/worlds/query)**: Execute queries and updates against a world's
+  graph.
+- **Search**: Perform semantic and keyword searches.
+- **Logs**: Monitor events and history.
+
+## Authentication
+
+The Worlds API requires **Bearer Token** authentication. Include your API key in
+the `Authorization` header of every request.
+
+## Generate key
+
+You must provide a valid API key to interact with the API.
+
+<Tabs>
+  <Tab title="Cloud">
+    Generate an API key in the [dashboard](https://console.wazoo.dev/settings).
+  </Tab>
+  <Tab title="Self-hosted">
+    Use the `WORLDS_API_KEY` environment variable configured on your server.
+    This acts as the **root admin key** for your instance.
+  </Tab>
+</Tabs>
+
+### Unprotected mode
+
+For rapid prototyping and local development, the `WORLDS_API_KEY` is optional.
+
+<Warning>
+  If you do not provide a `WORLDS_API_KEY`, the server runs in **unprotected
+  mode**, granting full administrative access to all requests. Use this state
+  strictly for local development.
+</Warning>
+
+## Authenticate
+
+### Set the header
+
+Configure the `Authorization` header with your API key:
+
+```http
+Authorization: Bearer <YOUR_API_KEY>
+```
+
+### Use the SDK
+
+The SDK handles authentication automatically when you initialize the client:
+
+```typescript
+import { WorldsSdk } from "@wazoo/worlds-sdk";
+
+const sdk = new WorldsSdk({
+  apiKey: "YOUR_API_KEY",
+  baseUrl: "https://api.wazoo.dev",
+});
+```
+
+## Admin access
+
+Certain endpoints, such as listing all worlds for an account, require an admin
+API key. In self-hosted environments, use your `WORLDS_API_KEY`.
+
+Worlds enforces rate limits to ensure system stability and fair usage across the
+platform.
+
+## Principles
+
+- **Exemptions**: Administrative requests and internal system operations are
+  exempt from standard rate limits.
+- **Fair Usage**: Limits are applied per-client to prevent resource exhaustion
+  and ensure high availability for all users.
+- **Standard Responses**: When a rate limit is exceeded, the server returns a
+  `429 Too Many Requests` status code with a standardized JSON error response.
+
+<Tip>
+  If you are consistently hitting rate limits during development or production,
+  please reach out to our team to discuss your use case and potential limit
+  adjustments.
+</Tip>

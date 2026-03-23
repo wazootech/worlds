@@ -1,0 +1,33 @@
+---
+title: "chat"
+description: "Start an interactive knowledge graph REPL"
+---
+
+Boots an interactive terminal loop leveraging an LLM connected natively to your
+World instance using the Model Context Protocol.
+
+<Info>
+  This command requires an `OPENROUTER_API_KEY` to be passed as an environment
+  variable to execute the backend model generation.
+</Info>
+
+<ParamField path="--worldId" type="string" required>
+  The unique system identifier of the target world to attach to the AI agent.
+  *Alias:* `-w`
+</ParamField>
+
+<ParamField path="--write" type="boolean">
+  If set, the AI agent is granted write privileges and can arbitrarily update or
+  delete facts using SPARQL directly inside your world based on conversation.
+</ParamField>
+
+<ParamField path="--userIri" type="string">
+  An IRI representing the user, attached to graph modifications for provenance.
+  *Alias:* `-u`
+</ParamField>
+
+### Usage
+
+```bash
+OPENROUTER_API_KEY=sk_... worlds chat --worldId <worldId> --write
+```

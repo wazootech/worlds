@@ -1,0 +1,129 @@
+---
+title: "Style Guide"
+description: "Documentation formatting and structural guidelines"
+---
+
+The Worlds documentation follows a strict, highly-opinionated set of editorial
+guidelines. These guidelines optimize for **developer momentum, absolute
+technical authority, and zero marketing fluff.**
+
+## File conventions
+
+- Match existing naming patterns in the directory
+- If there are no existing files or inconsistent file naming patterns, use
+  kebab-case: `getting-started.mdx`, `api-reference.mdx`
+
+## Architecture & structural integrity
+
+- **Quality over Quantity**: Prioritize concision and ruthless word economy.
+  Every word must earn its keep. Strip stylistic adjectives (e.g., "these
+  logical, structured facts" -> "facts") and reduce verbose transitional phrases
+  (e.g., "transition cleanly into using" -> "switch to"). If a sentence delivers
+  the same technical weight in fewer words, it _must_ be rewritten. Eliminate
+  filler sections and ensure every page earns its place.
+  - _Bad:_ "By combining these logical, structured facts with a search index,
+    your agent can use semantic search to instantly find the right item, and
+    then transition cleanly into using the RDF graph to reason about everything
+    connected to it."
+  - _Good:_ "By combining facts with a search index, agents can use semantic
+    search to instantly find the right item, and then switch to reasoning over
+    the RDF graph."
+- **Actionable Documentation**: Publish pages only when they contain actionable
+  technical value. Document what exists, or omit the page entirely.
+
+## The "Code-Forward" pattern
+
+Developers come to the docs to copy code. Give it to them immediately.
+
+- **Brief Opener**: Start the page with a maximum of two sentences defining what
+  the entity is, using active voice.
+- **Immediate `<CodeGroup>`**: The very next element must be a multi-language
+  code snippet, including TypeScript, Python, and cURL, showing the entity in
+  action.
+- **API at a Glance**: Follow the code block with a Markdown table summarizing
+  the core methods.
+- **Deep Dive Below the Fold**: Place architectural explanations, concepts, and
+  diagrams below the usable code and API tables.
+
+## Writing standards
+
+### Voice and structure
+
+- **Second-person active voice**: Use "you" ("You can write..." rather than
+  "Developers can write..."). Active voice, direct language.
+- **Positive Phrasing**: State what to do rather than what to avoid. Affirmative
+  framing aids comprehension.
+- **Prescriptive Guidance**: Tell the user exactly what to do. Use definitive
+  verbs like _must_, _requires_, or _use_.
+- **Timeless Documentation**: Write as if the reader is viewing the docs years
+  from now.
+- **Global & Inclusive Language**: Write for a global audience. Omit idioms,
+  slang, and exclusionary terms.
+- **Sentence-case headings**: Use "Getting started" and not "Getting Started".
+  Keep headings concise in as few words as possible. Avoid colons.
+- **Sentence-case code titles**: Use "Expandable example" and not "Expandable
+  Example".
+- **Lead with context**: Explain what something is before how to use it.
+- **Prerequisites first**: Place prerequisites at the start of procedural
+  content.
+- **Keep markers in body**: Keep contextual markers (like dates) in the body
+  text, not the heading.
+- **Contextual examples**: Avoid repeatedly calling back to specific examples or
+  analogies later in a document if they lose context.
+
+### What to avoid
+
+- **Zero Marketing Adjectives**: Avoid words like "powerful", "seamless",
+  "robust", or "cutting-edge" in reference pages.
+- **Filler phrases**: Omit transitional cliches like "at its core", "it's
+  important to note", or "in order to". Use direct statements.
+- **Punctuation cliches**: Do not use em dashes (—) as a crutch to connect loose
+  thoughts. Terminate the thought and write a new, concise sentence.
+- **Excessive conjunctions**: Omit "moreover", "furthermore", or "additionally".
+- **Editorializing words**: Omit "obviously", "simply", "just", or "easily".
+  Acknowledging complexity respects the user.
+- **Generic fluff**: Omit generic introductions that don't add value, and
+  concluding summaries that restate what was just said.
+- **Imaginative phrasing**: Avoid anthropomorphic language to describe AI
+  capabilities (e.g., avoid "intuition", "brain", or "thinking"; use
+  "understanding", "model", or "processing").
+- **Idioms and metaphors**: Avoid phrases that obscure technical precision
+  (e.g., avoid "black box", "heavy lifting", or "plumbing"; use literal
+  descriptions).
+- **Single-model references**: Discuss general AI capabilities with future-proof
+  lists (e.g., "Gemini, Claude, or ChatGPT" instead of just "GPT-4").
+
+### Formatting
+
+- **Parentheses**: Use sparingly and only for direct definitions, such as
+  acronyms. Otherwise, revise parenthetical thoughts into fluid, formal
+  sentences.
+- **Language tags**: All code blocks must have explicit language tags.
+- **Alt text**: All images and media must have descriptive alt text.
+- **Link text**: Use descriptive text for links rather than generic phrases like
+  "click here".
+- **Semantic styling**: Use bold and italics only when they serve the reader's
+  understanding—never use text styling just for decoration.
+- **No decorative emojis**: No decorative formatting or emoji (exception:
+  decorative emojis are permitted in footer sections).
+- **Ordered Lists**: Use ordered or numbered lists specifically for deliberate
+  sequences, step-by-step procedures, or strict hierarchies. Default to
+  unordered bullet points.
+
+### Code examples
+
+- **Source-Truth Alignment**: Ensure every method signature and property in code
+  blocks perfectly mirrors the TypeScript definitions.
+- **Keep it simple**: Keep examples practical and simple.
+- **Realistic values**: Use realistic values rather than generic names like
+  "foo" or "bar".
+- **Singular focus**: One clear example is better than multiple variations.
+- **Tested code**: Test that code works before including it.
+
+## Sources and citations
+
+- [Mintlify documentation best practices](https://mintlify.com/docs)
+- [Ludic pedagogy: The mechanics of antagonism and zero-player tutorials in technical documentation design](https://wazoo.dev/internal/pedagogy)
+- [TrustGraph documentation strategy](https://docs.trustgraph.ai)
+- [Supermemory resource guide](https://supermemory.ai/docs)
+- [Google developer documentation style guide: Active voice](https://developers.google.com/tech-writing/one/active-voice)

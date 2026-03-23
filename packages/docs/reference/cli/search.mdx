@@ -1,0 +1,34 @@
+---
+title: "search"
+description: "Search items using hybrid similarity"
+---
+
+Executes a semantic hybrid search against the world's underlying vector index.
+
+<ParamField path="worldId" type="string" required>
+  The unique system identifier of the target world.
+</ParamField>
+
+<ParamField path="query" type="string" required>
+  The semantic search query evaluated by the embedding model.
+</ParamField>
+
+<ParamField path="--limit" type="number">
+  The maximum number of matches to return. *Alias:* `-l`
+</ParamField>
+
+<ParamField path="--subjects" type="string[]">
+  Restrict the semantic search geometrically to specific subject IRIs. Pass this
+  flag multiple times for multiple subjects. *Alias:* `-s`
+</ParamField>
+
+<ParamField path="--predicates" type="string[]">
+  Restrict the semantic search to specific predicate IRIs. Pass this flag
+  multiple times for multiple predicates. *Alias:* `-p`
+</ParamField>
+
+### Usage
+
+```bash
+worlds search <worldId> "the chemical composition of water" --limit 5
+```

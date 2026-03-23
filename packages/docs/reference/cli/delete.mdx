@@ -1,0 +1,17 @@
+---
+title: "delete"
+description: "Delete a graph and its indices"
+---
+
+Permanently deletes a world and all of its associated facts and items. This
+action cannot be undone.
+
+<ParamField path="worldId" type="string" required>
+  The unique system identifier of the target world.
+</ParamField>
+
+### Usage
+
+```bash
+worlds delete <worldId>
+```

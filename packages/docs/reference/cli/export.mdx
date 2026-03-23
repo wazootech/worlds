@@ -1,0 +1,22 @@
+---
+title: "export"
+description: "Export a graph to a local file"
+---
+
+Exports the entirety of a World's knowledge graph into a standard RDF
+serialization stream, emitted directly to standard out.
+
+<ParamField path="worldId" type="string" required>
+  The unique system identifier of the target world.
+</ParamField>
+
+<ParamField path="--format" type="string">
+  The RDF serialization format. Accepted values include `turtle` and `n-quads`.
+  *Alias:* `-f`
+</ParamField>
+
+### Usage
+
+```bash
+worlds export <worldId> --format turtle > backup.ttl
+```

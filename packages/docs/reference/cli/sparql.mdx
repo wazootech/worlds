@@ -1,0 +1,27 @@
+---
+title: "sparql"
+description: "Execute raw SPARQL queries"
+---
+
+Issues a SPARQL 1.1 query or update against your target world. The CLI
+intelligently determines if the input is a raw query string or a local filepath
+to a `.rq` file.
+
+<ParamField path="worldId" type="string" required>
+  The unique system identifier of the target world.
+</ParamField>
+
+<ParamField path="query_or_file_path" type="string" required>
+  The raw SPARQL string, or a relative/absolute path to a file containing a
+  SPARQL query.
+</ParamField>
+
+### Usage
+
+```bash
+# Executing an inline string
+worlds sparql <worldId> "SELECT * WHERE { ?s ?p ?o } LIMIT 10"
+
+# Executing from a file
+worlds sparql <worldId> ./queries/get_users.rq
+```

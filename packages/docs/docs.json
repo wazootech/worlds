@@ -1,16 +1,38 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
   "name": "Worlds Docs",
+  "theme": "mint",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "/"
+  },
+  "favicon": "/images/wazoo.svg",
   "colors": {
-    "primary": "#D97706",
-    "light": "#F59E0B",
-    "dark": "#78350F"
+    "primary": "#FF9800",
+    "light": "#FFB74D",
+    "dark": "#F57C00"
+  },
+  "appearance": {
+    "default": "system"
+  },
+  "fonts": {
+    "body": {
+      "family": "Geist"
+    }
+  },
+  "background": {
+    "color": {
+      "light": "#fafaf9",
+      "dark": "#040404"
+    }
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs"
   },
   "contextual": {
     "options": ["copy", "view"]
   },
-  "favicon": "/images/wazoo.svg",
   "seo": {
     "indexing": "all",
     "metatags": {
@@ -19,165 +41,15 @@
       "canonical": "https://docs.wazoo.dev"
     }
   },
-  "navigation": {
-    "tabs": [
-      {
-        "tab": "Developer Platform",
-        "icon": "code",
-        "groups": [
-          {
-            "group": "Welcome",
-            "pages": ["overview/introduction"]
-          },
-          {
-            "group": "Get Started",
-            "pages": [
-              "overview/getting-started/quickstart",
-              "overview/getting-started/authentication"
-            ]
-          },
-          {
-            "group": "Tutorials",
-            "pages": ["overview/getting-started/agent-integration"]
-          },
-          {
-            "group": "Concepts",
-            "pages": [
-              "overview/philosophy",
-              "overview/architecture",
-              "overview/world-memory",
-              "overview/features"
-            ]
-          },
-          {
-            "group": "Glossary",
-            "pages": [
-              "glossary/world",
-              "glossary/triple",
-              "glossary/item",
-              "glossary/neuro-symbolic",
-              "glossary/sparql",
-              "glossary/hybrid-search"
-            ]
-          },
-
-          {
-            "group": "Background",
-            "pages": [
-              "overview/whitepaper",
-              "overview/use-cases",
-              "overview/roadmap",
-              "overview/maturity",
-              "overview/history"
-            ]
-          },
-          {
-            "group": "Guides",
-            "pages": [
-              {
-                "group": "RAG Workflows",
-                "pages": [
-                  "guides/rag-workflows/graph-rag",
-                  "guides/rag-workflows/ontology-rag",
-                  "guides/rag-workflows/document-rag"
-                ]
-              },
-              "guides/data-integration",
-              "guides/querying",
-              "guides/hosting/production",
-              "guides/monitoring",
-              "guides/knowledge-graphs",
-              "guides/semantic-search"
-            ]
-          },
-          {
-            "group": "Examples",
-            "pages": [
-              "guides/examples/code-samples",
-              "guides/examples/datasets",
-              "guides/examples/tutorials",
-              "guides/examples/integrations"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Academy",
-        "icon": "graduation-cap",
-        "pages": [
-          "academy/index",
-          "academy/memory",
-          "academy/graphs",
-          "academy/sparql",
-          "academy/agents",
-          "academy/graduation"
-        ]
-      },
-      {
-        "tab": "Reference",
-        "icon": "book-open",
-        "openapi": "openapi.yaml",
-        "groups": [
-          {
-            "group": "API Basics",
-            "pages": ["reference/api", "reference/api-basics/authentication"]
-          },
-          {
-            "group": "CLI",
-            "pages": ["reference/cli"]
-          },
-          {
-            "group": "Configuration",
-            "pages": ["reference/configuration"]
-          },
-          {
-            "group": "System Internals",
-            "pages": ["reference/request-flow"]
-          },
-
-          {
-            "group": "Changelog",
-            "pages": ["reference/changelog"]
-          }
-        ]
-      },
-      {
-        "tab": "Contributing",
-        "icon": "users",
-        "groups": [
-          {
-            "group": "Contributing",
-            "pages": [
-              "contributing/developer-guide",
-              "contributing/guidelines",
-
-              "contributing/best-practices",
-              "contributing/code-of-conduct",
-              "contributing/getting-help"
-            ]
-          }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Console",
-          "href": "https://console.wazoo.dev",
-          "icon": "globe"
-        }
-      ]
+  "integrations": {
+    "ga4": {
+      "measurementId": "G-V64G870T6Z"
     }
   },
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/overview/introduction"
+  "api": {
+    "params": {
+      "expanded": "all"
     }
-  ],
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
   },
   "navbar": {
     "links": [
@@ -192,8 +64,99 @@
       "href": "https://console.wazoo.dev"
     }
   },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Welcome",
+        "pages": ["introduction", "quickstart", "platform", "manifesto"]
+      },
+      {
+        "group": "Worlds",
+        "pages": [
+          "worlds/index",
+          "worlds/search",
+          "worlds/query",
+          "worlds/update"
+        ]
+      },
+      {
+        "group": "Integrations",
+        "pages": [
+          "integrations/ai-sdk",
+          "integrations/claude-code",
+          "integrations/gemini-api",
+          "integrations/mastra",
+          "integrations/n8n",
+          "integrations/openclaw",
+          "integrations/opencode",
+          "integrations/openai",
+          "integrations/zapier",
+          "integrations/zo"
+        ]
+      },
+      {
+        "group": "Open source",
+        "pages": [
+          "contribute/architecture",
+          "contribute/style",
+          "contribute/security",
+          "contribute/self-host"
+        ]
+      },
+      {
+        "group": "Worlds API",
+        "openapi": "openapi.yaml",
+        "pages": [
+          "GET /worlds",
+          "POST /worlds",
+          "GET /worlds/{world}",
+          "PUT /worlds/{world}",
+          "DELETE /worlds/{world}",
+          "GET /worlds/{world}/export",
+          "POST /worlds/{world}/import",
+          "GET /worlds/{world}/logs",
+          "GET /worlds/{world}/search",
+          "GET /worlds/{world}/sparql",
+          "POST /worlds/{world}/sparql"
+        ]
+      },
+      {
+        "group": "CLI reference",
+        "icon": "book-open",
+        "pages": [
+          "reference/cli/create",
+          "reference/cli/get",
+          "reference/cli/list",
+          "reference/cli/update",
+          "reference/cli/import",
+          "reference/cli/export",
+          "reference/cli/search",
+          "reference/cli/sparql",
+          "reference/cli/delete",
+          "reference/cli/chat"
+        ]
+      }
+    ]
+  },
   "footer": {
     "links": [
+      {
+        "header": "Developers",
+        "items": [
+          {
+            "label": "API reference",
+            "href": "/reference"
+          },
+          {
+            "label": "CLI reference",
+            "href": "/reference/cli"
+          },
+          {
+            "label": "TypeScript reference",
+            "href": "https://jsr.io/@wazoo/worlds-api"
+          }
+        ]
+      },
       {
         "header": "Explore",
         "items": [
@@ -202,8 +165,8 @@
             "href": "https://console.wazoo.dev"
           },
           {
-            "label": "SDK (JSR)",
-            "href": "https://jsr.io/@wazoo/worlds-sdk"
+            "label": "Blog",
+            "href": "https://wazoo.dev/blog"
           }
         ]
       },
@@ -215,25 +178,20 @@
             "href": "https://github.com/wazootech/worlds"
           },
           {
-            "label": "X (Twitter)",
+            "label": "X/Twitter",
             "href": "https://x.com/wazootech"
-          }
-        ]
-      },
-      {
-        "header": "Resources",
-        "items": [
-          {
-            "label": "Blog",
-            "href": "https://wazoo.dev/blog"
           }
         ]
       }
     ]
   },
-  "integrations": {
-    "ga4": {
-      "measurementId": "G-V64G870T6Z"
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/introduction"
     }
+  ],
+  "icons": {
+    "library": "lucide"
   }
 }

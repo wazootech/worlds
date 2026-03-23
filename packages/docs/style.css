@@ -1,0 +1,13 @@
+/* Force all custom SVG logos to strip native brand colors and match Mintlify's native monochrome UI */
+img[src*="/images/icons/"][src$=".svg"] {
+  filter: brightness(0) opacity(0.7);
+}
+
+.dark img[src*="/images/icons/"][src$=".svg"] {
+  filter: brightness(0) invert(1) opacity(0.85);
+}
+
+/* Hide product dropdown buttons since global navigation anchors and links are used instead */
+.nav-dropdown-products-selector-trigger {
+  display: none !important;
+}

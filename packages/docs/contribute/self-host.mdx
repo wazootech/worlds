@@ -1,0 +1,32 @@
+---
+title: "Self Host"
+description: "Host Worlds locally or via Docker"
+---
+
+Documentation for local-first and Docker self-hosting architectures is coming
+soon.
+
+<Note>
+  Future updates will document all relevant friction points (Docker
+  configuration, database setup, authentication) to contextualize deployment
+  architectures.
+</Note>
+
+## Data sovereignty and compliance
+
+Self-hosting Worlds guarantees absolute data sovereignty. By deploying the
+Worlds API and its isolated components entirely within your own Virtual Private
+Cloud (VPC), your AI agents never transmit proprietary context, Personally
+Identifiable Information (PII), or Protected Health Information (PHI) to
+third-party databases.
+
+This architecture fundamentally simplifies regulatory compliance:
+
+- **SOC 2 & ISO 27001**: Context graphs remain deeply nested behind your
+  existing firewalls and identity access management.
+- **GDPR & CCPA**: Since you control the persistence layer directly, you retain
+  complete authority over data residency, right-to-be-forgotten requests, and
+  administrative audit logs.
+- **HIPAA**: Medical data never leaves your infrastructure, enabling you to
+  build neuro-symbolic healthcare agents without requiring complex Business
+  Associate Agreements (BAAs) with external vector search providers.

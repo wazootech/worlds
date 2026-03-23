@@ -1,8 +1,7 @@
-# Contributing to Worlds Platform
+# Contributing to Worlds
 
-Thank you for your interest in contributing to Worlds! We welcome contributions
-from developers of all skill levels. This guide will help you get started with
-contributing to our AI-powered world model engine.
+This guide explains how to configure your environment, run the Worlds monorepo
+locally, and submit pull requests.
 
 ## Quick start
 
@@ -16,20 +15,20 @@ Before you begin, ensure you have the following installed:
 
 ### Setting up the development environment
 
-1. **Fork and Clone the Repository**
+1. **Fork and clone the repository**
 
    ```bash
    git clone https://github.com/wazootech/worlds.git
    cd worlds
    ```
 
-2. **Install Dependencies**
+2. **Install dependencies**
 
    ```bash
    deno task install
    ```
 
-3. **Start the Development Server**
+3. **Start the development server**
 
    ```bash
    deno task start:server
@@ -85,9 +84,9 @@ deno task precommit
 
 ## Pull request process
 
-1. **Create a Branch**: Use descriptive names like `feat/new-reasoning-engine`
+1. **Create a branch**: Use descriptive names like `feat/new-reasoning-engine`
    or `fix/sparql-parser-bug`.
-2. **Commit Often**: Write clear, concise commit messages.
+2. **Commit often**: Write clear, concise commit messages.
 3. **Open a PR**: Address the PR template requirements and provide a clear
    summary of your changes.
 4. **Reviews**: All PRs require at least one maintainer review before merging.
@@ -97,8 +96,3 @@ deno task precommit
 - Be respectful and inclusive.
 - Focus on constructive feedback.
 - Maintain professionalism in all interactions.
-
----
-
-Thank you for contributing to Worlds! Together, we're building the future of
-structured AI memory.

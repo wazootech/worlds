@@ -1,0 +1,20 @@
+---
+title: "list"
+description: "List persistent worlds"
+---
+
+Retrieves an array of all World items in your organization workspace.
+
+<ParamField path="--page" type="number">
+  The pagination cursor for traversing large lists. *Alias:* `-p`
+</ParamField>
+
+<ParamField path="--pageSize" type="number">
+  The maximum number of worlds to return per page. *Alias:* `-s`
+</ParamField>
+
+### Usage
+
+```bash
+worlds list --page 1 --pageSize 50
+```
