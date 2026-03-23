@@ -3,53 +3,69 @@ title: "Quickstart"
 description: "Build a world in 2 minutes"
 ---
 
-Watch Worlds run to understand it. Bypass environment configuration and
-authentication to generate exact results using a zero-stakes, in-memory sandbox.
+The fastest way to understand Worlds is to interact with it natively. This
+quickstart skips the theory and drops you straight into the SDK to execute your
+first neuro-symbolic query.
 
-## Zero-stakes sandbox
+## Prerequisites
 
-Follow this sequence to train on the core interaction loop: create a world,
-inject a fact, and retrieve it deterministically.
+Before writing code, you need a Worlds API key.
+
+1. Sign up at the [Worlds Console](https://console.wazoo.dev).
+2. Generate an API key.
+3. Save it securely to your `.env` file as `WORLDS_API_KEY`.
+
+## Hello, World!
+
+Follow this sequence to train on the core interaction loop: connect to the cloud
+engine, inject a fact, and retrieve it deterministically.
 
 <Steps>
-  <Step title="Initialize the sandbox">
-    Run the single-command initializer to create a temporary, local-first Worlds environment.
+  <Step title="Install the SDK">
+    Install the canonical TypeScript client.
     
     <CodeGroup>
       ```bash deno
-      deno run -A npm:@wazoo/worlds-cli@latest init --sandbox
+      deno add jsr:@wazoo/worlds-sdk
       ```
 
-      ```bash npx
-      npx @wazoo/worlds-cli@latest init --sandbox
+      ```bash npm
+      npx jsr add @wazoo/worlds-sdk
       ```
+
+      ```bash bun
+      bunx jsr add @wazoo/worlds-sdk
+      ```
+
+
+      ```bash pnpm
+      pnpm i jsr:@wazoo/worlds-sdk
+      ```
+
     </CodeGroup>
-
-    <Check>You now have an isolated, ephemeral World running on your local machine.</Check>
 
   </Step>
 
   <Step title="Observe the execution">
     Run the following self-contained script to execute a complete neuro-symbolic loop:
     
-    1. Connect to the SDK.
+    1. Connect to the Cloud API.
     2. Create an isolated World.
     3. Inject a semantic fact ([Triple](/worlds#facts)).
     4. Query that fact deterministically using [SPARQL](/worlds/query).
 
-    ```typescript sandbox.ts
+    ```typescript index.ts
     import { WorldsSdk } from "@wazoo/worlds-sdk";
 
-    // 1. Connect (In-memory sandbox mode configures local endpoints)
+    // 1. Connect (Drop directly into the cloud engine)
     const sdk = new WorldsSdk({
-      baseUrl: "http://localhost:8080",
-      apiKey: "sandbox",
+      apiKey: process.env.WORLDS_API_KEY!,
     });
 
     // 2. Create an isolated world
     const world = await sdk.worlds.create({
-      slug: "quickstart-sandbox",
-      label: "My First Sandbox"
+      slug: "quickstart-cloud",
+      label: "My First World"
     });
 
     // 3. Inject a fact (Subject -> Predicate -> Object)
@@ -89,15 +105,15 @@ inject a fact, and retrieve it deterministically.
   </Step>
 </Steps>
 
-## Moving to production
+## Next steps
 
-With the sandbox loop complete, give your agents persistent memory.
+Now that you have securely connected to your cloud instance, integrate the SDK directly into your agentic loops.
 
 <CardGroup cols={2}>
-  <Card title="AI agent integration" icon="bot" href="/guides/ai-sdk">
+  <Card title="AI agent integration" icon="bot" href="/integrations/ai-sdk">
     Grant an AI agent direct access to construct its own Worlds.
   </Card>
   <Card title="Self-hosting" icon="server" href="/contribute/self-host">
-    Deploy Worlds persistently using Docker and Turso.
+    Host the Worlds API infrastructure on your own hardware.
   </Card>
 </CardGroup>
