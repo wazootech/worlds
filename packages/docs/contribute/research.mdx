@@ -122,8 +122,9 @@ Ingestion follows a multi-stage transformation process:
 
 1.  **Segmentation**: Unstructured text is decomposed into semantically coherent
     chunks.
-2.  **Triple Extraction (Construct)**: An LLM-based extraction layer identifies
-    items and predicates, converting narrative flow into formalized RDF triples.
+2.  **Fact Extraction (Construct)**: An LLM-based extraction layer identifies
+    items and properties, converting narrative flow into formalized facts
+    (RDF triples).
 3.  **Relational Mapping (Align)**: Extracted items are mapped to a strict
     ontology, ensuring structural consistency across the global graph.
 4.  **Semantic Indexing**: Each chunk and triple is indexed simultaneously via
@@ -238,8 +239,8 @@ runtime, providing isolated, high-performance in-memory state.
 Persistence utilizes a hybrid schema to avoid the overhead of general-purpose
 SPARQL engines on disk while maintaining semantic integrity.
 
-- **`triples` table**: Stores atomic units of knowledge (Subject, Predicate,
-  Object).
+- **`triples` table**: Stores the structural data of facts (Subject, Predicate,
+  Object) as an append-only chronological ledger.
 - **`chunks` table**: Stores overlapping text segments with vector embeddings
   targeting string literals, and ranks derived from triple data.
 - **`entity_types` table**: An optimized table for mapping items to their
@@ -480,7 +481,7 @@ the opaque nature of pure vector retrieval.
 | Term               | Definition                                                                                 |
 | :----------------- | :----------------------------------------------------------------------------------------- |
 | **World**          | An isolated Knowledge Graph instance (RDF Dataset), acting as a memory store for an agent. |
-| **Statement**      | An atomic unit of fact (Triple: Subject, Predicate, Object).                               |
+| **Fact**           | A unit of data bound to time, structurally stored as a Triple (Subject, Predicate, Object).|
 | **Chunk**          | A text segment derived from a Statement, optimized for hybrid search.                      |
 | **RRF**            | **Reciprocal Rank Fusion**. An algorithm fusing Keyword (FTS) and Vector search rankings.  |
 | **RDF**            | **Resource Description Framework**. The W3C standard for graph data interchange.           |
