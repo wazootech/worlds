@@ -35,10 +35,17 @@ An item is...
 - Any "thing" in your world, including documents, people, physical objects, and
   abstract concepts.
 
+## Properties
+
+Properties are the relationships that connect items together. Just as items are
+the "nouns" of your world, properties are the "verbs" (e.g., `worksAt` or `isA`).
+The set of all valid properties forms the **ontology**—the grammar your agents
+use to interact.
+
 ## Facts
 
 A fact is a unit of data expressed as a structured statement that connects two
-nodes in the knowledge graph.
+items using a property.
 
 Conceptually, a fact functions exactly like a simple sentence. For example, the
 sentence, "Ethan is a person", can be represented as:
@@ -70,7 +77,7 @@ from three components called **terms**.
 </ResponseField>
 
 <ResponseField name="Predicate" type="Term">
-  The relationship or property defining the link e.g., `rdf:type`
+  The structural representation of a property e.g., `rdf:type`
 </ResponseField>
 
 <ResponseField name="Object" type="Term">
