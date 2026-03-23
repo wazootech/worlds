@@ -22,7 +22,7 @@ SELECT ?person WHERE {
 ```
 
 SPARQL matches patterns against facts, deterministically following relationships
-to return exact results without guessing.
+to return exact results.
 
 ## SPARQL vs. vector search
 
@@ -35,8 +35,8 @@ to return exact results without guessing.
 Worlds combines both via [hybrid search](/worlds/search) so you get the best of
 each.
 
-Standard RAG struggles with evolving facts and complex relational queries. Worlds
-solves this using stateful Graph RAG.
+Standard RAG struggles with evolving facts and complex relational queries.
+Worlds solves this using stateful Graph RAG.
 
 ## Limits of stateless RAG
 
@@ -79,7 +79,7 @@ contradictions at the data layer rather than relying on LLM reasoning.
 
 ![RAG vs Graph RAG](/images/rag-vs-worlds.png)
 
-| Feature       | Traditional RAG     | Worlds, functioning as world memory            |
+| Feature       | Traditional RAG     | Worlds                                         |
 | :------------ | :------------------ | :--------------------------------------------- |
 | **Search**    | Semantic similarity | Hybrid, combining semantic and relational      |
 | **State**     | Stateless           | Stateful, resolving contradictions             |
@@ -92,13 +92,13 @@ To implement graph RAG with Worlds, follow the
 [ingestion pipeline](/contribute/architecture) to transform your unstructured
 data into a queryable graph.
 
-Ontology RAG leverages rigid, predefined schemas to guide agentic reasoning and
-data retrieval. This ensures your agents operate within a well-defined
-conceptual boundary.
+Ontology RAG uses rigid, predefined schemas to guide agentic reasoning and data
+retrieval. This ensures your agents operate within a well-defined conceptual
+boundary.
 
 ## Grounding agents in ontologies
 
-By using `discover-schema`, your agent can introspect the available classes and
+By using `discover-schema`, your agent can retrieve the available classes and
 properties of a world before attempting to query it.
 
 1.  **Discovery**: Agent retrieves the world's ontology.
@@ -113,8 +113,8 @@ Deep learning feeds unstructured data into neural networks, hoping models infer
 ground truth. By contrast, neuro-symbolic AI in Worlds explicitly grounds
 language models in semantic structures.
 
-Steering models into predefined conceptual boundaries (an ontology) provides the
-strict context needed to map semantic intent to logical execution.
+Steering models into a predefined ontology provides the strict context needed to
+map semantic intent to logical execution.
 
 - **Complex logic**: If user A is the parent of B, and B is the parent of C,
   vector search cannot reliably infer A is the grandparent of C based on text
@@ -125,10 +125,10 @@ strict context needed to map semantic intent to logical execution.
 - **Deterministic reliability**: Ensure the agent's mental model strictly
   matches the actual data structure.
 
-## Under the hood
+## Architecture
 
 While agents interact with Worlds abstractly, the platform manages the
-underlying RDF data through a highly optimized pipeline.
+underlying RDF data through a pipeline.
 
 ### RDF blob handling
 

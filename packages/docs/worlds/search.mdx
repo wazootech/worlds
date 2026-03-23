@@ -4,13 +4,31 @@ description: "Semantic disambiguation and hybrid retrieval"
 ---
 
 Before reasoning about facts, agents must find the correct starting point.
-**Hybrid search** disambiguates natural language queries, instantly resolving
-them to the correct item (IRI).
+**Hybrid search** disambiguates natural language queries, resolving them to the
+correct item (IRI).
 
-Rather than relying on a single vector index, Worlds fuses three complementary
-signals to guarantee retrieval accuracy.
+## Why not only vector search?
 
-## Signals
+Standard vector search retrieves semantically similar text, but agents require
+factual precision. If an agent searches for "Ethan's manager", a pure vector
+query might return "Gregory's manager" because their text embeddings are nearly
+identical in vector space.
+
+## Why not just RDF and SPARQL?
+
+While SPARQL supports structured logic and keyword search, it cannot perform
+semantic vector retrieval. Worlds provides open-source infrastructure for
+indexed RDF stores built specifically for autonomous agents.
+
+## Hybrid retrieval
+
+Rather than relying on a single index, Worlds fuses three complementary signals
+to guarantee retrieval accuracy. By layering keyword precision (BM25) and
+structural graph filters on top of vector embeddings, hybrid search ensures the
+agent disambiguates the exact item it needs before executing strict symbolic
+logic.
+
+### Signals
 
 | Signal            | Technique                   | What it captures         |
 | :---------------- | :-------------------------- | :----------------------- |
@@ -18,23 +36,12 @@ signals to guarantee retrieval accuracy.
 | **Keyword**       | FTS5 / BM25                 | Exact term matches       |
 | **Graph context** | RDF relationship filters    | Structural relationships |
 
-## Reciprocal rank fusion
+### Reciprocal rank fusion
 
 Results from each signal are merged using **Reciprocal Rank Fusion (RRF)**, an
-industry-standard algorithm that produces a single unified ranking:
+algorithm that produces a single unified ranking:
 
 $$score = \sum_{d \in D} \frac{1}{60 + rank(d)}$$
 
 This ensures that a result ranked highly by _multiple_ signals surfaces to the
 top, while noise from any single signal is suppressed.
-
-## Why not only vector search?
-
-Standard vector search excels at finding semantically similar text, but agents
-require factual precision. If an agent searches for "Ethan's manager", a pure
-vector query might return "Gregory's manager" because the sentences are
-identical in vector space.
-
-By layering keyword precision (BM25) and structural graph filters on top of the
-vector embeddings, hybrid search guarantees the agent disambiguates the exact
-item it needs before executing strict symbolic logic.
