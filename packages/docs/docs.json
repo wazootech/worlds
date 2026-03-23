@@ -82,16 +82,16 @@
       {
         "group": "Integrations",
         "pages": [
-          "guides/ai-sdk",
-          "guides/claude-code",
-          "guides/gemini-api",
-          "guides/mastra",
-          "guides/n8n",
-          "guides/openclaw",
-          "guides/opencode",
-          "guides/openai",
-          "guides/zapier",
-          "guides/zo"
+          "integrations/ai-sdk",
+          "integrations/claude-code",
+          "integrations/gemini-api",
+          "integrations/mastra",
+          "integrations/n8n",
+          "integrations/openclaw",
+          "integrations/opencode",
+          "integrations/openai",
+          "integrations/zapier",
+          "integrations/zo"
         ]
       },
       {
@@ -153,7 +153,7 @@
           },
           {
             "label": "TypeScript reference",
-            "href": "https://jsr.io/@wazoo/worlds-sdk"
+            "href": "https://jsr.io/@wazoo/worlds-api"
           }
         ]
       },
