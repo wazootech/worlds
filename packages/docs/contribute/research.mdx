@@ -19,9 +19,9 @@ detachable hippocampus for AI agents. By combining a
 edge-distributed [SQLite](https://en.wikipedia.org/wiki/SQLite) for persistence,
 Worlds enables automatic memory, or auto-memory, for agents to maintain mutable,
 structured knowledge graphs. This system fuses vector search for semantic
-understanding with deterministic facts for precise data retrieval, empowering
-agents to navigate a persistent, interoperable map of reality rather than
-predicting the next token.
+understanding with deterministic statements for precise data retrieval,
+empowering agents to navigate a persistent, interoperable map of reality rather
+than predicting the next token.
 
 The industry remains constrained by a model-centric scaling race. While standard
 approaches increase model size to brute-force capability, Worlds makes the
@@ -90,7 +90,7 @@ engineering.
 
 | Memory type    | Agent perspective         | Worlds Platform implementation                                       |
 | :------------- | :------------------------ | :------------------------------------------------------------------- |
-| **Semantic**   | What it **knows**         | **RDF Store**: Structured facts and SPARQL reasoning.                |
+| **Semantic**   | What it **knows**         | **RDF Store**: Structured statements and SPARQL reasoning.           |
 | **Episodic**   | What it **did**           | **Append-only Log**: Temporal history of events and metadata.        |
 | **Working**    | What it is **processing** | **Scratchpad**: Live distillation of knowledge into prompts.         |
 | **Procedural** | What it **can do**        | **Tools**: Automated skills for graph operations, tools, and agents. |
@@ -122,10 +122,10 @@ Ingestion follows a multi-stage transformation process:
 
 1.  **Segmentation**: Unstructured text is decomposed into semantically coherent
     chunks.
-2.  **Fact Extraction (Construct)**: An LLM-based extraction layer identifies
-    items and properties, converting narrative flow into formalized facts
-    (RDF triples).
-3.  **Relational Mapping (Align)**: Extracted items are mapped to a strict
+2.  **Triple Extraction (Construct)**: An LLM-based extraction layer identifies
+    resources and predicates, converting narrative flow into formalized triples
+    (RDF statements).
+3.  **Relational Mapping (Align)**: Extracted resources are mapped to a strict
     ontology, ensuring structural consistency across the global graph.
 4.  **Semantic Indexing**: Each chunk and triple is indexed simultaneously via
     high-dimensional vector embeddings and full-text search keys.
@@ -239,11 +239,11 @@ runtime, providing isolated, high-performance in-memory state.
 Persistence utilizes a hybrid schema to avoid the overhead of general-purpose
 SPARQL engines on disk while maintaining semantic integrity.
 
-- **`triples` table**: Stores the structural data of facts (Subject, Predicate,
-  Object) as an append-only chronological ledger.
+- **`triples` table**: Stores the structural data of statements (Subject,
+  Predicate, Object) as an append-only chronological ledger.
 - **`chunks` table**: Stores overlapping text segments with vector embeddings
   targeting string literals, and ranks derived from triple data.
-- **`entity_types` table**: An optimized table for mapping items to their
+- **`entity_types` table**: An optimized table for mapping resources to their
   `rdf:type` IRIs, enabling rapid structural filtering.
 - **`blobs` table**: Handles large-scale RDF data and file-based state.
 
@@ -260,7 +260,7 @@ Hexastore index research:
   embeddings, enabling semantic similarity search at the edge.
 - **FTS5 indexing**: Native SQLite full-text search for fast keyword matching
   and ranking.
-- **Item type indexing**: Composite indexing on the `entity_types` table
+- **Resource type indexing**: Composite indexing on the `entity_types` table
   (`PRIMARY KEY (subject, type) WITHOUT ROWID`) for high-speed class-based
   filtering.
 
@@ -312,13 +312,13 @@ _The logic for the Reciprocal Rank Fusion algorithm is implemented within the
 core storage engine to ensure high-performance execution._
 
 This approach allows agents to answer complex, high-precision queries like
-_"Find items located in New York via the graph that are 'cozy' via vector or FTS
-search"_.
+_"Find resources located in New York via the graph that are 'cozy' via vector or
+FTS search"_.
 
 ### Disambiguation
 
 RRF provides a strong initial ranking, but complex knowledge graphs often
-contain ambiguous items or near-identical triples. To ensure 100% reasoning
+contain ambiguous resources or near-identical triples. To ensure 100% reasoning
 integrity, the platform supports two downstream refinement strategies:
 
 ### Reranking
@@ -331,7 +331,7 @@ agent's context.
 
 While LOMs accelerate auto-ontology generation, LLMs alone remain unreliable
 ontology engineers. When the system identifies low-confidence mappings,
-contradictory axioms, or multiple conflicting items, the malleable nature of
+contradictory axioms, or multiple conflicting resources, the malleable nature of
 Worlds allows the UI to present
 [disambiguation](https://en.wikipedia.org/wiki/Entity_linking#Disambiguation)
 prompts to the user via a
@@ -342,10 +342,10 @@ This absolute verification guarantees structural integrity.
 
 Utilizing
 [reification](<https://en.wikipedia.org/wiki/Reification_(knowledge_representation)>)
-in context graphs makes relationships first-class items. If a structural anomaly
-occurs during traversal, the system triggers an intervention. This shifts the
-focus of trust from eliminating uncertainty to managing it through rigorous,
-auditable verification.
+in context graphs makes relationships first-class resources. If a structural
+anomaly occurs during traversal, the system triggers an intervention. This
+shifts the focus of trust from eliminating uncertainty to managing it through
+rigorous, auditable verification.
 
 ## SDK and agents
 
@@ -362,14 +362,14 @@ The SDK provides drop-in tools for the Vercel AI SDK and other agent frameworks:
   updates.
 - **`search-entities`**: Performs semantic and keyword search to find relevant
   knowledge.
-- **`generate-iri`**: Creates stable, predictable identifiers for new items.
+- **`generate-iri`**: Creates stable, predictable identifiers for new resources.
 
 ### Interoperability
 
 Worlds is agent-ready from the first request. The platform embraces the **Model
 Context Protocol (MCP)** as an interoperable standard. By relying on open RDF
 structures, agents from entirely separate ecosystems—such as a Claude coding
-agent and a Gemini researcher—can share facts natively. The API acts as the
+agent and a Gemini researcher—can share statements natively. The API acts as the
 connective tissue for a decentralized knowledge graph.
 
 As a dedicated context layer, Worlds allows host applications to securely
@@ -481,7 +481,7 @@ the opaque nature of pure vector retrieval.
 | Term               | Definition                                                                                 |
 | :----------------- | :----------------------------------------------------------------------------------------- |
 | **World**          | An isolated Knowledge Graph instance (RDF Dataset), acting as a memory store for an agent. |
-| **Fact**           | A unit of data bound to time, structurally stored as a Triple (Subject, Predicate, Object).|
+| **RDF statement**  | A unit of fact, structurally stored as a Triple (Subject, Predicate, Object).              |
 | **Chunk**          | A text segment derived from a Statement, optimized for hybrid search.                      |
 | **RRF**            | **Reciprocal Rank Fusion**. An algorithm fusing Keyword (FTS) and Vector search rankings.  |
 | **RDF**            | **Resource Description Framework**. The W3C standard for graph data interchange.           |
