@@ -1,0 +1,20 @@
+name: Check Python SDK
+on:
+  push:
+    paths:
+      - "packages/python-sdk/**"
+      - "packages/docs/openapi.yaml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Lint & Type Check
+        run: |
+          cd packages/python-sdk
+          uv run ruff check .

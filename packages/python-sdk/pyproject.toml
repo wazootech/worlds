@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build_meta"
+
+[project]
+name = "worlds-sdk"
+version = "0.1.0"
+description = "A lightweight type-safe SDK for Worlds"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx",   # The HTTP client
+    "pydantic" # The type safety layer
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/worlds"] # Points to your code folder
