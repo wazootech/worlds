@@ -3,7 +3,7 @@ title: "Query"
 description: "Deterministic reasoning and semantic traversal"
 ---
 
-After disambiguating a starting item with [Hybrid search](/worlds/search),
+After disambiguating a starting item with [hybrid search](/worlds/search),
 agents must traverse its connected facts.
 
 **SPARQL** (SPARQL Protocol and RDF Query Language) is the W3C-standard query
@@ -59,7 +59,7 @@ contradiction via heuristics. As data grows, retrieval becomes noisy.
 ```text
 You are a deterministic agent connected to a Worlds knowledge graph.
 When answering user queries:
-1. Use your tools to perform a SPARQL query or [Hybrid Search](/worlds/search) on the stateful memory.
+1. Use your tools to perform a SPARQL query or [hybrid search](/worlds/search) on the stateful memory.
 2. The retrieved relationships represent the CURRENT, VERIFIED state.
 3. Respond strictly utilizing the relationships extracted, overriding any probabilistic generation.
 ```

@@ -1,6 +1,6 @@
 ---
 title: "Architecture"
-description: "System architecture and data flow"
+description: "How Worlds works"
 ---
 
 The Worlds Platform utilizes a managed [neuro-symbolic](/manifesto)
@@ -20,9 +20,6 @@ The platform connection model relies on three core pillars:
   key and the World's unique ID.
 - **The Console (The Dashboard):** Use the Worlds Console to generate API keys,
   visually explore stored data, and manage billing.
-
-In short: **Your agent uses an API key to read and write facts to a specific
-World.**
 
 ## High-level overview
 
@@ -95,9 +92,8 @@ information lives.
 
 ## Worlds API deep dive
 
-<Accordion title="Deep dive: API Data Flow">
-  The World Engine follows a multi-tiered data transformation journey, fusing
-  diverse input sources into a verifiable neuro-symbolic knowledge state.
+<Accordion title="API data flow">
+  The World Engine transforms raw data inputs into a neuro-symbolic knowledge state.
 
 ```mermaid
 flowchart TD
@@ -158,6 +154,32 @@ flowchart TD
 
 </Accordion>
 
+## Storage engine
+
+The platform uses a hybrid storage strategy to combine vector search with graph
+logic.
+
+### Hot memory
+
+The platform utilizes a WASM-compiled RDF store that runs entirely within the
+JavaScript runtime. This maintains an in-memory state in the edge cache between
+requests to reduce read latency.
+
+### Persistence and indexing
+
+Persistence utilizes an edge-distributed database to maintain semantic
+integrity. The system relies on a multi-index strategy:
+
+- **Graph indexing**: Stores structural data records as an append-only
+  chronological ledger. This enables rapid pattern matching.
+- **Vector indexing**: Stores high-dimensional embeddings for text segments.
+  This enables semantic similarity search at the edge.
+- **Full-text indexing**: Provides exact keyword matching and ranking.
+
+When executing a search, the engine utilizes Reciprocal Rank Fusion (RRF) to
+combine results from the vector index and full-text index into a single, unified
+relevance ranking. Structural graph constraints further restrict these results.
+
 ## Resource hierarchy
 
 **Organizations** host **Worlds** to ensure strict data isolation and scale.
@@ -183,20 +205,17 @@ Each World is a specific context or knowledge graph managed by the server.
 
 ## Deno runtime
 
-The Worlds Platform is built on [Deno](https://deno.com/), which provides
-several advantages for a
-[security-sensitive](https://docs.deno.com/runtime/fundamentals/security/)
-knowledge platform:
+The Worlds Platform is built on [Deno](https://deno.com/) to utilize its
+[security](https://docs.deno.com/runtime/fundamentals/security/) and runtime
+capabilities:
 
 - **Secure by default**: Deno's permission model requires explicit grants for
-  network, file system, and environment access — reducing the attack surface of
-  each deployment.
+  network, file system, and environment access. This reduces the attack surface
+  of each deployment.
 - **Web-standard APIs**: The server exports a standard `fetch` handler, making
-  it natively compatible with Deno Deploy and other edge runtimes.
+  it natively compatible with edge distribution platforms like Deno Deploy.
 - **TypeScript-native**: No build step or transpiler configuration required. The
   entire codebase is TypeScript from source to execution.
-- **Edge-ready**: First-class support for Deno Deploy enables low-latency
-  deployments close to users.
 
 ## Monorepo topology
 
@@ -236,8 +255,7 @@ The server follows a modular layout organized by service and resource:
 ## Request flow
 
 The Worlds Server follows a structured lifecycle for initialization and request
-handling. For a detailed breakdown, refer to the [Request flow](#request-flow)
-reference.
+handling.
 
 ## Design principles
 
