@@ -10,16 +10,16 @@ management from the **Worlds API** for high-performance execution.
 
 ## The connection model
 
-The platform connection model relies on three core pillars:
+The connection model uses composable components to scale system complexity:
 
-- **Your AI Agent (The Client):** Use the `@wazoo/worlds-sdk` or standard HTTP
-  requests inside your agent (e.g., Claude, Gemini, or a custom script) to
-  connect to the platform.
-- **The World (The Memory):** A "World" is an isolated, secure sandbox for your
-  agent's memories. Every request securely targets a specific World using an API
-  key and the World's unique ID.
-- **The Console (The Dashboard):** Use the Worlds Console to generate API keys,
-  visually explore stored data, and manage billing.
+- **Client**: Use the `@wazoo/worlds-sdk` or standard HTTP requests inside an
+  agent like Claude, Gemini, or a custom script to connect to the platform.
+- **Memory**: A World is an isolated sandbox for agent memories. You must target
+  a specific World using an API key and the World ID for every request.
+- **Dashboard**: Use the Worlds Console to generate API keys, explore data, and
+  manage billing.
+
+<Info>Agents use an API key to read and write facts to a specific World.</Info>
 
 ## High-level overview
 
@@ -31,20 +31,20 @@ graph LR
     subgraph Clients ["Ingestion"]
         direction TB
         Dev([Developer])
-        Agent([AI Agent])
+        Agent([AI agent])
         SDK["Worlds SDK"]
     end
 
     subgraph Console ["Worlds Console"]
         direction TB
         ConsoleView[Console UI]
-        Auth[Identity Service]
+        Auth[Identity service]
     end
 
     subgraph API ["Worlds API (World Engine)"]
         direction TB
-        Engine["Reasoning Engine<br/><i>Hot RDF Memory</i>"]
-        Sync["Forward-Sync"]
+        Engine["Reasoning engine<br/><i>Hot RDF memory</i>"]
+        Sync["Forward-sync"]
     end
 
     subgraph State ["Persistence"]
@@ -63,7 +63,7 @@ graph LR
     %% Internal Processing
     Engine -.->|Hydrate / Flush| DB
     Engine -->|Patches| Sync
-    Sync -->|Index Update| DB
+    Sync -->|Index update| DB
 ```
 
 ## Worlds Console vs. Worlds API
@@ -102,29 +102,29 @@ flowchart TD
     classDef persistence fill:#1a1510,stroke:#D97706,stroke-width:1px,color:#f2f2f2;
     classDef process fill:#F59E0B,stroke:#78350F,stroke-dasharray: 5 5,color:#333;
 
-    subgraph Sources ["DATA SOURCES & INTEGRATIONS"]
-        RAW["Raw Data<br/>Text, Files, Chats"]
-        CLOUD["Cloud Connectors<br/>Notion, Obsidian, GDrive"]
+    subgraph Sources ["Data sources & integrations"]
+        RAW["Raw data<br/>Text, files, chats"]
+        CLOUD["Cloud connectors<br/>Notion, Obsidian, GDrive"]
     end
 
-    subgraph Ingestion ["AGENT-NATIVE SDK"]
+    subgraph Ingestion ["Agent-native SDK"]
         SDK["Worlds SDK<br/>search / sparql / discover"]
-        MCP["MCP Protocol<br/>Claude, Cursor, Gemini"]
+        MCP["MCP protocol<br/>Claude, Cursor, Gemini"]
     end
 
-    subgraph Core ["NEURO-SYMBOLIC REASONING"]
-        SPARQL["Comunica Engine<br/>SPARQL 1.1/1.2"]
-        PROXY["Forward-Sync Proxy<br/>Mutation Interceptor"]
+    subgraph Core ["Neuro-symbolic reasoning"]
+        SPARQL["Comunica engine<br/>SPARQL 1.1/1.2"]
+        PROXY["Forward-sync proxy<br/>Mutation interceptor"]
     end
 
-    subgraph Pipeline ["RDF-PATCH PIPELINE"]
+    subgraph Pipeline ["RDF-patch pipeline"]
         SKOLEM["Skolemization (RDFC-1.0)"]
-        EMBED["Multimodal Embeddings"]
-        CHUNK["Dynamic Chunking"]
+        EMBED["Multimodal embeddings"]
+        CHUNK["Dynamic chunking"]
     end
 
-    subgraph State ["WORLD STATE"]
-        BLOBS[("RDF Store<br/>System of Record")]
+    subgraph State ["World state"]
+        BLOBS[("RDF store<br/>System of record")]
         TRIPLES[("triples<br/>SQLite table")]
         CHUNKS[("chunks<br/>SQLite table")]
     end
@@ -134,17 +134,17 @@ flowchart TD
     CLOUD --> SDK
     SDK <--> MCP
 
-    SDK -->|SPARQL Update| SPARQL
+    SDK -->|SPARQL update| SPARQL
     SPARQL --> PROXY
 
-    PROXY -->|Quad Patches| SKOLEM
+    PROXY -->|Quad patches| SKOLEM
     SKOLEM --> EMBED
     EMBED --> CHUNK
 
-    SKOLEM -->|Atomic Commit| TRIPLES
-    CHUNK -->|Atomic Commit| CHUNKS
+    SKOLEM -->|Atomic commit| TRIPLES
+    CHUNK -->|Atomic commit| CHUNKS
 
-    SPARQL -->|Serialized Flush| BLOBS
+    SPARQL -->|Serialized flush| BLOBS
 
     %% Assignments
     class Core,SPARQL,N3 engine;
@@ -186,7 +186,7 @@ relevance ranking. Structural graph constraints further restrict these results.
 
 ```mermaid
 graph LR
-    Org[Organization] --> Server[API Server]
+    Org[Organization] --> Server[API server]
     Org --> MetaDB[(Primary DB)]
     Server --> W1[World 1]
     Server --> W2[World 2]
@@ -216,6 +216,8 @@ capabilities:
   it natively compatible with edge distribution platforms like Deno Deploy.
 - **TypeScript-native**: No build step or transpiler configuration required. The
   entire codebase is TypeScript from source to execution.
+- **Edge-ready**: Native support for Deno Deploy enables low-latency
+  distribution close to users.
 
 ## Monorepo topology
 
@@ -224,7 +226,7 @@ bridge for the CLI, AI-SDK, and Console to communicate with the API Server.
 
 ```mermaid
 graph TD
-    ROOT["Deno Workspace Root"]
+    ROOT["Deno workspace root"]
     SERVER["@wazoo/worlds-server"]
     SDK["@wazoo/worlds-sdk"]
     AISDK["@wazoo/worlds-ai-sdk"]
