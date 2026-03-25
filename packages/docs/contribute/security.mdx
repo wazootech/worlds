@@ -11,7 +11,7 @@ your data remains secure.
 The platform uses two primary authentication strategies depending on the use
 case.
 
-### 1. API keys
+### API keys
 
 AI agents and background services authenticate using scoped API keys. You can
 generate and manage these keys via the **Console**.
@@ -22,15 +22,16 @@ Include your API key in the `Authorization` header of your requests:
 Authorization: Bearer <your-api-key>
 ```
 
-### 2. Identity service
+### Identity service
 
 The Console uses an identity service, such as WorkOS, to manage human users and
 organizations. This layer handles MFA, SSO, and team-based access control.
 
 ## Tenant isolation
 
-Security is enforced at the organization level. Provisioning an organization
-initializes a dedicated API server instance and a primary metadata database.
+The platform enforces security at the organization level. Provisioning an
+organization initializes a dedicated API server instance and a primary metadata
+database.
 
 - **Dedicated Worlds**: Each World maintains its own SQLite database for triples
   and embeddings.
@@ -40,7 +41,7 @@ initializes a dedicated API server instance and a primary metadata database.
 ## Unprotected mode
 
 For self-hosters or local development, you can disable authentication by
-omitting specific environmental variables.
+omitting specific environment variables.
 
 <Warning>
   **Unprotected mode** removes all security boundaries. Never use this mode in a

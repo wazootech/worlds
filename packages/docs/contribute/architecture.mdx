@@ -200,12 +200,12 @@ Each World is a specific context or knowledge graph managed by the server.
 
 - **Dedicated storage**: Each World maintains its own secondary SQLite database
   for [triples](/worlds#facts), chunks, and embeddings.
-- **Isolation**: Worlds are accessed via `/v1/worlds/{id}`, ensuring zero
+- **Isolation**: Access Worlds via `/v1/worlds/{id}` to ensure zero
   cross-contamination between contexts.
 
 ## Deno runtime
 
-The Worlds Platform is built on [Deno](https://deno.com/) to utilize its
+Worlds uses the [Deno](https://deno.com/) runtime for its
 [security](https://docs.deno.com/runtime/fundamentals/security/) and runtime
 capabilities:
 
@@ -258,6 +258,12 @@ The server follows a modular layout organized by service and resource:
 
 The Worlds Server follows a structured lifecycle for initialization and request
 handling.
+
+## Actionable perception
+
+Worlds utilizes a model for visualization that shifts the focus from raw data
+representation to actionable information. This model ensures that interfaces
+function as a direct extension of the neuro-symbolic engine.
 
 ## Design principles
 
