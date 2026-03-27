@@ -1,42 +1,27 @@
 import { STATUS_CODE } from "@std/http/status";
-import { ulid } from "@std/ulid/ulid";
-import { Parser, Store, Writer } from "n3";
 import { Router } from "@fartlabs/rt";
 import {
   createWorldParamsSchema,
   paginationParamsSchema,
   updateWorldParamsSchema,
-  worldSchema,
+  type RdfFormat,
 } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type { ServerContext } from "#/context.ts";
-import {
-  DEFAULT_SERIALIZATION,
-  getSerializationByContentType,
-  getSerializationByFormat,
-  negotiateSerialization,
-  SERIALIZATIONS,
-} from "#/lib/rdf/serialization.ts";
-import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
-import type {
-  WorldRow,
-  WorldTable,
-} from "#/lib/database/tables/worlds/schema.ts";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
-import { LogsService } from "#/lib/database/tables/logs/service.ts";
-import { BlobsService } from "#/lib/database/tables/blobs/service.ts";
-import { handlePatch } from "#/lib/rdf-patch/mod.ts";
 import { handleETagRequest } from "#/lib/http/etag.ts";
+import { negotiateSerialization } from "#/lib/rdf/serialization.ts";
+import { WorldsCore } from "#/lib/worlds/core.ts";
 
 export default (appContext: ServerContext) => {
-  const worldsService = new WorldsService(appContext.libsql.database);
+  const worlds = new WorldsCore(appContext);
 
   return new Router()
     .get(
       "/worlds/:world",
       async (ctx) => {
-        const worldParam = ctx.params?.pathname.groups.world;
-        if (!worldParam) {
+        const worldId = ctx.params?.pathname.groups.world;
+        if (!worldId) {
           return ErrorResponse.BadRequest("World ID required");
         }
 
@@ -45,30 +30,19 @@ export default (appContext: ServerContext) => {
           return ErrorResponse.Unauthorized();
         }
 
-        const world = await worldsService.getById(worldParam);
-        if (!world || world.deleted_at != null) {
+        const world = await worlds.get(worldId);
+        if (!world) {
           return ErrorResponse.NotFound("World not found");
         }
 
-        // Map to SDK record and validate against SDK schema
-        const record = worldSchema.parse({
-          id: world.id,
-          slug: world.slug,
-          label: world.label,
-          description: world.description,
-          createdAt: world.created_at,
-          updatedAt: world.updated_at,
-          deletedAt: world.deleted_at,
-        });
-
-        return await handleETagRequest(ctx.request, Response.json(record));
+        return await handleETagRequest(ctx.request, Response.json(world));
       },
     )
     .get(
       "/worlds/:world/export",
       async (ctx) => {
-        const worldParam = ctx.params?.pathname.groups.world;
-        if (!worldParam) {
+        const worldId = ctx.params?.pathname.groups.world;
+        if (!worldId) {
           return ErrorResponse.BadRequest("World ID required");
         }
 
@@ -77,73 +51,38 @@ export default (appContext: ServerContext) => {
           return ErrorResponse.Unauthorized();
         }
 
-        const world = await worldsService.getById(worldParam);
-        if (!world || world.deleted_at != null) {
-          return ErrorResponse.NotFound("World not found");
-        }
-
         const url = new URL(ctx.request.url);
-        const formatParam = url.searchParams.get("format");
+        const formatParam = url.searchParams.get("format") as RdfFormat | null;
 
-        let serialization = DEFAULT_SERIALIZATION;
+        let serialization;
         if (formatParam) {
-          const s = getSerializationByFormat(formatParam);
-          if (!s) {
-            return ErrorResponse.BadRequest(
-              `Unsupported format: ${formatParam}. Supported: ${
-                Object.keys(SERIALIZATIONS).join(", ")
-              }`,
-            );
-          }
-          serialization = s;
+          serialization = {
+            format: formatParam,
+            contentType: formatParam === "turtle" ? "text/turtle" : "application/n-quads",
+          };
         } else {
-          // If no format parameter, use content negotiation
-          serialization = negotiateSerialization(ctx.request, "n-quads");
+          const negotiated = negotiateSerialization(ctx.request, "n-quads");
+          serialization = {
+            format: negotiated.format as RdfFormat,
+            contentType: negotiated.contentType,
+          };
         }
 
-        const managed = await appContext.libsql.manager.get(world.id);
-        const blobsService = new BlobsService(managed.database);
-        const worldData = await blobsService.get();
-
-        if (!worldData) {
-          return new Response("", {
+        try {
+          const buffer = await worlds.export(worldId, { format: serialization.format });
+          return await handleETagRequest(ctx.request, new Response(buffer, {
             headers: { "Content-Type": serialization.contentType },
-          });
+          }));
+        } catch (error) {
+          return ErrorResponse.BadRequest(error instanceof Error ? error.message : String(error));
         }
-
-        const blobData = worldData.blob as unknown as ArrayBuffer;
-        if (serialization.format === DEFAULT_SERIALIZATION.format) {
-          return new Response(blobData, {
-            headers: { "Content-Type": serialization.contentType },
-          });
-        }
-
-        const quads = new TextDecoder().decode(blobData);
-        const parser = new Parser({ format: "N-Quads" });
-        const store = new Store();
-        store.addQuads(parser.parse(quads));
-
-        const writer = new Writer({ format: serialization.format });
-        writer.addQuads(store.getQuads(null, null, null, null));
-
-        return new Promise((resolve, reject) => {
-          writer.end(async (error, result) => {
-            if (error) reject(error);
-            else {
-              const response = new Response(result, {
-                headers: { "Content-Type": serialization.contentType },
-              });
-              resolve(await handleETagRequest(ctx.request, response));
-            }
-          });
-        });
       },
     )
     .post(
       "/worlds/:world/import",
       async (ctx) => {
-        const worldParam = ctx.params?.pathname.groups.world;
-        if (!worldParam) {
+        const worldId = ctx.params?.pathname.groups.world;
+        if (!worldId) {
           return ErrorResponse.BadRequest("World ID required");
         }
 
@@ -152,71 +91,16 @@ export default (appContext: ServerContext) => {
           return ErrorResponse.Unauthorized();
         }
 
-        const world = await worldsService.getById(worldParam);
-        if (!world || world.deleted_at != null) {
-          return ErrorResponse.NotFound("World not found");
-        }
-
+        const body = await ctx.request.arrayBuffer();
         const contentType = ctx.request.headers.get("Content-Type") || "";
-        const serialization = getSerializationByContentType(contentType) ??
-          DEFAULT_SERIALIZATION;
-        const format = serialization.format;
+        const format = contentType.includes("turtle") ? "turtle" : "n-quads";
 
-        const body = await ctx.request.text();
-        const parser = new Parser({ format });
-        const store = new Store();
         try {
-          store.addQuads(parser.parse(body));
+          await worlds.import(worldId, body, { format: format as RdfFormat });
+          return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
-          return ErrorResponse.BadRequest(
-            `Invalid RDF data: ${
-              error instanceof Error ? error.message : String(error)
-            }`,
-          );
+          return ErrorResponse.BadRequest(error instanceof Error ? error.message : String(error));
         }
-
-        const writer = new Writer({ format: "N-Quads" });
-        writer.addQuads(store.getQuads(null, null, null, null));
-
-        return new Promise((resolve, reject) => {
-          writer.end(async (error, result) => {
-            if (error) reject(error);
-            else {
-              try {
-                const managed = await appContext.libsql.manager.get(world.id);
-                const blobsService = new BlobsService(managed.database);
-                const now = Date.now();
-
-                // Generate and commit patches for the search index
-                await handlePatch(
-                  managed.database,
-                  appContext.embeddings,
-                  [{
-                    insertions: store.getQuads(null, null, null, null),
-                    deletions: [],
-                  }],
-                );
-
-                await blobsService.set(new TextEncoder().encode(result), now);
-                await worldsService.update(world.id, { updated_at: now });
-
-                const logsService = new LogsService(managed.database);
-                await logsService.add({
-                  id: ulid(),
-                  world_id: world.id,
-                  timestamp: now,
-                  level: "info",
-                  message: "World data imported",
-                  metadata: { triples: store.size },
-                });
-
-                resolve(new Response(null, { status: STATUS_CODE.NoContent }));
-              } catch (e) {
-                reject(e);
-              }
-            }
-          });
-        });
       },
     )
     .get(
@@ -240,23 +124,9 @@ export default (appContext: ServerContext) => {
         }
 
         const { page, pageSize } = paginationResult.data;
-        const offset = (page - 1) * pageSize;
+        const results = await worlds.list({ page, pageSize });
 
-        const rows = await worldsService.listAll(pageSize, offset);
-
-        const response = Response.json(
-          rows.map((world: WorldRow) => ({
-            id: world.id,
-            slug: world.slug,
-            label: world.label,
-            description: world.description,
-            createdAt: world.created_at,
-            updatedAt: world.updated_at,
-            deletedAt: world.deleted_at,
-          })),
-        );
-
-        return await handleETagRequest(ctx.request, response);
+        return await handleETagRequest(ctx.request, Response.json(results));
       },
     )
     .post(
@@ -273,62 +143,25 @@ export default (appContext: ServerContext) => {
           return ErrorResponse.BadRequest("Invalid parameters");
         }
 
-        const data = parseResult.data;
-        const id = (body as { id?: string }).id ?? ulid();
-        const { slug, label, description } = data;
-
-        // Check if slug already exists globally
-        const existingBySlug = await worldsService.getBySlug(slug);
-        if (existingBySlug) {
-          return ErrorResponse.Conflict("World slug already exists");
+        try {
+          const world = await worlds.create(parseResult.data);
+          return Response.json(world, { status: STATUS_CODE.Created });
+        } catch (error) {
+          return ErrorResponse.Conflict(error instanceof Error ? error.message : String(error));
         }
-
-        const now = Date.now();
-        const world: WorldTable = {
-          id,
-          slug,
-          label,
-          description: description ?? null,
-          db_hostname: null,
-          db_token: null,
-          created_at: now,
-          updated_at: now,
-          deleted_at: null,
-        };
-
-        await worldsService.insert(world);
-        await appContext.libsql.manager.create(id);
-
-        return Response.json(
-          worldSchema.parse({
-            id: world.id,
-            slug: world.slug,
-            label: world.label,
-            description: world.description,
-            createdAt: world.created_at,
-            updatedAt: world.updated_at,
-            deletedAt: world.deleted_at,
-          }),
-          { status: STATUS_CODE.Created },
-        );
       },
     )
     .put(
       "/worlds/:world",
       async (ctx) => {
-        const worldParam = ctx.params?.pathname.groups.world;
-        if (!worldParam) {
+        const worldId = ctx.params?.pathname.groups.world;
+        if (!worldId) {
           return ErrorResponse.BadRequest("World ID required");
         }
 
         const authorized = authorizeRequest(appContext, ctx.request);
         if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
-        }
-
-        const world = await worldsService.getById(worldParam);
-        if (!world || world.deleted_at != null) {
-          return ErrorResponse.NotFound("World not found");
         }
 
         let body: unknown;
@@ -343,24 +176,19 @@ export default (appContext: ServerContext) => {
           return ErrorResponse.BadRequest("Invalid parameters");
         }
 
-        const data = updateResult.data;
-        await worldsService.update(world.id, {
-          slug: data.slug ?? world.slug,
-          label: data.label ?? world.label,
-          description: data.description !== undefined
-            ? data.description
-            : world.description,
-          updated_at: Date.now(),
-        });
-
-        return new Response(null, { status: STATUS_CODE.NoContent });
+        try {
+          await worlds.update(worldId, updateResult.data);
+          return new Response(null, { status: STATUS_CODE.NoContent });
+        } catch (error) {
+          return ErrorResponse.NotFound(error instanceof Error ? error.message : String(error));
+        }
       },
     )
     .delete(
       "/worlds/:world",
       async (ctx) => {
-        const worldParam = ctx.params?.pathname.groups.world;
-        if (!worldParam) {
+        const worldId = ctx.params?.pathname.groups.world;
+        if (!worldId) {
           return ErrorResponse.BadRequest("World ID required");
         }
 
@@ -369,17 +197,12 @@ export default (appContext: ServerContext) => {
           return ErrorResponse.Unauthorized();
         }
 
-        const world = await worldsService.getById(worldParam);
-        if (!world || world.deleted_at != null) {
-          return ErrorResponse.NotFound("World not found");
+        try {
+          await worlds.delete(worldId);
+          return new Response(null, { status: STATUS_CODE.NoContent });
+        } catch (error) {
+          return ErrorResponse.NotFound(error instanceof Error ? error.message : String(error));
         }
-
-        // Perform soft delete
-        await worldsService.update(world.id, {
-          deleted_at: Date.now(),
-        });
-
-        return new Response(null, { status: STATUS_CODE.NoContent });
       },
     );
 };

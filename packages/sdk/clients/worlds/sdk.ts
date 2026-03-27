@@ -10,10 +10,12 @@ import type {
 } from "./schema.ts";
 import { parseError } from "#/utils.ts";
 
+import type { Worlds } from "./types.ts";
+
 /**
- * Worlds is a TypeScript SDK for the Worlds API.
+ * WorldClient is a TypeScript SDK client for the Worlds API.
  */
-export class Worlds {
+export class WorldClient implements Worlds {
   private readonly fetch: typeof fetch;
 
   public constructor(
@@ -331,6 +333,35 @@ export class Worlds {
     }
 
     return await response.arrayBuffer();
+  }
+
+  /**
+   * getServiceDescription gets the SPARQL service description.
+   */
+  public async getServiceDescription(
+    id: string,
+    options: { endpointUrl: string; format?: RdfFormat },
+  ): Promise<string> {
+    const url = new URL(
+      `${this.options.baseUrl}/worlds/${id}/sparql`,
+    );
+    if (options.format) {
+      url.searchParams.set("format", options.format);
+    }
+
+    const response = await this.fetch(url, {
+      headers: {
+        Authorization: `Bearer ${this.options.apiKey}`,
+        Accept: options.format === "turtle" ? "text/turtle" : "application/n-quads",
+      },
+    });
+
+    if (!response.ok) {
+      const errorMessage = await parseError(response);
+      throw new Error(`Failed to get service description: ${errorMessage}`);
+    }
+
+    return await response.text();
   }
 
   /**
