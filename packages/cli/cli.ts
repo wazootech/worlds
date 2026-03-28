@@ -5,13 +5,13 @@ import type { ModelMessage } from "ai";
 import { stepCountIs, streamText } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createTools } from "@wazoo/worlds-ai-sdk";
-import type { RdfFormat, WorldsSdk } from "@wazoo/worlds-sdk";
+import type { RdfFormat, Worlds } from "@wazoo/worlds-sdk";
 
 /**
  * WorldsCli is a command line application for the Worlds API.
  */
 export class WorldsCli {
-  public constructor(private readonly sdk: WorldsSdk) {}
+  public constructor(private readonly sdk: Worlds) {}
 
   public static logo() {
     const renderResult = render("Worlds CLI", {
@@ -60,7 +60,7 @@ export class WorldsCli {
         "",
       );
 
-    const world = await this.sdk.worlds.create({
+    const world = await this.sdk.create({
       slug,
       label: parsed.label,
       description: parsed.description,
@@ -89,7 +89,7 @@ export class WorldsCli {
       );
       return;
     }
-    await this.sdk.worlds.update(worldId, {
+    await this.sdk.update(worldId, {
       slug: parsed.slug,
       label: parsed.label,
       description: parsed.description,
@@ -114,7 +114,7 @@ export class WorldsCli {
       console.error("Usage: worlds delete <worldId>");
       return;
     }
-    await this.sdk.worlds.delete(worldId);
+    await this.sdk.delete(worldId);
     console.log(`Deleted world ${worldId}`);
   }
 
@@ -132,7 +132,7 @@ export class WorldsCli {
       );
       return;
     }
-    const worlds = await this.sdk.worlds.list({
+    const worlds = await this.sdk.list({
       page: parsed.page ? parseInt(parsed.page as string) : undefined,
       pageSize: parsed.pageSize
         ? parseInt(parsed.pageSize as string)
@@ -158,7 +158,7 @@ export class WorldsCli {
       console.error("Usage: worlds get <worldId>");
       return;
     }
-    const world = await this.sdk.worlds.get(worldId);
+    const world = await this.sdk.get(worldId);
     console.log(JSON.stringify(world, null, 2));
   }
 
@@ -191,7 +191,7 @@ export class WorldsCli {
       );
       return;
     }
-    const results = await this.sdk.worlds.search(worldId, query, {
+    const results = await this.sdk.search(worldId, query, {
       limit: parsed.limit ? parseInt(parsed.limit as string) : undefined,
       subjects: parsed.subjects,
       predicates: parsed.predicates,
@@ -225,7 +225,7 @@ export class WorldsCli {
       // Not a file, use as query string
     }
 
-    const results = await this.sdk.worlds.sparql(worldId, query);
+    const results = await this.sdk.sparql(worldId, query);
     console.log(JSON.stringify(results, null, 2));
   }
 
@@ -252,7 +252,7 @@ export class WorldsCli {
       return;
     }
     const data = await Deno.readFile(path);
-    await this.sdk.worlds.import(worldId, data.buffer as ArrayBuffer, {
+    await this.sdk.import(worldId, data.buffer as ArrayBuffer, {
       format: parsed.format as RdfFormat,
     });
     console.log(`Imported data into world ${worldId}`);
@@ -279,7 +279,7 @@ export class WorldsCli {
       );
       return;
     }
-    const buffer = await this.sdk.worlds.export(worldId, {
+    const buffer = await this.sdk.export(worldId, {
       format: parsed.format as RdfFormat,
     });
     await Deno.stdout.write(new Uint8Array(buffer));
@@ -326,7 +326,7 @@ export class WorldsCli {
       return;
     }
 
-    const world = await this.sdk.worlds.get(parsed.worldId);
+    const world = await this.sdk.get(parsed.worldId);
     if (!world) {
       console.error(`World "${parsed.worldId}" not found.`);
       return;

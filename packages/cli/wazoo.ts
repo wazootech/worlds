@@ -1,14 +1,14 @@
-import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { Worlds } from "@wazoo/worlds-sdk";
 import { createServer, createServerContext } from "@wazoo/worlds-server";
 
 /**
  * createWazoo creates a new Wazoo SDK.
  */
-export async function createWazoo(): Promise<{ sdk: WorldsSdk }> {
+export async function createWazoo(): Promise<{ sdk: Worlds }> {
   const remoteBaseUrl = Deno.env.get("WORLDS_BASE_URL");
   const remoteApiKey = Deno.env.get("WORLDS_API_KEY");
   if (remoteBaseUrl && remoteApiKey) {
-    const sdk = new WorldsSdk({
+    const sdk = new Worlds({
       apiKey: remoteApiKey,
       baseUrl: remoteBaseUrl,
     });
@@ -35,10 +35,11 @@ export async function createWazoo(): Promise<{ sdk: WorldsSdk }> {
   });
 
   const server = createServer(serverContext);
-  const sdk = new WorldsSdk({
+  const sdk = new Worlds({
     apiKey: localApiKey,
     baseUrl: "http://localhost",
-    fetch: (input, init) => server.fetch(new Request(input, init)),
+    fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+      server.fetch(new Request(input, init)),
   });
 
   return { sdk };

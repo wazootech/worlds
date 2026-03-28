@@ -21,7 +21,7 @@ export class LogsRepository {
         log.timestamp,
         log.level.toUpperCase(),
         log.message,
-        log.metadata ? JSON.stringify(log.metadata) : null,
+        log.metadata ? JSON.stringify(log.metadata) : (null as string | null),
       ],
     });
   }

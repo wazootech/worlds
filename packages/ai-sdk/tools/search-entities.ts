@@ -74,7 +74,7 @@ export function createSearchEntitiesTool(
     outputSchema: searchEntitiesOutputSchema,
     execute: async (input: SearchEntitiesInput) => {
       const { source, query, types, limit = 10 } = input;
-      const results = await sdk.worlds.search(source, query, {
+      const results = await sdk.search(source, query, {
         limit,
         types,
       });

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { WorldsSdk } from "@wazoo/worlds-sdk";
+import type { Worlds } from "@wazoo/worlds-sdk";
 import { type EntitySchema, entitySchema } from "./schema.ts";
 
 /**
@@ -81,10 +81,10 @@ const terms = {
  * discoverSchema discovers classes and properties.
  */
 export async function discoverSchema(
-  sdk: WorldsSdk,
+  sdk: Worlds,
   { source, referenceText, limit = 10 }: DiscoverSchemaInput,
 ): Promise<DiscoverSchemaOutput> {
-  const searchResults = await sdk.worlds.search(source, referenceText, {
+  const searchResults = await sdk.search(source, referenceText, {
     limit: limit * 5, // Fetch more candidates to ensure we get enough unique subjects
     types: [
       terms.rdfs.Class,
@@ -110,7 +110,7 @@ export async function discoverSchema(
 
   // Batch hydrate with one SPARQL query
   const subjectsValues = subjectsArray.map((s) => `<${s}>`).join(" ");
-  const output = await sdk.worlds.sparql(
+  const output = await sdk.sparql(
     source,
     `
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

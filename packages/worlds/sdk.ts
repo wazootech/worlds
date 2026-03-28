@@ -19,7 +19,15 @@ export class Worlds implements WorldsInterface {
   private readonly engine: WorldsInterface;
 
   public constructor(options: WorldsOptions) {
-    this.engine = options.engine ?? new RemoteWorlds(options);
+    if (options.engine) {
+      this.engine = options.engine;
+    } else if (options.baseUrl && options.apiKey) {
+      this.engine = new RemoteWorlds(
+        options as WorldsOptions & { baseUrl: string; apiKey: string },
+      );
+    } else {
+      throw new Error("Either engine or baseUrl/apiKey must be provided");
+    }
   }
 
   public list(options?: {

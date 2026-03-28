@@ -1,4 +1,4 @@
-import type { Source, WorldsSdk } from "@wazoo/worlds-sdk";
+import type { Source, Worlds } from "@wazoo/worlds-sdk";
 import type {
   DisambiguateEntitiesInput,
   DisambiguateEntitiesOutput,
@@ -11,7 +11,7 @@ export interface CreateToolsOptions {
   /**
    * sdk is the WorldsSdk instance to use for the tools.
    */
-  sdk: WorldsSdk;
+  sdk: Worlds;
 
   /**
    * sources is the list of sources visible to the tools.

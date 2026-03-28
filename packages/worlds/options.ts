@@ -12,12 +12,12 @@ export interface WorldsOptions {
   /**
    * baseUrl is the base URL of the Worlds API. It should not include the /v1 suffix.
    */
-  baseUrl: string;
+  baseUrl?: string;
 
   /**
    * apiKey is the API key for the Worlds API.
    */
-  apiKey: string;
+  apiKey?: string;
 
   /**
    * fetch fetches a resource from the network. It returns a `Promise` that

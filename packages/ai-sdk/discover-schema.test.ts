@@ -1,21 +1,21 @@
 import { assert, assertEquals } from "@std/assert";
 import { createServer } from "@wazoo/worlds-server";
 import { createTestContext } from "@wazoo/worlds-server/testing";
-import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { Worlds } from "@wazoo/worlds-sdk";
 import { discoverSchema } from "./discover-schema.ts";
 
 Deno.test("discoverSchema function - Class and Property Discovery", async () => {
   const appContext = await createTestContext();
   const server = await createServer(appContext);
 
-  const sdk = new WorldsSdk({
+  const sdk = new Worlds({
     baseUrl: "http://localhost",
     apiKey: appContext.apiKey!,
     fetch: (url: string | URL | Request, init?: RequestInit) =>
       server.fetch(new Request(url, init)),
   });
 
-  const world = await sdk.worlds.create({
+  const world = await sdk.create({
     slug: "discovery-world",
     label: "Discovery World",
   });
@@ -23,7 +23,7 @@ Deno.test("discoverSchema function - Class and Property Discovery", async () => 
   const worldId = world.id!;
 
   // Insert some schema data
-  await sdk.worlds.sparql(
+  await sdk.sparql(
     worldId,
     `
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

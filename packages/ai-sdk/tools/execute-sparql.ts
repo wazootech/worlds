@@ -61,7 +61,7 @@ export function createExecuteSparqlTool(
         );
       }
 
-      return await sdk.worlds.sparql(source, sparql);
+      return await sdk.sparql(source, sparql);
     },
   });
 }

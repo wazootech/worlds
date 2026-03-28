@@ -34,13 +34,14 @@ export function createValidateRdfTool(
 
       if (worldId && options.sdk) {
         try {
-          const buffer = await options.sdk.worlds.export(worldId, {
+          const buffer = await options.sdk.export(worldId, {
             format: "n-triples",
           });
           const text = new TextDecoder().decode(buffer);
           const parser = new n3.Parser({ format: "N-Triples" });
           const quads = parser.parse(text);
-          contextRdf = quads.map((q) => ({
+          // deno-lint-ignore no-explicit-any
+          contextRdf = quads.map((q: any) => ({
             subject: q.subject.value,
             predicate: q.predicate.value,
             object: q.object.value,
