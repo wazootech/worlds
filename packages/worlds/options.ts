@@ -5,7 +5,7 @@ import type { WorldsInterface } from "./clients/worlds/types.ts";
  */
 export interface WorldsOptions {
   /**
-   * engine is an optional local driver for the Worlds API.
+   * engine is an optional local engine for the Worlds API.
    * If provided, the SDK will use this engine instead of making remote requests.
    */
   engine?: WorldsInterface;

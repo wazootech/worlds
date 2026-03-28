@@ -4,7 +4,7 @@ import type { WorldsInterface } from "./clients/worlds/types.ts";
 
 /**
  * Worlds is the main entry point for the Worlds API SDK.
- * It can act as a local driver or a remote client.
+ * It can act as a local engine or a remote client.
  */
 export class Worlds implements WorldsInterface {
   private readonly engine: WorldsInterface;
