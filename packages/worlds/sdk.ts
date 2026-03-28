@@ -7,53 +7,53 @@ import type { WorldsInterface } from "./clients/worlds/types.ts";
  * It can act as a local driver or a remote client.
  */
 export class Worlds implements WorldsInterface {
-  private readonly driver: WorldsInterface;
+  private readonly engine: WorldsInterface;
 
   public constructor(options: WorldsOptions) {
-    this.driver = options.driver ?? new RemoteWorlds(options as any);
+    this.engine = options.engine ?? new RemoteWorlds(options as any);
   }
 
   public list(params?: any) {
-    return this.driver.list(params);
+    return this.engine.list(params);
   }
 
   public get(id: string) {
-    return this.driver.get(id);
+    return this.engine.get(id);
   }
 
   public create(data: any) {
-    return this.driver.create(data);
+    return this.engine.create(data);
   }
 
   public update(id: string, data: any) {
-    return this.driver.update(id, data);
+    return this.engine.update(id, data);
   }
 
   public delete(id: string) {
-    return this.driver.delete(id);
+    return this.engine.delete(id);
   }
 
   public sparql(id: string, query: string, params?: any) {
-    return this.driver.sparql(id, query, params);
+    return this.engine.sparql(id, query, params);
   }
 
   public search(id: string, query: string, params?: any) {
-    return this.driver.search(id, query, params);
+    return this.engine.search(id, query, params);
   }
 
   public import(id: string, data: any, params?: any) {
-    return this.driver.import(id, data, params);
+    return this.engine.import(id, data, params);
   }
 
   public export(id: string, params?: any) {
-    return this.driver.export(id, params);
+    return this.engine.export(id, params);
   }
 
   public getServiceDescription(id: string, params: any) {
-    return this.driver.getServiceDescription(id, params);
+    return this.engine.getServiceDescription(id, params);
   }
 
   public listLogs(id: string, params?: any) {
-    return this.driver.listLogs(id, params);
+    return this.engine.listLogs(id, params);
   }
 }
