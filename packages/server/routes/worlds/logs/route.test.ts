@@ -5,7 +5,8 @@ import {
   createTestOrganization,
 } from "#/lib/testing/context.ts";
 import createRoute from "./route.ts";
-import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
+import { WorldsRepository } from "#/lib/database/tables/worlds/repository.ts";
+import { LogsRepository } from "#/lib/database/tables/logs/repository.ts";
 
 Deno.test("World Logs API routes", async (t) => {
   const testContext = await createTestContext();
@@ -28,6 +29,16 @@ Deno.test("World Logs API routes", async (t) => {
       deleted_at: null,
     });
     await testContext.libsql.manager.create(worldId);
+
+    const worldManaged = await testContext.libsql.manager.get(worldId);
+    const logsRepository = new LogsRepository(worldManaged.database);
+    await logsRepository.add({
+      id: ulid(),
+      world_id: worldId,
+      message: "test log",
+      level: "info",
+      timestamp: Date.now(),
+    });
 
     const resp = await app.fetch(
       new Request(`http://localhost/worlds/${worldId}/logs`, {

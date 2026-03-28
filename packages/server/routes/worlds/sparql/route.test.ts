@@ -4,7 +4,7 @@ import {
   createTestContext,
   createTestOrganization,
 } from "#/lib/testing/context.ts";
-import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
+import { WorldsRepository } from "#/lib/database/tables/worlds/repository.ts";
 import createRoute from "./route.ts";
 
 Deno.test("SPARQL API routes", async (t) => {

@@ -3,8 +3,8 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import type { Patch } from "./types.ts";
 import { skolemizeQuad } from "./skolem.ts";
 import type { Embeddings } from "#/lib/embeddings/embeddings.ts";
-import { TriplesService } from "#/lib/database/tables/triples/service.ts";
-import { ChunkRepository } from "#/lib/database/tables/chunks/service.ts";
+import { TriplesRepository } from "#/lib/database/tables/triples/repository.ts";
+import { ChunksRepository } from "#/lib/database/tables/chunks/repository.ts";
 
 /**
  * handlePatch handles RDF patches by upserting and deleting triples and chunks.
@@ -14,8 +14,8 @@ export async function handlePatch(
   embeddings: Embeddings,
   patches: Patch[],
 ) {
-  const triplesService = new TriplesService(client);
-  const chunksService = new ChunkRepository(client);
+  const triplesRepository = new TriplesRepository(client);
+  const chunksRepository = new ChunksRepository(client);
 
   try {
     for (const patch of patches) {
@@ -24,7 +24,7 @@ export async function handlePatch(
           const skolemizedStr = await skolemizeQuad(q);
           const tripleId = await hash(skolemizedStr);
 
-          await triplesService.delete(tripleId);
+          await triplesRepository.delete(tripleId);
         }
       }
 
@@ -52,7 +52,7 @@ export async function handlePatch(
           }
 
           // Upsert triple
-          await triplesService.upsert({
+          await triplesRepository.upsert({
             id: tripleId,
             subject,
             predicate,
@@ -85,7 +85,7 @@ export async function handlePatch(
               const chunkId = await hash(
                 `${tripleId}:chunk:${i}`,
               );
-              await chunksService.upsert({
+              await chunksRepository.upsert({
                 id: chunkId,
                 triple_id: tripleId,
                 subject,

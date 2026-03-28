@@ -5,14 +5,17 @@ import {
   createTestContext,
   createTestOrganization,
 } from "#/lib/testing/context.ts";
-import { TriplesService } from "#/lib/database/tables/triples/service.ts";
-import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
-import { ChunkRepository, ChunksService } from "./service.ts";
+import { TriplesRepository } from "#/lib/database/tables/triples/repository.ts";
+import { WorldsRepository } from "#/lib/database/tables/worlds/repository.ts";
+import { ChunksRepository, ChunksSearchRepository } from "./repository.ts";
 
-Deno.test("ChunksService", async (t) => {
+Deno.test("ChunksSearchRepository", async (t) => {
   const testContext = await createTestContext();
   const worldsRepository = new WorldsRepository(testContext.libsql.database);
-  const chunksService = new ChunksService(testContext, worldsRepository);
+  const chunksSearchRepository = new ChunksSearchRepository(
+    testContext,
+    worldsRepository,
+  );
 
   await createTestOrganization(testContext, {
     plan: "free",
@@ -34,10 +37,10 @@ Deno.test("ChunksService", async (t) => {
   await testContext.libsql.manager.create(worldId);
 
   const worldManaged = await testContext.libsql.manager.get(worldId);
-  const triplesService = new TriplesService(worldManaged.database);
+  const triplesRepository = new TriplesRepository(worldManaged.database);
 
   await t.step("search with no results", async () => {
-    const results = await chunksService.search({
+    const results = await chunksSearchRepository.search({
       query: "nonexistent",
       worldId,
     });
@@ -46,7 +49,7 @@ Deno.test("ChunksService", async (t) => {
 
   await t.step("search with results", async () => {
     const tripleId = "t1";
-    await triplesService.upsert({
+    await triplesRepository.upsert({
       id: tripleId,
       subject: "s",
       predicate: "p",
@@ -54,8 +57,8 @@ Deno.test("ChunksService", async (t) => {
       vector: null,
     });
 
-    const chunkRepo = new ChunkRepository(worldManaged.database);
-    await chunkRepo.upsert({
+    const chunksRepository = new ChunksRepository(worldManaged.database);
+    await chunksRepository.upsert({
       id: "c1",
       triple_id: tripleId,
       subject: "s",
@@ -64,7 +67,7 @@ Deno.test("ChunksService", async (t) => {
       vector: new Uint8Array(new Float32Array(768).fill(0).buffer),
     });
 
-    const results = await chunksService.search({
+    const results = await chunksSearchRepository.search({
       query: "apples",
       worldId,
     });

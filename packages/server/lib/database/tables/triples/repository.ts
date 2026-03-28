@@ -2,7 +2,7 @@ import type { Client } from "@libsql/client";
 import { deleteTriples, upsertTriples } from "./queries.sql.ts";
 import type { TripleTableUpsert } from "./schema.ts";
 
-export class TriplesService {
+export class TriplesRepository {
   constructor(private readonly db: Client) {}
 
   async upsert(triple: TripleTableUpsert): Promise<void> {

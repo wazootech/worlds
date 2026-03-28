@@ -5,7 +5,7 @@ import type {
   DatabaseManager,
   ManagedDatabase,
 } from "#/lib/database/manager.ts";
-import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
+import { WorldsRepository } from "#/lib/database/tables/worlds/repository.ts";
 
 import { initializeWorldDatabase } from "#/lib/database/init.ts";
 

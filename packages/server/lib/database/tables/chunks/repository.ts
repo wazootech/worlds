@@ -3,14 +3,14 @@ import type { ServerContext } from "#/context.ts";
 import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { TripleSearchResult } from "@wazoo/worlds-sdk";
 import type { WorldRow } from "#/lib/database/tables/worlds/schema.ts";
-import type { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
+import type { WorldsRepository } from "#/lib/database/tables/worlds/repository.ts";
 import {
   type ChunkTableUpsert,
   type SearchRow,
   searchRowSchema,
 } from "./schema.ts";
 
-export class ChunkRepository {
+export class ChunksRepository {
   constructor(private readonly db: Client) {}
 
   async upsert(chunk: ChunkTableUpsert): Promise<void> {
@@ -38,7 +38,7 @@ export interface SearchParams {
   limit?: number;
 }
 
-export class ChunksService {
+export class ChunksSearchRepository {
   constructor(
     private readonly ctx: ServerContext,
     private readonly worldsRepository: WorldsRepository,

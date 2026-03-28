@@ -7,7 +7,9 @@ import {
 } from "./queries.sql.ts";
 import type { LogsTable, LogsTableInsert } from "./schema.ts";
 
-export class LogsService {
+// TODO: Add JSDoc to each exported symbol.
+
+export class LogsRepository {
   constructor(private readonly db: Client) {}
 
   async add(log: LogsTableInsert): Promise<void> {

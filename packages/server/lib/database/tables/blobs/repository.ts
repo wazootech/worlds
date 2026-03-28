@@ -3,9 +3,9 @@ import { selectBlob, upsertBlob } from "./queries.sql.ts";
 import { type BlobRow, blobSchema } from "./schema.ts";
 
 /**
- * BlobsService handles persistence of the world-scoped N-Quads blob.
+ * BlobsRepository handles persistence of the world-scoped N-Quads blob.
  */
-export class BlobsService {
+export class BlobsRepository {
   constructor(private readonly db: Client) {}
 
   /**

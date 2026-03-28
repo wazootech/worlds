@@ -16,10 +16,10 @@ import {
   worldSchema,
 } from "@wazoo/worlds-sdk";
 import type { ServerContext } from "#/context.ts";
-import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
-import { BlobsService } from "#/lib/database/tables/blobs/service.ts";
-import { LogsService } from "#/lib/database/tables/logs/service.ts";
-import { ChunksService } from "#/lib/database/tables/chunks/service.ts";
+import { WorldsRepository } from "#/lib/database/tables/worlds/repository.ts";
+import { BlobsRepository } from "#/lib/database/tables/blobs/repository.ts";
+import { LogsRepository } from "#/lib/database/tables/logs/repository.ts";
+import { ChunksSearchRepository } from "#/lib/database/tables/chunks/repository.ts";
 import { BatchPatchHandler, handlePatch } from "#/lib/rdf-patch/mod.ts";
 import type { Patch } from "#/lib/rdf-patch/mod.ts";
 import { sparql } from "#/lib/blob/sparql.ts";
@@ -158,8 +158,8 @@ export class LocalWorlds implements WorldsInterface {
         handlePatch(managedWorld.database, this.appContext.embeddings, patches),
     });
 
-    const blobsService = new BlobsService(managedWorld.database);
-    const worldData = await blobsService.get();
+    const blobsRepository = new BlobsRepository(managedWorld.database);
+    const worldData = await blobsRepository.get();
     const blobData = worldData?.blob as unknown as ArrayBuffer;
     const blob = blobData
       ? new Blob([new Uint8Array(blobData)])
@@ -173,11 +173,11 @@ export class LocalWorlds implements WorldsInterface {
       await patchHandler.commit();
 
       const updatedAt = Date.now();
-      await blobsService.set(newData, updatedAt);
+      await blobsRepository.set(newData, updatedAt);
       await this.worldsRepository.update(id, { updated_at: updatedAt });
 
-      const logsService = new LogsService(managedWorld.database);
-      await logsService.add({
+      const logsRepository = new LogsRepository(managedWorld.database);
+      await logsRepository.add({
         id: ulid(),
         world_id: id,
         timestamp: Date.now(),
@@ -189,8 +189,8 @@ export class LocalWorlds implements WorldsInterface {
       return null;
     }
 
-    const logsService = new LogsService(managedWorld.database);
-    await logsService.add({
+    const logsRepository = new LogsRepository(managedWorld.database);
+    await logsRepository.add({
       id: ulid(),
       world_id: id,
       timestamp: Date.now(),
@@ -217,11 +217,11 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error("World not found");
     }
 
-    const chunksService = new ChunksService(
+    const chunksSearchRepository = new ChunksSearchRepository(
       this.appContext,
       this.worldsRepository,
     );
-    const results = await chunksService.search({
+    const results = await chunksSearchRepository.search({
       query,
       world,
       subjects: options?.subjects,
@@ -231,8 +231,8 @@ export class LocalWorlds implements WorldsInterface {
     });
 
     const managed = await this.appContext.libsql.manager.get(id);
-    const logsService = new LogsService(managed.database);
-    await logsService.add({
+    const logsRepository = new LogsRepository(managed.database);
+    await logsRepository.add({
       id: ulid(),
       world_id: id,
       timestamp: Date.now(),
@@ -284,7 +284,7 @@ export class LocalWorlds implements WorldsInterface {
         else {
           try {
             const managed = await this.appContext.libsql.manager.get(id);
-            const blobsService = new BlobsService(managed.database);
+            const blobsRepository = new BlobsRepository(managed.database);
             const now = Date.now();
 
             await handlePatch(
@@ -296,11 +296,11 @@ export class LocalWorlds implements WorldsInterface {
               }],
             );
 
-            await blobsService.set(new TextEncoder().encode(result), now);
+            await blobsRepository.set(new TextEncoder().encode(result), now);
             await this.worldsRepository.update(id, { updated_at: now });
 
-            const logsService = new LogsService(managed.database);
-            await logsService.add({
+            const logsRepository = new LogsRepository(managed.database);
+            await logsRepository.add({
               id: ulid(),
               world_id: id,
               timestamp: now,
@@ -335,8 +335,8 @@ export class LocalWorlds implements WorldsInterface {
     }
 
     const managed = await this.appContext.libsql.manager.get(id);
-    const blobsService = new BlobsService(managed.database);
-    const worldData = await blobsService.get();
+    const blobsRepository = new BlobsRepository(managed.database);
+    const worldData = await blobsRepository.get();
 
     if (!worldData) {
       return new ArrayBuffer(0);
@@ -442,12 +442,12 @@ export class LocalWorlds implements WorldsInterface {
     }
 
     const managed = await this.appContext.libsql.manager.get(id);
-    const logsService = new LogsService(managed.database);
+    const logsRepository = new LogsRepository(managed.database);
 
     const page = options?.page ?? 1;
     const pageSize = options?.pageSize ?? 20;
 
-    const logs = await logsService.listByWorld(
+    const logs = await logsRepository.listByWorld(
       id,
       page,
       pageSize,
