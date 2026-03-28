@@ -6,13 +6,13 @@ import {
   createTestOrganization,
 } from "#/lib/testing/context.ts";
 import { TriplesService } from "#/lib/database/tables/triples/service.ts";
-import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
+import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
 import { ChunkRepository, ChunksService } from "./service.ts";
 
 Deno.test("ChunksService", async (t) => {
   const testContext = await createTestContext();
-  const worldsService = new WorldsService(testContext.libsql.database);
-  const chunksService = new ChunksService(testContext, worldsService);
+  const worldsRepository = new WorldsRepository(testContext.libsql.database);
+  const chunksService = new ChunksService(testContext, worldsRepository);
 
   await createTestOrganization(testContext, {
     plan: "free",
@@ -20,7 +20,7 @@ Deno.test("ChunksService", async (t) => {
 
   const worldId = ulid();
   const now = Date.now();
-  await worldsService.insert({
+  await worldsRepository.insert({
     id: worldId,
     slug: "test-world",
     label: "Test World",
