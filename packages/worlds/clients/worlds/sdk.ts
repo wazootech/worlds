@@ -1,4 +1,4 @@
-import type { WorldsSdkOptions } from "#/options.ts";
+import type { WorldsSdkOptions } from "../../options.ts";
 import type {
   CreateWorldParams,
   ExecuteSparqlOutput,
@@ -8,14 +8,14 @@ import type {
   UpdateWorldParams,
   World,
 } from "./schema.ts";
-import { parseError } from "#/utils.ts";
+import { parseError } from "../../utils.ts";
 
 import type { Worlds } from "./types.ts";
 
 /**
- * WorldClient is a TypeScript SDK client for the Worlds API.
+ * RemoteWorlds is a TypeScript SDK client for the Worlds API.
  */
-export class WorldClient implements Worlds {
+export class RemoteWorlds implements Worlds {
   private readonly fetch: typeof fetch;
 
   public constructor(

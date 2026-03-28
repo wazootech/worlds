@@ -1,5 +1,5 @@
 import type { WorldsSdkOptions } from "./options.ts";
-import { WorldClient } from "./clients/worlds/sdk.ts";
+import { RemoteWorlds } from "./clients/worlds/sdk.ts";
 import type { Worlds } from "./clients/worlds/types.ts";
 
 /**
@@ -9,6 +9,6 @@ export class WorldsSdk {
   public readonly worlds: Worlds;
 
   public constructor(options: WorldsSdkOptions) {
-    this.worlds = new WorldClient(options);
+    this.worlds = new RemoteWorlds(options);
   }
 }

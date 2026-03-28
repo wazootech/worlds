@@ -9,7 +9,7 @@ import {
 } from "./queries.sql.ts";
 import type { WorldRow, WorldTableInsert, WorldTableUpdate } from "./schema.ts";
 
-export class WorldsService {
+export class WorldsRepository {
   constructor(private readonly db: Client) {}
 
   async getById(id: string): Promise<WorldRow | null> {

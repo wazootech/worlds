@@ -1,10 +1,10 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { createTestContext } from "@wazoo/worlds-server/testing";
-import { WorldsCore } from "./core.ts";
+import { LocalWorlds } from "./core.ts";
 
-Deno.test("WorldsCore", async (t) => {
+Deno.test("LocalWorlds", async (t) => {
   const appContext = await createTestContext();
-  const worlds = new WorldsCore(appContext);
+  const worlds = new LocalWorlds(appContext);
 
   let id: string;
 

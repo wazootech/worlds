@@ -5,7 +5,7 @@ import type {
   DatabaseManager,
   ManagedDatabase,
 } from "#/lib/database/manager.ts";
-import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
+import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
 
 import { initializeWorldDatabase } from "#/lib/database/init.ts";
 
@@ -28,8 +28,8 @@ export class FileDatabaseManager implements DatabaseManager {
   }
 
   public async get(id: string): Promise<ManagedDatabase> {
-    const worldsService = new WorldsService(this.database);
-    const world = await worldsService.getById(id);
+    const worldsRepository = new WorldsRepository(this.database);
+    const world = await worldsRepository.getById(id);
     let url = world?.db_hostname;
 
     if (!url) {

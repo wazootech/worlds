@@ -1,7 +1,7 @@
 {
   "workspace": [
     "./packages/server",
-    "./packages/sdk",
+    "./packages/worlds",
     "./packages/ai-sdk",
     "./packages/cli"
   ],

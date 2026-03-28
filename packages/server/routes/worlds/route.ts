@@ -11,10 +11,10 @@ import type { ServerContext } from "#/context.ts";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
 import { handleETagRequest } from "#/lib/http/etag.ts";
 import { negotiateSerialization } from "#/lib/rdf/serialization.ts";
-import { WorldsCore } from "#/lib/worlds/core.ts";
+import { LocalWorlds } from "#/lib/worlds/core.ts";
 
 export default (appContext: ServerContext) => {
-  const worlds = new WorldsCore(appContext);
+  const worlds = new LocalWorlds(appContext);
 
   return new Router()
     .get(

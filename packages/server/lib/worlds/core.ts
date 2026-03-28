@@ -12,7 +12,7 @@ import type {
 } from "@wazoo/worlds-sdk";
 import { worldSchema, executeSparqlOutputSchema, isSparqlUpdate } from "@wazoo/worlds-sdk";
 import type { ServerContext } from "#/context.ts";
-import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
+import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
 import { BlobsService } from "#/lib/database/tables/blobs/service.ts";
 import { LogsService } from "#/lib/database/tables/logs/service.ts";
 import { ChunksService } from "#/lib/database/tables/chunks/service.ts";
@@ -24,13 +24,13 @@ import { getSerializationByFormat, DEFAULT_SERIALIZATION } from "#/lib/rdf/seria
 const { namedNode, quad } = DataFactory;
 
 /**
- * WorldsCore is a pure implementation of the Worlds interface.
+ * LocalWorlds is a pure implementation of the Worlds interface.
  */
-export class WorldsCore implements Worlds {
-  private readonly worldsService: WorldsService;
+export class LocalWorlds implements Worlds {
+  private readonly worldsRepository: WorldsRepository;
 
   constructor(private readonly appContext: ServerContext) {
-    this.worldsService = new WorldsService(appContext.libsql.database);
+    this.worldsRepository = new WorldsRepository(appContext.libsql.database);
   }
 
   async list(options?: { page?: number; pageSize?: number }): Promise<World[]> {
@@ -38,7 +38,7 @@ export class WorldsCore implements Worlds {
     const pageSize = options?.pageSize ?? 20;
     const offset = (page - 1) * pageSize;
 
-    const rows = await this.worldsService.listAll(pageSize, offset);
+    const rows = await this.worldsRepository.listAll(pageSize, offset);
     return rows.map((world) => worldSchema.parse({
       id: world.id,
       slug: world.slug,
@@ -51,7 +51,7 @@ export class WorldsCore implements Worlds {
   }
 
   async get(id: string): Promise<World | null> {
-    const world = await this.worldsService.getById(id);
+    const world = await this.worldsRepository.getById(id);
     if (!world || world.deleted_at != null) {
       return null;
     }
@@ -71,7 +71,7 @@ export class WorldsCore implements Worlds {
     const id = ulid();
     const { slug, label, description } = data;
 
-    const existingBySlug = await this.worldsService.getBySlug(slug);
+    const existingBySlug = await this.worldsRepository.getBySlug(slug);
     if (existingBySlug) {
       throw new Error("World slug already exists");
     }
@@ -89,7 +89,7 @@ export class WorldsCore implements Worlds {
       deleted_at: null,
     };
 
-    await this.worldsService.insert(worldRow);
+    await this.worldsRepository.insert(worldRow);
     await this.appContext.libsql.manager.create(id);
 
     return worldSchema.parse({
@@ -104,12 +104,12 @@ export class WorldsCore implements Worlds {
   }
 
   async update(id: string, data: UpdateWorldParams): Promise<void> {
-    const world = await this.worldsService.getById(id);
+    const world = await this.worldsRepository.getById(id);
     if (!world || world.deleted_at != null) {
       throw new Error("World not found");
     }
 
-    await this.worldsService.update(id, {
+    await this.worldsRepository.update(id, {
       slug: data.slug ?? world.slug,
       label: data.label ?? world.label,
       description: data.description !== undefined ? data.description : world.description,
@@ -118,12 +118,12 @@ export class WorldsCore implements Worlds {
   }
 
   async delete(id: string): Promise<void> {
-    const world = await this.worldsService.getById(id);
+    const world = await this.worldsRepository.getById(id);
     if (!world || world.deleted_at != null) {
       throw new Error("World not found");
     }
 
-    await this.worldsService.update(id, {
+    await this.worldsRepository.update(id, {
       deleted_at: Date.now(),
     });
   }
@@ -136,7 +136,7 @@ export class WorldsCore implements Worlds {
       namedGraphUris?: string[];
     },
   ): Promise<ExecuteSparqlOutput> {
-    const world = await this.worldsService.getById(id);
+    const world = await this.worldsRepository.getById(id);
     if (!world || world.deleted_at != null) {
       throw new Error("World not found");
     }
@@ -163,7 +163,7 @@ export class WorldsCore implements Worlds {
       
       const updatedAt = Date.now();
       await blobsService.set(newData, updatedAt);
-      await this.worldsService.update(id, { updated_at: updatedAt });
+      await this.worldsRepository.update(id, { updated_at: updatedAt });
 
       const logsService = new LogsService(managedWorld.database);
       await logsService.add({
@@ -201,12 +201,12 @@ export class WorldsCore implements Worlds {
       types?: string[];
     },
   ): Promise<TripleSearchResult[]> {
-    const world = await this.worldsService.getById(id);
+    const world = await this.worldsRepository.getById(id);
     if (!world || world.deleted_at != null) {
       throw new Error("World not found");
     }
 
-    const chunksService = new ChunksService(this.appContext, this.worldsService);
+    const chunksService = new ChunksService(this.appContext, this.worldsRepository);
     const results = await chunksService.search({
       query,
       world,
@@ -242,7 +242,7 @@ export class WorldsCore implements Worlds {
       format?: RdfFormat;
     },
   ): Promise<void> {
-    const world = await this.worldsService.getById(id);
+    const world = await this.worldsRepository.getById(id);
     if (!world || world.deleted_at != null) {
       throw new Error("World not found");
     }
@@ -274,7 +274,7 @@ export class WorldsCore implements Worlds {
             );
 
             await blobsService.set(new TextEncoder().encode(result), now);
-            await this.worldsService.update(id, { updated_at: now });
+            await this.worldsRepository.update(id, { updated_at: now });
 
             const logsService = new LogsService(managed.database);
             await logsService.add({
@@ -299,7 +299,7 @@ export class WorldsCore implements Worlds {
     id: string,
     options?: { format?: RdfFormat },
   ): Promise<ArrayBuffer> {
-    const world = await this.worldsService.getById(id);
+    const world = await this.worldsRepository.getById(id);
     if (!world || world.deleted_at != null) {
       throw new Error("World not found");
     }
@@ -405,7 +405,7 @@ export class WorldsCore implements Worlds {
       level?: string;
     },
   ): Promise<Log[]> {
-    const world = await this.worldsService.getById(id);
+    const world = await this.worldsRepository.getById(id);
     if (!world || world.deleted_at != null) {
       throw new Error("World not found");
     }

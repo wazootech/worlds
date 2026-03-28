@@ -3,7 +3,7 @@ import type { ServerContext } from "#/context.ts";
 import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { TripleSearchResult } from "@wazoo/worlds-sdk";
 import type { WorldRow } from "#/lib/database/tables/worlds/schema.ts";
-import type { WorldsService } from "#/lib/database/tables/worlds/service.ts";
+import type { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
 import {
   type ChunkTableUpsert,
   type SearchRow,
@@ -41,7 +41,7 @@ export interface SearchParams {
 export class ChunksService {
   constructor(
     private readonly ctx: ServerContext,
-    private readonly worldsService: WorldsService,
+    private readonly worldsRepository: WorldsRepository,
   ) {}
 
   async search(params: SearchParams): Promise<TripleSearchResult[]> {
@@ -62,7 +62,7 @@ export class ChunksService {
     // 2. Procure world record if not provided
     let world = params.world;
     if (!world && worldId) {
-      world = await this.worldsService.getById(worldId) ?? undefined;
+      world = await this.worldsRepository.getById(worldId) ?? undefined;
     }
 
     if (!this.ctx.libsql.manager) {

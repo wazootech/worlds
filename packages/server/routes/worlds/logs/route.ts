@@ -2,10 +2,10 @@ import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type { ServerContext } from "#/context.ts";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
-import { WorldsCore } from "#/lib/worlds/core.ts";
+import { LocalWorlds } from "#/lib/worlds/core.ts";
 
 export default (appContext: ServerContext) => {
-  const worlds = new WorldsCore(appContext);
+  const worlds = new LocalWorlds(appContext);
 
   return new Router()
     .get(

@@ -4,7 +4,7 @@ import { authorizeRequest } from "#/middleware/auth.ts";
 import { negotiateSerialization } from "#/lib/rdf/serialization.ts";
 import type { ServerContext } from "#/context.ts";
 import { ErrorResponse } from "#/lib/errors/errors.ts";
-import { WorldsCore } from "#/lib/worlds/core.ts";
+import { LocalWorlds } from "#/lib/worlds/core.ts";
 
 /**
  * parseQuery parses the query and dataset parameters from the request.
@@ -37,7 +37,7 @@ async function parseQuery(request: Request) {
 }
 
 export default (appContext: ServerContext) => {
-  const worlds = new WorldsCore(appContext);
+  const worlds = new LocalWorlds(appContext);
 
   return new Router()
     .get("/worlds/:world/sparql", async (ctx) => {
