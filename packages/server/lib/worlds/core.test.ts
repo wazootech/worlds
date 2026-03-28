@@ -1,4 +1,5 @@
 import { assertEquals, assertExists } from "@std/assert";
+import type { SparqlSelectResults } from "@wazoo/worlds-sdk";
 import { createTestContext } from "@wazoo/worlds-server/testing";
 import { LocalWorlds } from "./core.ts";
 
@@ -27,7 +28,7 @@ Deno.test("LocalWorlds", async (t) => {
 
   await t.step("list worlds", async () => {
     const list = await worlds.list({ page: 1, pageSize: 10 });
-    assertExists(list.find(w => w.id === id));
+    assertExists(list.find((w) => w.id === id));
   });
 
   await t.step("update world", async () => {
@@ -40,21 +41,30 @@ Deno.test("LocalWorlds", async (t) => {
 
   await t.step("sparql query/update", async () => {
     // Insert
-    await worlds.sparql(id, `
+    await worlds.sparql(
+      id,
+      `
       INSERT DATA { <http://example.org/s> <http://example.org/p> "Core Value" . }
-    `);
+    `,
+    );
 
     // Query
-    const result = await worlds.sparql(id, `
+    const result = await worlds.sparql(
+      id,
+      `
       SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }
-    `);
-    
+    `,
+    );
+
     // Type check if it's select result
     if (result && "results" in result) {
-        const selectResult = result as any;
-        assertEquals(selectResult.results.bindings[0].o.value, "Core Value");
+      const selectResult = result as SparqlSelectResults;
+      assertEquals(
+        selectResult.results.bindings[0].o.value,
+        "Core Value",
+      );
     } else {
-        throw new Error("Expected SELECT result");
+      throw new Error("Expected SELECT result");
     }
   });
 

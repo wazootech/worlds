@@ -23,10 +23,16 @@ export default (appContext: ServerContext) => {
         const level = url.searchParams.get("level")?.toLowerCase();
 
         try {
-          const logs = await worlds.listLogs(worldId, { page, pageSize, level });
+          const logs = await worlds.listLogs(worldId, {
+            page,
+            pageSize,
+            level,
+          });
           return Response.json(logs);
         } catch (error) {
-          return ErrorResponse.NotFound(error instanceof Error ? error.message : "World not found");
+          return ErrorResponse.NotFound(
+            error instanceof Error ? error.message : "World not found",
+          );
         }
       },
     );

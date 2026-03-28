@@ -5,18 +5,18 @@ import {
   createTestOrganization,
 } from "#/lib/testing/context.ts";
 import createRoute from "./route.ts";
-import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
+import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
 
 Deno.test("World Logs API routes", async (t) => {
   const testContext = await createTestContext();
-  const worldsService = new WorldsService(testContext.libsql.database);
+  const worldsRepository = new WorldsRepository(testContext.libsql.database);
   const app = createRoute(testContext);
 
   await t.step("GET /worlds/:world/logs (Admin)", async () => {
     const { apiKey } = await createTestOrganization(testContext);
     const worldId = ulid();
     const now = Date.now();
-    await worldsService.insert({
+    await worldsRepository.insert({
       id: worldId,
       slug: "logs-world-" + worldId,
       label: "Logs World",

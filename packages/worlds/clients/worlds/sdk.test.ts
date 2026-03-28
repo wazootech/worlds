@@ -3,7 +3,6 @@ import { createServer } from "@wazoo/worlds-server";
 import { createTestContext } from "@wazoo/worlds-server/testing";
 import type { SparqlSelectResults } from "./schema.ts";
 import { Worlds } from "../../sdk.ts";
-import type { WorldsInterface } from "./types.ts";
 
 Deno.test("Worlds", async (t) => {
   const appContext = await createTestContext();

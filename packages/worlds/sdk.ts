@@ -1,6 +1,15 @@
 import type { WorldsOptions } from "./options.ts";
 import { RemoteWorlds } from "./clients/worlds/sdk.ts";
 import type { WorldsInterface } from "./clients/worlds/types.ts";
+import type {
+  CreateWorldParams,
+  ExecuteSparqlOutput,
+  Log,
+  RdfFormat,
+  TripleSearchResult,
+  UpdateWorldParams,
+  World,
+} from "./clients/worlds/schema.ts";
 
 /**
  * Worlds is the main entry point for the Worlds API SDK.
@@ -10,50 +19,88 @@ export class Worlds implements WorldsInterface {
   private readonly engine: WorldsInterface;
 
   public constructor(options: WorldsOptions) {
-    this.engine = options.engine ?? new RemoteWorlds(options as any);
+    this.engine = options.engine ?? new RemoteWorlds(options);
   }
 
-  public list(params?: any) {
-    return this.engine.list(params);
+  public list(options?: {
+    page?: number;
+    pageSize?: number;
+  }): Promise<World[]> {
+    return this.engine.list(options);
   }
 
-  public get(id: string) {
+  public get(id: string): Promise<World | null> {
     return this.engine.get(id);
   }
 
-  public create(data: any) {
+  public create(data: CreateWorldParams): Promise<World> {
     return this.engine.create(data);
   }
 
-  public update(id: string, data: any) {
+  public update(id: string, data: UpdateWorldParams): Promise<void> {
     return this.engine.update(id, data);
   }
 
-  public delete(id: string) {
+  public delete(id: string): Promise<void> {
     return this.engine.delete(id);
   }
 
-  public sparql(id: string, query: string, params?: any) {
-    return this.engine.sparql(id, query, params);
+  public sparql(
+    id: string,
+    query: string,
+    options?: {
+      defaultGraphUris?: string[];
+      namedGraphUris?: string[];
+    },
+  ): Promise<ExecuteSparqlOutput> {
+    return this.engine.sparql(id, query, options);
   }
 
-  public search(id: string, query: string, params?: any) {
-    return this.engine.search(id, query, params);
+  public search(
+    id: string,
+    query: string,
+    options?: {
+      limit?: number;
+      subjects?: string[];
+      predicates?: string[];
+      types?: string[];
+    },
+  ): Promise<TripleSearchResult[]> {
+    return this.engine.search(id, query, options);
   }
 
-  public import(id: string, data: any, params?: any) {
-    return this.engine.import(id, data, params);
+  public import(
+    id: string,
+    data: string | ArrayBuffer,
+    options?: {
+      format?: RdfFormat;
+    },
+  ): Promise<void> {
+    return this.engine.import(id, data, options);
   }
 
-  public export(id: string, params?: any) {
-    return this.engine.export(id, params);
+  public export(
+    id: string,
+    options?: { format?: RdfFormat },
+  ): Promise<ArrayBuffer> {
+    return this.engine.export(id, options);
   }
 
-  public getServiceDescription(id: string, params: any) {
-    return this.engine.getServiceDescription(id, params);
+  public getServiceDescription(
+    id: string,
+    options: { endpointUrl: string; format?: RdfFormat },
+  ): Promise<string> {
+    return this.engine.getServiceDescription(id, options);
   }
 
-  public listLogs(id: string, params?: any) {
-    return this.engine.listLogs(id, params);
+  public listLogs(
+    id: string,
+    options?: {
+      page?: number;
+      pageSize?: number;
+      level?: string;
+    },
+  ): Promise<Log[]> {
+    return this.engine.listLogs(id, options);
   }
 }

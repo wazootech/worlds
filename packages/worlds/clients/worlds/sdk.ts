@@ -352,7 +352,9 @@ export class RemoteWorlds implements WorldsInterface {
     const response = await this.fetch(url, {
       headers: {
         Authorization: `Bearer ${this.options.apiKey}`,
-        Accept: options.format === "turtle" ? "text/turtle" : "application/n-quads",
+        Accept: options.format === "turtle"
+          ? "text/turtle"
+          : "application/n-quads",
       },
     });
 

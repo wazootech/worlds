@@ -32,7 +32,9 @@ export default (appContext: ServerContext) => {
         });
         return Response.json(results);
       } catch (error) {
-        return ErrorResponse.NotFound(error instanceof Error ? error.message : "World not found");
+        return ErrorResponse.NotFound(
+          error instanceof Error ? error.message : "World not found",
+        );
       }
     },
   );

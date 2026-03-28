@@ -28,7 +28,10 @@ async function parseQuery(request: Request) {
     } else if (contentType.includes("application/x-www-form-urlencoded")) {
       const formData = await request.formData();
       query = formData.get("query") as string | null;
-    } else if (contentType.includes("application/sparql-query") || contentType.includes("application/sparql-update")) {
+    } else if (
+      contentType.includes("application/sparql-query") ||
+      contentType.includes("application/sparql-update")
+    ) {
       query = await request.text();
     }
   }
@@ -47,7 +50,9 @@ export default (appContext: ServerContext) => {
       const authorized = authorizeRequest(appContext, ctx.request);
       if (!authorized.admin) return ErrorResponse.Unauthorized();
 
-      const { query, defaultGraphUris, namedGraphUris } = await parseQuery(ctx.request);
+      const { query, defaultGraphUris, namedGraphUris } = await parseQuery(
+        ctx.request,
+      );
 
       if (!query) {
         const serialization = negotiateSerialization(ctx.request);
@@ -55,14 +60,23 @@ export default (appContext: ServerContext) => {
           endpointUrl: ctx.request.url,
           format: serialization.format as RdfFormat,
         });
-        return new Response(description, { headers: { "Content-Type": serialization.contentType } });
+        return new Response(description, {
+          headers: { "Content-Type": serialization.contentType },
+        });
       }
 
       try {
-        const result = await worlds.sparql(worldId, query, { defaultGraphUris, namedGraphUris });
-        return Response.json(result, { headers: { "Content-Type": "application/sparql-results+json" } });
+        const result = await worlds.sparql(worldId, query, {
+          defaultGraphUris,
+          namedGraphUris,
+        });
+        return Response.json(result, {
+          headers: { "Content-Type": "application/sparql-results+json" },
+        });
       } catch (error) {
-        return ErrorResponse.BadRequest(error instanceof Error ? error.message : "Query failed");
+        return ErrorResponse.BadRequest(
+          error instanceof Error ? error.message : "Query failed",
+        );
       }
     })
     .post("/worlds/:world/sparql", async (ctx) => {
@@ -72,15 +86,24 @@ export default (appContext: ServerContext) => {
       const authorized = authorizeRequest(appContext, ctx.request);
       if (!authorized.admin) return ErrorResponse.Unauthorized();
 
-      const { query, defaultGraphUris, namedGraphUris } = await parseQuery(ctx.request);
+      const { query, defaultGraphUris, namedGraphUris } = await parseQuery(
+        ctx.request,
+      );
       if (!query) return ErrorResponse.BadRequest("Query required");
 
       try {
-        const result = await worlds.sparql(worldId, query, { defaultGraphUris, namedGraphUris });
+        const result = await worlds.sparql(worldId, query, {
+          defaultGraphUris,
+          namedGraphUris,
+        });
         if (result === null) return new Response(null, { status: 204 });
-        return Response.json(result, { headers: { "Content-Type": "application/sparql-results+json" } });
+        return Response.json(result, {
+          headers: { "Content-Type": "application/sparql-results+json" },
+        });
       } catch (error) {
-        return ErrorResponse.BadRequest(error instanceof Error ? error.message : "Query/update failed");
+        return ErrorResponse.BadRequest(
+          error instanceof Error ? error.message : "Query/update failed",
+        );
       }
     });
 };

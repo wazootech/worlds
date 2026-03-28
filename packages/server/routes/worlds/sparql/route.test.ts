@@ -4,13 +4,13 @@ import {
   createTestContext,
   createTestOrganization,
 } from "#/lib/testing/context.ts";
-import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
+import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
 import createRoute from "./route.ts";
 
 Deno.test("SPARQL API routes", async (t) => {
   const testContext = await createTestContext();
   const app = createRoute(testContext);
-  const worldsService = new WorldsService(testContext.libsql.database);
+  const worldsRepository = new WorldsRepository(testContext.libsql.database);
 
   await t.step(
     "GET /worlds/:world/sparql (Admin)",
@@ -18,7 +18,7 @@ Deno.test("SPARQL API routes", async (t) => {
       const { apiKey } = await createTestOrganization(testContext);
       const worldId = ulid();
       const now = Date.now();
-      await worldsService.insert({
+      await worldsRepository.insert({
         id: worldId,
         slug: "sparql-world-" + worldId,
         label: "SPARQL World",
@@ -51,7 +51,7 @@ Deno.test("SPARQL API routes", async (t) => {
       const { apiKey } = await createTestOrganization(testContext);
       const worldId = ulid();
       const now = Date.now();
-      await worldsService.insert({
+      await worldsRepository.insert({
         id: worldId,
         slug: "sd-world-" + worldId,
         label: "SD World",
@@ -105,7 +105,7 @@ Deno.test("SPARQL API routes", async (t) => {
       const { apiKey } = await createTestOrganization(testContext);
       const worldId = ulid();
       const now = Date.now();
-      await worldsService.insert({
+      await worldsRepository.insert({
         id: worldId,
         slug: "nt-world-" + worldId,
         label: "NT World",
@@ -153,9 +153,9 @@ Deno.test("SPARQL API routes", async (t) => {
       const { apiKey } = await createTestOrganization(testContext);
       const worldId = ulid();
       const now = Date.now();
-      await worldsService.insert({
+      await worldsRepository.insert({
         id: worldId,
-        slug: "weighted-world-" + worldId,
+        slug: "post-sd-world-" + worldId,
         label: "Weighted World",
         description: null,
         db_hostname: null,

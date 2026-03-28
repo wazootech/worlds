@@ -1,25 +1,32 @@
 import { ulid } from "@std/ulid/ulid";
-import { Parser, Store, Writer, DataFactory } from "n3";
-import type { 
-  WorldsInterface, 
-  World, 
-  CreateWorldParams, 
-  UpdateWorldParams, 
-  ExecuteSparqlOutput, 
-  TripleSearchResult, 
-  RdfFormat, 
-  Log 
+import { DataFactory, Parser, Store, Writer } from "n3";
+import type {
+  CreateWorldParams,
+  ExecuteSparqlOutput,
+  Log,
+  RdfFormat,
+  TripleSearchResult,
+  UpdateWorldParams,
+  World,
+  WorldsInterface,
 } from "@wazoo/worlds-sdk";
-import { worldSchema, executeSparqlOutputSchema, isSparqlUpdate } from "@wazoo/worlds-sdk";
+import {
+  executeSparqlOutputSchema,
+  isSparqlUpdate,
+  worldSchema,
+} from "@wazoo/worlds-sdk";
 import type { ServerContext } from "#/context.ts";
 import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
 import { BlobsService } from "#/lib/database/tables/blobs/service.ts";
 import { LogsService } from "#/lib/database/tables/logs/service.ts";
 import { ChunksService } from "#/lib/database/tables/chunks/service.ts";
-import { handlePatch, BatchPatchHandler } from "#/lib/rdf-patch/mod.ts";
+import { BatchPatchHandler, handlePatch } from "#/lib/rdf-patch/mod.ts";
 import type { Patch } from "#/lib/rdf-patch/mod.ts";
 import { sparql } from "#/lib/blob/sparql.ts";
-import { getSerializationByFormat, DEFAULT_SERIALIZATION } from "#/lib/rdf/serialization.ts";
+import {
+  DEFAULT_SERIALIZATION,
+  getSerializationByFormat,
+} from "#/lib/rdf/serialization.ts";
 
 const { namedNode, quad } = DataFactory;
 
@@ -39,15 +46,17 @@ export class LocalWorlds implements WorldsInterface {
     const offset = (page - 1) * pageSize;
 
     const rows = await this.worldsRepository.listAll(pageSize, offset);
-    return rows.map((world) => worldSchema.parse({
-      id: world.id,
-      slug: world.slug,
-      label: world.label,
-      description: world.description,
-      createdAt: world.created_at,
-      updatedAt: world.updated_at,
-      deletedAt: world.deleted_at,
-    }));
+    return rows.map((world) =>
+      worldSchema.parse({
+        id: world.id,
+        slug: world.slug,
+        label: world.label,
+        description: world.description,
+        createdAt: world.created_at,
+        updatedAt: world.updated_at,
+        deletedAt: world.deleted_at,
+      })
+    );
   }
 
   async get(id: string): Promise<World | null> {
@@ -112,7 +121,9 @@ export class LocalWorlds implements WorldsInterface {
     await this.worldsRepository.update(id, {
       slug: data.slug ?? world.slug,
       label: data.label ?? world.label,
-      description: data.description !== undefined ? data.description : world.description,
+      description: data.description !== undefined
+        ? data.description
+        : world.description,
       updated_at: Date.now(),
     });
   }
@@ -160,7 +171,7 @@ export class LocalWorlds implements WorldsInterface {
     if (isUpdate) {
       const newData = new Uint8Array(await newBlob.arrayBuffer());
       await patchHandler.commit();
-      
+
       const updatedAt = Date.now();
       await blobsService.set(newData, updatedAt);
       await this.worldsRepository.update(id, { updated_at: updatedAt });
@@ -206,7 +217,10 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error("World not found");
     }
 
-    const chunksService = new ChunksService(this.appContext, this.worldsRepository);
+    const chunksService = new ChunksService(
+      this.appContext,
+      this.worldsRepository,
+    );
     const results = await chunksService.search({
       query,
       world,
@@ -247,10 +261,16 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error("World not found");
     }
 
-    const serialization = options?.format ? getSerializationByFormat(options.format) : DEFAULT_SERIALIZATION;
-    if (!serialization) throw new Error(`Unsupported format: ${options?.format}`);
+    const serialization = options?.format
+      ? getSerializationByFormat(options.format)
+      : DEFAULT_SERIALIZATION;
+    if (!serialization) {
+      throw new Error(`Unsupported format: ${options?.format}`);
+    }
 
-    const body = typeof data === "string" ? data : new TextDecoder().decode(data);
+    const body = typeof data === "string"
+      ? data
+      : new TextDecoder().decode(data);
     const parser = new Parser({ format: serialization.format });
     const store = new Store();
     store.addQuads(parser.parse(body));
@@ -270,7 +290,10 @@ export class LocalWorlds implements WorldsInterface {
             await handlePatch(
               managed.database,
               this.appContext.embeddings,
-              [{ insertions: store.getQuads(null, null, null, null), deletions: [] }],
+              [{
+                insertions: store.getQuads(null, null, null, null),
+                deletions: [],
+              }],
             );
 
             await blobsService.set(new TextEncoder().encode(result), now);
@@ -304,8 +327,12 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error("World not found");
     }
 
-    const serialization = options?.format ? getSerializationByFormat(options.format) : DEFAULT_SERIALIZATION;
-    if (!serialization) throw new Error(`Unsupported format: ${options?.format}`);
+    const serialization = options?.format
+      ? getSerializationByFormat(options.format)
+      : DEFAULT_SERIALIZATION;
+    if (!serialization) {
+      throw new Error(`Unsupported format: ${options?.format}`);
+    }
 
     const managed = await this.appContext.libsql.manager.get(id);
     const blobsService = new BlobsService(managed.database);
@@ -340,8 +367,12 @@ export class LocalWorlds implements WorldsInterface {
     _id: string,
     options: { endpointUrl: string; format?: RdfFormat },
   ): Promise<string> {
-    const serialization = options.format ? getSerializationByFormat(options.format) : DEFAULT_SERIALIZATION;
-    if (!serialization) throw new Error(`Unsupported format: ${options.format}`);
+    const serialization = options.format
+      ? getSerializationByFormat(options.format)
+      : DEFAULT_SERIALIZATION;
+    if (!serialization) {
+      throw new Error(`Unsupported format: ${options.format}`);
+    }
 
     return new Promise((resolve, reject) => {
       const writer = new Writer({ format: serialization.format });

@@ -3,9 +3,8 @@ import { Router } from "@fartlabs/rt";
 import {
   createWorldParamsSchema,
   paginationParamsSchema,
-  updateWorldParamsSchema,
   type RdfFormat,
-  type WorldsInterface,
+  updateWorldParamsSchema,
 } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type { ServerContext } from "#/context.ts";
@@ -59,7 +58,9 @@ export default (appContext: ServerContext) => {
         if (formatParam) {
           serialization = {
             format: formatParam,
-            contentType: formatParam === "turtle" ? "text/turtle" : "application/n-quads",
+            contentType: formatParam === "turtle"
+              ? "text/turtle"
+              : "application/n-quads",
           };
         } else {
           const negotiated = negotiateSerialization(ctx.request, "n-quads");
@@ -70,12 +71,19 @@ export default (appContext: ServerContext) => {
         }
 
         try {
-          const buffer = await worlds.export(worldId, { format: serialization.format });
-          return await handleETagRequest(ctx.request, new Response(buffer, {
-            headers: { "Content-Type": serialization.contentType },
-          }));
+          const buffer = await worlds.export(worldId, {
+            format: serialization.format,
+          });
+          return await handleETagRequest(
+            ctx.request,
+            new Response(buffer, {
+              headers: { "Content-Type": serialization.contentType },
+            }),
+          );
         } catch (error) {
-          return ErrorResponse.BadRequest(error instanceof Error ? error.message : String(error));
+          return ErrorResponse.BadRequest(
+            error instanceof Error ? error.message : String(error),
+          );
         }
       },
     )
@@ -100,7 +108,9 @@ export default (appContext: ServerContext) => {
           await worlds.import(worldId, body, { format: format as RdfFormat });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
-          return ErrorResponse.BadRequest(error instanceof Error ? error.message : String(error));
+          return ErrorResponse.BadRequest(
+            error instanceof Error ? error.message : String(error),
+          );
         }
       },
     )
@@ -148,7 +158,9 @@ export default (appContext: ServerContext) => {
           const world = await worlds.create(parseResult.data);
           return Response.json(world, { status: STATUS_CODE.Created });
         } catch (error) {
-          return ErrorResponse.Conflict(error instanceof Error ? error.message : String(error));
+          return ErrorResponse.Conflict(
+            error instanceof Error ? error.message : String(error),
+          );
         }
       },
     )
@@ -181,7 +193,9 @@ export default (appContext: ServerContext) => {
           await worlds.update(worldId, updateResult.data);
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
-          return ErrorResponse.NotFound(error instanceof Error ? error.message : String(error));
+          return ErrorResponse.NotFound(
+            error instanceof Error ? error.message : String(error),
+          );
         }
       },
     )
@@ -202,7 +216,9 @@ export default (appContext: ServerContext) => {
           await worlds.delete(worldId);
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
-          return ErrorResponse.NotFound(error instanceof Error ? error.message : String(error));
+          return ErrorResponse.NotFound(
+            error instanceof Error ? error.message : String(error),
+          );
         }
       },
     );
