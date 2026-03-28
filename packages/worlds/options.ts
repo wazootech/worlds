@@ -1,7 +1,14 @@
+import type { WorldsInterface } from "./clients/worlds/types.ts";
+
 /**
- * WorldsSdkOptions are the options for the Worlds API SDK.
+ * WorldsOptions are the options for the Worlds API SDK.
  */
-export interface WorldsSdkOptions {
+export interface WorldsOptions {
+  /**
+   * driver is an optional local driver for the Worlds API.
+   * If provided, the SDK will use this driver instead of making remote requests.
+   */
+  driver?: WorldsInterface;
   /**
    * baseUrl is the base URL of the Worlds API. It should not include the /v1 suffix.
    */

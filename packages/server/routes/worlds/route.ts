@@ -5,6 +5,7 @@ import {
   paginationParamsSchema,
   updateWorldParamsSchema,
   type RdfFormat,
+  type WorldsInterface,
 } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type { ServerContext } from "#/context.ts";

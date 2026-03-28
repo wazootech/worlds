@@ -1,7 +1,7 @@
 import { ulid } from "@std/ulid/ulid";
 import { Parser, Store, Writer, DataFactory } from "n3";
 import type { 
-  Worlds, 
+  WorldsInterface, 
   World, 
   CreateWorldParams, 
   UpdateWorldParams, 
@@ -24,9 +24,9 @@ import { getSerializationByFormat, DEFAULT_SERIALIZATION } from "#/lib/rdf/seria
 const { namedNode, quad } = DataFactory;
 
 /**
- * LocalWorlds is a pure implementation of the Worlds interface.
+ * LocalWorlds is a server-side implementation of the Worlds interface.
  */
-export class LocalWorlds implements Worlds {
+export class LocalWorlds implements WorldsInterface {
   private readonly worldsRepository: WorldsRepository;
 
   constructor(private readonly appContext: ServerContext) {

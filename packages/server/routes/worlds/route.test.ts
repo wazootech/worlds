@@ -5,11 +5,11 @@ import {
   createTestOrganization,
 } from "#/lib/testing/context.ts";
 import createRoute from "./route.ts";
-import { WorldsService } from "#/lib/database/tables/worlds/service.ts";
+import { WorldsRepository } from "#/lib/database/tables/worlds/service.ts";
 
 Deno.test("Worlds API routes", async (t) => {
   const testContext = await createTestContext();
-  const worldsService = new WorldsService(testContext.libsql.database);
+  const worldsRepository = new WorldsRepository(testContext.libsql.database);
   const app = createRoute(testContext);
 
   await t.step(
@@ -18,7 +18,7 @@ Deno.test("Worlds API routes", async (t) => {
       const { apiKey } = await createTestOrganization(testContext);
       const worldId = ulid();
       const now = Date.now();
-      await worldsService.insert({
+      await worldsRepository.insert({
         id: worldId,
         slug: "test-world-" + worldId,
         label: "Test World",
@@ -75,7 +75,7 @@ Deno.test("Worlds API routes", async (t) => {
       const { apiKey } = await createTestOrganization(testContext);
       const worldId = ulid();
       const now = Date.now();
-      await worldsService.insert({
+      await worldsRepository.insert({
         id: worldId,
         slug: "export-world-" + worldId,
         label: "Export World",
@@ -111,10 +111,10 @@ Deno.test("Worlds API routes", async (t) => {
       const unprotectedApp = createRoute(unprotectedContext);
       const worldId = ulid();
       const now = Date.now();
-      const unprotectedWorldsService = new WorldsService(
+      const unprotectedWorldsRepository = new WorldsRepository(
         unprotectedContext.libsql.database,
       );
-      await unprotectedWorldsService.insert({
+      await unprotectedWorldsRepository.insert({
         id: worldId,
         slug: "unprotected-world-" + worldId,
         label: "Unprotected World",

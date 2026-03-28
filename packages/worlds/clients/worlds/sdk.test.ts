@@ -2,8 +2,8 @@ import { assert, assertEquals, assertExists } from "@std/assert";
 import { createServer } from "@wazoo/worlds-server";
 import { createTestContext } from "@wazoo/worlds-server/testing";
 import type { SparqlSelectResults } from "./schema.ts";
-import { RemoteWorlds } from "./sdk.ts";
-import type { Worlds } from "./types.ts";
+import { Worlds } from "../../sdk.ts";
+import type { WorldsInterface } from "./types.ts";
 
 Deno.test("RemoteWorlds", async (t) => {
   const appContext = await createTestContext();
@@ -11,7 +11,7 @@ Deno.test("RemoteWorlds", async (t) => {
 
   // Use the admin API key for setup
   // This shows how to use the server.fetch as a fetcher for the SDK
-  const worlds = new RemoteWorlds({
+  const worlds = new Worlds({
     baseUrl: "http://localhost",
     apiKey: appContext.apiKey!,
     fetch: (url: string | URL | Request, init?: RequestInit) =>

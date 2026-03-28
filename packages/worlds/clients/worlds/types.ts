@@ -9,9 +9,9 @@ import type {
 } from "./schema.ts";
 
 /**
- * Worlds is a TypeScript interface for the Worlds API.
+ * WorldsInterface is the interface for the Worlds API.
  */
-export interface Worlds {
+export interface WorldsInterface {
   /**
    * list paginates all worlds.
    */
