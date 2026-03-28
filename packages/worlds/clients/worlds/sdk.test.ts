@@ -5,7 +5,7 @@ import type { SparqlSelectResults } from "./schema.ts";
 import { Worlds } from "../../sdk.ts";
 import type { WorldsInterface } from "./types.ts";
 
-Deno.test("RemoteWorlds", async (t) => {
+Deno.test("Worlds", async (t) => {
   const appContext = await createTestContext();
   const server = await createServer(appContext);
 
