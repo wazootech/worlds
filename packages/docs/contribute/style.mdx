@@ -3,24 +3,22 @@ title: "Style Guide"
 description: "Documentation formatting and structural guidelines"
 ---
 
-The Worlds documentation follows a strict, highly-opinionated set of editorial
-guidelines. These guidelines optimize for **developer momentum, absolute
-technical authority, and zero marketing fluff.**
+The Worlds documentation follows strict editorial guidelines to optimize for
+**developer momentum, technical authority, and zero fluff.**
 
 ## File conventions
 
 - Match existing naming patterns in the directory
-- If there are no existing files or inconsistent file naming patterns, use
-  kebab-case: `getting-started.mdx`, `api-reference.mdx`
+- Use kebab-case (`getting-started.mdx`) for new files or inconsistent
+  directories
 
 ## Architecture & structural integrity
 
 - **Quality over Quantity**: Prioritize concision and ruthless word economy.
-  Every word must earn its keep. Strip stylistic adjectives (e.g., "these
-  logical, structured facts" -> "facts") and reduce verbose transitional phrases
-  (e.g., "transition cleanly into using" -> "switch to"). If a sentence delivers
-  the same technical weight in fewer words, it _must_ be rewritten. Eliminate
-  filler sections and ensure every page earns its place.
+  Every word must earn its keep. Strip stylistic adjectives (e.g., "facts" not
+  "logical facts") and reduce verbose transitional phrases (e.g., "switch to"
+  not "transition cleanly into using"). If a sentence delivers the same
+  technical weight in fewer words, it _must_ be rewritten.
   - _Bad:_ "By combining these logical, structured facts with a search index,
     your agent can use semantic search to instantly find the right item, and
     then transition cleanly into using the RDF graph to reason about everything
@@ -28,128 +26,110 @@ technical authority, and zero marketing fluff.**
   - _Good:_ "By combining facts with a search index, agents can use semantic
     search to instantly find the right item, and then switch to reasoning over
     the RDF graph."
-- **Actionable Documentation**: Publish pages only when they contain actionable
-  technical value. Document what exists, or omit the page entirely.
+- **Actionable Documentation**: Publish pages only when they provide actionable
+  technical value.
 
 ## Writing standards
 
 ### Voice and structure
 
-- **Second-person active voice**: Use "you" ("You can write..." rather than
-  "Developers can write..."). Active voice, direct language.
-- **Positive Phrasing**: State what to do rather than what to avoid. Affirmative
-  framing aids comprehension.
-- **Prescriptive Guidance**: Tell the user exactly what to do. Use definitive
-  verbs like _must_, _requires_, or _use_.
+- **Second-person active voice**: Use "you" ("You can write..." not "Developers
+  can write...").
+- **Positive Phrasing**: State what to do, not what to avoid.
+- **Prescriptive Guidance**: Use definitive verbs like _must_, _requires_, or
+  _use_.
 - **Timeless Documentation**: Write as if the reader is viewing the docs years
   from now.
-- **Global & Inclusive Language**: Write for a global audience. Omit idioms,
-  slang, and exclusionary terms.
-- **Sentence-case headings**: Use "Getting started" and not "Getting Started".
-  Keep headings concise in as few words as possible. Avoid colons.
-- **Sentence-case code titles**: Use "Expandable example" and not "Expandable
-  Example".
+- **Global & Inclusive Language**: Omit idioms, slang, and exclusionary terms.
+- **Sentence-case headings**: Use "Getting started" (not "Getting Started").
+  Keep headings concise; avoid colons.
+- **Sentence-case code titles**: Use "Expandable example".
 - **Lead with context**: Explain what something is before how to use it.
 - **Prerequisites first**: Place prerequisites at the start of procedural
   content.
 - **Keep markers in body**: Keep contextual markers (like dates) in the body
-  text, not the heading.
-- **Contextual examples**: Avoid repeatedly calling back to specific examples or
-  analogies later in a document if they lose context.
+  text.
+- **Contextual examples**: Ensure examples remain self-contained.
 
 ### What to avoid
 
 - **Zero Marketing Adjectives**: Avoid words like "powerful", "seamless",
-  "robust", or "cutting-edge" in reference pages.
+  "robust", or "cutting-edge".
 - **Filler phrases**: Omit transitional cliches like "at its core", "it's
-  important to note", or "in order to". Use direct statements.
-- **Punctuation cliches**: Do not use em dashes (—) as a crutch to connect loose
-  thoughts. Terminate the thought and write a new, concise sentence.
+  important to note", or "in order to".
+- **Punctuation cliches**: Do not use em dashes (—) as a crutch to connect
+  thoughts.
 - **Excessive conjunctions**: Omit "moreover", "furthermore", or "additionally".
 - **Editorializing words**: Omit "obviously", "simply", "just", or "easily".
-  Acknowledging complexity respects the user.
-- **Generic fluff**: Omit generic introductions that don't add value, and
-  concluding summaries that restate what was just said.
-- **Imaginative phrasing**: Avoid anthropomorphic language to describe AI
-  capabilities (e.g., avoid "intuition", "brain", or "thinking"; use
-  "understanding", "model", or "processing").
-- **Idioms and metaphors**: Avoid phrases that obscure technical precision
-  (e.g., avoid "black box", "heavy lifting", or "plumbing"; use literal
-  descriptions).
-- **Single-model references**: Discuss general AI capabilities with future-proof
-  lists (e.g., "Gemini, Claude, or ChatGPT" instead of just "GPT-4").
+- **Generic fluff**: Omit generic introductions and concluding summaries.
+- **Imaginative phrasing**: Avoid anthropomorphic language to describe AI (e.g.,
+  avoid "brain", use "model").
+- **Idioms and metaphors**: Avoid phrases that obscure precision (e.g., "heavy
+  lifting").
+- **Single-model references**: Discuss general capabilities future-proofed by
+  lists (e.g., "Gemini, Claude, or ChatGPT").
 
 ### Formatting
 
-- **Parentheses**: Use sparingly and only for direct definitions, such as
-  acronyms. Otherwise, revise parenthetical thoughts into fluid, formal
-  sentences.
+- **Parentheses**: Use sparingly for direct definitions (acronyms).
 - **Language tags**: All code blocks must have explicit language tags.
 - **Alt text**: All images and media must have descriptive alt text.
-- **Link text**: Use descriptive text for links rather than generic phrases like
-  "click here".
-- **Semantic styling**: Use bold and italics only when they serve the reader's
-  understanding—never use text styling just for decoration.
-- **No decorative emojis**: No decorative formatting or emoji (exception:
-  decorative emojis are permitted in footer sections).
-- **Ordered Lists**: Use ordered or numbered lists specifically for deliberate
-  sequences, step-by-step procedures, or strict hierarchies. Default to
-  unordered bullet points.
+- **Link text**: Use descriptive text for links.
+- **Semantic styling**: Use bold and italics only when they serve comprehension.
+- **No decorative emojis**: No decorative formatting or emoji.
+- **Ordered Lists**: Use ordered lists only for sequences or step-by-step
+  procedures. Default to unordered bullets.
 
 ### Code examples
 
-- **Source-Truth Alignment**: Ensure every method signature and property in code
-  blocks perfectly mirrors the TypeScript definitions.
-- **Keep it simple**: Keep examples practical and simple.
-- **Realistic values**: Use realistic values rather than generic names like
-  "foo" or "bar".
-- **Singular focus**: One clear example is better than multiple variations.
-- **Tested code**: Test that code works before including it.
+- **Source-Truth Alignment**: Method signatures and properties must mirror
+  TypeScript definitions.
+- **Keep it simple**: Keep examples practical and concise.
+- **Realistic values**: Use realistic values (avoid "foo" or "bar").
+- **Tested code**: Verify code works before including it.
 - **Import consistency**: Group types above values in import sections.
 
 ## Development standards
 
-The Worlds project follows a strict, tree-shakeable, and highly-standardized
-development pattern.
-
 ### Exports and namespaces
 
-- **Named exports**: Always use pure named exports. Avoid usingnamespaces or
+- **Named exports**: Always use pure named exports. Avoid namespaces or
   `export * as` in SDK entry points.
 - **Rationale**: Named exports provide explicit boundaries for tree-shaking and
-  better IDE support.
+  IDE support.
 
 ### Imports
 
 - **Import separation**: Mandate separate `import type` and `import`
-  declarations. If a module provides both types and values, they must be
-  imported separately.
+  declarations.
 - **Tree-shaking optimization**: Use the most specific module entry points
-  available (e.g., `import { ulid } from "@std/ulid/ulid"` instead of
-  `import { ulid } from "@std/ulid"`).
-- **Import path strategy**: Use aliases (`#/`, `@/`) for cross-module or core
-  imports; use relative paths (`./`, `../`) for files in the same submodule or
-  tightly coupled assets.
+  (e.g., `import { ulid } from "@std/ulid/ulid"`).
+- **Import path strategy**: Use aliases (`#/`, `@/`) for cross-module core
+  imports; use relative paths (`./`, `../`) for local submodule files.
 
 ### Documentation (JSDoc)
 
-- **Identifier-first descriptions**: Standardize JSDoc descriptions by starting
-  the first sentence with the exact name of the identifier.
+- **Identifier-first descriptions**: Descriptions must start with the exact name
+  of the identifier.
   - _Good:_ `/** signOutAction signs out the current user session. */`
   - _Bad:_ `/** Signs out the current user session. */`
 
-### Spacing and formatting
+### Clean code
 
-- **Property spacing**: Insert a blank line between individual properties and
-  methods in Zod schemas, TypeScript interfaces, and classes.
-- **Rationale**: This spacing improves visual scanning and reduces cognitive
-  load when reading complex schemas.
+- **Early returns**: Use guard clauses to handle error conditions early, keeping
+  the primary logic at the shallowest possible indentation level.
+- **Focused functions**: Functions must have a single responsibility. Decompose
+  functions that are excessively large or handle multiple concerns.
+- **Semantic naming**: Use precise names for all identifiers. Avoid generic
+  terms like `data` or `res` when a domain-specific noun is available.
+- **Immutability**: Prefer `const` over `let`. Avoid reassigning variables to
+  store different states of the same data.
 
 ### Verification
 
 - **Precommit verification**: Always run the relevant precommit task
   (`deno task precommit` or `npm run precommit:console`) before finalizing a
-  commit. All type-checks, lints, and tests must pass with zero warnings.
+  commit.
 
 ## Sources and citations
 
