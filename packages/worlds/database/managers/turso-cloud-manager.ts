@@ -11,7 +11,7 @@ import { initializeWorldDatabase } from "#/database/init.ts";
  */
 export type TursoClient = ReturnType<typeof createTursoClient>;
 
-export class ApiDatabaseManager implements DatabaseManager {
+export class TursoCloudDatabaseManager implements DatabaseManager {
   private readonly initialized = new Set<string>();
 
   public constructor(

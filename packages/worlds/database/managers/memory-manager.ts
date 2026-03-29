@@ -4,8 +4,7 @@ import { initializeWorldDatabase } from "#/database/init.ts";
 
 /**
  * MemoryDatabaseManager implements DatabaseManager using in-memory databases.
- * databases. Intended for tests; each world gets a separate :memory: client
- * stored in a Map.
+ * Intended for tests; each world gets a separate :memory: client.
  */
 export class MemoryDatabaseManager implements DatabaseManager {
   private readonly databases = new Map<string, Client>();

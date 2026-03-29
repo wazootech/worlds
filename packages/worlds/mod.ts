@@ -7,7 +7,7 @@ export * from "./options.ts";
 export * from "./context.ts";
 export * from "./engine-context.ts";
 export { initializeDatabase as initializeServerDatabase } from "./database/init.ts";
-export { MemoryDatabaseManager } from "./database/drivers/memory.ts";
+export { MemoryDatabaseManager } from "./database/managers/memory-manager.ts";
 export { generateBlobFromN3Store, generateN3StoreFromBlob } from "./rdf/n3.ts";
 export * from "./factory.ts";
 export * as database from "./database/mod.ts";

@@ -5,8 +5,8 @@ import { createClient as createTursoClient } from "@tursodatabase/api";
 import { dirname } from "@std/path";
 import type { WorldsContext } from "./context.ts";
 import type { DatabaseManager } from "./database/manager.ts";
-import { ApiDatabaseManager } from "./database/drivers/api.ts";
-import { FileDatabaseManager } from "./database/drivers/file.ts";
+import { TursoCloudDatabaseManager } from "./database/managers/turso-cloud-manager.ts";
+import { FileDatabaseManager } from "./database/managers/file-manager.ts";
 import { initializeDatabase } from "./database/init.ts";
 import type { Embeddings } from "./embeddings/embeddings.ts";
 import { OllamaEmbeddings } from "./embeddings/ollama.ts";
@@ -130,7 +130,7 @@ export async function createWorldsContext(
       token: config.envs.TURSO_API_TOKEN,
       org: config.envs.TURSO_ORG,
     });
-    manager = new ApiDatabaseManager(
+    manager = new TursoCloudDatabaseManager(
       database,
       tursoClient,
       embeddings.dimensions,
