@@ -22,10 +22,11 @@
     "npm:@comunica/query-sparql-rdfjs-lite@^5.1.3": "5.1.3",
     "npm:@comunica/query-sparql-rdfjs-lite@latest": "5.1.3",
     "npm:@langchain/textsplitters@^1.0.1": "1.0.1_@langchain+core@1.1.19",
-    "npm:@libsql/client@*": "0.17.0",
-    "npm:@libsql/client@0.17": "0.17.0",
-    "npm:@libsql/client@latest": "0.17.0",
-    "npm:@openrouter/ai-sdk-provider@^2.2.3": "2.2.3_ai@6.0.103__zod@4.3.6_zod@4.3.6",
+    "npm:@libsql/client@*": "0.17.2",
+    "npm:@libsql/client@0.17": "0.17.2",
+    "npm:@libsql/client@latest": "0.17.2",
+    "npm:@libsql/client@~0.17.2": "0.17.2",
+    "npm:@openrouter/ai-sdk-provider@^2.3.3": "2.3.3_ai@6.0.141__zod@4.3.6_zod@4.3.6",
     "npm:@tensorflow-models/universal-sentence-encoder@*": "1.3.3_@tensorflow+tfjs-converter@3.21.0__@tensorflow+tfjs-core@3.21.0_@tensorflow+tfjs-core@3.21.0",
     "npm:@tensorflow-models/universal-sentence-encoder@^1.3.3": "1.3.3_@tensorflow+tfjs-converter@3.21.0__@tensorflow+tfjs-core@3.21.0_@tensorflow+tfjs-core@3.21.0",
     "npm:@tensorflow/tfjs-backend-wasm@^4.22.0": "4.22.0_@tensorflow+tfjs-core@4.22.0",
@@ -33,10 +34,10 @@
     "npm:@tursodatabase/api@^1.9.2": "1.9.2",
     "npm:@types/n3@^1.26.1": "1.26.1",
     "npm:@types/n3@latest": "1.26.1",
-    "npm:ai@^6.0.101": "6.0.103_zod@4.3.6",
+    "npm:ai@^6.0.141": "6.0.141_zod@4.3.6",
     "npm:cfonts@^3.3.1": "3.3.1",
     "npm:n3@^1.21.0": "1.26.0",
-    "npm:n3@^2.0.1": "2.0.1",
+    "npm:n3@^2.0.3": "2.0.3",
     "npm:ollama-ai-provider@^1.2.0": "1.2.0_zod@4.3.6",
     "npm:rdf-canonize@5": "5.0.0",
     "npm:shacl-engine@^1.1.0": "1.1.0",
@@ -114,11 +115,11 @@
     }
   },
   "npm": {
-    "@ai-sdk/gateway@3.0.57_zod@4.3.6": {
-      "integrity": "sha512-3MugqOlGfCOjlsBGGARJ5Zrioh78X3+rulHCayCMPySYKY+wc8GGFlFCCh4mleWQFShjMyqWT7eeLTuVSj/WSg==",
+    "@ai-sdk/gateway@3.0.83_zod@4.3.6": {
+      "integrity": "sha512-LvlWujbSdEkTBXBLFtF7GS6riXdHhH0O+DpDrCaNQvXeHmSF2jKsOg7JWXiCgygAHM5cWFAO3JYmZp83DjiuBQ==",
       "dependencies": [
         "@ai-sdk/provider@3.0.8",
-        "@ai-sdk/provider-utils@4.0.15_zod@4.3.6",
+        "@ai-sdk/provider-utils@4.0.21_zod@4.3.6",
         "@vercel/oidc",
         "zod"
       ]
@@ -132,8 +133,8 @@
         "zod"
       ]
     },
-    "@ai-sdk/provider-utils@4.0.15_zod@4.3.6": {
-      "integrity": "sha512-8XiKWbemmCbvNN0CLR9u3PQiet4gtEVIrX4zzLxnCj06AwsEDJwJVBbKrEI4t6qE8XRSIvU2irka0dcpziKW6w==",
+    "@ai-sdk/provider-utils@4.0.21_zod@4.3.6": {
+      "integrity": "sha512-MtFUYI1/8mgDvRmaBDjbLJPFFrMG777AvSgyIFQtZHIMzm88R/12vYBBpnk7pfiWLFE1DSZzY4WDYzGbKAcmiw==",
       "dependencies": [
         "@ai-sdk/provider@3.0.8",
         "@standard-schema/spec",
@@ -5014,8 +5015,8 @@
         "js-tiktoken"
       ]
     },
-    "@libsql/client@0.17.0": {
-      "integrity": "sha512-TLjSU9Otdpq0SpKHl1tD1Nc9MKhrsZbCFGot3EbCxRa8m1E5R1mMwoOjKMMM31IyF7fr+hPNHLpYfwbMKNusmg==",
+    "@libsql/client@0.17.2": {
+      "integrity": "sha512-0aw0S3iQMHvOxfRt5j1atoCCPMT3gjsB2PS8/uxSM1DcDn39xqz6RlgSMxtP8I3JsxIXAFuw7S41baLEw0Zi+Q==",
       "dependencies": [
         "@libsql/core",
         "@libsql/hrana-client",
@@ -5024,19 +5025,19 @@
         "promise-limit"
       ]
     },
-    "@libsql/core@0.17.0": {
-      "integrity": "sha512-hnZRnJHiS+nrhHKLGYPoJbc78FE903MSDrFJTbftxo+e52X+E0Y0fHOCVYsKWcg6XgB7BbJYUrz/xEkVTSaipw==",
+    "@libsql/core@0.17.2": {
+      "integrity": "sha512-L8qv12HZ/jRBcETVR3rscP0uHNxh+K3EABSde6scCw7zfOdiLqO3MAkJaeE1WovPsjXzsN/JBoZED4+7EZVT3g==",
       "dependencies": [
         "js-base64"
       ]
     },
-    "@libsql/darwin-arm64@0.5.22": {
-      "integrity": "sha512-4B8ZlX3nIDPndfct7GNe0nI3Yw6ibocEicWdC4fvQbSs/jdq/RC2oCsoJxJ4NzXkvktX70C1J4FcmmoBy069UA==",
+    "@libsql/darwin-arm64@0.5.29": {
+      "integrity": "sha512-K+2RIB1OGFPYQbfay48GakLhqf3ArcbHqPFu7EZiaUcRgFcdw8RoltsMyvbj5ix2fY0HV3Q3Ioa/ByvQdaSM0A==",
       "os": ["darwin"],
       "cpu": ["arm64"]
     },
-    "@libsql/darwin-x64@0.5.22": {
-      "integrity": "sha512-ny2HYWt6lFSIdNFzUFIJ04uiW6finXfMNJ7wypkAD8Pqdm6nAByO+Fdqu8t7sD0sqJGeUCiOg480icjyQ2/8VA==",
+    "@libsql/darwin-x64@0.5.29": {
+      "integrity": "sha512-OtT+KFHsKFy1R5FVadr8FJ2Bb1mghtXTyJkxv0trocq7NuHntSki1eUbxpO5ezJesDvBlqFjnWaYYY516QNLhQ==",
       "os": ["darwin"],
       "cpu": ["x64"]
     },
@@ -5056,46 +5057,46 @@
         "ws"
       ]
     },
-    "@libsql/linux-arm-gnueabihf@0.5.22": {
-      "integrity": "sha512-3Uo3SoDPJe/zBnyZKosziRGtszXaEtv57raWrZIahtQDsjxBVjuzYQinCm9LRCJCUT5t2r5Z5nLDPJi2CwZVoA==",
+    "@libsql/linux-arm-gnueabihf@0.5.29": {
+      "integrity": "sha512-CD4n4zj7SJTHso4nf5cuMoWoMSS7asn5hHygsDuhRl8jjjCTT3yE+xdUvI4J7zsyb53VO5ISh4cwwOtf6k2UhQ==",
       "os": ["linux"],
       "cpu": ["arm"]
     },
-    "@libsql/linux-arm-musleabihf@0.5.22": {
-      "integrity": "sha512-LCsXh07jvSojTNJptT9CowOzwITznD+YFGGW+1XxUr7fS+7/ydUrpDfsMX7UqTqjm7xG17eq86VkWJgHJfvpNg==",
+    "@libsql/linux-arm-musleabihf@0.5.29": {
+      "integrity": "sha512-2Z9qBVpEJV7OeflzIR3+l5yAd4uTOLxklScYTwpZnkm2vDSGlC1PRlueLaufc4EFITkLKXK2MWBpexuNJfMVcg==",
       "os": ["linux"],
       "cpu": ["arm"]
     },
-    "@libsql/linux-arm64-gnu@0.5.22": {
-      "integrity": "sha512-KSdnOMy88c9mpOFKUEzPskSaF3VLflfSUCBwas/pn1/sV3pEhtMF6H8VUCd2rsedwoukeeCSEONqX7LLnQwRMA==",
+    "@libsql/linux-arm64-gnu@0.5.29": {
+      "integrity": "sha512-gURBqaiXIGGwFNEaUj8Ldk7Hps4STtG+31aEidCk5evMMdtsdfL3HPCpvys+ZF/tkOs2MWlRWoSq7SOuCE9k3w==",
       "os": ["linux"],
       "cpu": ["arm64"]
     },
-    "@libsql/linux-arm64-musl@0.5.22": {
-      "integrity": "sha512-mCHSMAsDTLK5YH//lcV3eFEgiR23Ym0U9oEvgZA0667gqRZg/2px+7LshDvErEKv2XZ8ixzw3p1IrBzLQHGSsw==",
+    "@libsql/linux-arm64-musl@0.5.29": {
+      "integrity": "sha512-fwgYZ0H8mUkyVqXZHF3mT/92iIh1N94Owi/f66cPVNsk9BdGKq5gVpoKO+7UxaNzuEH1roJp2QEwsCZMvBLpqg==",
       "os": ["linux"],
       "cpu": ["arm64"]
     },
-    "@libsql/linux-x64-gnu@0.5.22": {
-      "integrity": "sha512-kNBHaIkSg78Y4BqAdgjcR2mBilZXs4HYkAmi58J+4GRwDQZh5fIUWbnQvB9f95DkWUIGVeenqLRFY2pcTmlsew==",
+    "@libsql/linux-x64-gnu@0.5.29": {
+      "integrity": "sha512-y14V0vY0nmMC6G0pHeJcEarcnGU2H6cm21ZceRkacWHvQAEhAG0latQkCtoS2njFOXiYIg+JYPfAoWKbi82rkg==",
       "os": ["linux"],
       "cpu": ["x64"]
     },
-    "@libsql/linux-x64-musl@0.5.22": {
-      "integrity": "sha512-UZ4Xdxm4pu3pQXjvfJiyCzZop/9j/eA2JjmhMaAhe3EVLH2g11Fy4fwyUp9sT1QJYR1kpc2JLuybPM0kuXv/Tg==",
+    "@libsql/linux-x64-musl@0.5.29": {
+      "integrity": "sha512-gquqwA/39tH4pFl+J9n3SOMSymjX+6kZ3kWgY3b94nXFTwac9bnFNMffIomgvlFaC4ArVqMnOZD3nuJ3H3VO1w==",
       "os": ["linux"],
       "cpu": ["x64"]
     },
-    "@libsql/win32-x64-msvc@0.5.22": {
-      "integrity": "sha512-Fj0j8RnBpo43tVZUVoNK6BV/9AtDUM5S7DF3LB4qTYg1LMSZqi3yeCneUTLJD6XomQJlZzbI4mst89yspVSAnA==",
+    "@libsql/win32-x64-msvc@0.5.29": {
+      "integrity": "sha512-4/0CvEdhi6+KjMxMaVbFM2n2Z44escBRoEYpR+gZg64DdetzGnYm8mcNLcoySaDJZNaBd6wz5DNdgRmcI4hXcg==",
       "os": ["win32"],
       "cpu": ["x64"]
     },
     "@neon-rs/load@0.0.4": {
       "integrity": "sha512-kTPhdZyTQxB+2wpiRcFWrDcejc4JI6tkPuS7UZCG4l6Zvc5kU/gGQ/ozvHTh1XR5tS+UlfAfGuPajjzQjCiHCw=="
     },
-    "@openrouter/ai-sdk-provider@2.2.3_ai@6.0.103__zod@4.3.6_zod@4.3.6": {
-      "integrity": "sha512-NovC+BaCfEeJwhToDrs8JeDYXXlJdEyz7lcxkjtyePSE4eoAKik872SyDK0MzXKcz8MRkv7XlNhPI6zz4TQp0g==",
+    "@openrouter/ai-sdk-provider@2.3.3_ai@6.0.141__zod@4.3.6_zod@4.3.6": {
+      "integrity": "sha512-4fVteGkVedc7fGoA9+qJs4tpYwALezMq14m2Sjub3KmyRlksCbK+WJf67NPdGem8+NZrV2tAN42A1NU3+SiV3w==",
       "dependencies": [
         "ai",
         "zod"
@@ -5456,12 +5457,12 @@
         "event-target-shim"
       ]
     },
-    "ai@6.0.103_zod@4.3.6": {
-      "integrity": "sha512-4eY6Ut4u41zKH+P2S/oLlZrwxeWQh4kIV1FjE34Jhoiwg+v1AyfSYM8FslXk9rTAtIIaOBimrCUqXacC5RBqJw==",
+    "ai@6.0.141_zod@4.3.6": {
+      "integrity": "sha512-+GomGQWaId3xN0wcugUW/H7xMMaFkID2PiS7K/Wugj45G3efv0BXhQ3psRZoQVoRbOpdNoUqcK/KTB+FR4h6qg==",
       "dependencies": [
         "@ai-sdk/gateway",
         "@ai-sdk/provider@3.0.8",
-        "@ai-sdk/provider-utils@4.0.15_zod@4.3.6",
+        "@ai-sdk/provider-utils@4.0.21_zod@4.3.6",
         "@opentelemetry/api",
         "zod"
       ]
@@ -5981,8 +5982,8 @@
         "uuid@10.0.0"
       ]
     },
-    "libsql@0.5.22": {
-      "integrity": "sha512-NscWthMQt7fpU8lqd7LXMvT9pi+KhhmTHAJWUB/Lj6MWa0MKFv0F2V4C6WKKpjCVZl0VwcDz4nOI3CyaT1DDiA==",
+    "libsql@0.5.29": {
+      "integrity": "sha512-8lMP8iMgiBzzoNbAPQ59qdVcj6UaE/Vnm+fiwX4doX4Narook0a4GPKWBEv+CR8a1OwbfkgL18uBfBjWdF0Fzg==",
       "dependencies": [
         "@neon-rs/load",
         "detect-libc"
@@ -6069,8 +6070,8 @@
         "readable-stream@4.7.0"
       ]
     },
-    "n3@2.0.1": {
-      "integrity": "sha512-Q6TPsTrlEoELXQ47tSBYcAZ800PQN9gtSImRUqQYoBq+Q7riIUAoDgf3tuMv6PuwonO86SBIx5GfOxvS4A/4kw==",
+    "n3@2.0.3": {
+      "integrity": "sha512-um/toGVENTarHBYIK2TdH6ByBhW75WpdKpv8iTYt9wF2QfBk8s8a16iaWZFUAAC1BKfGdb99kfgx6pltdDwfKA==",
       "dependencies": [
         "buffer",
         "readable-stream@4.7.0"
@@ -6634,14 +6635,14 @@
       "jsr:@std/cli@1.0.28",
       "jsr:@std/path@^1.1.4",
       "jsr:@std/ulid@1",
-      "npm:@libsql/client@0.17",
-      "npm:@openrouter/ai-sdk-provider@^2.2.3",
+      "npm:@libsql/client@~0.17.2",
+      "npm:@openrouter/ai-sdk-provider@^2.3.3",
       "npm:@tensorflow-models/universal-sentence-encoder@^1.3.3",
       "npm:@tensorflow/tfjs-backend-wasm@^4.22.0",
       "npm:@tensorflow/tfjs@^4.22.0",
       "npm:@tursodatabase/api@^1.9.2",
-      "npm:ai@^6.0.101",
-      "npm:n3@^2.0.1",
+      "npm:ai@^6.0.141",
+      "npm:n3@^2.0.3",
       "npm:shacl-engine@^1.1.0",
       "npm:zod@^4.3.6"
     ],

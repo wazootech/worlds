@@ -1,13 +1,10 @@
 import type { createClient as createTursoClient } from "@tursodatabase/api";
 import type { Client } from "@libsql/client";
 import { createClient } from "@libsql/client";
-import type {
-  DatabaseManager,
-  ManagedDatabase,
-} from "#/lib/database/manager.ts";
-import { WorldsRepository } from "#/lib/database/repositories/system/worlds/mod.ts";
+import type { DatabaseManager, ManagedDatabase } from "#/database/manager.ts";
+import { WorldsRepository } from "#/database/repositories/system/worlds/mod.ts";
 
-import { initializeWorldDatabase } from "#/lib/database/init.ts";
+import { initializeWorldDatabase } from "#/database/init.ts";
 
 /**
  * TursoClient is the client for the Turso Database API.

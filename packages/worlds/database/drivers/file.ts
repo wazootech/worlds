@@ -1,13 +1,10 @@
 import { join } from "@std/path";
 import type { Client } from "@libsql/client";
 import { createClient } from "@libsql/client";
-import type {
-  DatabaseManager,
-  ManagedDatabase,
-} from "#/lib/database/manager.ts";
-import { WorldsRepository } from "#/lib/database/tables/worlds/repository.ts";
+import type { DatabaseManager, ManagedDatabase } from "#/database/manager.ts";
+import { WorldsRepository } from "#/database/repositories/system/worlds/mod.ts";
 
-import { initializeWorldDatabase } from "#/lib/database/init.ts";
+import { initializeWorldDatabase } from "#/database/init.ts";
 
 /**
  * FileDatabaseManager implements DatabaseManager using local files.
