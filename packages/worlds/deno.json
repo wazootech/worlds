@@ -2,15 +2,15 @@
   "name": "@wazoo/worlds-sdk",
   "version": "0.0.1",
   "exports": {
-    ".": "./mod.ts",
-    "./engine": "./local.ts",
-    "./remote": "./remote.ts",
-    "./schema": "./schema.ts",
-    "./types": "./types.ts",
-    "./testing": "./engine-context.ts"
+    ".": "./src/mod.ts",
+    "./engine": "./src/local.ts",
+    "./remote": "./src/remote.ts",
+    "./schema": "./src/schema.ts",
+    "./types": "./src/types.ts",
+    "./testing": "./src/engine-context.ts"
   },
   "imports": {
-    "#/": "./",
+    "#/": "./src/",
     "@libsql/client": "npm:@libsql/client@^0.17.0",
     "@std/ulid": "jsr:@std/ulid@^1.0.0",
     "@fartlabs/rt": "jsr:@fartlabs/rt@^0.0.11",
