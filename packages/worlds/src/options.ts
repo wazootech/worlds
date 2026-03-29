@@ -9,6 +9,7 @@ export interface WorldsOptions {
    * If provided, the SDK will use this engine instead of making remote requests.
    */
   engine?: WorldsInterface;
+
   /**
    * baseUrl is the base URL of the Worlds API. It should not include the /v1 suffix.
    */

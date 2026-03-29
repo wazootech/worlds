@@ -4,10 +4,29 @@ import { z } from "zod";
  * TripleTable represents a triple record as stored in the database.
  */
 export interface TripleTable {
+  /**
+   * id is the unique identifier for the triple (typically a hash).
+   */
   id: string;
+
+  /**
+   * subject is the subject of the triple.
+   */
   subject: string;
+
+  /**
+   * predicate is the predicate of the triple.
+   */
   predicate: string;
+
+  /**
+   * object is the object value of the triple.
+   */
   object: string;
+
+  /**
+   * vector is the raw vector embedding data (optional at this level).
+   */
   vector: ArrayBuffer | Uint8Array | null;
 }
 

@@ -4,8 +4,19 @@ import { STATUS_CODE, STATUS_TEXT, type StatusCode } from "@std/http/status";
  * ErrorResponseInit is the initialization options for ErrorResponse.
  */
 export interface ErrorResponseInit {
+  /**
+   * message is a human-readable error message.
+   */
   message: string;
+
+  /**
+   * code is the HTTP status code for the error.
+   */
   code: StatusCode;
+
+  /**
+   * headers are optional HTTP headers to include in the response.
+   */
   headers?: Headers | HeadersInit;
 }
 
@@ -13,6 +24,10 @@ export interface ErrorResponseInit {
  * ErrorResponse is a structured JSON error response.
  */
 export class ErrorResponse extends Response {
+  /**
+   * constructor creates a new ErrorResponse.
+   * @param init The initialization options.
+   */
   public constructor(init: ErrorResponseInit) {
     const { message, code } = init;
     const headers = new Headers(init.headers);

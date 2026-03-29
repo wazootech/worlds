@@ -8,6 +8,9 @@ import { ChunksRepository } from "../../database/repositories/world/chunks/mod.t
 
 /**
  * handlePatch handles RDF patches by upserting and deleting triples and chunks.
+ * @param client The database client.
+ * @param embeddings The embeddings strategy.
+ * @param patches The patches to apply.
  */
 export async function handlePatch(
   client: Client,

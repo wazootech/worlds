@@ -4,12 +4,39 @@ import { z } from "zod";
  * TripleSearchResult represents a search result from the TripleSearch service.
  */
 export interface TripleSearchResult {
+  /**
+   * subject is the subject of the triple.
+   */
   subject: string;
+
+  /**
+   * predicate is the predicate of the triple.
+   */
   predicate: string;
+
+  /**
+   * object is the object of the triple.
+   */
   object: string;
+
+  /**
+   * vecRank is the rank of the result from vector search.
+   */
   vecRank: number | null;
+
+  /**
+   * ftsRank is the rank of the result from full-text search.
+   */
   ftsRank: number | null;
+
+  /**
+   * score is the combined search score.
+   */
   score: number;
+
+  /**
+   * worldId is the ID of the world the triple belongs to.
+   */
   worldId?: string;
 }
 
@@ -17,9 +44,24 @@ export interface TripleSearchResult {
  * Triple represents a basic RDF triple used within the SDK.
  */
 export interface Triple {
+  /**
+   * subject is the subject of the triple.
+   */
   subject: string;
+
+  /**
+   * predicate is the predicate of the triple.
+   */
   predicate: string;
+
+  /**
+   * object is the object of the triple.
+   */
   object: string;
+
+  /**
+   * graph is the optional graph URI.
+   */
   graph?: string;
 }
 
@@ -43,11 +85,17 @@ export const tripleSearchResultSchema: z.ZodType<TripleSearchResult> = z.object(
  */
 export interface World {
   id: string;
+
   slug: string;
+
   label: string;
+
   description: string | null;
+
   createdAt: number;
+
   updatedAt: number;
+
   deletedAt: number | null;
 }
 
@@ -69,7 +117,9 @@ export const worldSchema: z.ZodType<World> = z.object({
  */
 export interface CreateWorldParams {
   slug: string;
+
   label: string;
+
   description?: string | null;
 }
 
@@ -87,7 +137,9 @@ export const createWorldParamsSchema: z.ZodType<CreateWorldParams> = z.object({
  */
 export interface UpdateWorldParams {
   slug?: string;
+
   label?: string;
+
   description?: string | null;
 }
 
@@ -167,9 +219,13 @@ export const sparqlValueSchema: z.ZodType<SparqlValue> = z.lazy(() =>
  */
 export interface SparqlServiceDescription {
   endpoint: string;
+
   supportedLanguages: string[];
+
   features: string[];
+
   resultFormats: string[];
+
   defaultDataset?: {
     graphs: Array<{
       uri?: string;
@@ -217,9 +273,11 @@ export interface SparqlSelectResults {
     vars: string[];
     link: string[] | null;
   };
+
   results: {
     bindings: SparqlBinding[];
   };
+
   boolean?: undefined;
 }
 
@@ -245,7 +303,9 @@ export interface SparqlAskResults {
   head: {
     link: string[] | null;
   };
+
   boolean: boolean;
+
   results?: undefined;
 }
 
@@ -268,11 +328,14 @@ export interface SparqlQuad {
     type: "uri" | "bnode";
     value: string;
   };
+
   predicate: {
     type: "uri";
     value: string;
   };
+
   object: SparqlValue;
+
   graph: {
     type: "default" | "uri";
     value: string;
@@ -305,9 +368,11 @@ export interface SparqlQuadsResults {
   head: {
     link: string[] | null;
   };
+
   results: {
     quads: SparqlQuad[];
   };
+
   boolean?: undefined;
 }
 
@@ -365,10 +430,15 @@ export const rdfFormatSchema: z.ZodType<RdfFormat> = z.enum([
  */
 export interface Log {
   id: string;
+
   worldId: string;
+
   timestamp: number;
+
   level: "info" | "warn" | "error" | "debug";
+
   message: string;
+
   metadata: Record<string, unknown> | null;
 }
 
@@ -389,7 +459,9 @@ export const logSchema: z.ZodType<Log> = z.object({
  */
 export interface Source {
   id: string;
+
   write?: boolean;
+
   schema?: boolean;
 }
 
@@ -419,6 +491,7 @@ export const errorResponseSchema: z.ZodType<ErrorResponse> = z.object({
  */
 export interface PaginationParams {
   page?: number;
+
   pageSize?: number;
 }
 

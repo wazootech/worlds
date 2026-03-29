@@ -13,7 +13,14 @@ import type {
  * DatasetParams are the parameters for a SPARQL query.
  */
 export interface DatasetParams {
+  /**
+   * defaultGraphUris are the URIs for the default graphs.
+   */
   defaultGraphUris: string[];
+
+  /**
+   * namedGraphUris are the URIs for the named graphs.
+   */
   namedGraphUris: string[];
 }
 
@@ -21,6 +28,9 @@ export interface DatasetParams {
  * NoopPatchHandler is a PatchHandler that does nothing.
  */
 export class NoopPatchHandler implements PatchHandler {
+  /**
+   * patch handles a series of patches by doing nothing.
+   */
   patch(): Promise<void> {
     return Promise.resolve();
   }
@@ -28,6 +38,10 @@ export class NoopPatchHandler implements PatchHandler {
 
 /**
  * sparql executes a SPARQL query and returns the result.
+ * @param blob The RDF data as a blob.
+ * @param query The SPARQL query or update.
+ * @param handler The patch handler for monitoring changes.
+ * @returns The new blob and the query result.
  */
 export async function sparql(
   blob: Blob,

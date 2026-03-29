@@ -18,6 +18,10 @@ import type {
 export class Worlds implements WorldsInterface {
   private readonly engine: WorldsInterface;
 
+  /**
+   * constructor initializes the Worlds SDK.
+   * @param options The configuration options.
+   */
   public constructor(options: WorldsOptions) {
     if (options.engine) {
       this.engine = options.engine;
@@ -30,6 +34,11 @@ export class Worlds implements WorldsInterface {
     }
   }
 
+  /**
+   * list paginates all available worlds.
+   * @param options Pagination options.
+   * @returns A list of worlds.
+   */
   public list(options?: {
     page?: number;
     pageSize?: number;

@@ -5,10 +5,15 @@ import { z } from "zod";
  */
 export interface LogsTable {
   id: string;
+
   world_id: string;
+
   timestamp: number;
+
   level: "info" | "warn" | "error" | "debug";
+
   message: string;
+
   metadata?: Record<string, unknown> | null;
 }
 

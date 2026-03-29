@@ -4,6 +4,8 @@ import { errorResponseSchema } from "./schema.ts";
 
 /**
  * parseError parses an error response from the API.
+ * @param response The HTTP response.
+ * @returns A human-readable error message.
  */
 export async function parseError(response: Response): Promise<string> {
   let errorMessage = `${response.status} ${response.statusText}`;
@@ -29,6 +31,8 @@ export async function parseError(response: Response): Promise<string> {
 
 /**
  * isSparqlUpdate checks if a SPARQL query is an update operation.
+ * @param query The SPARQL query string.
+ * @returns True if it's an update, false otherwise.
  */
 export function isSparqlUpdate(query: string): boolean {
   // Normalize the query: remove comments and normalize whitespace
@@ -83,6 +87,7 @@ export function parseSources(sources: Array<string | Source>): Source[] {
  */
 export interface PaginationParams {
   page: number;
+
   pageSize: number;
 }
 

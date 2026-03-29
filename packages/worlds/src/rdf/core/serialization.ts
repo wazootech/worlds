@@ -4,7 +4,14 @@ import { accepts } from "@std/http/negotiation";
  * Serialization represents a supported RDF serialization format.
  */
 export interface Serialization {
+  /**
+   * contentType is the HTTP Content-Type for the format.
+   */
   contentType: string;
+
+  /**
+   * format is the name of the format for the N3 parser/writer.
+   */
   format: string;
 }
 
@@ -25,6 +32,9 @@ export const DEFAULT_SERIALIZATION = SERIALIZATIONS["turtle"];
 
 /**
  * negotiateSerialization selects the best RDF serialization for the request.
+ * @param request The HTTP request.
+ * @param defaultFormat The default format if negotiation fails.
+ * @returns The selected serialization.
  */
 export function negotiateSerialization(
   request: Request,

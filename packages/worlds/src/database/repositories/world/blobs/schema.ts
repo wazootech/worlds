@@ -4,7 +4,14 @@ import { z } from "zod";
  * BlobRow represents the singleton blob record.
  */
 export interface BlobRow {
+  /**
+   * blob is the raw RDF data as bytes.
+   */
   blob: Uint8Array | null;
+
+  /**
+   * updated_at is the unix timestamp of the last update.
+   */
   updated_at: number;
 }
 

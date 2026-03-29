@@ -1,4 +1,4 @@
-import { ulid } from "jsr:@std/ulid";
+import { ulid } from "@std/ulid";
 import { DataFactory, Parser, Store, Writer } from "n3";
 import {
   type CreateWorldParams,
@@ -13,10 +13,7 @@ import {
   worldSchema,
 } from "./schema.ts";
 import type { WorldsInterface } from "./types.ts";
-import {
-  ChunksSearchRepository,
-  type SearchParams,
-} from "./database/repositories/world/chunks/mod.ts";
+import { ChunksSearchRepository } from "./database/repositories/world/chunks/mod.ts";
 import { WorldsRepository } from "./database/repositories/system/worlds/mod.ts";
 import { BlobsRepository } from "./database/repositories/world/blobs/mod.ts";
 import { LogsRepository } from "./database/repositories/world/logs/mod.ts";
@@ -57,7 +54,7 @@ export class LocalWorlds implements WorldsInterface {
     }
 
     const rows = await this.worldsRepository.list(limit, offset);
-    return rows.map((world: any) =>
+    return rows.map((world) =>
       worldSchema.parse({
         id: world.id,
         slug: world.slug,
@@ -290,7 +287,7 @@ export class LocalWorlds implements WorldsInterface {
     writer.addQuads(store.getQuads(null, null, null, null));
 
     return new Promise((resolve, reject) => {
-      writer.end(async (error: any, result: any) => {
+      writer.end(async (error: Error | null, result: string | undefined) => {
         if (error) {
           reject(error);
           return;
@@ -368,7 +365,7 @@ export class LocalWorlds implements WorldsInterface {
     writer.addQuads(store.getQuads(null, null, null, null));
 
     return new Promise((resolve, reject) => {
-      writer.end((error: any, result: any) => {
+      writer.end((error: Error | null, result: string | undefined) => {
         if (error) reject(error);
         else resolve(new TextEncoder().encode(result).buffer);
       });
@@ -433,7 +430,7 @@ export class LocalWorlds implements WorldsInterface {
       writer.addQuad(quad(endpoint, feature, dereferencesURIs));
       writer.addQuad(quad(endpoint, feature, tripleTerms));
 
-      writer.end((error: any, result: any) => {
+      writer.end((error: Error | null, result: string | undefined) => {
         if (error) reject(error);
         else resolve(result as string);
       });
@@ -466,14 +463,14 @@ export class LocalWorlds implements WorldsInterface {
       options?.level,
     );
 
-    const results = rows.map((log: any) =>
+    const results = rows.map((log) =>
       logSchema.parse({
         id: log.id,
         worldId: log.world_id,
         timestamp: log.timestamp,
         level: log.level,
         message: log.message,
-        metadata: log.metadata ? JSON.parse(log.metadata) : null,
+        metadata: log.metadata,
       })
     );
     return results;

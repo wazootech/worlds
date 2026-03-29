@@ -12,12 +12,23 @@ import { initializeWorldDatabase } from "#/database/init.ts";
 export class FileDatabaseManager implements DatabaseManager {
   private readonly initialized = new Set<string>();
 
+  /**
+   * constructor initializes the FileDatabaseManager.
+   * @param database The system database client.
+   * @param baseDir The base directory for world database files.
+   * @param dimensions The vector dimensions for world databases.
+   */
   public constructor(
     private readonly database: Client,
     private readonly baseDir: string,
     private readonly dimensions: number,
   ) {}
 
+  /**
+   * create provisions a new file-based database.
+   * @param id The ID of the database to create.
+   * @returns A managed database connection.
+   */
   public async create(id: string): Promise<ManagedDatabase> {
     const path = join(this.baseDir, `${id}.db`);
     await Deno.mkdir(this.baseDir, { recursive: true });

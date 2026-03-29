@@ -14,18 +14,34 @@ export type TursoClient = ReturnType<typeof createTursoClient>;
 export class TursoCloudDatabaseManager implements DatabaseManager {
   private readonly initialized = new Set<string>();
 
+  /**
+   * constructor initializes the TursoCloudDatabaseManager.
+   * @param database The system database client.
+   * @param client The Turso API client.
+   * @param dimensions The vector dimensions for world databases.
+   */
   public constructor(
     private readonly database: Client,
     private readonly client: TursoClient,
     private readonly dimensions: number,
   ) {}
 
+  /**
+   * create provisions a new Turso database.
+   * @param id The ID of the database to create.
+   * @returns A managed database connection.
+   */
   public async create(id: string): Promise<ManagedDatabase> {
     const database = await this.client.databases.create(id);
     const token = await this.client.databases.createToken(id);
     return this.getManagedDatabase(id, database.hostname, token.jwt);
   }
 
+  /**
+   * get retrieves an existing Turso database connection.
+   * @param id The ID of the database to retrieve.
+   * @returns A managed database connection.
+   */
   public async get(id: string): Promise<ManagedDatabase> {
     const worldsRepository = new WorldsRepository(this.database);
     const world = await worldsRepository.getById(id);

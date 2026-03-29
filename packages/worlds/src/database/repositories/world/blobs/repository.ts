@@ -1,6 +1,6 @@
 import type { Client } from "@libsql/client";
 import { selectBlob, upsertBlob } from "./queries.sql.ts";
-import type { BlobRow, BlobTableInsert } from "./schema.ts";
+import type { BlobRow } from "./schema.ts";
 import { blobSchema } from "./schema.ts";
 
 /**

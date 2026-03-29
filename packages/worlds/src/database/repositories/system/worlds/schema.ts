@@ -22,14 +22,49 @@ export const worldTableSchema: z.ZodType<WorldTable> = worldTableShape;
  * WorldTable represents a full world record as stored in the database.
  */
 export interface WorldTable {
+  /**
+   * id is the unique identifier for the world.
+   */
   id: string;
+
+  /**
+   * slug is the URL-friendly name for the world.
+   */
   slug: string;
+
+  /**
+   * label is the human-readable title of the world.
+   */
   label: string;
+
+  /**
+   * description is an optional summary of the world.
+   */
   description: string | null;
+
+  /**
+   * db_hostname is the hostname of the remote database, if any.
+   */
   db_hostname: string | null;
+
+  /**
+   * db_token is the authentication token for the remote database.
+   */
   db_token: string | null;
+
+  /**
+   * created_at is the unix timestamp of creation.
+   */
   created_at: number;
+
+  /**
+   * updated_at is the unix timestamp of the last update.
+   */
   updated_at: number;
+
+  /**
+   * deleted_at is the unix timestamp of deletion, if any.
+   */
   deleted_at: number | null;
 }
 

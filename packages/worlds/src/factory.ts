@@ -17,17 +17,63 @@ import { OpenRouterEmbeddings } from "./embeddings/openrouter.ts";
  * Historically known as ServerContextConfig.
  */
 export interface WorldsContextConfig {
+  /**
+   * envs contains the environment variables used to configure the context.
+   */
   envs: {
+    /**
+     * LIBSQL_URL is the URL of the LibSQL database (e.g., file:worlds.db or libsubsq://...).
+     */
     LIBSQL_URL?: string;
+
+    /**
+     * LIBSQL_AUTH_TOKEN is the authentication token for the LibSQL database.
+     */
     LIBSQL_AUTH_TOKEN?: string;
+
+    /**
+     * TURSO_API_TOKEN is the API token for Turso Cloud management.
+     */
     TURSO_API_TOKEN?: string;
+
+    /**
+     * TURSO_ORG is the organization name for Turso Cloud.
+     */
     TURSO_ORG?: string;
+
+    /**
+     * OPENROUTER_API_KEY is the API key for OpenRouter embeddings.
+     */
     OPENROUTER_API_KEY?: string;
+
+    /**
+     * OPENROUTER_EMBEDDINGS_MODEL is the model name for OpenRouter embeddings.
+     */
     OPENROUTER_EMBEDDINGS_MODEL?: string;
+
+    /**
+     * OLLAMA_BASE_URL is the base URL for the Ollama API.
+     */
     OLLAMA_BASE_URL?: string;
+
+    /**
+     * OLLAMA_EMBEDDINGS_MODEL is the model name for Ollama embeddings.
+     */
     OLLAMA_EMBEDDINGS_MODEL?: string;
+
+    /**
+     * WORLDS_EMBEDDINGS_DIMENSIONS is the number of dimensions for the embeddings.
+     */
     WORLDS_EMBEDDINGS_DIMENSIONS?: string;
+
+    /**
+     * WORLDS_API_KEY is the master API key for the Worlds engine.
+     */
     WORLDS_API_KEY?: string;
+
+    /**
+     * WORLDS_BASE_DIR is the base directory for local file-based databases.
+     */
     WORLDS_BASE_DIR?: string;
   };
 }

@@ -7,16 +7,23 @@ import {
   selectWorldBySlug,
   updateWorld,
 } from "./queries.sql.ts";
-import {
-  type WorldRow,
-  worldRowSchema,
-  type WorldTableInsert,
-  type WorldTableUpdate,
-} from "./schema.ts";
+import type { WorldRow, WorldTableInsert, WorldTableUpdate } from "./schema.ts";
 
+/**
+ * WorldsRepository handles the persistence of world metadata in the system database.
+ */
 export class WorldsRepository {
+  /**
+   * constructor initializes the WorldsRepository with a database client.
+   * @param db The database client.
+   */
   constructor(private readonly db: Client) {}
 
+  /**
+   * getById retrieves a world by its unique ID.
+   * @param id The world ID.
+   * @returns The world row or null if not found.
+   */
   async getById(id: string): Promise<WorldRow | null> {
     const result = await this.db.execute({
       sql: selectWorldById,
@@ -37,6 +44,11 @@ export class WorldsRepository {
     };
   }
 
+  /**
+   * getBySlug retrieves a world by its URL slug.
+   * @param slug The world slug.
+   * @returns The world row or null if not found.
+   */
   async getBySlug(slug: string): Promise<WorldRow | null> {
     const result = await this.db.execute({
       sql: selectWorldBySlug,
@@ -57,6 +69,12 @@ export class WorldsRepository {
     };
   }
 
+  /**
+   * list retrieves a paginated list of all worlds.
+   * @param limit The maximum number of worlds to return.
+   * @param offset The number of worlds to skip.
+   * @returns An array of world rows.
+   */
   async list(
     limit: number,
     offset: number,
@@ -78,6 +96,10 @@ export class WorldsRepository {
     }));
   }
 
+  /**
+   * insert creates a new world record.
+   * @param world The world data to insert.
+   */
   async insert(world: WorldTableInsert): Promise<void> {
     await this.db.execute({
       sql: insertWorld,
@@ -95,6 +117,11 @@ export class WorldsRepository {
     });
   }
 
+  /**
+   * update modifies an existing world record.
+   * @param id The ID of the world to update.
+   * @param updates The fields to update.
+   */
   async update(id: string, updates: WorldTableUpdate): Promise<void> {
     const row = await this.getById(id);
     if (!row) return;
@@ -113,6 +140,10 @@ export class WorldsRepository {
     });
   }
 
+  /**
+   * delete removes a world record by its ID.
+   * @param id The ID of the world to delete.
+   */
   async delete(id: string): Promise<void> {
     await this.db.execute({ sql: deleteWorld, args: [id] });
   }

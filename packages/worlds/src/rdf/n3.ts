@@ -1,10 +1,9 @@
-// @deno-types="@types/n3"
-import { DataFactory, Parser, Store, Writer } from "n3";
-import type { Quad } from "n3";
-import { type Triple, worldSchema } from "../schema.ts";
+import { Parser, Store, Writer } from "n3";
 
 /**
  * generateN3StoreFromBlob gets a world as an N3 Store.
+ * @param blob The world data as a blob.
+ * @returns The N3 Store.
  */
 export async function generateN3StoreFromBlob(
   blob: Blob,
@@ -19,6 +18,8 @@ export async function generateN3StoreFromBlob(
 
 /**
  * generateBlobFromN3Store sets a world as an N3 Store.
+ * @param store The N3 Store.
+ * @returns The world data as a blob.
  */
 export async function generateBlobFromN3Store(
   store: Store,

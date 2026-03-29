@@ -1,12 +1,12 @@
-import { type WorldsOptions } from "./options.ts";
-import {
-  type CreateWorldParams,
-  type ExecuteSparqlOutput,
-  type Log,
-  type RdfFormat,
-  type TripleSearchResult,
-  type UpdateWorldParams,
-  type World,
+import type { WorldsOptions } from "./options.ts";
+import type {
+  CreateWorldParams,
+  ExecuteSparqlOutput,
+  Log,
+  RdfFormat,
+  TripleSearchResult,
+  UpdateWorldParams,
+  World,
 } from "./schema.ts";
 import { parseError } from "./utils.ts";
 import type { WorldsInterface } from "./types.ts";

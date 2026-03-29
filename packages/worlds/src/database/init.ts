@@ -27,6 +27,7 @@ import {
 
 /**
  * initializeDatabase creates all main tables and indexes if they don't exist.
+ * @param client The database client.
  */
 export async function initializeDatabase(client: Client): Promise<void> {
   // Create tables
@@ -37,6 +38,8 @@ export async function initializeDatabase(client: Client): Promise<void> {
 
 /**
  * initializeWorldDatabase creates all world-specific tables and indexes if they don't exist.
+ * @param client The database client.
+ * @param dimensions The number of dimensions for the vector index.
  */
 export async function initializeWorldDatabase(
   client: Client,

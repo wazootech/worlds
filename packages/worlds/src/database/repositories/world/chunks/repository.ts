@@ -3,16 +3,27 @@ import type { WorldsContext } from "../../../../context.ts";
 import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { TripleSearchResult } from "../../../../schema.ts";
 import type { WorldRow } from "../../system/worlds/schema.ts";
-import { WorldsRepository } from "../../system/worlds/mod.ts";
+import type { WorldsRepository } from "../../system/worlds/mod.ts";
 import {
   type ChunkTableUpsert,
   type SearchRow,
   searchRowSchema,
 } from "./schema.ts";
 
+/**
+ * ChunksRepository handles the persistence of text chunks and their vector embeddings.
+ */
 export class ChunksRepository {
+  /**
+   * constructor initializes the ChunksRepository with a database client.
+   * @param db The database client.
+   */
   constructor(private readonly db: Client) {}
 
+  /**
+   * upsert inserts or replaces a text chunk record.
+   * @param chunk The chunk data to upsert.
+   */
   async upsert(chunk: ChunkTableUpsert): Promise<void> {
     await this.db.execute({
       sql: upsertChunks,
@@ -28,22 +39,65 @@ export class ChunksRepository {
   }
 }
 
+/**
+ * SearchParams represents the parameters for a semantic and text search.
+ */
 export interface SearchParams {
+  /**
+   * query is the natural language search string.
+   */
   query: string;
+
+  /**
+   * worldId is the ID of the world to search within.
+   */
   worldId?: string;
+
+  /**
+   * world is the optional pre-fetched world record.
+   */
   world?: WorldRow;
+
+  /**
+   * subjects is an optional list of subject URIs to filter by.
+   */
   subjects?: string[];
+
+  /**
+   * predicates is an optional list of predicate URIs to filter by.
+   */
   predicates?: string[];
+
+  /**
+   * types is an optional list of item types to filter by.
+   */
   types?: string[];
+
+  /**
+   * limit is the maximum number of results to return.
+   */
   limit?: number;
 }
 
+/**
+ * ChunksSearchRepository handles complex semantic and hybrid search operations across chunks.
+ */
 export class ChunksSearchRepository {
+  /**
+   * constructor initializes the ChunksSearchRepository with context and worlds repository.
+   * @param ctx The engine context.
+   * @param worlds The worlds repository for lookup.
+   */
   constructor(
     private readonly ctx: WorldsContext,
     private readonly worlds: WorldsRepository,
   ) {}
 
+  /**
+   * search performs a hybrid (vector + FTS) search for triples.
+   * @param params The search parameters.
+   * @returns An array of search results with scores.
+   */
   async search(params: SearchParams): Promise<TripleSearchResult[]> {
     const {
       query,
