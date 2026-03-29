@@ -25,19 +25,12 @@ export { MemoryDatabaseManager } from "./database/managers/memory-manager.ts";
 export { generateBlobFromN3Store, generateN3StoreFromBlob } from "./rdf/n3.ts";
 export * from "./factory.ts";
 /**
- * Custom named exports for all subsystems.
+ * Database module provides database management utilities.
  */
 export * from "./database/mod.ts";
-export * as database from "./database/mod.ts";
-
 export * from "./rdf/core/serialization.ts";
-export * as rdf from "./rdf/core/serialization.ts";
-
 export * from "./rdf/patch/mod.ts";
-export * as patch from "./rdf/patch/mod.ts";
-
 export * from "./embeddings/mod.ts";
-export * as embeddings from "./embeddings/mod.ts";
 
 // Utilities
 export { handleETagRequest } from "./http/etag.ts";

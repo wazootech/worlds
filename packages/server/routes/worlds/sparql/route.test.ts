@@ -3,8 +3,8 @@ import { ulid } from "@std/ulid/ulid";
 import {
   createTestContext,
   createTestOrganization,
-} from "#/lib/testing/context.ts";
-import { WorldsRepository } from "#/lib/database/tables/worlds/repository.ts";
+  WorldsRepository,
+} from "@wazoo/worlds-sdk";
 import createRoute from "./route.ts";
 
 Deno.test("SPARQL API routes", async (t) => {

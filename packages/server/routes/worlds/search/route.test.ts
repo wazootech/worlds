@@ -3,9 +3,9 @@ import { ulid } from "@std/ulid/ulid";
 import {
   createTestContext,
   createTestOrganization,
-} from "#/lib/testing/context.ts";
+  WorldsRepository,
+} from "@wazoo/worlds-sdk";
 import createRoute from "./route.ts";
-import { WorldsRepository } from "#/lib/database/tables/worlds/repository.ts";
 
 Deno.test("World Search API routes", async (t) => {
   const testContext = await createTestContext();

@@ -1,14 +1,11 @@
 import { assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
-import type { WorldsContext } from "@wazoo/worlds-sdk";
-import { database } from "@wazoo/worlds-sdk";
-const { WorldsRepository } = database;
-
-// For tests, we use the engine_context helper moved to worlds
 import {
   createTestContext,
   createTestOrganization,
-} from "@wazoo/worlds-sdk/testing";
+  type WorldsContext,
+  WorldsRepository,
+} from "@wazoo/worlds-sdk";
 import createRoute from "./route.ts";
 
 Deno.test("Worlds API routes", async (t) => {

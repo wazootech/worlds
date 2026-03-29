@@ -1,4 +1,4 @@
-import { ulid } from "@std/ulid";
+import { ulid } from "@std/ulid/ulid";
 import { DataFactory, Parser, Store, Writer } from "n3";
 import {
   type CreateWorldParams,

@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client";
-import { ulid } from "@std/ulid";
+import { ulid } from "@std/ulid/ulid";
 import { initializeDatabase } from "./database/init.ts";
 import { MemoryDatabaseManager } from "./database/managers/memory-manager.ts";
 import type { Embeddings } from "./embeddings/embeddings.ts";

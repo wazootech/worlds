@@ -1,5 +1,5 @@
-import { Worlds } from "@wazoo/worlds-sdk";
-import { createServer, createServerContext } from "@wazoo/worlds-server";
+import { createWorldsContext, Worlds } from "@wazoo/worlds-sdk";
+import { createServer } from "@wazoo/worlds-server";
 
 /**
  * createWazoo creates a new Wazoo SDK.
@@ -17,7 +17,7 @@ export async function createWazoo(): Promise<{ sdk: Worlds }> {
 
   const localApiKey = Deno.env.get("WORLDS_API_KEY") ??
     crypto.randomUUID();
-  const serverContext = await createServerContext({
+  const serverContext = await createWorldsContext({
     envs: {
       WORLDS_API_KEY: localApiKey,
       LIBSQL_URL: Deno.env.get("LIBSQL_URL"),

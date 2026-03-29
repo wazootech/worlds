@@ -2,8 +2,11 @@ import { Router } from "@fartlabs/rt";
 import type { RdfFormat } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
-import { ErrorResponse, LocalWorlds, rdf } from "@wazoo/worlds-sdk";
-const { negotiateSerialization } = rdf;
+import {
+  ErrorResponse,
+  LocalWorlds,
+  negotiateSerialization,
+} from "@wazoo/worlds-sdk";
 
 /**
  * parseQuery parses the query and dataset parameters from the request.

@@ -7,14 +7,13 @@ import {
   updateWorldParamsSchema,
 } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
-import { type WorldsContext } from "@wazoo/worlds-sdk";
+import type { WorldsContext } from "@wazoo/worlds-sdk";
 import {
   ErrorResponse,
   handleETagRequest,
   LocalWorlds,
-  rdf,
+  negotiateSerialization,
 } from "@wazoo/worlds-sdk";
-const { negotiateSerialization } = rdf;
 
 export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);
