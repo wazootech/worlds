@@ -1,8 +1,13 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { getSdkForOrg } from "@/lib/sdk";
 import { withAuth } from "@/lib/auth";
 import { getWorkOS } from "@/lib/platform";
 
+/**
+ * POST is the search API endpoint for a world.
+ * Expects a text body with the search query.
+ */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ worldId: string }> },

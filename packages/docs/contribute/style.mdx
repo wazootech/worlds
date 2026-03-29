@@ -105,6 +105,51 @@ technical authority, and zero marketing fluff.**
   "foo" or "bar".
 - **Singular focus**: One clear example is better than multiple variations.
 - **Tested code**: Test that code works before including it.
+- **Import consistency**: Group types above values in import sections.
+
+## Development standards
+
+The Worlds project follows a strict, tree-shakeable, and highly-standardized
+development pattern.
+
+### Exports and namespaces
+
+- **Named exports**: Always use pure named exports. Avoid usingnamespaces or
+  `export * as` in SDK entry points.
+- **Rationale**: Named exports provide explicit boundaries for tree-shaking and
+  better IDE support.
+
+### Imports
+
+- **Import separation**: Mandate separate `import type` and `import`
+  declarations. If a module provides both types and values, they must be
+  imported separately.
+- **Tree-shaking optimization**: Use the most specific module entry points
+  available (e.g., `import { ulid } from "@std/ulid/ulid"` instead of
+  `import { ulid } from "@std/ulid"`).
+- **Import path strategy**: Use aliases (`#/`, `@/`) for cross-module or core
+  imports; use relative paths (`./`, `../`) for files in the same submodule or
+  tightly coupled assets.
+
+### Documentation (JSDoc)
+
+- **Identifier-first descriptions**: Standardize JSDoc descriptions by starting
+  the first sentence with the exact name of the identifier.
+  - _Good:_ `/** signOutAction signs out the current user session. */`
+  - _Bad:_ `/** Signs out the current user session. */`
+
+### Spacing and formatting
+
+- **Property spacing**: Insert a blank line between individual properties and
+  methods in Zod schemas, TypeScript interfaces, and classes.
+- **Rationale**: This spacing improves visual scanning and reduces cognitive
+  load when reading complex schemas.
+
+### Verification
+
+- **Precommit verification**: Always run the relevant precommit task
+  (`deno task precommit` or `npm run precommit:console`) before finalizing a
+  commit. All type-checks, lints, and tests must pass with zero warnings.
 
 ## Sources and citations
 

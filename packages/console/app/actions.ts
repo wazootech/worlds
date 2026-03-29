@@ -1,23 +1,29 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { withAuth, signOut, type WorkOSUser } from "@/lib/auth";
+import type { WorkOSUser } from "@/lib/auth";
+import { withAuth, signOut } from "@/lib/auth";
 import {
   getWorkOS,
   provisionOrganization,
   teardownOrganization,
 } from "@/lib/platform";
-
 import { getSdkForOrg } from "@/lib/sdk";
 
 async function getActiveOrgId(user: WorkOSUser) {
   return user.metadata?.activeOrganizationId as string | undefined;
 }
 
+/**
+ * signOutAction signs out the current user session.
+ */
 export async function signOutAction() {
   await signOut();
 }
 
+/**
+ * updateWorld updates a world's metadata (label, slug, description).
+ */
 export async function updateWorld(
   organizationId: string,
   worldId: string,
@@ -52,6 +58,9 @@ export async function updateWorld(
   }
 }
 
+/**
+ * deleteWorld deletes a world from an organization.
+ */
 export async function deleteWorld(organizationId: string, worldId: string) {
   const { user } = await withAuth();
   if (!user) {
@@ -77,6 +86,9 @@ export async function deleteWorld(organizationId: string, worldId: string) {
   }
 }
 
+/**
+ * createWorld creates a new world within an organization.
+ */
 export async function createWorld(
   organizationId: string,
   label: string,
@@ -171,6 +183,9 @@ export async function createWorld(
   }
 }
 
+/**
+ * deleteOrganization deletes an entire organization and all its resources.
+ */
 export async function deleteOrganization(organizationId: string) {
   const { user } = await withAuth();
   if (!user) {
@@ -226,6 +241,9 @@ export async function deleteOrganization(organizationId: string) {
   return { success: true };
 }
 
+/**
+ * rotateApiKey rotates the API key for an organization.
+ */
 export async function rotateApiKey(organizationId: string) {
   const { user } = await withAuth();
   if (!user) {
@@ -256,6 +274,9 @@ export async function rotateApiKey(organizationId: string) {
   return newApiKey;
 }
 
+/**
+ * createOrganization creates a new organization and provisions its platform resources.
+ */
 export async function createOrganization(label: string, slug: string) {
   const { user } = await withAuth();
   if (!user) {
@@ -297,6 +318,9 @@ export async function createOrganization(label: string, slug: string) {
     };
   }
 }
+/**
+ * updateOrganization updates an organization's name or slug.
+ */
 export async function updateOrganization(
   organizationId: string,
   updates: { label?: string; slug?: string },
@@ -328,6 +352,9 @@ export async function updateOrganization(
   revalidatePath(`/`);
 }
 
+/**
+ * selectOrganizationAction sets the active organization for the current user.
+ */
 export async function selectOrganizationAction(organizationId: string) {
   const { user } = await withAuth();
   if (!user) {
@@ -352,6 +379,9 @@ export async function selectOrganizationAction(organizationId: string) {
   revalidatePath(`/${organization.slug}`);
 }
 
+/**
+ * listOrganizations lists all organizations for the current user.
+ */
 export async function listOrganizations() {
   const { user } = await withAuth();
   if (!user) {
@@ -368,6 +398,9 @@ export async function listOrganizations() {
   }
 }
 
+/**
+ * executeSparqlQuery executes a SPARQL query against a world.
+ */
 export async function executeSparqlQuery(worldId: string, query: string) {
   const { user } = await withAuth();
   if (!user) {
@@ -398,6 +431,9 @@ export async function executeSparqlQuery(worldId: string, query: string) {
   }
 }
 
+/**
+ * searchTriples searches for triples in a world using a keyword or filters.
+ */
 export async function searchTriples(
   worldId: string,
   query: string,
@@ -432,6 +468,9 @@ export async function searchTriples(
   }
 }
 
+/**
+ * listWorldLogs lists logs for a world with pagination and level filtering.
+ */
 export async function listWorldLogs(
   worldId: string,
   page?: number,
@@ -468,6 +507,9 @@ export async function listWorldLogs(
   }
 }
 
+/**
+ * pingEndpointAction pings an endpoint to check if it is alive.
+ */
 export async function pingEndpointAction(url: string): Promise<boolean> {
   const { user } = await withAuth();
   if (!user) {

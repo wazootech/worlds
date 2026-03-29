@@ -1,4 +1,5 @@
-import { withAuth, type WorkOSOrganization } from "@/lib/auth";
+import type { WorkOSOrganization } from "@/lib/auth";
+import { withAuth } from "@/lib/auth";
 import { getWorkOS } from "@/lib/platform";
 import { OrgList } from "./org-list";
 import { Metadata } from "next";
@@ -8,6 +9,9 @@ export const metadata: Metadata = {
   title: "Manage Organizations",
 };
 
+/**
+ * OrganizationsPage is a Server Component that displays a paginated list of organizations for administrators.
+ */
 export default async function OrganizationsPage({
   searchParams,
 }: {

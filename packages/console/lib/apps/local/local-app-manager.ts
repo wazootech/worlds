@@ -1,10 +1,7 @@
-import { type ChildProcess } from "child_process";
+import type { ChildProcess } from "child_process";
 import path from "path";
-import {
-  type ManagedApp,
-  type AppManager,
-  buildWorldsEnvs,
-} from "@/lib/apps/app-manager";
+import type { ManagedApp, AppManager } from "@/lib/apps/app-manager";
+import { buildWorldsEnvs } from "@/lib/apps/app-manager";
 import type { WorkOSOrganization } from "@/lib/workos/workos-manager";
 
 const PROCESS_PREFIX = "worlds";
@@ -13,6 +10,10 @@ function processName(appId: string) {
   return `${PROCESS_PREFIX}-${appId}`;
 }
 
+/**
+ * LocalAppManager manages the lifecycle of local server processes for Worlds.
+ * Uses `deno serve` to run the server in the background.
+ */
 export class LocalAppManager implements AppManager {
   private processes = new Map<string, ChildProcess>();
   private ports = new Map<string, string>();
@@ -178,4 +179,7 @@ export class LocalAppManager implements AppManager {
   }
 }
 
+/**
+ * localAppManager is a singleton instance of the LocalAppManager.
+ */
 export const localAppManager = new LocalAppManager();

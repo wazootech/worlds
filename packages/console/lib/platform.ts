@@ -3,13 +3,18 @@ import type {
   WorkOSOrganization,
   WorkOSManager,
 } from "./workos/workos-manager";
-import { type AppManager, buildWorldsEnvs } from "./apps/app-manager";
+import type { AppManager } from "./apps/app-manager";
+import { buildWorldsEnvs } from "./apps/app-manager";
 import type { TursoManager } from "./turso/turso-manager";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Platform Access
 // ═══════════════════════════════════════════════════════════════════════════
 
+/**
+ * platform is the central access point for platform managers (WorkOS, Apps, Turso).
+ * Managers are lazily initialized on first access.
+ */
 export const platform = {
   get workos() {
     return getWorkOS();
@@ -37,6 +42,10 @@ let _workos: WorkOSManager | null = null;
 let _appManager: AppManager | null = null;
 let _turso: TursoManager | null = null;
 
+/**
+ * getWorkOS returns the WorkOS manager instance.
+ * Automatically switches between local and remote implementations based on environment.
+ */
 export async function getWorkOS(): Promise<WorkOSManager> {
   if (_workos) return _workos;
 
@@ -51,6 +60,10 @@ export async function getWorkOS(): Promise<WorkOSManager> {
   return _workos;
 }
 
+/**
+ * getApps returns the App manager instance.
+ * Automatically switches between local and Deno Deploy implementations based on environment.
+ */
 export async function getApps(): Promise<AppManager> {
   if (_appManager) return _appManager;
 
@@ -71,6 +84,9 @@ export async function getApps(): Promise<AppManager> {
   return _appManager;
 }
 
+/**
+ * getTurso returns the Turso manager instance, or null if Turso is not configured.
+ */
 export async function getTurso(): Promise<TursoManager | null> {
   if (_turso) return _turso;
 
