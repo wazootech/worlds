@@ -1,8 +1,9 @@
 import type { Router } from "@fartlabs/rt";
-import type { ServerContext } from "#/context.ts";
-import { createServer, createServerContext } from "#/server.ts";
+import type { WorldsContext } from "@wazoo/worlds-sdk";
+import { createServer } from "./server.ts";
+import { createWorldsContext } from "@wazoo/worlds-sdk";
 
-const serverContext: ServerContext = await createServerContext({
+const serverContext: WorldsContext = await createWorldsContext({
   envs: {
     WORLDS_API_KEY: Deno.env.get("WORLDS_API_KEY"),
     LIBSQL_URL: Deno.env.get("LIBSQL_URL") ?? undefined,

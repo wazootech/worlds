@@ -1,6 +1,9 @@
 export * from "./server.ts";
-export * from "./lib/database/mod.ts";
-export * from "./lib/embeddings/mod.ts";
-export * from "./lib/blob/mod.ts";
-export * from "./lib/errors/mod.ts";
-export * from "./lib/rdf-patch/mod.ts";
+export {
+  database,
+  embeddings,
+  ErrorResponse as errors,
+  handleETagRequest as http,
+  patch,
+  rdf,
+} from "@wazoo/worlds-sdk";

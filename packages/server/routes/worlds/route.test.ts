@@ -1,16 +1,20 @@
 import { assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
+import type { WorldsContext } from "@wazoo/worlds-sdk";
+import { database } from "@wazoo/worlds-sdk";
+const { WorldsRepository } = database;
+
+// For tests, we use the engine_context helper moved to worlds
 import {
   createTestContext,
   createTestOrganization,
-} from "#/lib/testing/context.ts";
+} from "@wazoo/worlds-sdk/testing";
 import createRoute from "./route.ts";
-import { WorldsRepository } from "#/lib/database/tables/worlds/repository.ts";
 
 Deno.test("Worlds API routes", async (t) => {
-  const testContext = await createTestContext();
+  const testContext = (await createTestContext()) as WorldsContext;
   const worldsRepository = new WorldsRepository(testContext.libsql.database);
-  const app = createRoute(testContext);
+  const app = createRoute(testContext as unknown as WorldsContext);
 
   await t.step(
     "GET /worlds/:world returns world metadata (Admin)",

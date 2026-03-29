@@ -1,4 +1,4 @@
-import type { WorldsInterface } from "./clients/worlds/types.ts";
+import type { WorldsInterface } from "./types.ts";
 
 /**
  * WorldsOptions are the options for the Worlds API SDK.

@@ -7,13 +7,16 @@ import {
   updateWorldParamsSchema,
 } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
-import type { ServerContext } from "#/context.ts";
-import { ErrorResponse } from "#/lib/errors/errors.ts";
-import { handleETagRequest } from "#/lib/http/etag.ts";
-import { negotiateSerialization } from "#/lib/rdf/serialization.ts";
-import { LocalWorlds } from "#/lib/worlds/core.ts";
+import { type WorldsContext } from "@wazoo/worlds-sdk";
+import {
+  ErrorResponse,
+  handleETagRequest,
+  LocalWorlds,
+  rdf,
+} from "@wazoo/worlds-sdk";
+const { negotiateSerialization } = rdf;
 
-export default (appContext: ServerContext) => {
+export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);
 
   return new Router()

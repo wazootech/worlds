@@ -1,6 +1,6 @@
 import type { WorldsOptions } from "./options.ts";
-import { RemoteWorlds } from "./clients/worlds/sdk.ts";
-import type { WorldsInterface } from "./clients/worlds/types.ts";
+import { RemoteWorlds } from "./remote.ts";
+import type { WorldsInterface } from "./types.ts";
 import type {
   CreateWorldParams,
   ExecuteSparqlOutput,
@@ -9,7 +9,7 @@ import type {
   TripleSearchResult,
   UpdateWorldParams,
   World,
-} from "./clients/worlds/schema.ts";
+} from "./schema.ts";
 
 /**
  * Worlds is the main entry point for the Worlds API SDK.

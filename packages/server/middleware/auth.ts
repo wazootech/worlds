@@ -1,4 +1,4 @@
-import type { ServerContext } from "#/context.ts";
+import type { WorldsContext } from "@wazoo/worlds-sdk";
 
 /**
  * AuthorizedRequest is the result of a successful authentication.
@@ -12,7 +12,7 @@ export interface AuthorizedRequest {
  * Accepts only the admin API key.
  */
 export function authorizeRequest(
-  appContext: ServerContext,
+  appContext: WorldsContext,
   request: Request,
 ): AuthorizedRequest {
   if (!appContext.apiKey) {

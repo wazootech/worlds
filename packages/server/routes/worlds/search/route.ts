@@ -1,10 +1,9 @@
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
-import type { ServerContext } from "#/context.ts";
-import { ErrorResponse } from "#/lib/errors/errors.ts";
-import { LocalWorlds } from "#/lib/worlds/core.ts";
+import type { WorldsContext } from "@wazoo/worlds-sdk";
+import { ErrorResponse, LocalWorlds } from "@wazoo/worlds-sdk";
 
-export default (appContext: ServerContext) => {
+export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);
 
   return new Router().get(

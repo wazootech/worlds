@@ -6,7 +6,7 @@ import {
 } from "#/lib/testing/context.ts";
 import createRoute from "./route.ts";
 import { WorldsRepository } from "#/lib/database/tables/worlds/repository.ts";
-import { LogsRepository } from "#/lib/database/tables/logs/repository.ts";
+import { LogsRepository } from "#/lib/database/repositories/world/logs/mod.ts";
 
 Deno.test("World Logs API routes", async (t) => {
   const testContext = await createTestContext();

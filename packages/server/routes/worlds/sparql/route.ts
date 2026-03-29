@@ -1,10 +1,9 @@
 import { Router } from "@fartlabs/rt";
 import type { RdfFormat } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
-import { negotiateSerialization } from "#/lib/rdf/serialization.ts";
-import type { ServerContext } from "#/context.ts";
-import { ErrorResponse } from "#/lib/errors/errors.ts";
-import { LocalWorlds } from "#/lib/worlds/core.ts";
+import type { WorldsContext } from "@wazoo/worlds-sdk";
+import { ErrorResponse, LocalWorlds, rdf } from "@wazoo/worlds-sdk";
+const { negotiateSerialization } = rdf;
 
 /**
  * parseQuery parses the query and dataset parameters from the request.
@@ -39,7 +38,7 @@ async function parseQuery(request: Request) {
   return { query, defaultGraphUris, namedGraphUris };
 }
 
-export default (appContext: ServerContext) => {
+export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);
 
   return new Router()
