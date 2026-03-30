@@ -1,0 +1,114 @@
+import type { Client } from "@libsql/client";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import type { Patch } from "./types.ts";
+import { skolemizeQuad } from "./skolem.ts";
+import type { Embeddings } from "../../embeddings/embeddings.ts";
+import { TriplesRepository } from "../../database/repositories/world/triples/mod.ts";
+import { ChunksRepository } from "../../database/repositories/world/chunks/mod.ts";
+
+/**
+ * handlePatch handles RDF patches by upserting and deleting triples and chunks.
+ * @param client The database client.
+ * @param embeddings The embeddings strategy.
+ * @param patches The patches to apply.
+ */
+export async function handlePatch(
+  client: Client,
+  embeddings: Embeddings,
+  patches: Patch[],
+) {
+  const triplesRepository = new TriplesRepository(client);
+  const chunksRepository = new ChunksRepository(client);
+
+  try {
+    for (const patch of patches) {
+      if (patch.deletions) {
+        for (const q of patch.deletions) {
+          const skolemizedStr = await skolemizeQuad(q);
+          const tripleId = await hash(skolemizedStr);
+
+          await triplesRepository.delete(tripleId);
+        }
+      }
+
+      if (patch.insertions) {
+        for (const q of patch.insertions) {
+          const quadId = await skolemizeQuad(q);
+          const isFtsEligible = (q.object.termType === "Literal") &&
+            (q.object.value.length > 0); // Check if literal has text for FTS
+
+          const tripleId = await hash(quadId); // Use quadId for deterministic tripleId
+
+          // Use original values for columns, but deterministic ID
+          const subject = q.subject.value;
+          const predicate = q.predicate.value;
+          const object = q.object.value;
+
+          // Calculate embedding if object is a literal and has text
+          let vector: number[] | null = null;
+          if (isFtsEligible) {
+            try {
+              vector = await embeddings.embed(object);
+            } catch (_error) {
+              // Continue without vector - triples will be stored but not searchable via semantic search
+            }
+          }
+
+          // Upsert triple
+          await triplesRepository.upsert({
+            id: tripleId,
+            subject,
+            predicate,
+            object,
+            vector: null, // Triples table doesn't store vector in this schema, only Chunks
+          });
+
+          // Create and upsert chunks
+          if (vector) {
+            // Split text using RecursiveCharacterTextSplitter
+            const splitter = new RecursiveCharacterTextSplitter({
+              chunkSize: 1000, // Default to reasonable size
+              chunkOverlap: 200,
+            });
+            const chunks = await splitter.splitText(object);
+
+            for (let i = 0; i < chunks.length; i++) {
+              const chunkText = chunks[i];
+              let chunkVector = vector; // Default to object vector if single chunk
+
+              // If multiple chunks, re-embed each chunk
+              if (chunks.length > 1) {
+                try {
+                  chunkVector = await embeddings.embed(chunkText);
+                } catch (_error) {
+                  // Use the original vector if re-embedding fails, or continue without vector if original failed too
+                }
+              }
+
+              const chunkId = await hash(
+                `${tripleId}:chunk:${i}`,
+              );
+              await chunksRepository.upsert({
+                id: chunkId,
+                triple_id: tripleId,
+                subject,
+                predicate,
+                text: chunkText,
+                vector: new Uint8Array(new Float32Array(chunkVector).buffer),
+              });
+            }
+          }
+        }
+      }
+    }
+  } catch (_error) {
+    throw _error;
+  }
+}
+
+async function hash(msg: string): Promise<string> {
+  const msgUint8 = new TextEncoder().encode(msg);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
