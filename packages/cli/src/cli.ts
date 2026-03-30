@@ -379,7 +379,7 @@ export class WorldsCli {
     const tools = createTools({
       worlds: this.worlds,
       sources: [
-        { id: parsed.worldId, write: parsed.write ?? false },
+        { world: parsed.worldId, write: parsed.write ?? false },
       ],
     });
 

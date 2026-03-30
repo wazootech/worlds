@@ -62,9 +62,9 @@ export class RemoteWorlds implements WorldsInterface {
    * get fetches a single world from the Worlds API.
    */
   public async get(
-    id: string,
+    idOrSlug: string,
   ): Promise<World | null> {
-    const url = new URL(`${this.options.baseUrl}/worlds/${id}`);
+    const url = new URL(`${this.options.baseUrl}/worlds/${idOrSlug}`);
 
     const response = await this.fetch(
       url,
@@ -115,10 +115,10 @@ export class RemoteWorlds implements WorldsInterface {
    * update updates a world in the Worlds API.
    */
   public async update(
-    id: string,
+    idOrSlug: string,
     data: UpdateWorldParams,
   ): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/worlds/${id}`);
+    const url = new URL(`${this.options.baseUrl}/worlds/${idOrSlug}`);
 
     const response = await this.fetch(
       url,
@@ -141,9 +141,9 @@ export class RemoteWorlds implements WorldsInterface {
    * delete deletes a world from the Worlds API.
    */
   public async delete(
-    id: string,
+    idOrSlug: string,
   ): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/worlds/${id}`);
+    const url = new URL(`${this.options.baseUrl}/worlds/${idOrSlug}`);
 
     const response = await this.fetch(
       url,
@@ -164,7 +164,7 @@ export class RemoteWorlds implements WorldsInterface {
    * sparql executes a SPARQL query or update against a world.
    */
   public async sparql(
-    id: string,
+    idOrSlug: string,
     query: string,
     options?: {
       defaultGraphUris?: string[];
@@ -172,7 +172,7 @@ export class RemoteWorlds implements WorldsInterface {
     },
   ): Promise<ExecuteSparqlOutput> {
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${id}/sparql`,
+      `${this.options.baseUrl}/worlds/${idOrSlug}/sparql`,
     );
 
     if (options?.defaultGraphUris) {
@@ -215,10 +215,10 @@ export class RemoteWorlds implements WorldsInterface {
    * ask performs a deterministic boolean check (SPARQL ASK) against a world.
    */
   public async ask(
-    id: string,
+    idOrSlug: string,
     queryOrTriple: string,
   ): Promise<boolean> {
-    const result = await this.sparql(id, queryOrTriple);
+    const result = await this.sparql(idOrSlug, queryOrTriple);
     if (!result || typeof result !== "object" || !("boolean" in result)) {
       return false;
     }
@@ -229,7 +229,7 @@ export class RemoteWorlds implements WorldsInterface {
    * search performs semantic/text search on a world using vector embeddings.
    */
   public async search(
-    id: string,
+    idOrSlug: string,
     query: string,
     options?: {
       limit?: number;
@@ -239,7 +239,7 @@ export class RemoteWorlds implements WorldsInterface {
     },
   ): Promise<TripleSearchResult[]> {
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${id}/search`,
+      `${this.options.baseUrl}/worlds/${idOrSlug}/search`,
     );
 
     url.searchParams.set("query", query);
@@ -283,14 +283,14 @@ export class RemoteWorlds implements WorldsInterface {
    * import ingests RDF data into a world.
    */
   public async import(
-    id: string,
+    idOrSlug: string,
     data: string | ArrayBuffer,
     options?: {
       format?: RdfFormat;
     },
   ): Promise<void> {
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${id}/import`,
+      `${this.options.baseUrl}/worlds/${idOrSlug}/import`,
     );
 
     const contentType = options?.format === "turtle"
@@ -320,11 +320,11 @@ export class RemoteWorlds implements WorldsInterface {
    * export exports a world in the specified RDF format.
    */
   public async export(
-    id: string,
+    idOrSlug: string,
     options?: { format?: RdfFormat },
   ): Promise<ArrayBuffer> {
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${id}/export`,
+      `${this.options.baseUrl}/worlds/${idOrSlug}/export`,
     );
     if (options?.format) {
       url.searchParams.set("format", options.format);
@@ -348,11 +348,11 @@ export class RemoteWorlds implements WorldsInterface {
    * getServiceDescription retrieves the SPARQL service description.
    */
   public async getServiceDescription(
-    id: string,
+    idOrSlug: string,
     options: { endpointUrl: string; format?: RdfFormat },
   ): Promise<string> {
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${id}/sparql`,
+      `${this.options.baseUrl}/worlds/${idOrSlug}/sparql`,
     );
     if (options.format) {
       url.searchParams.set("format", options.format);
@@ -379,7 +379,7 @@ export class RemoteWorlds implements WorldsInterface {
    * listLogs retrieves execution and audit logs.
    */
   public async listLogs(
-    id: string,
+    idOrSlug: string,
     options?: {
       page?: number;
       pageSize?: number;
@@ -387,7 +387,7 @@ export class RemoteWorlds implements WorldsInterface {
     },
   ): Promise<Log[]> {
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${id}/logs`,
+      `${this.options.baseUrl}/worlds/${idOrSlug}/logs`,
     );
 
     if (options?.page) {

@@ -1,16 +1,17 @@
 import type { DiscoverSchemaTool } from "./tools/discover-schema.ts";
-import { createDiscoverSchemaTool } from "./tools/discover-schema.ts";
 import type { ExecuteSparqlTool } from "./tools/execute-sparql.ts";
-import { createExecuteSparqlTool } from "./tools/execute-sparql.ts";
 import type { GenerateIriTool } from "./tools/generate-iri.ts";
-import { createGenerateIriTool } from "./tools/generate-iri.ts";
 import type { SearchEntitiesTool } from "./tools/search-entities.ts";
-import { createSearchEntitiesTool } from "./tools/search-entities.ts";
 import type { DisambiguateEntitiesTool } from "./tools/disambiguate-entities.ts";
-import { createDisambiguateEntitiesTool } from "./tools/disambiguate-entities.ts";
 import type { ValidateRdfTool } from "./tools/validate-rdf.ts";
-import { createValidateRdfTool } from "./tools/validate-rdf.ts";
 import type { CreateToolsOptions } from "./options.ts";
+import type { Source } from "@wazoo/worlds-sdk";
+import { createDiscoverSchemaTool } from "./tools/discover-schema.ts";
+import { createExecuteSparqlTool } from "./tools/execute-sparql.ts";
+import { createGenerateIriTool } from "./tools/generate-iri.ts";
+import { createSearchEntitiesTool } from "./tools/search-entities.ts";
+import { createDisambiguateEntitiesTool } from "./tools/disambiguate-entities.ts";
+import { createValidateRdfTool } from "./tools/validate-rdf.ts";
 
 /**
  * createTools creates a toolset from a CreateToolsOptions.
@@ -23,15 +24,34 @@ export function createTools(options: CreateToolsOptions): {
   disambiguateEntities: DisambiguateEntitiesTool;
   validateRdf: ValidateRdfTool;
 } {
-  validateCreateToolsOptions(options);
+  const normalizedSources: Source[] = options.sources.map((s) =>
+    typeof s === "string" ? { world: s } : s
+  );
+  const normalizedOptions = { ...options, sources: normalizedSources };
+
+  validateCreateToolsOptions(
+    normalizedOptions as unknown as CreateToolsOptions,
+  );
 
   return {
-    discoverSchema: createDiscoverSchemaTool(options),
-    executeSparql: createExecuteSparqlTool(options),
-    generateIri: createGenerateIriTool(options),
-    searchEntities: createSearchEntitiesTool(options),
-    disambiguateEntities: createDisambiguateEntitiesTool(options),
-    validateRdf: createValidateRdfTool(options),
+    discoverSchema: createDiscoverSchemaTool(
+      normalizedOptions as unknown as CreateToolsOptions,
+    ),
+    executeSparql: createExecuteSparqlTool(
+      normalizedOptions as unknown as CreateToolsOptions,
+    ),
+    generateIri: createGenerateIriTool(
+      normalizedOptions as unknown as CreateToolsOptions,
+    ),
+    searchEntities: createSearchEntitiesTool(
+      normalizedOptions as unknown as CreateToolsOptions,
+    ),
+    disambiguateEntities: createDisambiguateEntitiesTool(
+      normalizedOptions as unknown as CreateToolsOptions,
+    ),
+    validateRdf: createValidateRdfTool(
+      normalizedOptions as unknown as CreateToolsOptions,
+    ),
   };
 }
 
@@ -46,13 +66,14 @@ export function validateCreateToolsOptions(options: CreateToolsOptions) {
   let writable = false;
   const seen = new Set<string>();
   for (const source of options.sources) {
-    if (seen.has(source.id)) {
-      throw new Error(`Duplicate source ID: ${source.id}`);
+    const s = typeof source === "string" ? { world: source } : source;
+    if (seen.has(s.world)) {
+      throw new Error(`Duplicate source: ${s.world}`);
     }
 
-    seen.add(source.id);
+    seen.add(s.world);
 
-    if (source.write) {
+    if (s.write) {
       if (writable) {
         throw new Error("Multiple writable sources are not allowed.");
       }

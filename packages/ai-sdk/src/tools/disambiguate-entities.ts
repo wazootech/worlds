@@ -1,10 +1,8 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
-import {
-  type TripleSearchResult,
-  tripleSearchResultSchema,
-} from "@wazoo/worlds-sdk";
+import { tripleSearchResultSchema } from "@wazoo/worlds-sdk";
+import type { Tool } from "ai";
+import type { TripleSearchResult } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "#/options.ts";
 
 /**
@@ -110,12 +108,12 @@ export function defaultDisambiguate({
   // (Search results are already ranked by RRF)
   const best = candidates[0];
 
-  // If the top score is high enough (arbitrary threshold for demonstration), return it as a match
+  // If the top score is high enough, return it as a match
   if (best.score > 0.5) {
     return {
       match: best,
       confidence: best.score,
-      reason: `Highest ranking candidate selected based on RRF score.`,
+      reason: "Highest ranking candidate selected based on RRF score.",
     };
   }
 

@@ -28,7 +28,7 @@ export const tripleSchema: z.ZodType<Triple> = z.object({
 export interface ValidateRdfInput {
   triples: Triple[];
   ontology: Ontology;
-  worldId?: string;
+  source?: string;
 }
 
 /**
@@ -42,8 +42,8 @@ export const validateRdfInputSchema: z.ZodType<ValidateRdfInput> = z
     ontology: ontologySchema.describe(
       "The ontology (allowed classes and properties) to validate against. Usually discovered via the schema discovery tool or provided in the prompt.",
     ),
-    worldId: z.string().optional().describe(
-      "The ID of the world this validation is for. If provided, the tool can fetch current subject context for deeper validation.",
+    source: z.string().optional().describe(
+      "The ID or slug of the source this validation is for. If provided, the tool can fetch current subject context for deeper validation.",
     ),
   });
 

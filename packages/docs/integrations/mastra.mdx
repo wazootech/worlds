@@ -47,9 +47,9 @@ const worlds = new Worlds({
 });
 
 // Initialize the Worlds toolset
-const worldsTools = createTools({
+const { executeSparql, searchEntities } = createTools({
   worlds,
-  sources: [{ id: "my-world-id" }],
+  sources: ["my-world-slug"],
 });
 
 // Create a Mastra agent with Worlds tools
@@ -58,7 +58,8 @@ const agent = new Agent({
   instructions: "You are a knowledge graph assistant.",
   model: openai("gpt-4o"),
   tools: {
-    ...worldsTools,
+    executeSparql,
+    searchEntities,
   },
 });
 

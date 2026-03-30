@@ -1,14 +1,16 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
 import * as n3 from "n3";
+import type { Tool } from "ai";
 import type { CreateToolsOptions } from "#/options.ts";
 import {
-  type Triple,
   validateRdf,
-  type ValidateRdfInput,
   validateRdfInputSchema,
-  type ValidateRdfOutput,
   validateRdfOutputSchema,
+} from "#/validate.ts";
+import type {
+  Triple,
+  ValidateRdfInput,
+  ValidateRdfOutput,
 } from "#/validate.ts";
 
 /**
@@ -20,8 +22,10 @@ export type ValidateRdfTool = Tool<ValidateRdfInput, ValidateRdfOutput>;
  * createValidateRdfTool creates a tool that validates RDF data against an ontology.
  */
 export function createValidateRdfTool(
-  options: Partial<CreateToolsOptions> = {},
+  options: CreateToolsOptions,
 ): ValidateRdfTool {
+  const { worlds, sources } = options;
+
   return tool({
     description:
       "Validate a set of RDF data against an allowed ontology and SHACL shapes before inserting them. " +
@@ -29,12 +33,17 @@ export function createValidateRdfTool(
     inputSchema: validateRdfInputSchema,
     outputSchema: validateRdfOutputSchema,
     execute: async (input: ValidateRdfInput) => {
-      const { worldId } = input;
+      const { source, triples: _triples } = input;
       let contextRdf: Triple[] = [];
 
-      if (worldId && options.worlds) {
+      const s = sources.find((s) =>
+        (typeof s === "string" ? s : s.world) === source
+      );
+      const hasSchemaSupport = typeof s === "object" ? s.schema : false;
+
+      if (source && worlds && hasSchemaSupport) {
         try {
-          const buffer = await options.worlds.export(worldId, {
+          const buffer = await worlds.export(source, {
             format: "n-triples",
           });
           const text = new TextDecoder().decode(buffer);

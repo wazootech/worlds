@@ -3,8 +3,6 @@ import { errorResponseDataSchema } from "./schema.ts";
 
 /**
  * parseError parses an error response from the API.
- * @param response The HTTP response.
- * @returns A human-readable error message.
  */
 export async function parseError(response: Response): Promise<string> {
   let errorMessage = `${response.status} ${response.statusText}`;
@@ -30,8 +28,6 @@ export async function parseError(response: Response): Promise<string> {
 
 /**
  * isSparqlUpdate checks if a SPARQL query is an update operation.
- * @param query The SPARQL query string.
- * @returns True if it's an update, false otherwise.
  */
 export function isSparqlUpdate(query: string): boolean {
   // Normalize the query: remove comments and normalize whitespace
@@ -42,7 +38,6 @@ export function isSparqlUpdate(query: string): boolean {
     .toUpperCase();
 
   // Check for update keywords at the start (after optional prefixes)
-  // Update operations: INSERT, DELETE, LOAD, CLEAR, DROP, CREATE, ADD, MOVE, COPY
   const updateKeywords = [
     "INSERT",
     "DELETE",
@@ -71,12 +66,14 @@ export function isSparqlUpdate(query: string): boolean {
 export function parseSources(sources: Array<string | Source>): Source[] {
   const seen = new Set<string>();
   return sources.map((source) => {
-    const parsed: Source = typeof source === "string" ? { id: source } : source;
-    if (seen.has(parsed.id)) {
-      throw new Error(`Duplicate source ID: ${parsed.id}`);
+    const parsed: Source = typeof source === "string"
+      ? { world: source }
+      : source;
+    if (seen.has(parsed.world)) {
+      throw new Error(`Duplicate source: ${parsed.world}`);
     }
 
-    seen.add(parsed.id);
+    seen.add(parsed.world);
     return parsed;
   });
 }

@@ -17,7 +17,7 @@ export interface DiscoverSchemaInput {
 export const discoverSchemaInputSchema: z.ZodType<DiscoverSchemaInput> = z
   .object({
     source: z.string().describe(
-      "The ID of the schema source to discover concepts from.",
+      "The ID or slug of the schema source to discover concepts from.",
     ),
     referenceText: z.string().describe(
       "A natural language description of the entities or properties to discover (e.g., 'A person with a name').",
