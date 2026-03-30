@@ -174,7 +174,7 @@ export class WorldsCli {
       return;
     }
     const worldObj = await this.worlds.get(world);
-    console.log(JSON.stringify(world, null, 2));
+    console.log(JSON.stringify(worldObj, null, 2));
   }
 
   /**
