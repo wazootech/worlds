@@ -1,6 +1,6 @@
 ---
 title: "Query"
-description: "Deterministic reasoning and semantic traversal"
+description: "High-stakes reasoning and deterministic traversal"
 ---
 
 After disambiguating a starting item with [hybrid search](/worlds/search),
@@ -12,12 +12,14 @@ to perform deterministic reasoning.
 
 ## How it looks
 
-Given triples such as `user:ethan schema:worksAt org:wazoo`, query for all
-employees:
+Given triples such as `corp:acme corp:ownedBy corp:parent`, query for the parent
+company:
 
 ```sparql
-SELECT ?person WHERE {
-  ?person <http://schema.org/worksAt> <http://example.com/wazoo> .
+PREFIX corp: <http://corp.example/>
+
+SELECT ?parent WHERE {
+  <corp:acme> corp:ownedBy ?parent .
 }
 ```
 
@@ -36,9 +38,9 @@ Worlds combines both via [hybrid search](/worlds/search) so you get the best of
 each.
 
 Standard RAG struggles with evolving facts and complex relational queries.
-Worlds solves this using stateful Graph RAG.
+Worlds solves this using **high-stakes verifiable context**.
 
-## Limits of stateless RAG
+## Limits of probabilistic RAG
 
 In traditional RAG, you chunk and embed text for retrieval based on semantic
 similarity. This works for static information but fails to capture relationship
@@ -59,14 +61,14 @@ contradiction via heuristics. As data grows, retrieval becomes noisy.
 ```text
 You are a deterministic agent connected to a Worlds knowledge graph.
 When answering user queries:
-1. Use your tools to perform a SPARQL query or [hybrid search](/worlds/search) on the stateful memory.
-2. The retrieved relationships represent the CURRENT, VERIFIED state.
+1. Use your tools to perform a SPARQL query or [hybrid search](/worlds/search) on the verifiable context.
+2. The retrieved relationships represent the CURRENT, PROVABLE state.
 3. Respond strictly utilizing the relationships extracted, overriding any probabilistic generation.
 ```
 
 </Prompt>
 
-## Stateful memory
+## High-stakes context
 
 Worlds maintains a **living knowledge graph**. Instead of storing raw text, it
 extracts meaning as [triples](/worlds#facts), namely subject → predicate →
@@ -75,7 +77,7 @@ object.
 When facts change, Worlds updates specific graph relationships. This resolves
 contradictions at the data layer rather than relying on LLM reasoning.
 
-### RAG vs Worlds
+### RAG vs. Worlds
 
 ![RAG vs Graph RAG](/images/rag-vs-worlds.png)
 

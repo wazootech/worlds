@@ -47,7 +47,8 @@ const tools = createTools({
 const { text } = await generateText({
   model: openai("gpt-4o"),
   tools,
-  prompt: "Find all people in the knowledge base and describe them.",
+  prompt:
+    "Identify the ultimate beneficial owner of the holding company and cite the source.",
 });
 ```
 
