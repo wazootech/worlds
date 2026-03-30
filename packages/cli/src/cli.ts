@@ -320,10 +320,11 @@ export class WorldsCli {
   public async chat(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help", "write"],
-      string: ["world", "userIri"],
+      string: ["world", "userIri", "assistantIri"],
       alias: {
         w: "world",
         u: "userIri",
+        a: "assistantIri",
         h: "help",
       },
     });
@@ -331,13 +332,14 @@ export class WorldsCli {
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds chat --world <id> [--write] [--userIri <iri>]",
+        "Usage: worlds chat --world <id> [--write] [--userIri <iri>] [--assistantIri <iri>]",
       );
       console.log("");
       console.log("Options:");
-      console.log("  -w, --world   World ID to chat in (required)");
-      console.log("  --write         Enable write operations");
-      console.log("  -u, --userIri   User IRI for provenance");
+      console.log("  -w, --world        World ID to chat in (required)");
+      console.log("  --write            Enable write operations");
+      console.log("  -u, --userIri      User IRI for provenance");
+      console.log("  -a, --assistantIri Assistant IRI for provenance");
       console.log("");
       console.log("Environment:");
       console.log(
@@ -351,7 +353,7 @@ export class WorldsCli {
 
     if (!parsed.world) {
       console.error(
-        "Usage: worlds chat --world <id> [--write] [--userIri <iri>]",
+        "Usage: worlds chat --world <id> [--write] [--userIri <iri>] [--assistantIri <iri>]",
       );
       return;
     }
@@ -428,6 +430,9 @@ export class WorldsCli {
           `The available source ID is "${parsed.world}". Always use this exact ID when calling tools that require a source parameter. ` +
           (parsed.userIri
             ? `The current user IRI is ${parsed.userIri}. `
+            : "") +
+          (parsed.assistantIri
+            ? `Your active AI assistant IRI is ${parsed.assistantIri}. `
             : "") +
           "When the user asks a question, use the tools to find the answer. " +
           "Be concise in your responses.",
