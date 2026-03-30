@@ -4,7 +4,7 @@ import { useState } from "react";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { DialogCloseButton } from "@/components/ui/dialog-close-button";
 
-export function ConnectSdkButton({
+export function ConnectWorldsButton({
   codeSnippet,
   maskedCodeSnippetHtml,
 }: {
@@ -40,7 +40,7 @@ export function ConnectSdkButton({
       </button>
 
       {isOpen && (
-        <ConnectSdkDialog
+        <ConnectWorldsDialog
           codeSnippet={codeSnippet}
           maskedCodeSnippetHtml={maskedCodeSnippetHtml}
           onClose={() => setIsOpen(null)}
@@ -50,7 +50,7 @@ export function ConnectSdkButton({
   );
 }
 
-function ConnectSdkDialog({
+function ConnectWorldsDialog({
   codeSnippet,
   maskedCodeSnippetHtml,
   onClose,
@@ -87,7 +87,7 @@ function ConnectSdkDialog({
       >
         <div className="flex items-center justify-between p-6 border-b border-stone-200 dark:border-stone-800">
           <h2 className="text-xl font-bold text-stone-900 dark:text-white">
-            Connect via SDK
+            Connect to Worlds
           </h2>
           <DialogCloseButton onClick={onClose} variant="inline" />
         </div>

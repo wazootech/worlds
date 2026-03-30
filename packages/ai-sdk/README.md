@@ -31,16 +31,16 @@ The tools are designed to work seamlessly with the
 ```typescript
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { Worlds } from "@wazoo/worlds-sdk";
 import { createTools } from "@wazoo/worlds-ai-sdk";
 
-const sdk = new WorldsSdk({
+const worlds = new Worlds({
   apiKey: process.env.WORLDS_API_KEY,
   baseUrl: "https://api.worlds.dev",
 });
 
 const tools = createTools({
-  sdk,
+  worlds,
   sources: [{ id: "my-world-id" }],
 });
 

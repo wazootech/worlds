@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth";
 import { getWorkOS } from "@/lib/platform";
-import { getSdkForOrg } from "@/lib/sdk";
+import { getWorldsByOrgMetadata } from "@/lib/worlds";
 
 export async function POST(
   req: NextRequest,
@@ -35,17 +35,17 @@ export async function POST(
       },
     );
   }
-  const sdk = getSdkForOrg(organization);
+  const worlds = getWorldsByOrgMetadata(organization);
 
   const body = await req.text();
 
   try {
     // Resolve world to ensure we have the actual ID for sub-resource call
-    const world = await sdk.worlds.get(worldId);
+    const world = await worlds.get(worldId);
     if (!world) {
       return NextResponse.json({ error: "World not found" }, { status: 404 });
     }
-    const result = await sdk.worlds.sparql(world.id, body);
+    const result = await worlds.sparql(world.id, body);
     console.log("SPARQL Result:", result);
     return NextResponse.json(result);
   } catch (error) {

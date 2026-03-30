@@ -1,6 +1,6 @@
 ---
 title: "Worlds"
-description: "The neuro-symbolic building blocks of verifiable context."
+description: "The neuro-symbolic components of verifiable context."
 ---
 
 A world is a stateful knowledge graph engine that functions as an agent's
@@ -127,6 +127,34 @@ Corp".
 ```turtle Turtle
 corp:acme a schema:Organization ;
  schema:legalName "Acme Corp" .
+```
+
+## Verification
+
+To verify a fact, Worlds uses the SPARQL **ASK** query. This provides a
+deterministic boolean answer without probabilistic guessing.
+
+For example, to verify if "Acme Corp is owned by Parent Co", use:
+
+```sparql SPARQL
+PREFIX corp: <http://corp.example/>
+
+ASK WHERE {
+  corp:acme corp:ownedBy corp:parent .
+}
+```
+
+In the SDK, use the `sparql` method to perform this check:
+
+```typescript TypeScript
+const result = await worlds.sparql(
+  worldId,
+  "PREFIX corp: <http://corp.example/> ASK WHERE { corp:acme corp:ownedBy corp:parent . }",
+);
+
+if (result.boolean) {
+  // Fact is verified
+}
 ```
 
 ## Why care?

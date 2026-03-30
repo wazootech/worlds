@@ -81,10 +81,10 @@ const terms = {
  * discoverSchema discovers classes and properties.
  */
 export async function discoverSchema(
-  sdk: Worlds,
+  worlds: Worlds,
   { source, referenceText, limit = 10 }: DiscoverSchemaInput,
 ): Promise<DiscoverSchemaOutput> {
-  const searchResults = await sdk.search(source, referenceText, {
+  const searchResults = await worlds.search(source, referenceText, {
     limit: limit * 5, // Fetch more candidates to ensure we get enough unique subjects
     types: [
       terms.rdfs.Class,
@@ -110,7 +110,7 @@ export async function discoverSchema(
 
   // Batch hydrate with one SPARQL query
   const subjectsValues = subjectsArray.map((s) => `<${s}>`).join(" ");
-  const output = await sdk.sparql(
+  const output = await worlds.sparql(
     source,
     `
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

@@ -86,12 +86,10 @@ and monitor your agent's memory.
 The Worlds Platform AI SDK provides first-class support for LLM tool-calling.
 
 ```typescript
-import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
-import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { Worlds } from "@wazoo/worlds-sdk";
 import { createTools } from "@wazoo/worlds-ai-sdk";
 
-const sdk = new WorldsSdk({
+const worlds = new Worlds({
   baseUrl: "http://localhost:8000",
   apiKey: "your-api-key",
 });
@@ -99,7 +97,7 @@ const sdk = new WorldsSdk({
 const { text } = await generateText({
   model: openai("gpt-4o"),
   tools: createTools({
-    sdk,
+    worlds,
     sources: [{ id: "my-knowledge-base" }],
   }),
   prompt:
@@ -121,10 +119,10 @@ deno add jsr:@wazoo/worlds-sdk
 ### Quickstart
 
 ```typescript
-import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { Worlds } from "@wazoo/worlds-sdk";
 
 // Initialize the client.
-const sdk = new WorldsSdk({
+const worlds = new Worlds({
   baseUrl: "http://localhost:8000",
   apiKey: "your-api-key",
 });
@@ -132,7 +130,7 @@ const sdk = new WorldsSdk({
 const worldId = "my-knowledge-base";
 
 // Add mission-critical knowledge (triples) to your world.
-await sdk.worlds.sparql(
+await worlds.sparql(
   worldId,
   `
   INSERT DATA {
@@ -143,7 +141,7 @@ await sdk.worlds.sparql(
 );
 
 // Perform deterministic reasoning over your world.
-const result = await sdk.worlds.sparql(
+const result = await worlds.sparql(
   worldId,
   `
   SELECT ?parentName WHERE {

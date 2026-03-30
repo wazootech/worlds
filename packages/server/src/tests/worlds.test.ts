@@ -1,8 +1,8 @@
 import { assert, assertEquals, assertExists } from "@std/assert";
-import { createServer } from "../server.ts";
 import { createTestContext } from "@wazoo/worlds-sdk/testing";
 import { RemoteWorlds as Worlds } from "@wazoo/worlds-sdk";
 import type { SparqlSelectResults } from "@wazoo/worlds-sdk/schema";
+import { createServer } from "../server.ts";
 
 Deno.test("Worlds", async (t) => {
   const appContext = await createTestContext();

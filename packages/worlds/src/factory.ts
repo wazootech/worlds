@@ -6,7 +6,7 @@ import { createOllama } from "ollama-ai-provider";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createClient as createTursoClient } from "@tursodatabase/api";
 import { dirname } from "@std/path";
-import { Worlds } from "./sdk.ts";
+import { Worlds } from "./worlds.ts";
 import { LocalWorlds } from "./local.ts";
 import { TursoCloudDatabaseManager } from "./database/managers/turso-cloud-manager.ts";
 import { FileDatabaseManager } from "./database/managers/file-manager.ts";

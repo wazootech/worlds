@@ -65,30 +65,30 @@ export default async function OrganizationLayout({
   const apiUrl =
     (organization.metadata?.apiBaseUrl as string) || "http://localhost:8000";
 
-  const codeSnippet = `import { WorldsSdk } from "@wazoo/worlds-sdk";
+  const codeSnippet = `import { Worlds } from "@wazoo/worlds-sdk";
 
-const sdk = new WorldsSdk({
+const worlds = new Worlds({
   baseUrl: "${apiUrl}",
   apiKey: "${apiKey}"
 });
 
-const worlds = await sdk.worlds.list();
-console.log("My worlds:", worlds.length);`;
+const list = await worlds.list();
+console.log("My worlds:", list.length);`;
 
   const maskedApiKey =
     apiKey === "YOUR_API_KEY"
       ? "YOUR_API_KEY"
       : apiKey.slice(0, 4) + "..." + apiKey.slice(-4);
 
-  const maskedCodeSnippet = `import { WorldsSdk } from "@wazoo/worlds-sdk";
+  const maskedCodeSnippet = `import { Worlds } from "@wazoo/worlds-sdk";
 
-const sdk = new WorldsSdk({
+const worlds = new Worlds({
   baseUrl: "${apiUrl}",
   apiKey: "${maskedApiKey}"
 });
 
-const worlds = await sdk.worlds.list();
-console.log("My worlds:", worlds.length);`;
+const list = await worlds.list();
+console.log("My worlds:", list.length);`;
 
   const maskedCodeSnippetHtml = await codeToHtml(maskedCodeSnippet, {
     lang: "typescript",

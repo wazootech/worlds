@@ -41,7 +41,7 @@ export type ExecuteSparqlTool = Tool<ExecuteSparqlInput, ExecuteSparqlOutput>;
  * createExecuteSparqlTool creates a tool that executes SPARQL queries and updates.
  */
 export function createExecuteSparqlTool(
-  { sdk, sources }: CreateToolsOptions,
+  { worlds, sources }: CreateToolsOptions,
 ): ExecuteSparqlTool {
   return tool({
     description:
@@ -61,7 +61,7 @@ export function createExecuteSparqlTool(
         );
       }
 
-      return await sdk.sparql(source, sparql);
+      return await worlds.sparql(source, sparql);
     },
   });
 }

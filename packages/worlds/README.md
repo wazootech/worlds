@@ -15,16 +15,16 @@ deno add @wazoo/worlds-sdk
 ## Usage
 
 ```typescript
-import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { Worlds } from "@wazoo/worlds-sdk";
 
 // Initialize the client.
-const sdk = new WorldsSdk({
+const worlds = new Worlds({
   baseUrl: "http://localhost:8000",
   apiKey: "your-api-key",
 });
 
 // Interact with worlds.
-const world = await sdk.worlds.get("my-world-id");
+const world = await worlds.get("my-world-id");
 ```
 
 ## Features

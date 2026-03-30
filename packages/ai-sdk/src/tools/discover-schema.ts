@@ -29,7 +29,7 @@ export function createDiscoverSchemaTool(
     inputSchema: discoverSchemaInputSchema,
     outputSchema: discoverSchemaOutputSchema,
     execute: async (input: DiscoverSchemaInput) => {
-      return await discoverSchema(options.sdk, input);
+      return await discoverSchema(options.worlds, input);
     },
   });
 }

@@ -11,7 +11,7 @@ import { createTools } from "@wazoo/worlds-ai-sdk";
  * WorldsCli is a command line application for the Worlds API.
  */
 export class WorldsCli {
-  public constructor(private readonly sdk: Worlds) {}
+  public constructor(private readonly worlds: Worlds) {}
 
   public static logo() {
     const renderResult = render("Worlds CLI", {
@@ -63,7 +63,7 @@ export class WorldsCli {
         "",
       );
 
-    const world = await this.sdk.create({
+    const world = await this.worlds.create({
       slug,
       label: parsed.label,
       description: parsed.description,
@@ -95,7 +95,7 @@ export class WorldsCli {
       );
       return;
     }
-    await this.sdk.update(worldId, {
+    await this.worlds.update(worldId, {
       slug: parsed.slug,
       label: parsed.label,
       description: parsed.description,
@@ -123,7 +123,7 @@ export class WorldsCli {
       console.error("Usage: worlds delete <worldId>");
       return;
     }
-    await this.sdk.delete(worldId);
+    await this.worlds.delete(worldId);
     console.log(`Deleted world ${worldId}`);
   }
 
@@ -144,7 +144,7 @@ export class WorldsCli {
       );
       return;
     }
-    const worlds = await this.sdk.list({
+    const worlds = await this.worlds.list({
       page: parsed.page ? parseInt(parsed.page as string) : undefined,
       pageSize: parsed.pageSize
         ? parseInt(parsed.pageSize as string)
@@ -173,7 +173,7 @@ export class WorldsCli {
       console.error("Usage: worlds get <worldId>");
       return;
     }
-    const world = await this.sdk.get(worldId);
+    const world = await this.worlds.get(worldId);
     console.log(JSON.stringify(world, null, 2));
   }
 
@@ -209,7 +209,7 @@ export class WorldsCli {
       );
       return;
     }
-    const results = await this.sdk.search(worldId, query, {
+    const results = await this.worlds.search(worldId, query, {
       limit: parsed.limit ? parseInt(parsed.limit as string) : undefined,
       subjects: parsed.subjects,
       predicates: parsed.predicates,
@@ -246,7 +246,7 @@ export class WorldsCli {
       // Not a file, use as query string
     }
 
-    const results = await this.sdk.sparql(worldId, query);
+    const results = await this.worlds.sparql(worldId, query);
     console.log(JSON.stringify(results, null, 2));
   }
 
@@ -276,7 +276,7 @@ export class WorldsCli {
       return;
     }
     const data = await Deno.readFile(path);
-    await this.sdk.import(worldId, data.buffer as ArrayBuffer, {
+    await this.worlds.import(worldId, data.buffer as ArrayBuffer, {
       format: parsed.format as RdfFormat,
     });
     console.log(`Imported data into world ${worldId}`);
@@ -306,7 +306,7 @@ export class WorldsCli {
       );
       return;
     }
-    const buffer = await this.sdk.export(worldId, {
+    const buffer = await this.worlds.export(worldId, {
       format: parsed.format as RdfFormat,
     });
     await Deno.stdout.write(new Uint8Array(buffer));
@@ -356,7 +356,7 @@ export class WorldsCli {
       return;
     }
 
-    const world = await this.sdk.get(parsed.worldId);
+    const world = await this.worlds.get(parsed.worldId);
     if (!world) {
       console.error(`World "${parsed.worldId}" not found.`);
       return;
@@ -377,7 +377,7 @@ export class WorldsCli {
 
     // Set up tools.
     const tools = createTools({
-      sdk: this.sdk,
+      worlds: this.worlds,
       sources: [
         { id: parsed.worldId, write: parsed.write ?? false },
       ],
