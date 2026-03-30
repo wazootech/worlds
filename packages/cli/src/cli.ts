@@ -133,21 +133,21 @@ export class WorldsCli {
   public async list(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["page", "pageSize"],
-      alias: { p: "page", s: "pageSize", h: "help" },
+      string: ["page", "page-size"],
+      alias: { p: "page", s: "page-size", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds list [--page <n>] [--pageSize <n>]",
+        "Usage: worlds list [--page <n>] [--page-size <n>]",
       );
       return;
     }
     const worlds = await this.worlds.list({
       page: parsed.page ? parseInt(parsed.page as string) : undefined,
-      pageSize: parsed.pageSize
-        ? parseInt(parsed.pageSize as string)
+      pageSize: parsed["page-size"]
+        ? parseInt(parsed["page-size"] as string)
         : undefined,
     });
     console.log(JSON.stringify(worlds, null, 2));
@@ -320,11 +320,11 @@ export class WorldsCli {
   public async chat(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help", "write"],
-      string: ["world", "userIri", "assistantIri"],
+      string: ["world", "user-iri", "assistant-iri"],
       alias: {
         w: "world",
-        u: "userIri",
-        a: "assistantIri",
+        u: "user-iri",
+        a: "assistant-iri",
         h: "help",
       },
     });
@@ -332,14 +332,14 @@ export class WorldsCli {
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds chat --world <id> [--write] [--userIri <iri>] [--assistantIri <iri>]",
+        "Usage: worlds chat --world <id> [--write] [--user-iri <iri>] [--assistant-iri <iri>]",
       );
       console.log("");
       console.log("Options:");
       console.log("  -w, --world        World ID to chat in (required)");
       console.log("  --write            Enable write operations");
-      console.log("  -u, --userIri      User IRI for provenance");
-      console.log("  -a, --assistantIri Assistant IRI for provenance");
+      console.log("  -u, --user-iri      User IRI for provenance");
+      console.log("  -a, --assistant-iri Assistant IRI for provenance");
       console.log("");
       console.log("Environment:");
       console.log(
@@ -353,7 +353,7 @@ export class WorldsCli {
 
     if (!parsed.world) {
       console.error(
-        "Usage: worlds chat --world <id> [--write] [--userIri <iri>] [--assistantIri <iri>]",
+        "Usage: worlds chat --world <id> [--write] [--user-iri <iri>] [--assistant-iri <iri>]",
       );
       return;
     }
@@ -428,11 +428,11 @@ export class WorldsCli {
           "You are a helpful assistant that can query and manage a knowledge graph. " +
           "Use the provided tools to search, query, and update the knowledge base. " +
           `The available source ID is "${parsed.world}". Always use this exact ID when calling tools that require a source parameter. ` +
-          (parsed.userIri
-            ? `The current user IRI is ${parsed.userIri}. `
+          (parsed["user-iri"]
+            ? `The current user IRI is ${parsed["user-iri"]}. `
             : "") +
-          (parsed.assistantIri
-            ? `Your active AI assistant IRI is ${parsed.assistantIri}. `
+          (parsed["assistant-iri"]
+            ? `Your active AI assistant IRI is ${parsed["assistant-iri"]}. `
             : "") +
           "When the user asks a question, use the tools to find the answer. " +
           "Be concise in your responses.",
