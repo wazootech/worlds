@@ -1,15 +1,82 @@
 ---
 title: "Mastra"
-icon: "/images/icons/mastra.svg"
+icon: "mastra"
 description: "Connect Worlds to Mastra"
-hidden: true
 ---
 
-<Warning>
-  **Experimental Integration** This integration guide is a stub. The official
-  Worlds capabilities for this framework are under active development. Expect
-  API friction and missing language parity.
-</Warning>
-
 [Mastra](https://mastra.ai/) is an un-opinionated AI engine designed to run
-programmatic intelligence natively alongside your core application code.
+programmatic intelligence natively alongside your core application code. Since
+Mastra is built on Vercel AI SDK standards, Worlds tools work out of the box
+with Mastra agents.
+
+## Installation
+
+Install both the Mastra core and Worlds AI SDK:
+
+<CodeGroup>
+  ```bash deno
+  deno add jsr:@mastra/core jsr:@wazoo/worlds-ai-sdk
+  ```
+
+  ```bash npm
+  npx jsr add @mastra/core @wazoo/worlds-ai-sdk
+  ```
+
+  ```bash bun
+  bunx jsr add @mastra/core @wazoo/worlds-ai-sdk
+  ```
+
+  ```bash pnpm
+  pnpm i jsr:@mastra/core jsr:@wazoo/worlds-ai-sdk
+  ```
+</CodeGroup>
+
+## Usage
+
+You can pass Worlds tools directly to a Mastra `Agent`.
+
+```typescript
+import { Agent } from "@mastra/core/agent";
+import { openai } from "@ai-sdk/openai";
+import { Worlds } from "@wazoo/worlds-sdk";
+import { createTools } from "@wazoo/worlds-ai-sdk";
+
+const worlds = new Worlds({
+  apiKey: process.env.WORLDS_API_KEY,
+});
+
+// Initialize the Worlds toolset
+const worldsTools = createTools({
+  worlds,
+  sources: [{ id: "my-world-id" }],
+});
+
+// Create a Mastra agent with Worlds tools
+const agent = new Agent({
+  name: "WorldsAgent",
+  instructions: "You are a knowledge graph assistant.",
+  model: openai("gpt-4o"),
+  tools: {
+    ...worldsTools,
+  },
+});
+
+const result = await agent.generate("Find all people in my world.");
+console.log(result.text);
+```
+
+## Granular selection
+
+If you only need specific tools, you can import and initialize them individually:
+
+```typescript
+import { createSearchEntitiesTool } from "@wazoo/worlds-ai-sdk";
+
+const agent = new Agent({
+  name: "SearchAgent",
+  model: openai("gpt-4o"),
+  tools: {
+    search: createSearchEntitiesTool({ worlds, sources }),
+  },
+});
+```
