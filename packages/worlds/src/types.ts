@@ -56,6 +56,14 @@ export interface WorldsInterface {
   ): Promise<ExecuteSparqlOutput>;
 
   /**
+   * ask performs a deterministic boolean check (SPARQL ASK) against a world.
+   */
+  ask(
+    id: string,
+    queryOrTriple: string,
+  ): Promise<boolean>;
+
+  /**
    * search perform semantic/text search on triples in a world.
    */
   search(

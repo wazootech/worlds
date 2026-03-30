@@ -1,10 +1,10 @@
 ---
 title: "Worlds"
-description: "The neuro-symbolic building blocks of agentic memory."
+description: "The neuro-symbolic building blocks of verifiable context."
 ---
 
 A world is a stateful knowledge graph engine that functions as an agent's
-memory.
+verifiable context.
 
 <div align="center">
 
@@ -48,14 +48,14 @@ items using a property. Every fact is inherently bound to the dimension of
 **time**. Worlds maintains an append-only, chronological ledger of facts,
 allowing agents to understand exactly how state and information evolve.
 
-Conceptually, a fact functions exactly like a simple sentence. For example, the
-sentence, "Ethan is a person", can be represented as:
+Conceptually, a fact functions exactly like a structured assertion. For example,
+the assertion "Acme Corp is owned by Parent Co" can be represented as:
 
 <div align="center">
 
 ```mermaid
 graph LR
-    A((Ethan)) -->|is a| B((Person))
+    A((Acme Corp)) -->|ownedBy| B((Parent Co))
 ```
 
 </div>
@@ -101,8 +101,8 @@ types:
 ```mermaid
 graph LR
     subgraph "RDF graph"
-    A((user:ethan)) -->|schema:worksAt| B((org:wazoo))
-    A -->|schema:givenName| C[/"Ethan"/]
+    A((corp:acme)) -->|corp:ownedBy| B((corp:parent))
+    A -->|corp:legalName| C[/"Acme Corp"/]
     end
     style C stroke-dasharray: 5 5
 ```
@@ -114,18 +114,19 @@ graph LR
 To write these triples in code, Worlds uses **Turtle**, a standard RDF
 serialization format.
 
-To assert "Ethan is a person", the syntax goes:
+To assert "Acme Corp is a Legal Entity", the syntax goes:
 
 ```turtle Turtle
-user:ethan a schema:Person .
+corp:acme a schema:Organization .
 ```
 
 To expand on an item, use a semicolon `;` to chain multiple facts together.
-Here, we assert that Ethan is a person, and his literal name is "Ethan".
+Here, we assert that Acme Corp is an organization, and its legal name is "Acme
+Corp".
 
 ```turtle Turtle
-user:ethan a schema:Person ;
- schema:givenName "Ethan" .
+corp:acme a schema:Organization ;
+ schema:legalName "Acme Corp" .
 ```
 
 ## Why care?
