@@ -11,9 +11,9 @@ World instance using the Model Context Protocol.
   variable to execute the backend model generation.
 </Info>
 
-<ParamField path="--worldId" type="string" required>
-  The unique system identifier of the target world to attach to the AI agent.
-  *Alias:* `-w`
+<ParamField path="--world" type="string" required>
+  The unique ID or human-readable slug of the target world to attach to the AI
+  agent. *Alias:* `-w`
 </ParamField>
 
 <ParamField path="--write" type="boolean">
@@ -29,5 +29,5 @@ World instance using the Model Context Protocol.
 ### Usage
 
 ```bash
-OPENROUTER_API_KEY=sk_... worlds chat --worldId <worldId> --write
+OPENROUTER_API_KEY=sk_... worlds chat --world <world> --write
 ```

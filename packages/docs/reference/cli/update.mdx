@@ -7,7 +7,7 @@ Updates the high-level metadata assigned to a World. Note that this does _not_
 modify the graph data inside the World; for that, use the [sparql](./sparql.mdx)
 command.
 
-<ParamField path="worldId" type="string" required>
+<ParamField path="world" type="string" required>
   The unique system identifier of the target world.
 </ParamField>
 
@@ -26,5 +26,5 @@ command.
 ### Usage
 
 ```bash
-worlds update <worldId> --label "Production World"
+worlds update <world> --label "Production World"
 ```

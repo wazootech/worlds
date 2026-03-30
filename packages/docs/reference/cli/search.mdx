@@ -5,7 +5,7 @@ description: "Search items using hybrid similarity"
 
 Executes a semantic hybrid search against the world's underlying vector index.
 
-<ParamField path="worldId" type="string" required>
+<ParamField path="world" type="string" required>
   The unique system identifier of the target world.
 </ParamField>
 
@@ -30,5 +30,5 @@ Executes a semantic hybrid search against the world's underlying vector index.
 ### Usage
 
 ```bash
-worlds search <worldId> "the chemical composition of water" --limit 5
+worlds search <world> "the chemical composition of water" --limit 5
 ```

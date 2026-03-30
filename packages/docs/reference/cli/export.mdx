@@ -6,7 +6,7 @@ description: "Export a graph to a local file"
 Exports the entirety of a World's knowledge graph into a standard RDF
 serialization stream, emitted directly to standard out.
 
-<ParamField path="worldId" type="string" required>
+<ParamField path="world" type="string" required>
   The unique system identifier of the target world.
 </ParamField>
 
@@ -18,5 +18,5 @@ serialization stream, emitted directly to standard out.
 ### Usage
 
 ```bash
-worlds export <worldId> --format turtle > backup.ttl
+worlds export <world> --format turtle > backup.ttl
 ```

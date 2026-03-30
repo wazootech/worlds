@@ -5,7 +5,7 @@ description: "Import RDF triples into a world"
 
 Streams a local file containing RDF assertions into a remote world.
 
-<ParamField path="worldId" type="string" required>
+<ParamField path="world" type="string" required>
   The unique system identifier of the target world.
 </ParamField>
 
@@ -21,5 +21,5 @@ Streams a local file containing RDF assertions into a remote world.
 ### Usage
 
 ```bash
-worlds import <worldId> ./data.ttl --format turtle
+worlds import <world> ./data.ttl --format turtle
 ```

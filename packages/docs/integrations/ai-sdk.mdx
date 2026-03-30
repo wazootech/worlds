@@ -7,7 +7,7 @@ description: "Connect Worlds to Vercel AI SDK"
 The [Vercel AI SDK](https://sdk.vercel.ai/) is the TypeScript toolkit for
 building reliable AI applications with React, Svelte, and Vue. The Worlds
 Platform AI SDK provides tools for LLMs to interact with the
-[Worlds Platform](https://docs.wazoo.dev).
+[Worlds Platform](https://console.wazoo.dev).
 
 ## Installation
 
@@ -47,9 +47,10 @@ const worlds = new Worlds({
   apiKey: process.env.WORLDS_API_KEY,
 });
 
+// @wazoo/worlds-ai-sdk
 const tools = createTools({
   worlds,
-  sources: [{ id: "my-world-id" }],
+  sources: ["my-world-slug"],
 });
 
 const { text } = await generateText({
