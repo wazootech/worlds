@@ -59,7 +59,7 @@ export class RemoteWorlds implements WorldsInterface {
   }
 
   /**
-   * get gets a world from the Worlds API.
+   * get fetches a single world from the Worlds API.
    */
   public async get(
     id: string,
@@ -156,15 +156,12 @@ export class RemoteWorlds implements WorldsInterface {
     );
     if (!response.ok) {
       const errorMessage = await parseError(response);
-      throw new Error(`Failed to remove world: ${errorMessage}`);
+      throw new Error(`Failed to delete world: ${errorMessage}`);
     }
   }
 
   /**
-   * sparql executes a SPARQL query or update against a world
-   * in the Worlds API.
-   *
-   * @see https://www.w3.org/TR/sparql11-protocol/
+   * sparql executes a SPARQL query or update against a world.
    */
   public async sparql(
     id: string,
@@ -215,7 +212,21 @@ export class RemoteWorlds implements WorldsInterface {
   }
 
   /**
-   * search searches a world.
+   * ask performs a deterministic boolean check (SPARQL ASK) against a world.
+   */
+  public async ask(
+    id: string,
+    queryOrTriple: string,
+  ): Promise<boolean> {
+    const result = await this.sparql(id, queryOrTriple);
+    if (!result || typeof result !== "object" || !("boolean" in result)) {
+      return false;
+    }
+    return result.boolean as boolean;
+  }
+
+  /**
+   * search performs semantic/text search on a world using vector embeddings.
    */
   public async search(
     id: string,
@@ -269,7 +280,7 @@ export class RemoteWorlds implements WorldsInterface {
   }
 
   /**
-   * import imports data into a world.
+   * import ingests RDF data into a world.
    */
   public async import(
     id: string,
@@ -334,7 +345,7 @@ export class RemoteWorlds implements WorldsInterface {
   }
 
   /**
-   * getServiceDescription gets the SPARQL service description.
+   * getServiceDescription retrieves the SPARQL service description.
    */
   public async getServiceDescription(
     id: string,
@@ -365,7 +376,7 @@ export class RemoteWorlds implements WorldsInterface {
   }
 
   /**
-   * listLogs lists the logs for a world.
+   * listLogs retrieves execution and audit logs.
    */
   public async listLogs(
     id: string,

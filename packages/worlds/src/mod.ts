@@ -4,7 +4,7 @@
  * of the WorldsInterface.
  * @module
  */
-export * from "./sdk.ts";
+export * from "./worlds.ts";
 export * from "./local.ts";
 export * from "./errors/errors.ts";
 export * from "./remote.ts";

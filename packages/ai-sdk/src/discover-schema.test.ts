@@ -7,14 +7,14 @@ Deno.test("discoverSchema function - Class and Property Discovery", async () => 
   const appContext = await createTestContext();
   const server = await createServer(appContext);
 
-  const sdk = new Worlds({
+  const worlds = new Worlds({
     baseUrl: "http://localhost",
     apiKey: appContext.apiKey!,
     fetch: (url: string | URL | Request, init?: RequestInit) =>
       server.fetch(new Request(url, init)),
   });
 
-  const world = await sdk.create({
+  const world = await worlds.create({
     slug: "discovery-world",
     label: "Discovery World",
   });
@@ -22,7 +22,7 @@ Deno.test("discoverSchema function - Class and Property Discovery", async () => 
   const worldId = world.id!;
 
   // Insert some schema data
-  await sdk.sparql(
+  await worlds.sparql(
     worldId,
     `
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -51,7 +51,7 @@ Deno.test("discoverSchema function - Class and Property Discovery", async () => 
   );
 
   // 1. Discover "Person"
-  const result = await discoverSchema(sdk, {
+  const result = await discoverSchema(worlds, {
     source: worldId,
     referenceText: "Person",
   });
@@ -66,7 +66,7 @@ Deno.test("discoverSchema function - Class and Property Discovery", async () => 
   assertEquals(person.description, "A human being");
 
   // Verify that an instance like Alice is NOT discovered as a schema entity
-  const resultAlice = await discoverSchema(sdk, {
+  const resultAlice = await discoverSchema(worlds, {
     source: worldId,
     referenceText: "Alice",
   });
@@ -80,7 +80,7 @@ Deno.test("discoverSchema function - Class and Property Discovery", async () => 
   );
 
   // 2. Discover "name"
-  const result2 = await discoverSchema(sdk, {
+  const result2 = await discoverSchema(worlds, {
     source: worldId,
     referenceText: "name",
   });
@@ -94,7 +94,7 @@ Deno.test("discoverSchema function - Class and Property Discovery", async () => 
   assert(nameProp.domain!.includes("http://example.org/Person"));
 
   // 3. Test limit
-  const result3 = await discoverSchema(sdk, {
+  const result3 = await discoverSchema(worlds, {
     source: worldId,
     referenceText: "Person",
     limit: 1,

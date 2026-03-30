@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getSdkForOrg } from "@/lib/sdk";
 import { withAuth } from "@/lib/auth";
 import { getWorkOS } from "@/lib/platform";
+import { getWorldsByOrgMetadata } from "@/lib/worlds";
 
 /**
  * POST is the search API endpoint for a world.
@@ -39,17 +39,17 @@ export async function POST(
         },
       );
     }
-    const sdk = getSdkForOrg(organization);
+    const worlds = getWorldsByOrgMetadata(organization);
     const { worldId } = await params;
     const body = await request.text();
     const query = body;
 
     // Resolve world to ensure we have the actual ID for sub-resource call
-    const world = await sdk.worlds.get(worldId);
+    const world = await worlds.get(worldId);
     if (!world) {
       return NextResponse.json({ error: "World not found" }, { status: 404 });
     }
-    const results = await sdk.worlds.search(world.id, query);
+    const results = await worlds.search(world.id, query);
 
     return NextResponse.json(results);
   } catch (error) {

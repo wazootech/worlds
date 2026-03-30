@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>World models as a Service. Context engine for AI.</strong>
+  <strong>High-Stakes Verifiable Context for AI.</strong>
 </p>
 
 <p align="center">
@@ -19,10 +19,9 @@
   <a href="https://deepwiki.com/wazootech/worlds"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" /></a>
 </p>
 
-Worlds Platform is the open-source **auto-memory** and context layer for AI. It
-is a REST API designed to manage, query, update, and reason over
-[SPARQL](https://www.w3.org/TR/sparql11-overview/)-compatible knowledge bases at
-the edge.
+Worlds Platform is the open-source **verifiable context layer** for AI. It is a
+deterministic reasoning engine designed to manage, query, and prove knowledge
+using [SPARQL](https://www.w3.org/TR/sparql11-overview/) standards at the edge.
 
 Worlds Platform provides an interoperable context graph to improve agent
 reasoning.
@@ -57,7 +56,7 @@ Persistent context across all your AI assistants and tools.
 
 ### I build AI products
 
-Add structured memory, RAG, and reasoning to your agents with the SDK.
+Add deterministic reasoning and verifiable context to your agents with the SDK.
 
 No RDF expertise required. Simple and modular.
 
@@ -68,14 +67,14 @@ No RDF expertise required. Simple and modular.
 </tr>
 </table>
 
-## World memory for your AI
+## High-Stakes Context for your AI
 
-The Worlds SDK and AI SDK provide AI agents with persistent, structured memory.
+The Worlds SDK provides AI agents with persistent, verifiable context.
 
-> [!NOTE]
-> **World memory is not just RAG.** Worlds Platform focuses on symbolic memory.
-> It understands relationships, hierarchies, and logic, moving beyond similarity
-> matches to true reasoning.
+> [!IMPORTANT]
+> **Context is not just RAG.** Worlds Platform focuses on deterministic symbolic
+> logic. It understands actual relationships and hierarchies, moving beyond
+> "best guess" similarity matches to verifiable reasoning.
 
 ### Worlds Console
 
@@ -87,12 +86,10 @@ and monitor your agent's memory.
 The Worlds Platform AI SDK provides first-class support for LLM tool-calling.
 
 ```typescript
-import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
-import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { Worlds } from "@wazoo/worlds-sdk";
 import { createTools } from "@wazoo/worlds-ai-sdk";
 
-const sdk = new WorldsSdk({
+const worlds = new Worlds({
   baseUrl: "http://localhost:8000",
   apiKey: "your-api-key",
 });
@@ -100,10 +97,11 @@ const sdk = new WorldsSdk({
 const { text } = await generateText({
   model: openai("gpt-4o"),
   tools: createTools({
-    sdk,
+    worlds,
     sources: [{ id: "my-knowledge-base" }],
   }),
-  prompt: "Find all people in the knowledge base and describe them.",
+  prompt:
+    "Identify the ultimate beneficial owner of the holding company and cite the source.",
 });
 ```
 
@@ -121,34 +119,34 @@ deno add jsr:@wazoo/worlds-sdk
 ### Quickstart
 
 ```typescript
-import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { Worlds } from "@wazoo/worlds-sdk";
 
 // Initialize the client.
-const sdk = new WorldsSdk({
+const worlds = new Worlds({
   baseUrl: "http://localhost:8000",
   apiKey: "your-api-key",
 });
 
 const worldId = "my-knowledge-base";
 
-// Add some knowledge (triples) to your world.
-await sdk.worlds.sparql(
+// Add mission-critical knowledge (triples) to your world.
+await worlds.sparql(
   worldId,
   `
   INSERT DATA {
-    <http://example.com/ethan> <http://schema.org/relatedTo> <http://example.com/gregory> .
-    <http://example.com/gregory> <http://schema.org/givenName> "Gregory" .
+    <http://corp.example/acme-corp> <http://schema.org/ownedBy> <http://corp.example/parent-co> .
+    <http://corp.example/parent-co> <http://schema.org/legalName> "Parent Holdings Ltd." .
   }
 `,
 );
 
-// Reason over your world using SPARQL.
-const result = await sdk.worlds.sparql(
+// Perform deterministic reasoning over your world.
+const result = await worlds.sparql(
   worldId,
   `
-  SELECT ?name WHERE {
-    <http://example.com/ethan> <http://schema.org/relatedTo> ?person .
-    ?person <http://schema.org/givenName> ?name .
+  SELECT ?parentName WHERE {
+    <http://corp.example/acme-corp> <http://schema.org/ownedBy> ?parent .
+    ?parent <http://schema.org/legalName> ?parentName .
   }
 `,
 );

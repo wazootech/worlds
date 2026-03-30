@@ -1,7 +1,7 @@
 "use client";
 
 import { useOrganization } from "@/components/organization-context";
-import { ConnectSdkButton } from "@/components/connect-sdk";
+import { ConnectWorldsButton } from "@/components/connect-worlds";
 import { CreateWorldButton } from "@/components/create-world-button";
 import { WorldList } from "@/components/world-list";
 import type { World } from "@wazoo/worlds-sdk";
@@ -44,7 +44,7 @@ export function OrganizationDashboardContent({
             </h1>
           </div>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <ConnectSdkButton
+            <ConnectWorldsButton
               codeSnippet={codeSnippet}
               maskedCodeSnippetHtml={maskedCodeSnippetHtml}
             />

@@ -31,23 +31,24 @@ The tools are designed to work seamlessly with the
 ```typescript
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { Worlds } from "@wazoo/worlds-sdk";
 import { createTools } from "@wazoo/worlds-ai-sdk";
 
-const sdk = new WorldsSdk({
+const worlds = new Worlds({
   apiKey: process.env.WORLDS_API_KEY,
   baseUrl: "https://api.worlds.dev",
 });
 
 const tools = createTools({
-  sdk,
+  worlds,
   sources: [{ id: "my-world-id" }],
 });
 
 const { text } = await generateText({
   model: openai("gpt-4o"),
   tools,
-  prompt: "Find all people in the knowledge base and describe them.",
+  prompt:
+    "Identify the ultimate beneficial owner of the holding company and cite the source.",
 });
 ```
 

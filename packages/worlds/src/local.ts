@@ -39,6 +39,9 @@ export class LocalWorlds implements WorldsInterface {
     this.worldsRepository = new WorldsRepository(appContext.libsql.database);
   }
 
+  /**
+   * list paginates all available worlds from the system database.
+   */
   async list(options?: {
     limit?: number;
     offset?: number;
@@ -67,6 +70,9 @@ export class LocalWorlds implements WorldsInterface {
     );
   }
 
+  /**
+   * get fetches a single world by its ID.
+   */
   async get(id: string): Promise<World | null> {
     const world = await this.worldsRepository.getById(id);
     if (!world || world.deleted_at != null) {
@@ -84,6 +90,9 @@ export class LocalWorlds implements WorldsInterface {
     });
   }
 
+  /**
+   * create creates a new isolated world.
+   */
   async create(data: CreateWorldParams): Promise<World> {
     const id = ulid();
     const { slug, label, description } = data;
@@ -120,6 +129,9 @@ export class LocalWorlds implements WorldsInterface {
     });
   }
 
+  /**
+   * update updates a world's metadata.
+   */
   async update(id: string, data: UpdateWorldParams): Promise<void> {
     const world = await this.worldsRepository.getById(id);
     if (!world || world.deleted_at != null) {
@@ -136,6 +148,9 @@ export class LocalWorlds implements WorldsInterface {
     });
   }
 
+  /**
+   * delete marks a world as deleted.
+   */
   async delete(id: string): Promise<void> {
     const world = await this.worldsRepository.getById(id);
     if (!world || world.deleted_at != null) {
@@ -147,6 +162,9 @@ export class LocalWorlds implements WorldsInterface {
     });
   }
 
+  /**
+   * sparql executes a SPARQL query or update against a specific world.
+   */
   async sparql(
     id: string,
     query: string,
@@ -210,6 +228,23 @@ export class LocalWorlds implements WorldsInterface {
     return executeSparqlOutputSchema.parse(result);
   }
 
+  /**
+   * ask performs a deterministic boolean check (SPARQL ASK).
+   */
+  async ask(
+    id: string,
+    queryOrTriple: string,
+  ): Promise<boolean> {
+    const result = await this.sparql(id, queryOrTriple);
+    if (!result || typeof result !== "object" || !("boolean" in result)) {
+      return false;
+    }
+    return result.boolean as boolean;
+  }
+
+  /**
+   * search performs semantic/text search on triples using vector embeddings.
+   */
   async search(
     id: string,
     query: string,
@@ -257,6 +292,9 @@ export class LocalWorlds implements WorldsInterface {
     return results;
   }
 
+  /**
+   * import ingests RDF data into a world and updates the semantic index.
+   */
   async import(
     id: string,
     data: string | ArrayBuffer,
@@ -327,6 +365,9 @@ export class LocalWorlds implements WorldsInterface {
     });
   }
 
+  /**
+   * export retrieves a world's facts in the specified RDF format.
+   */
   async export(
     id: string,
     options?: { format?: RdfFormat },
@@ -372,6 +413,9 @@ export class LocalWorlds implements WorldsInterface {
     });
   }
 
+  /**
+   * getServiceDescription retrieves the SPARQL service description.
+   */
   getServiceDescription(
     _id: string,
     options: { endpointUrl: string; format?: RdfFormat },
@@ -437,6 +481,9 @@ export class LocalWorlds implements WorldsInterface {
     });
   }
 
+  /**
+   * listLogs retrieves execution and audit logs from the world database.
+   */
   async listLogs(
     id: string,
     options?: {

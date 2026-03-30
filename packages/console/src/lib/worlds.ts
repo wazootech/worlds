@@ -1,7 +1,7 @@
-import { WorldsSdk } from "@wazoo/worlds-sdk";
+import { Worlds } from "@wazoo/worlds-sdk";
 import type { WorkOSOrganization } from "./workos/workos-manager";
 
-export function getSdkForOrg(org: WorkOSOrganization): WorldsSdk {
+export function getWorldsByOrgMetadata(org: WorkOSOrganization): Worlds {
   const baseUrl = org.metadata?.apiBaseUrl;
   const apiKey = org.metadata?.apiKey;
 
@@ -11,7 +11,7 @@ export function getSdkForOrg(org: WorkOSOrganization): WorldsSdk {
     );
   }
 
-  return new WorldsSdk({
+  return new Worlds({
     baseUrl,
     apiKey,
   });

@@ -106,6 +106,9 @@ The Worlds documentation follows strict editorial guidelines to optimize for
   (e.g., `import { ulid } from "@std/ulid/ulid"`).
 - **Import path strategy**: Use aliases (`#/`, `@/`) for cross-module core
   imports; use relative paths (`./`, `../`) for local submodule files.
+- **Import ordering**: All imports with relative paths (`./`, `../`) must be at
+  the bottom of the import list. They should never be at the top unless they are
+  the only imports in the module.
 
 ### Documentation (JSDoc)
 

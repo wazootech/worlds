@@ -90,6 +90,58 @@ information lives.
   </div>
 </Columns>
 
+## Automated provisioning
+
+The connection between the Worlds Console and the API Server is automated
+through a robust provisioning layer. This ensures that every organization has a
+dedicated, isolated API instance.
+
+### App management abstraction
+
+The system utilizes an `AppManager` interface (located in
+`packages/console/src/lib/apps`) to abstract the deployment of the API server.
+This allows the platform to seamlessly switch between local development and
+production environments:
+
+- **Local Development**: Uses `LocalAppManager` to spawn background `deno serve`
+  processes. It manages port allocation and maps organization logins to local
+  child processes.
+- **Production**: Uses `DenoAppManager` to interact with the Deno Deploy API. It
+  leverages **Deno sandboxes** to orchestrate new projects and manage automated
+  deployments of the latest server builds.
+
+### Bootstrap flow
+
+The console orchestrates the lifecycle of an API server from initial
+organization setup to production deployment.
+
+```mermaid
+sequenceDiagram
+    participant User as User
+    participant Console as Console
+    participant WorkOS as WorkOS
+    participant DB as Turso (SQLite)
+    participant Deno as Deno Deploy (Sandbox)
+
+    User->>Console: Create Organization
+    Console->>WorkOS: Provision Organization
+    WorkOS-->>Console: Org ID & Metadata
+    Console->>Console: Generate API Key
+    Console->>DB: Provision Database
+    DB-->>Console: DB URL & Auth Token
+    Console->>Deno: Create Sandbox & Deploy
+    Note over Deno: Entrypoint: jsr:@wazoo/worlds-server
+    Deno-->>Console: API Base URL
+    Console->>WorkOS: Update Metadata (URL, Keys, DB)
+    Console-->>User: Deployment Ready
+```
+
+<Note>
+  The `Worlds API` is stateless by design. All state is persisted in the
+  provisioned SQLite/Turso databases, allowing the API server to be
+  re-provisioned or scaled instantly.
+</Note>
+
 ## Worlds API deep dive
 
 <Accordion title="API data flow">
@@ -273,11 +325,11 @@ A key design feature is the use of hot-swappable resource managers. The core
 logic remains identical, while the implementation swaps based on the
 environment:
 
-| Resource     | Local development     | Production               |
-| :----------- | :-------------------- | :----------------------- |
-| **Compute**  | Local child processes | Deno Deploy edge runtime |
-| **Storage**  | Local SQLite files    | SQLite / Turso           |
-| **Identity** | Mock identity file    | WorkOS Identity Service  |
+| Resource     | Local development     | Production                       |
+| :----------- | :-------------------- | :------------------------------- |
+| **Compute**  | Local child processes | Deno Deploy (via Deno Sandboxes) |
+| **Storage**  | Local SQLite files    | SQLite / Turso                   |
+| **Identity** | Mock identity file    | WorkOS Identity Service          |
 
 This pattern allows the entire stack to run locally with zero cloud
 dependencies.

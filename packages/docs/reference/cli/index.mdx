@@ -7,6 +7,25 @@ description: "CLI commands, flags, and arguments"
 The Worlds CLI (Command Line Interface) allows you to interact with the Worlds
 engine securely from your terminal.
 
+## Installation
+
+Install the canonical CLI globally via JSR.
+
+<CodeGroup>
+  ```bash deno
+  deno install -Ar --name worlds jsr:@wazoo/worlds-cli
+  ```
+
+```bash npm
+npx jsr add --global @wazoo/worlds-cli
+```
+
+```bash bun
+bunx jsr add --global @wazoo/worlds-cli
+```
+
+</CodeGroup>
+
 ## Core management
 
 - [worlds create](./create.mdx) - create a new isolated world

@@ -9,9 +9,9 @@ import type {
  */
 export interface CreateToolsOptions {
   /**
-   * sdk is the WorldsSdk instance to use for the tools.
+   * worlds is the Worlds instance to use for the tools.
    */
-  sdk: Worlds;
+  worlds: Worlds;
 
   /**
    * sources is the list of sources visible to the tools.

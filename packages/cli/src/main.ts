@@ -6,8 +6,8 @@ import { createWorlds } from "@wazoo/worlds-sdk";
  * main is the entry point for the Worlds CLI.
  */
 export async function main() {
-  const sdk = await createWorlds();
-  const cli = new WorldsCli(sdk);
+  const worlds = await createWorlds();
+  const cli = new WorldsCli(worlds);
 
   if (Deno.args.length === 0) {
     WorldsCli.logo();

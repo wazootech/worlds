@@ -32,9 +32,9 @@ export function createValidateRdfTool(
       const { worldId } = input;
       let contextRdf: Triple[] = [];
 
-      if (worldId && options.sdk) {
+      if (worldId && options.worlds) {
         try {
-          const buffer = await options.sdk.export(worldId, {
+          const buffer = await options.worlds.export(worldId, {
             format: "n-triples",
           });
           const text = new TextDecoder().decode(buffer);

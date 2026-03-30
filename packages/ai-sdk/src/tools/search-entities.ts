@@ -65,7 +65,7 @@ export type SearchEntitiesTool = Tool<
  * createSearchEntitiesTool creates a tool that resolves entities by searching for facts.
  */
 export function createSearchEntitiesTool(
-  { sdk }: CreateToolsOptions,
+  { worlds }: CreateToolsOptions,
 ): SearchEntitiesTool {
   return tool({
     description:
@@ -74,7 +74,7 @@ export function createSearchEntitiesTool(
     outputSchema: searchEntitiesOutputSchema,
     execute: async (input: SearchEntitiesInput) => {
       const { source, query, types, limit = 10 } = input;
-      const results = await sdk.search(source, query, {
+      const results = await worlds.search(source, query, {
         limit,
         types,
       });

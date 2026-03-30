@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import type { World } from "@wazoo/worlds-sdk";
-import { ConnectSdkButton } from "@/components/connect-sdk";
+import { ConnectWorldsButton } from "@/components/connect-worlds";
 import { PixelPlanet } from "@/components/pixel-planet/pixel-planet";
 import { PlanetDialog } from "@/components/pixel-planet/planet-dialog";
 import { getSeedFromId } from "@/components/pixel-planet/lib/seed-utils";
@@ -124,7 +124,7 @@ export function WorldDetails({
               </div>
             </div>
 
-            <ConnectSdkButton
+            <ConnectWorldsButton
               codeSnippet={codeSnippet}
               maskedCodeSnippetHtml={maskedCodeSnippetHtml}
             />

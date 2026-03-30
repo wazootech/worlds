@@ -2,11 +2,11 @@ import { withAuth, getSignInUrl } from "@/lib/auth";
 import { getWorkOS } from "@/lib/platform";
 import { codeToHtml } from "shiki";
 import { notFound, redirect } from "next/navigation";
-import { getSdkForOrg } from "@/lib/sdk";
 import { PageHeader } from "@/components/page-header";
 import { Globe, Settings, LayoutGrid } from "lucide-react";
 import { WorldProvider } from "@/components/world-context";
 import type { Metadata } from "next";
+import { getWorldsByOrgMetadata } from "@/lib/worlds";
 
 type Params = { organization: string; world: string };
 
@@ -25,8 +25,8 @@ export async function generateMetadata(props: {
     }
     if (!organization) return { title: "World" };
 
-    const sdk = getSdkForOrg(organization);
-    const world = await sdk.worlds.get(worldSlug);
+    const worlds = getWorldsByOrgMetadata(organization);
+    const world = await worlds.get(worldSlug);
     if (!world) return { title: "World" };
 
     return {
@@ -77,15 +77,15 @@ export default async function WorldLayout({
 
   // Fetch world and list
   let world;
-  let worlds = [];
+  let worldsList = [];
   try {
-    const sdk = getSdkForOrg(organization);
+    const worlds = getWorldsByOrgMetadata(organization);
     const [worldData, worldsData] = await Promise.all([
-      sdk.worlds.get(worldId),
-      sdk.worlds.list({ page: 1, pageSize: 100 }),
+      worlds.get(worldId),
+      worlds.list({ page: 1, pageSize: 100 }),
     ]);
     world = worldData;
-    worlds = worldsData;
+    worldsList = worldsData;
   } catch {
     notFound();
   }
@@ -137,15 +137,15 @@ export default async function WorldLayout({
 
   const worldIdSnippet = world.slug;
   if (!worldIdSnippet) throw new Error("World is missing a slug");
-  const codeSnippet = `import { WorldsSdk } from "@wazoo/worlds-sdk";
+  const codeSnippet = `import { Worlds } from "@wazoo/worlds-sdk";
 
-const sdk = new WorldsSdk({
+const worlds = new Worlds({
   baseUrl: "${apiUrl}",
   apiKey: "${apiKey}"
 });
 
 // Resolve a world by its ID or slug.
-const world = await sdk.worlds.get("${worldIdSnippet}");
+const world = await worlds.get("${worldIdSnippet}");
 console.log("Connected to world:", world.label);`;
 
   const maskedApiKey =
@@ -153,15 +153,15 @@ console.log("Connected to world:", world.label);`;
       ? "YOUR_API_KEY"
       : apiKey.slice(0, 4) + "..." + apiKey.slice(-4);
 
-  const maskedCodeSnippet = `import { WorldsSdk } from "@wazoo/worlds-sdk";
+  const maskedCodeSnippet = `import { Worlds } from "@wazoo/worlds-sdk";
 
-const sdk = new WorldsSdk({
+const worlds = new Worlds({
   baseUrl: "${apiUrl}",
   apiKey: "${maskedApiKey}"
 });
 
 // Resolve a world by its ID or slug.
-const world = await sdk.worlds.get("${worldIdSnippet}");
+const world = await worlds.get("${worldIdSnippet}");
 console.log("Connected to world:", world.label);`;
 
   const maskedCodeSnippetHtml = await codeToHtml(maskedCodeSnippet, {
@@ -206,7 +206,7 @@ console.log("Connected to world:", world.label);`;
               label: world.label,
               href: `/${organization.slug}/${world.slug}`,
               icon: <Globe className="w-3 h-3 text-stone-500" />,
-              menuItems: worlds
+              menuItems: worldsList
                 .map((w) => {
                   if (!w.slug) return null;
                   return {

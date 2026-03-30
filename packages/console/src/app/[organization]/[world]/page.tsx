@@ -1,7 +1,7 @@
 import { getWorkOS } from "@/lib/platform";
 import { WorldOverviewContent } from "@/components/world-overview-content";
 import type { Metadata } from "next";
-import { getSdkForOrg } from "@/lib/sdk";
+import { getWorldsByOrgMetadata } from "@/lib/worlds";
 
 export async function generateMetadata(props: {
   params: Promise<{ organization: string; world: string }>;
@@ -19,8 +19,8 @@ export async function generateMetadata(props: {
     }
     if (!organization) return { title: "World Overview" };
 
-    const sdk = getSdkForOrg(organization);
-    const world = await sdk.worlds.get(worldSlug);
+    const worlds = getWorldsByOrgMetadata(organization);
+    const world = await worlds.get(worldSlug);
     if (!world) return { title: "World Overview" };
 
     return {

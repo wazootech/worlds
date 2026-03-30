@@ -8,9 +8,9 @@ import {
   provisionOrganization,
   teardownOrganization,
 } from "@/lib/platform";
-import { getSdkForOrg } from "@/lib/sdk";
+import { getWorldsByOrgMetadata } from "@/lib/worlds";
 
-async function getActiveOrgId(user: WorkOSUser) {
+function getActiveOrgId(user: WorkOSUser) {
   return user.metadata?.activeOrganizationId as string | undefined;
 }
 
@@ -37,15 +37,15 @@ export async function updateWorld(
   const workos = await getWorkOS();
   const organization = await workos.getOrganization(organizationId);
   if (!organization) throw new Error("Organization not found");
-  const sdk = getSdkForOrg(organization);
+  const worlds = getWorldsByOrgMetadata(organization);
 
   // Resolve world to ensure we have the actual ID for mutation
-  const world = await sdk.worlds.get(worldId);
+  const world = await worlds.get(worldId);
   if (!world) {
     throw new Error("World not found");
   }
 
-  await sdk.worlds.update(world.id, updates);
+  await worlds.update(world.id, updates);
 
   if (organization) {
     const finalWorldSlug = updates.slug ?? world.slug;
@@ -70,15 +70,15 @@ export async function deleteWorld(organizationId: string, worldId: string) {
   const workos = await getWorkOS();
   const organization = await workos.getOrganization(organizationId);
   if (!organization) throw new Error("Organization not found");
-  const sdk = getSdkForOrg(organization);
+  const worlds = getWorldsByOrgMetadata(organization);
 
   // Resolve world to ensure we have the actual ID for mutation
-  const world = await sdk.worlds.get(worldId);
+  const world = await worlds.get(worldId);
   if (!world) {
     throw new Error("World not found");
   }
 
-  await sdk.worlds.delete(world.id);
+  await worlds.delete(world.id);
   // Re-fetch organization to ensure we have the slug (since we might have just used ID above? No, we have the object)
   if (organization) {
     if (!organization.slug) throw new Error("Organization is missing a slug");
@@ -127,8 +127,8 @@ export async function createWorld(
       const DEFAULT_URL =
         process.env.DEFAULT_API_URL || "http://localhost:8000";
 
-      const { WorldsSdk } = await import("@wazoo/worlds-sdk");
-      new WorldsSdk({
+      const { Worlds } = await import("@wazoo/worlds-sdk");
+      new Worlds({
         baseUrl: DEFAULT_URL,
         apiKey: ADMIN_KEY,
       });
@@ -150,7 +150,7 @@ export async function createWorld(
       }
     }
 
-    const sdk = getSdkForOrg(organization);
+    const worlds = getWorldsByOrgMetadata(organization);
 
     const actualOrgId = organization.id;
     if (!organization.slug) throw new Error("Organization is missing a slug");
@@ -160,7 +160,7 @@ export async function createWorld(
       label,
       slug,
     });
-    const world = await sdk.worlds.create({
+    const world = await worlds.create({
       label,
       slug,
     });
@@ -199,17 +199,17 @@ export async function deleteOrganization(organizationId: string) {
     throw new Error("Organization not found");
   }
 
-  const sdk = getSdkForOrg(organization);
+  const worlds = getWorldsByOrgMetadata(organization);
 
   // 1. Cleanup all worlds in this organization (best effort)
   try {
-    const worlds = await sdk.worlds.list({
+    const worldsList = await worlds.list({
       page: 1,
       pageSize: 100,
     });
-    for (const world of worlds) {
+    for (const world of worldsList) {
       try {
-        await sdk.worlds.delete(world.id);
+        await worlds.delete(world.id);
       } catch (e) {
         console.error(`Failed to cleanup world ${world.id}:`, e);
       }
@@ -413,14 +413,14 @@ export async function executeSparqlQuery(worldId: string, query: string) {
     if (!activeOrgId) throw new Error("No active organization");
     const organization = await workos.getOrganization(activeOrgId);
     if (!organization) throw new Error("Organization not found");
-    const sdk = getSdkForOrg(organization);
+    const worlds = getWorldsByOrgMetadata(organization);
 
     // Resolve world to ensure we have the actual ID for sub-resource call
-    const world = await sdk.worlds.get(worldId);
+    const world = await worlds.get(worldId);
     if (!world) {
       throw new Error("World not found");
     }
-    const results = await sdk.worlds.sparql(world.id, query);
+    const results = await worlds.sparql(world.id, query);
     return { success: true, results };
   } catch (error) {
     console.error("Failed to execute SPARQL query:", error);
@@ -450,14 +450,14 @@ export async function searchTriples(
     if (!activeOrgId) throw new Error("No active organization");
     const organization = await workos.getOrganization(activeOrgId);
     if (!organization) throw new Error("Organization not found");
-    const sdk = getSdkForOrg(organization);
+    const worlds = getWorldsByOrgMetadata(organization);
 
     // Resolve world to ensure we have the actual ID for sub-resource call
-    const world = await sdk.worlds.get(worldId);
+    const world = await worlds.get(worldId);
     if (!world) {
       throw new Error("World not found");
     }
-    const results = await sdk.worlds.search(world.id, query, options);
+    const results = await worlds.search(world.id, query, options);
     return { success: true, results };
   } catch (error) {
     console.error("Failed to search triples:", error);
@@ -488,14 +488,14 @@ export async function listWorldLogs(
     if (!activeOrgId) throw new Error("No active organization");
     const organization = await workos.getOrganization(activeOrgId);
     if (!organization) throw new Error("Organization not found");
-    const sdk = getSdkForOrg(organization);
+    const worlds = getWorldsByOrgMetadata(organization);
 
     // Resolve world to ensure we have the actual ID for sub-resource call
-    const world = await sdk.worlds.get(worldId);
+    const world = await worlds.get(worldId);
     if (!world) {
       throw new Error("World not found");
     }
-    const logs = await sdk.worlds.listLogs(world.id, { page, pageSize, level });
+    const logs = await worlds.listLogs(world.id, { page, pageSize, level });
 
     return { success: true, logs };
   } catch (error) {
