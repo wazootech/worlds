@@ -18,17 +18,18 @@ Install both the Mastra core and Worlds AI SDK:
   deno add jsr:@mastra/core jsr:@wazoo/worlds-ai-sdk
   ```
 
-  ```bash npm
-  npx jsr add @mastra/core @wazoo/worlds-ai-sdk
-  ```
+```bash npm
+npx jsr add @mastra/core @wazoo/worlds-ai-sdk
+```
 
-  ```bash bun
-  bunx jsr add @mastra/core @wazoo/worlds-ai-sdk
-  ```
+```bash bun
+bunx jsr add @mastra/core @wazoo/worlds-ai-sdk
+```
 
-  ```bash pnpm
-  pnpm i jsr:@mastra/core jsr:@wazoo/worlds-ai-sdk
-  ```
+```bash pnpm
+pnpm i jsr:@mastra/core jsr:@wazoo/worlds-ai-sdk
+```
+
 </CodeGroup>
 
 ## Usage
@@ -67,7 +68,8 @@ console.log(result.text);
 
 ## Granular selection
 
-If you only need specific tools, you can import and initialize them individually:
+If you only need specific tools, you can import and initialize them
+individually:
 
 ```typescript
 import { createSearchEntitiesTool } from "@wazoo/worlds-ai-sdk";
