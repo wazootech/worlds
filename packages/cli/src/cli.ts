@@ -77,21 +77,21 @@ export class WorldsCli {
   public async update(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["label", "description", "slug"],
-      alias: { l: "label", d: "description", s: "slug", h: "help" },
+      string: ["world", "label", "description", "slug"],
+      alias: { w: "world", l: "label", d: "description", s: "slug", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds update <world> [--slug <slug>] [--label <label>] [--description <desc>]",
+        "Usage: worlds update --world <id> [--slug <slug>] [--label <label>] [--description <desc>]",
       );
       return;
     }
-    const world = parsed._[0] as string;
+    const world = parsed.world as string;
     if (!world) {
       console.error(
-        "Usage: worlds update <world> [--slug <slug>] [--label <label>] [--description <desc>]",
+        "Usage: worlds update --world <id> [--slug <slug>] [--label <label>] [--description <desc>]",
       );
       return;
     }
@@ -109,18 +109,19 @@ export class WorldsCli {
   public async delete(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      alias: { h: "help" },
+      string: ["world"],
+      alias: { w: "world", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
-      console.log("Usage: worlds delete <world>");
+      console.log("Usage: worlds delete --world <id>");
       return;
     }
 
-    const world = parsed._[0] as string;
+    const world = parsed.world as string;
     if (!world) {
-      console.error("Usage: worlds delete <world>");
+      console.error("Usage: worlds delete --world <id>");
       return;
     }
     await this.worlds.delete(world);
@@ -159,18 +160,19 @@ export class WorldsCli {
   public async get(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      alias: { h: "help" },
+      string: ["world"],
+      alias: { w: "world", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
-      console.log("Usage: worlds get <world>");
+      console.log("Usage: worlds get --world <id>");
       return;
     }
 
-    const world = parsed._[0] as string;
+    const world = parsed.world as string;
     if (!world) {
-      console.error("Usage: worlds get <world>");
+      console.error("Usage: worlds get --world <id>");
       return;
     }
     const worldObj = await this.worlds.get(world);
@@ -183,8 +185,9 @@ export class WorldsCli {
   public async search(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["query", "subjects", "predicates", "limit"],
+      string: ["world", "query", "subjects", "predicates", "limit"],
       alias: {
+        w: "world",
         q: "query",
         s: "subjects",
         p: "predicates",
@@ -197,15 +200,15 @@ export class WorldsCli {
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds search <world> <query> [--limit <n>] [--subjects <s1> --subjects <s2>]",
+        "Usage: worlds search --world <id> --query <string> [--limit <n>] [--subjects <s1> --subjects <s2>]",
       );
       return;
     }
-    const world = parsed._[0] as string;
-    const query = parsed.query || (parsed._[1] as string);
+    const world = parsed.world as string;
+    const query = parsed.query as string;
     if (!world || !query) {
       console.error(
-        "Usage: worlds search <world> <query> [--limit <n>] [--subjects <s1> --subjects <s2>]",
+        "Usage: worlds search --world <id> --query <string> [--limit <n>] [--subjects <s1> --subjects <s2>]",
       );
       return;
     }
@@ -223,19 +226,24 @@ export class WorldsCli {
   public async sparql(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      alias: { h: "help" },
+      string: ["world", "query"],
+      alias: { w: "world", q: "query", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
-      console.log("Usage: worlds sparql <world> <query_or_file_path>");
+      console.log(
+        "Usage: worlds sparql --world <id> --query <query_or_file_path>",
+      );
       return;
     }
 
-    const world = parsed._[0] as string;
-    const queryOrPath = parsed._[1] as string;
+    const world = parsed.world as string;
+    const queryOrPath = parsed.query as string;
     if (!world || !queryOrPath) {
-      console.error("Usage: worlds sparql <world> <query_or_file_path>");
+      console.error(
+        "Usage: worlds sparql --world <id> --query <query_or_file_path>",
+      );
       return;
     }
 
@@ -256,22 +264,22 @@ export class WorldsCli {
   public async import(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["format"],
-      alias: { f: "format", h: "help" },
+      string: ["world", "file", "format"],
+      alias: { w: "world", f: "format", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds import <world> <file_path> [--format <turtle|n-quads|...>]",
+        "Usage: worlds import --world <id> --file <file_path> [--format <turtle|n-quads|...>]",
       );
       return;
     }
-    const world = parsed._[0] as string;
-    const path = parsed._[1] as string;
+    const world = parsed.world as string;
+    const path = parsed.file as string;
     if (!world || !path) {
       console.error(
-        "Usage: worlds import <world> <file_path> [--format <turtle|n-quads|...>]",
+        "Usage: worlds import --world <id> --file <file_path> [--format <turtle|n-quads|...>]",
       );
       return;
     }
@@ -288,21 +296,21 @@ export class WorldsCli {
   public async export(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["format"],
-      alias: { f: "format", h: "help" },
+      string: ["world", "format"],
+      alias: { w: "world", f: "format", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds export <world> [--format <turtle|n-quads|...>]",
+        "Usage: worlds export --world <id> [--format <turtle|n-quads|...>]",
       );
       return;
     }
-    const world = parsed._[0] as string;
+    const world = parsed.world as string;
     if (!world) {
       console.error(
-        "Usage: worlds export <world> [--format <turtle|n-quads|...>]",
+        "Usage: worlds export --world <id> [--format <turtle|n-quads|...>]",
       );
       return;
     }

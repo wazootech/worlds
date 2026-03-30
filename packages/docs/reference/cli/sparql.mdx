@@ -7,21 +7,21 @@ Issues a SPARQL 1.1 query or update against your target world. The CLI
 intelligently determines if the input is a raw query string or a local filepath
 to a `.rq` file.
 
-<ParamField path="world" type="string" required>
-  The unique system identifier of the target world.
+<ParamField path="--world" type="string" required>
+  The unique system identifier of the target world. *Alias:* `-w`
 </ParamField>
 
-<ParamField path="query_or_file_path" type="string" required>
+<ParamField path="--query" type="string" required>
   The raw SPARQL string, or a relative/absolute path to a file containing a
-  SPARQL query.
+  SPARQL query. *Alias:* `-q`
 </ParamField>
 
 ### Usage
 
 ```bash
 # Executing an inline string
-worlds sparql <world> "SELECT * WHERE { ?s ?p ?o } LIMIT 10"
+worlds sparql --world my-world --query "SELECT * WHERE { ?s ?p ?o } LIMIT 10"
 
 # Executing from a file
-worlds sparql <world> ./queries/get_users.rq
+worlds sparql --world my-world --query ./queries/get_users.rq
 ```
