@@ -1,9 +1,9 @@
 import { parseArgs } from "@std/cli/parse-args";
 import { WorldsCli } from "./cli.ts";
-import { createWazoo } from "./wazoo.ts";
+import { createWorlds } from "@wazoo/worlds-sdk";
 
 export async function main() {
-  const { sdk } = await createWazoo();
+  const sdk = await createWorlds();
   const cli = new WorldsCli(sdk);
 
   if (Deno.args.length === 0) {

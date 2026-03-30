@@ -3,6 +3,8 @@ import { createOllama } from "ollama-ai-provider";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createClient as createTursoClient } from "@tursodatabase/api";
 import { dirname } from "@std/path";
+import { Worlds } from "./sdk.ts";
+import { LocalWorlds } from "./local.ts";
 import type { WorldsContext } from "./context.ts";
 import type { DatabaseManager } from "./database/manager.ts";
 import { TursoCloudDatabaseManager } from "./database/managers/turso-cloud-manager.ts";
@@ -194,4 +196,36 @@ export async function createWorldsContext(
     libsql: { database, manager },
     apiKey: config.envs.WORLDS_API_KEY,
   };
+}
+
+/**
+ * createWorlds creates a new Worlds SDK based on environment variables.
+ */
+export async function createWorlds(): Promise<Worlds> {
+  const baseUrl = Deno.env.get("WORLDS_BASE_URL");
+  const apiKey = Deno.env.get("WORLDS_API_KEY");
+
+  if (baseUrl && apiKey) {
+    return new Worlds({ baseUrl, apiKey });
+  }
+
+  const localApiKey = apiKey ?? crypto.randomUUID();
+  const context = await createWorldsContext({
+    envs: {
+      WORLDS_API_KEY: localApiKey,
+      LIBSQL_URL: Deno.env.get("LIBSQL_URL"),
+      LIBSQL_AUTH_TOKEN: Deno.env.get("LIBSQL_AUTH_TOKEN"),
+      TURSO_API_TOKEN: Deno.env.get("TURSO_API_TOKEN"),
+      TURSO_ORG: Deno.env.get("TURSO_ORG"),
+      OPENROUTER_API_KEY: Deno.env.get("OPENROUTER_API_KEY"),
+      OPENROUTER_EMBEDDINGS_MODEL: Deno.env.get("OPENROUTER_EMBEDDINGS_MODEL"),
+      WORLDS_EMBEDDINGS_DIMENSIONS: Deno.env.get(
+        "WORLDS_EMBEDDINGS_DIMENSIONS",
+      ),
+      OLLAMA_BASE_URL: Deno.env.get("OLLAMA_BASE_URL"),
+      OLLAMA_EMBEDDINGS_MODEL: Deno.env.get("OLLAMA_EMBEDDINGS_MODEL"),
+    },
+  });
+
+  return new Worlds({ engine: new LocalWorlds(context) });
 }

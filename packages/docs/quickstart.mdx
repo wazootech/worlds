@@ -55,33 +55,34 @@ engine, inject a fact, and retrieve it deterministically.
     4. Query that fact deterministically using [SPARQL](/worlds/query).
 
     ```typescript index.ts
-    import { WorldsSdk } from "@wazoo/worlds-sdk";
+    import { Worlds } from "@wazoo/worlds-sdk";
 
     // 1. Connect (Drop directly into the cloud engine)
-    const sdk = new WorldsSdk({
+    const worlds = new Worlds({
       apiKey: process.env.WORLDS_API_KEY!,
+      baseUrl: "https://api.wazoo.dev",
     });
 
     // 2. Create an isolated world
-    const world = await sdk.worlds.create({
+    const world = await worlds.create({
       slug: "quickstart-cloud",
       label: "My First World"
     });
 
     // 3. Inject a fact (Subject -> Predicate -> Object)
-    await sdk.worlds.import(
+    await worlds.import(
       world.id,
       `<#system> <#status> "operational" .`,
       { format: "turtle" }
     );
 
     // 4. Retrieve the fact precisely
-    const result = await sdk.worlds.sparql(
+    const result = await worlds.sparql(
       world.id,
       `SELECT ?subject ?predicate ?object WHERE { ?subject ?predicate ?object }`
     );
 
-    console.log("Memory retrieved:", result);
+    console.log("Memory retrieved:", JSON.stringify(result, null, 2));
     ```
 
   </Step>
@@ -91,13 +92,20 @@ engine, inject a fact, and retrieve it deterministically.
     
     ```json
     Memory retrieved:
-    [
-      {
-        "subject": { "value": "system" },
-        "predicate": { "value": "status" },
-        "object": { "value": "operational" }
+    {
+      "head": {
+        "vars": ["subject", "predicate", "object"]
+      },
+      "results": {
+        "bindings": [
+          {
+            "subject": { "type": "uri", "value": "system" },
+            "predicate": { "type": "uri", "value": "status" },
+            "object": { "type": "literal", "value": "operational" }
+          }
+        ]
       }
-    ]
+    }
     ```
 
     You have completed the fundamental loop of interacting with stateful World memory.

@@ -134,7 +134,6 @@ components:
         - predicate
         - object
         - score
-        - worldId
 
     SparqlResults:
       type: object
@@ -192,7 +191,6 @@ components:
           items:
             type: string
           nullable: true
-      required: [link]
 
     SparqlBinding:
       type: object
