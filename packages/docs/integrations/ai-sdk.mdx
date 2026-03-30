@@ -1,14 +1,99 @@
 ---
 title: "AI SDK"
-icon: "/images/icons/vercel.svg"
+icon: "vercel"
 description: "Connect Worlds to Vercel AI SDK"
 ---
 
-<Warning>
-  **Experimental Integration** This integration guide is a stub. The official
-  Worlds capabilities for this framework are under active development. Expect
-  API friction and missing language parity.
-</Warning>
-
 The [Vercel AI SDK](https://sdk.vercel.ai/) is the TypeScript toolkit for
-building reliable AI applications with React, Svelte, and Vue.
+building reliable AI applications with React, Svelte, and Vue. The Worlds
+Platform AI SDK provides tools for LLMs to interact with the
+[Worlds Platform](https://docs.wazoo.dev).
+
+## Installation
+
+Install the Worlds AI SDK from JSR:
+
+<CodeGroup>
+  ```bash deno
+  deno add jsr:@wazoo/worlds-ai-sdk
+  ```
+
+```bash npm
+npx jsr add @wazoo/worlds-ai-sdk
+```
+
+```bash bun
+bunx jsr add @wazoo/worlds-ai-sdk
+```
+
+```bash pnpm
+pnpm i jsr:@wazoo/worlds-ai-sdk
+```
+
+</CodeGroup>
+
+## Usage
+
+The tools are designed to work with the
+[Vercel AI SDK](https://sdk.ai/docs/ai-sdk-core/tools-and-tool-calling).
+
+```typescript
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { Worlds } from "@wazoo/worlds-sdk";
+import { createTools } from "@wazoo/worlds-ai-sdk";
+
+const worlds = new Worlds({
+  apiKey: process.env.WORLDS_API_KEY,
+});
+
+const tools = createTools({
+  worlds,
+  sources: [{ id: "my-world-id" }],
+});
+
+const { text } = await generateText({
+  model: openai("gpt-4o"),
+  tools,
+  prompt: "Find all people in the knowledge base and describe them.",
+});
+```
+
+## Tools
+
+The `createTools` function returns a full toolset for use with LLM frameworks.
+
+### Individual tools
+
+If you require granular control, you can import and initialize tools
+individually. Each tool factory requires the same
+[configuration options](#usage).
+
+```typescript
+import {
+  createDiscoverSchemaTool,
+  createExecuteSparqlTool,
+  createSearchEntitiesTool,
+} from "@wazoo/worlds-ai-sdk";
+
+const discoverSchema = createDiscoverSchemaTool({ worlds, sources });
+const executeSparql = createExecuteSparqlTool({ worlds, sources });
+const searchEntities = createSearchEntitiesTool({ worlds, sources });
+
+const tools = {
+  discoverSchema,
+  executeSparql,
+  searchEntities,
+};
+```
+
+### Tool reference
+
+| Tool                   | Description                                                     |
+| :--------------------- | :-------------------------------------------------------------- |
+| `discoverSchema`       | Explore the ontology and schema of a specific world.            |
+| `executeSparql`        | Direct execution of SPARQL queries against a world.             |
+| `searchEntities`       | Vector-based semantic search for entities within a world.       |
+| `generateIri`          | Utility for generating valid IRIs for new entities.             |
+| `disambiguateEntities` | Utility for mapping natural language entities to existing IRIs. |
+| `validateRdf`          | Utility for validating generated RDF against a world.           |
