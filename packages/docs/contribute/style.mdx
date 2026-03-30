@@ -93,10 +93,10 @@ The Worlds documentation follows strict editorial guidelines to optimize for
 
 ### Exports and namespaces
 
-- **Named exports**: Always use pure named exports. Avoid namespaces or
-  `export * as` in SDK entry points.
-- **Rationale**: Named exports provide explicit boundaries for tree-shaking and
-  IDE support.
+- **SDK entry points**: Use `export *` in `mod.ts` files to re-export all public
+  members from submodules.
+- **Rationale**: This ensures maximum maintainability and reduces manual export
+  management for comprehensive SDK entry points.
 
 ### Imports
 

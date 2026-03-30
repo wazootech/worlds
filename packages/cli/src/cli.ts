@@ -1,11 +1,11 @@
+import type { ModelMessage } from "ai";
+import type { RdfFormat, Worlds } from "@wazoo/worlds-sdk";
 import { parseArgs } from "@std/cli/parse-args";
 import { Spinner } from "@std/cli/unstable-spinner";
 import { render } from "cfonts";
-import type { ModelMessage } from "ai";
 import { stepCountIs, streamText } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createTools } from "@wazoo/worlds-ai-sdk";
-import type { RdfFormat, Worlds } from "@wazoo/worlds-sdk";
 
 /**
  * WorldsCli is a command line application for the Worlds API.
@@ -27,6 +27,9 @@ export class WorldsCli {
     console.log(renderResult.string);
   }
 
+  /**
+   * create a new world with a label, slug, and description.
+   */
   public async create(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
@@ -68,6 +71,9 @@ export class WorldsCli {
     console.log(JSON.stringify(world, null, 2));
   }
 
+  /**
+   * update an existing world's metadata.
+   */
   public async update(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
@@ -97,6 +103,9 @@ export class WorldsCli {
     console.log(`Updated world ${worldId}`);
   }
 
+  /**
+   * delete a world by its ID.
+   */
   public async delete(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
@@ -118,6 +127,9 @@ export class WorldsCli {
     console.log(`Deleted world ${worldId}`);
   }
 
+  /**
+   * list worlds with pagination support.
+   */
   public async list(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
@@ -141,6 +153,9 @@ export class WorldsCli {
     console.log(JSON.stringify(worlds, null, 2));
   }
 
+  /**
+   * get a specific world's details by ID.
+   */
   public async get(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
@@ -162,6 +177,9 @@ export class WorldsCli {
     console.log(JSON.stringify(world, null, 2));
   }
 
+  /**
+   * search for entities within a world's knowledge graph.
+   */
   public async search(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
@@ -199,6 +217,9 @@ export class WorldsCli {
     console.log(JSON.stringify(results, null, 2));
   }
 
+  /**
+   * sparql executes a SPARQL query or file against a world.
+   */
   public async sparql(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
@@ -229,6 +250,9 @@ export class WorldsCli {
     console.log(JSON.stringify(results, null, 2));
   }
 
+  /**
+   * import RDF data into a world from a file.
+   */
   public async import(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
@@ -258,6 +282,9 @@ export class WorldsCli {
     console.log(`Imported data into world ${worldId}`);
   }
 
+  /**
+   * export a world's knowledge graph to RDF data.
+   */
   public async export(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
@@ -287,6 +314,9 @@ export class WorldsCli {
 
   // TODO: List recent logs using the logs endpoint.
 
+  /**
+   * chat starts an interactive AI session with a world's knowledge graph.
+   */
   public async chat(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help", "write"],

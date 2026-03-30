@@ -472,15 +472,15 @@ export const sourceSchema: z.ZodType<Source> = z.object({
 });
 
 /**
- * ErrorResponse is the standard error response format.
+ * ErrorResponseData is the standard error response format.
  */
-export interface ErrorResponse {
+export interface ErrorResponseData {
   error: {
     message: string;
   };
 }
 
-export const errorResponseSchema: z.ZodType<ErrorResponse> = z.object({
+export const errorResponseDataSchema: z.ZodType<ErrorResponseData> = z.object({
   error: z.object({
     message: z.string(),
   }),

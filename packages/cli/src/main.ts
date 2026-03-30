@@ -2,6 +2,9 @@ import { parseArgs } from "@std/cli/parse-args";
 import { WorldsCli } from "./cli.ts";
 import { createWorlds } from "@wazoo/worlds-sdk";
 
+/**
+ * main is the entry point for the Worlds CLI.
+ */
 export async function main() {
   const sdk = await createWorlds();
   const cli = new WorldsCli(sdk);
@@ -81,6 +84,9 @@ export async function main() {
   }
 }
 
+/**
+ * showHelp displays the available commands and environment variables for the CLI.
+ */
 function showHelp() {
   console.log("Usage: worlds <command> [options]");
   console.log("");
