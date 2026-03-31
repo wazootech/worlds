@@ -3,13 +3,15 @@ title: "Core Ontology"
 description: "Standard RDFS classes and properties for agentic context."
 ---
 
-Worlds manages knowledge through a standardized core ontology. This common vocabulary provides agents with a predictable set of primitives for reasoning, alignment, and discovery.
+Worlds manages knowledge through a standardized core ontology. This common
+vocabulary provides agents with a predictable set of primitives for reasoning,
+alignment, and discovery.
 
 ## Namespace
 
 The core ontology is defined in the `worlds:` namespace:
 
-```turtle
+```turtle Turtle
 @prefix worlds: <http://worlds.dev/v1#> .
 ```
 
@@ -17,12 +19,29 @@ The core ontology is defined in the `worlds:` namespace:
 
 Agents use these base classes to categorize information within a World.
 
-*   worlds:World: The root container for a stateful knowledge graph sandbox.
-*   worlds:Item: A unique semantic entity defined by an IRI.
-*   worlds:Fact: A verified triple recorded in the chronological ledger.
-*   worlds:Agent: An entity with agency, such as an AI model or a human user.
-*   worlds:Preference: A recorded value alignment or reward signal.
-*   worlds:Observation: A raw data input or event captured by an agent.
+<ResponseField name="worlds:World" type="Class">
+  The root container for a stateful knowledge graph sandbox.
+</ResponseField>
+
+<ResponseField name="worlds:Item" type="Class">
+  A unique semantic entity defined by an IRI.
+</ResponseField>
+
+<ResponseField name="worlds:Fact" type="Class">
+  A verified triple recorded in the chronological ledger.
+</ResponseField>
+
+<ResponseField name="worlds:Agent" type="Class">
+  An entity with agency, such as an AI model or a human user.
+</ResponseField>
+
+<ResponseField name="worlds:Preference" type="Class">
+  A recorded value alignment or reward signal.
+</ResponseField>
+
+<ResponseField name="worlds:Observation" type="Class">
+  A raw data input or event captured by an agent.
+</ResponseField>
 
 ## Core properties
 
@@ -30,24 +49,105 @@ These properties define the relationships between items and their metadata.
 
 ### System properties
 
-*   worlds:hasItem: Connects a World to an Item.
-*   worlds:hasFact: Connects an Item or World to a Fact.
-*   worlds:assertedAt: The precision timestamp when a fact was committed.
+<ResponseField name="worlds:hasItem" type="Property">
+  Connects a World to an Item.
+</ResponseField>
+
+<ResponseField name="worlds:hasFact" type="Property">
+  Connects an Item or World to a Fact.
+</ResponseField>
+
+<ResponseField name="worlds:assertedAt" type="Property">
+  The precision timestamp when a fact was committed to the ledger.
+</ResponseField>
 
 ### Agency and alignment
 
-*   worlds:hasPreference: Links a Fact to a human or autonomous preference signal.
-*   worlds:hasReward: A numerical reward score (0.0 to 1.0).
-*   worlds:discoveredBy: Links an Item to the Agent that proposed it.
-*   worlds:verifiedBy: Links a Fact to the Agent that verified it.
+<ResponseField name="worlds:hasPreference" type="Property">
+  Links a Fact to a human or autonomous preference signal.
+</ResponseField>
+
+<ResponseField name="worlds:hasReward" type="Property">
+  A numerical reward score (0.0 to 1.0) representing an alignment signal.
+</ResponseField>
+
+<ResponseField name="worlds:discoveredBy" type="Property">
+  Links an Item or Fact to the Agent that proposed it.
+</ResponseField>
+
+<ResponseField name="worlds:verifiedBy" type="Property">
+  Links a Fact to the Agent that verified it.
+</ResponseField>
+
+---
+
+## Reification: Facts about facts
+
+To enable high-stakes agency, Worlds uses reification—the process of making an
+assertion (a triple) a first-class item. This allows agents to treat a specific
+fact as an entity with its own metadata.
+
+### Why reification?
+
+Standard triples are flat. You can assert that a relationship exists, but you
+cannot discuss the relationship itself. Reification provides an "ID card" for
+every assertion.
+
+- Without reification: you know a fact is true, but not who said it or when.
+- With reification: you can verify the provenance, trust level, and alignment of
+  every fact.
+
+### How it works
+
+<Steps>
+  <Step title="The raw assertion">
+    Consider the flat relationship: `user:ethan worlds:worksAt org:wazoo`.
+  </Step>
+  <Step title="Creation of the fact entity">
+    Worlds creates a `worlds:Fact` item to represent this unique statement.
+  </Step>
+  <Step title="Attachment of metadata">
+    Metadata (provenance, rewards, timestamps) is attached to the fact entity 
+    rather than the raw relationship.
+  </Step>
+</Steps>
+
+Conceptually, a reified fact looks like this in the ledger:
+
+```turtle Turtle
+@prefix worlds: <http://worlds.dev/v1#> .
+@prefix fact: <http://fact.example/> .
+@prefix user: <http://user.example/> .
+
+# 1. The reified fact entity
+fact:123 a worlds:Fact ;
+    worlds:assertedAt "2026-03-31T09:51Z" ;
+    worlds:discoveredBy user:discovery_agent .
+
+# 2. Asserting metadata about the fact
+fact:123 worlds:hasPreference [
+    a worlds:Preference ;
+    worlds:hasReward 0.95 ;
+    worlds:verifiedBy user:human_evaluator
+] .
+```
+
+<Card title="Strategic value" icon="sparkles">
+  Reification is the foundation of the recursive quality loop. By treating facts 
+  as items, agents can query reasoning paths, filter by trusted verifiers, 
+  and tune their models based on historical reward signals.
+</Card>
+
+---
 
 ## Examples
 
 ### Defining a fact with preference
 
-In Turtle syntax, you can assert a fact and attach an autonomous alignment signal:
+In Turtle syntax, you can assert a fact and attach an autonomous alignment
+signal:
 
-```turtle
+```turtle Turtle
 @prefix worlds: <http://worlds.dev/v1#> .
 @prefix user: <http://user.example/> .
 
@@ -67,7 +167,7 @@ user:ethan worlds:hasPreference _:pref1 .
 
 For external integrations, the ontology maps to standard JSON-LD:
 
-```json
+```json JSON
 {
   "@context": {
     "worlds": "http://worlds.dev/v1#",
@@ -82,7 +182,7 @@ For external integrations, the ontology maps to standard JSON-LD:
 
 ## Domain extension
 
-The core ontology acts as a foundation. Developers should extend these classes 
-to create domain-specific schemas (e.g., `health:Patient` subclassing `worlds:Item`). 
-Autonomous discovery loops use these base types to understand the lifecycle 
-of information from raw observation to verified fact.
+The core ontology acts as a foundation. Developers should extend these classes
+to create domain-specific schemas (e.g., `health:Patient` subclassing
+`worlds:Item`). Autonomous discovery loops use these base types to understand
+the lifecycle of information from raw observation to verified fact.
