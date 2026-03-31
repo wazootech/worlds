@@ -117,13 +117,13 @@ triples in plain text.
 To assert "Acme Corp is a Legal Entity", the syntax goes:
 
 <CodeGroup>
-  ```turtle Turtle
-  @prefix corp: <http://corp.example/> .
-  @prefix schema: <https://schema.org/> .
+
+```turtle Turtle
+@prefix corp: <http://corp.example/> .
+@prefix schema: <https://schema.org/> .
 
 corp:acme a schema:Organization .
-
-````
+```
 
 ```json JSON-LD
 {
@@ -134,7 +134,7 @@ corp:acme a schema:Organization .
   "@id": "corp:acme",
   "@type": "schema:Organization"
 }
-````
+```
 
 ```nt N-Triples
 <http://corp.example/acme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Organization> .
@@ -145,23 +145,25 @@ corp:acme a schema:Organization .
   itemscope
   itemid="http://corp.example/acme"
   itemtype="https://schema.org/Organization"
-></div>
+>
+  <!-- Additional facts go here -->
+</div>
 ```
 
 </CodeGroup>
 
-To expand on an item, use a semicolon `;` to chain multiple facts together.
-Here, we assert that Acme Corp is an organization, and its legal name is "Acme
-Corp".
+Items can consolidate multiple facts into a single structure. Here, we assert
+that Acme Corp is an organization with the legal name "Acme Corp":
 
 <CodeGroup>
-  ```turtle Turtle
-  @prefix corp: <http://corp.example/> .
-  @prefix schema: <https://schema.org/> .
 
-corp:acme a schema:Organization ; schema:legalName "Acme Corp" .
+```turtle Turtle
+@prefix corp: <http://corp.example/> .
+@prefix schema: <https://schema.org/> .
 
-````
+corp:acme a schema:Organization ;
+  schema:legalName "Acme Corp" .
+```
 
 ```json JSON-LD
 {
@@ -173,7 +175,7 @@ corp:acme a schema:Organization ; schema:legalName "Acme Corp" .
   "@type": "schema:Organization",
   "schema:legalName": "Acme Corp"
 }
-````
+```
 
 ```nt N-Triples
 <http://corp.example/acme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Organization> .
