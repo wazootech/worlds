@@ -1,9 +1,9 @@
 import type { Client } from "@libsql/client";
-import type { WorldsContext } from "../../../../types.ts";
+import type { WorldsContext } from "#/types.ts";
 import { searchChunks, upsertChunks } from "./queries.sql.ts";
-import type { TripleSearchResult } from "../../../../schemas/mod.ts";
-import type { WorldRow } from "../../system/worlds/schema.ts";
-import type { WorldsRepository } from "../../system/worlds/mod.ts";
+import type { TripleSearchResult } from "#/schemas/mod.ts";
+import type { WorldRow } from "#/database/repositories/system/worlds/schema.ts";
+import type { WorldsRepository } from "#/database/repositories/system/worlds/mod.ts";
 import {
   type ChunkTableUpsert,
   type SearchRow,

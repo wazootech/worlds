@@ -1,7 +1,7 @@
 import { Group, Vector2 } from "three";
-import { createDenseGasPlanet } from "../Layers/denseGasLayer";
-import { createRingLayer } from "../Layers/ringLayer";
-import { PlanetOptions } from "../utils";
+import { createDenseGasPlanet } from "@/components/pixel-planet/lib/Layers/denseGasLayer";
+import { createRingLayer } from "@/components/pixel-planet/lib/Layers/ringLayer";
+import { PlanetOptions } from "@/components/pixel-planet/lib/utils";
 
 export const createGasGiantRing = (options?: PlanetOptions): Group => {
   const gasGiantGroup = new Group();

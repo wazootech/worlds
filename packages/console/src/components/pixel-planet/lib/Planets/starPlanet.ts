@@ -1,8 +1,8 @@
 import { Group, Vector2 } from "three";
-import { createStar } from "../Layers/star";
-import { createStarBlobLayer } from "../Layers/starBlobLayer";
-import { createStarFlareLayer } from "../Layers/starFlareLayer";
-import { PlanetOptions } from "../utils";
+import { createStar } from "@/components/pixel-planet/lib/Layers/star";
+import { createStarBlobLayer } from "@/components/pixel-planet/lib/Layers/starBlobLayer";
+import { createStarFlareLayer } from "@/components/pixel-planet/lib/Layers/starFlareLayer";
+import { PlanetOptions } from "@/components/pixel-planet/lib/utils";
 
 export const createStarPlanet = (options?: PlanetOptions): Group => {
   const StarPlanet = new Group();

@@ -1,8 +1,8 @@
 import { Group, Vector2, Vector4 } from "three";
-import { createBasePlanet } from "../Layers/basePlanet";
-import { createCloudLayer } from "../Layers/cloudLayer";
-import { createLakeLayer } from "../Layers/lakeLayer";
-import { PlanetOptions } from "../utils";
+import { createBasePlanet } from "@/components/pixel-planet/lib/Layers/basePlanet";
+import { createCloudLayer } from "@/components/pixel-planet/lib/Layers/cloudLayer";
+import { createLakeLayer } from "@/components/pixel-planet/lib/Layers/lakeLayer";
+import { PlanetOptions } from "@/components/pixel-planet/lib/utils";
 
 export const createIcePlanet = (options?: PlanetOptions): Group => {
   const icePlanet = new Group();

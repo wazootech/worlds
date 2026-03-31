@@ -5,7 +5,7 @@ import {
   ShaderMaterial,
   TextureLoader,
 } from "three";
-import { flip } from "../utils";
+import { flip } from "@/components/pixel-planet/lib/utils";
 
 const vertexShader = (): string => {
   return `

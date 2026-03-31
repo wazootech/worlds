@@ -4,11 +4,11 @@ import {
   discoverSchema,
   discoverSchemaInputSchema,
   discoverSchemaOutputSchema,
-} from "../discover-schema.ts";
+} from "#/discover-schema.ts";
 import type {
   DiscoverSchemaInput,
   DiscoverSchemaOutput,
-} from "../discover-schema.ts";
+} from "#/discover-schema.ts";
 import type { CreateToolsOptions } from "#/options.ts";
 
 /**

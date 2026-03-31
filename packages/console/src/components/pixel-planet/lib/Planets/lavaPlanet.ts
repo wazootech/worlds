@@ -1,9 +1,9 @@
 import { Group, Vector2, Vector4 } from "three";
-import { createBasePlanet } from "../Layers/basePlanet";
-import { createCraterLayer } from "../Layers/craterLayer";
-import { createRiverLayer } from "../Layers/riversLayer";
-import { createGroup } from "../Three";
-import { PlanetOptions } from "../utils";
+import { createBasePlanet } from "@/components/pixel-planet/lib/Layers/basePlanet";
+import { createCraterLayer } from "@/components/pixel-planet/lib/Layers/craterLayer";
+import { createRiverLayer } from "@/components/pixel-planet/lib/Layers/riversLayer";
+import { createGroup } from "@/components/pixel-planet/lib/Three";
+import { PlanetOptions } from "@/components/pixel-planet/lib/utils";
 
 export const createLavaPlanet = (options?: PlanetOptions): Group => {
   const lightPos = options?.lightPosition

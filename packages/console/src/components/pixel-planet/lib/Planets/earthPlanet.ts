@@ -1,9 +1,9 @@
 import { Group, Vector2, Vector4 } from "three";
-import { createAtmosphereLayer } from "../Layers/atmosphereLayer";
-import { createBasePlanet } from "../Layers/basePlanet";
-import { createCloudLayer } from "../Layers/cloudLayer";
-import { createlandMassLayer } from "../Layers/landMass";
-import { PlanetOptions } from "../utils";
+import { createAtmosphereLayer } from "@/components/pixel-planet/lib/Layers/atmosphereLayer";
+import { createBasePlanet } from "@/components/pixel-planet/lib/Layers/basePlanet";
+import { createCloudLayer } from "@/components/pixel-planet/lib/Layers/cloudLayer";
+import { createlandMassLayer } from "@/components/pixel-planet/lib/Layers/landMass";
+import { PlanetOptions } from "@/components/pixel-planet/lib/utils";
 
 export const createEarthPlanet = (options?: PlanetOptions): Group => {
   const earth = new Group();

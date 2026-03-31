@@ -7,7 +7,7 @@ import type {
   SparqlBinding,
   SparqlQuad,
   SparqlValue,
-} from "../schemas/mod.ts";
+} from "#/schemas/mod.ts";
 
 /**
  * DatasetParams are the parameters for a SPARQL query.

@@ -1,7 +1,7 @@
 import { Group, Vector2, Vector4 } from "three";
-import { createBaseGasPlanet } from "../Layers/baseGasPlanet";
-import { createGasPLayer } from "../Layers/gasLayer";
-import { PlanetOptions } from "../utils";
+import { createBaseGasPlanet } from "@/components/pixel-planet/lib/Layers/baseGasPlanet";
+import { createGasPLayer } from "@/components/pixel-planet/lib/Layers/gasLayer";
+import { PlanetOptions } from "@/components/pixel-planet/lib/utils";
 
 export const createGasGiant = (options?: PlanetOptions): Group => {
   const gasGiantGroup = new Group();

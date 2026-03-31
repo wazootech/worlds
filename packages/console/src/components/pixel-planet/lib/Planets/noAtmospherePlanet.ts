@@ -1,8 +1,8 @@
 import { Group } from "three";
-import { createBasePlanet } from "../Layers/basePlanet";
-import { createCraterLayer } from "../Layers/craterLayer";
+import { createBasePlanet } from "@/components/pixel-planet/lib/Layers/basePlanet";
+import { createCraterLayer } from "@/components/pixel-planet/lib/Layers/craterLayer";
 
-import { PlanetOptions } from "../utils";
+import { PlanetOptions } from "@/components/pixel-planet/lib/utils";
 import { Vector2, Vector4 } from "three";
 
 export const createNoAtmospherePlanet = (options?: PlanetOptions): Group => {

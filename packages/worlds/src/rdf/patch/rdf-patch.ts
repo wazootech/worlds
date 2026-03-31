@@ -2,9 +2,9 @@ import type { Client } from "@libsql/client";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import type { Patch } from "./types.ts";
 import { skolemizeQuad } from "./skolem.ts";
-import type { Embeddings } from "../../embeddings/embeddings.ts";
-import { TriplesRepository } from "../../database/repositories/world/triples/mod.ts";
-import { ChunksRepository } from "../../database/repositories/world/chunks/mod.ts";
+import type { Embeddings } from "#/embeddings/embeddings.ts";
+import { TriplesRepository } from "#/database/repositories/world/triples/mod.ts";
+import { ChunksRepository } from "#/database/repositories/world/chunks/mod.ts";
 
 /**
  * handlePatch handles RDF patches by upserting and deleting triples and chunks.
