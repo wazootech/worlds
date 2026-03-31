@@ -25,12 +25,17 @@ SELECT ?parent WHERE {
 }
 ```
 
-### SPARQL vs. vector search
+### Neuro-symbolic reasoning
 
-| Dimension | SPARQL               | Vector search              |
-| :-------- | :------------------- | :------------------------- |
-| Precision | Exact, deterministic | Approximate, probabilistic |
-| Output    | Verified facts       | Ranked candidates          |
+Worlds fuses semantic discovery with symbolic logic. Hybrid search disambiguates
+the natural language intent into a specific starting item, while SPARQL executes
+the deterministic traversal across verified facts.
+
+| Context   | Hybrid search       | SPARQL                  |
+| :-------- | :------------------ | :---------------------- |
+| Dimension | Semantic discovery  | Deterministic reasoning |
+| Goal      | Item disambiguation | Factual traversal       |
+| Logic     | Probabilistic       | Symbolic                |
 
 ---
 
