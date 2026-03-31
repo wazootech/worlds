@@ -24,25 +24,25 @@ engine, inject a verifiable fact, and retrieve it deterministically.
   <Step title="Install the API">
     Install the canonical TypeScript client.
     
-    <CodeGroup>
-      ```bash deno
-      deno add jsr:@wazoo/worlds-sdk
-      ```
+<CodeGroup>
 
-      ```bash npm
-      npx jsr add @wazoo/worlds-sdk
-      ```
+```bash deno
+deno add jsr:@wazoo/worlds-sdk
+```
 
-      ```bash bun
-      bunx jsr add @wazoo/worlds-sdk
-      ```
+```bash npm
+npx jsr add @wazoo/worlds-sdk
+```
 
+```bash bun
+bunx jsr add @wazoo/worlds-sdk
+```
 
-      ```bash pnpm
-      pnpm i jsr:@wazoo/worlds-sdk
-      ```
+```bash pnpm
+pnpm i jsr:@wazoo/worlds-sdk
+```
 
-    </CodeGroup>
+</CodeGroup>
 
   </Step>
 
@@ -74,7 +74,7 @@ engine, inject a verifiable fact, and retrieve it deterministically.
       "quickstart-cloud",
       `@prefix corp: <http://corp.example/> .
       corp:acme <#ownedBy> <#parent-co> .`,
-      { contentType: "text/turtle" }
+      { contentType: "text/turtle" },
     );
 
     // 4. Retrieve the fact with absolute precision

@@ -368,6 +368,7 @@ fact as an entity with its own metadata.
 ### How it works
 
 <Steps>
+
   <Step title="The raw assertion">
     Consider the flat relationship:
     `@prefix user: <http://user.example/> . @prefix worlds: <https://schema.wazoo.dev#> . user:ethan worlds:worksAt <http://org.example/wazoo> .`
@@ -400,7 +401,7 @@ the model's high-dimensional token space:
 
 - Logit shift: Increases raw scores for preferred paths and suppresses undesired
   ones.
-- **Softmax filter**: Ensures that during inference, the model is statistically
+- Softmax filter: Ensures that during inference, the model is statistically
   driven toward outcomes that align with the
   [recorded preferences](/worlds/update#feedback-ingestion).
 
