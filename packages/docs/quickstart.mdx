@@ -4,7 +4,7 @@ description: "Build a world in 2 minutes"
 ---
 
 The fastest way to understand Worlds is to interact with it natively. This
-quickstart skips the theory and drops you straight into the SDK to execute your
+quickstart skips the theory and drops you straight into the API to execute your
 first neuro-symbolic query.
 
 ## Prerequisites
@@ -15,38 +15,38 @@ Before writing code, you need a Worlds API key.
 2. Generate an API key.
 3. Save it securely to your `.env` file as `WORLDS_API_KEY`.
 
-## Hello, world!
+## Hello, World!
 
 Follow this sequence to train on the core interaction loop: connect to the cloud
 engine, inject a verifiable fact, and retrieve it deterministically.
 
 <Steps>
-  <Step title="Install the SDK">
+  <Step title="Install the API">
     Install the canonical TypeScript client.
     
-    <CodeGroup>
-      ```bash deno
-      deno add jsr:@wazoo/worlds-sdk
-      ```
+<CodeGroup>
 
-      ```bash npm
-      npx jsr add @wazoo/worlds-sdk
-      ```
+```bash deno
+deno add jsr:@wazoo/worlds-sdk
+```
 
-      ```bash bun
-      bunx jsr add @wazoo/worlds-sdk
-      ```
+```bash npm
+npx jsr add @wazoo/worlds-sdk
+```
 
+```bash bun
+bunx jsr add @wazoo/worlds-sdk
+```
 
-      ```bash pnpm
-      pnpm i jsr:@wazoo/worlds-sdk
-      ```
+```bash pnpm
+pnpm i jsr:@wazoo/worlds-sdk
+```
 
-    </CodeGroup>
+</CodeGroup>
 
   </Step>
 
-  <Step title="Observe the execution">
+  <Step title="See it in action">
     Run the following self-contained script to execute a complete neuro-symbolic loop:
     
     1. Connect to the Cloud API.
@@ -54,36 +54,39 @@ engine, inject a verifiable fact, and retrieve it deterministically.
     3. Inject a semantic fact ([triple](/worlds#facts)).
     4. Query that fact deterministically using [SPARQL](/worlds/query).
 
-    ```typescript index.ts
-    import { Worlds } from "@wazoo/worlds-sdk";
+```typescript index.ts
+import { Worlds } from "@wazoo/worlds-sdk";
 
-    // 1. Connect (Drop directly into the cloud engine)
-    const worlds = new Worlds({
-      apiKey: process.env.WORLDS_API_KEY!,
-      baseUrl: "https://api.wazoo.dev",
-    });
+// 1. Connect (Drop directly into the cloud engine)
+const worlds = new Worlds({
+  apiKey: process.env.WORLDS_API_KEY!,
+  baseUrl: "https://api.wazoo.dev",
+});
 
-    // 2. Create an isolated world
-    const world = await worlds.create({
-      slug: "quickstart-cloud",
-      label: "My First World"
-    });
+// 2. Create an isolated world
+const world = await worlds.create({
+  slug: "quickstart-cloud",
+  label: "My First World",
+});
 
-    // 3. Inject a mission-critical fact (Subject -> Predicate -> Object)
-    await worlds.import(
-      "quickstart-cloud",
-      `<#acme-corp> <#ownedBy> <#parent-co> .`,
-      { contentType: "text/turtle" }
-    );
+// 3. Inject a mission-critical fact (Subject -> Predicate -> Object)
+await worlds.import(
+  "quickstart-cloud",
+  `@prefix user: <https://etok.me/#> .
+  @prefix wazoo: <https://wazoo.dev/#> .
+  user:person wazoo:worksFor wazoo:organization .`,
+  { contentType: "text/turtle" },
+);
 
-    // 4. Retrieve the fact with absolute precision
-    const result = await worlds.sparql(
-      "quickstart-cloud",
-      `SELECT ?parent WHERE { <#acme-corp> <#ownedBy> ?parent }`
-    );
+// 4. Retrieve the fact with absolute precision
+const result = await worlds.sparql(
+  "quickstart-cloud",
+  `PREFIX wazoo: <https://wazoo.dev/#>
+  SELECT ?wazoo WHERE { <https://etok.me/#person> wazoo:worksFor ?wazoo }`,
+);
 
-    console.log("Verifiable context retrieved:", JSON.stringify(result, null, 2));
-    ```
+console.log("Verifiable context retrieved:", JSON.stringify(result, null, 2));
+```
 
   </Step>
 
@@ -94,26 +97,26 @@ engine, inject a verifiable fact, and retrieve it deterministically.
     Verifiable context retrieved:
     {
       "head": {
-        "vars": ["parent"]
+        "vars": ["wazoo"]
       },
       "results": {
         "bindings": [
           {
-            "parent": { "type": "uri", "value": "parent-co" }
+            "wazoo": { "type": "uri", "value": "https://wazoo.dev/#organization" }
           }
         ]
       }
     }
     ```
 
-    You have completed the fundamental loop of interacting with **high-stakes verifiable context**.
+    You have completed the fundamental loop of interacting with high-stakes verifiable context.
 
   </Step>
 </Steps>
 
 ## Next steps
 
-Now that you have securely connected to your cloud instance, integrate the SDK
+Now that you have securely connected to your cloud instance, integrate the API
 directly into your agentic loops.
 
 <CardGroup cols={2}>

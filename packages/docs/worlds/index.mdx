@@ -37,33 +37,35 @@ An item is...
 
 ## Properties
 
-Properties connect items. They define actions or attributes, such as `worksAt`
-or `givenName`. The complete set of valid properties forms the ontology. Agents
-use this ontology to interact with the graph.
+Properties connect items. They define actions or attributes, such as `worksFor`
+or `givenName`. The set of valid properties forms the graph's vocabulary,
+enabling agents to navigate and mutate state with precision.
 
 ## Facts
 
 A fact is a unit of data expressed as a structured statement that connects two
-items using a property. Every fact is inherently bound to the dimension of
-**time**. Worlds maintains an append-only, chronological ledger of facts,
-allowing agents to understand exactly how state and information evolve.
+items using a property. Every fact is inherently bound to the dimension of time.
+Worlds maintains an append-only, chronological ledger of facts, allowing agents
+to understand exactly how state and information evolve.
 
 Conceptually, a fact functions exactly like a structured assertion. For example,
-the assertion "Acme Corp is owned by Parent Co" can be represented as:
+the assertion "Ethan is a person" can be represented as:
 
 <div align="center">
 
 ```mermaid
 graph LR
-    A((Acme Corp)) -->|ownedBy| B((Parent Co))
+    A((Ethan)) -->|is a| B((Person))
+    style A fill:#FF9800,stroke:#F57C00,color:#fff
+    style B fill:#FF9800,stroke:#F57C00,color:#fff
 ```
 
 </div>
 
 ## Triples
 
-Computers store facts in a data structure called the **triple**, which is built
-from three components called **terms**.
+Computers store facts in a data structure called the triple, which is built from
+three components called terms.
 
 ### Anatomy
 
@@ -74,7 +76,7 @@ from three components called **terms**.
 </Frame>
 
 <ResponseField name="Subject" type="Term">
-  The item you are describing e.g., `user:ethan`
+  The item you are describing e.g., `user:person`
 </ResponseField>
 
 <ResponseField name="Predicate" type="Term">
@@ -87,67 +89,134 @@ from three components called **terms**.
 
 ### Topography
 
-The **Object** of a triple determines how the graph grows. Facts branch into two
+The Object of a triple determines how the graph grows. Facts branch into two
 types:
 
-- **Item-to-item:** Connects two distinct items e.g., `user:ethan` ->
-  `schema:worksAt` -> `org:wazoo`
-- **Item-to-value:** Connects an item to a raw data value, adding searchable
-  detail but acting as a terminal point e.g., `user:ethan` -> `schema:givenName`
-  -> `"Ethan"`
+- Item-to-item: Connects two distinct items e.g., `user:person` ->
+  `schema:worksFor` -> `wazoo:organization`
+- Item-to-value: Connects an item to a raw data value, adding searchable detail
+  but acting as a terminal point e.g., `user:person` -> `schema:givenName` ->
+  `"Ethan"`
 
 <div align="center">
 
 ```mermaid
 graph LR
-    subgraph "RDF graph"
-    A((corp:acme)) -->|corp:ownedBy| B((corp:parent))
-    A -->|corp:legalName| C[/"Acme Corp"/]
+    subgraph "Memory graph"
+    A((user:person)) -->|schema:worksFor| B((wazoo:organization))
+    A -->|schema:givenName| C[/"Ethan"/]
     end
-    style C stroke-dasharray: 5 5
+    style A fill:#FF9800,stroke:#F57C00,color:#fff
+    style B fill:#FF9800,stroke:#F57C00,color:#fff
+    style C fill:#FFB74D,stroke:#FF9800,color:#000
 ```
 
 </div>
 
 ### Serialization
 
-To write these triples in code, Worlds uses **Turtle**, a standard RDF
-serialization format.
+To codify knowledge, Worlds standard RDF serialization formats for expressing
+triples in plain text.
 
-To assert "Acme Corp is a Legal Entity", the syntax goes:
+To assert "Ethan is a Person", the syntax goes:
 
-```turtle Turtle
-corp:acme a schema:Organization .
-```
-
-To expand on an item, use a semicolon `;` to chain multiple facts together.
-Here, we assert that Acme Corp is an organization, and its legal name is "Acme
-Corp".
+<CodeGroup>
 
 ```turtle Turtle
-corp:acme a schema:Organization ;
- schema:legalName "Acme Corp" .
+@prefix user: <https://etok.me/#> .
+@prefix schema: <https://schema.org/> .
+
+user:person a schema:Person .
 ```
 
-## Verification
-
-To verify a fact, Worlds uses the SPARQL **ASK** query. This provides a
-deterministic boolean answer without probabilistic guessing.
-
-For example, to verify if "Acme Corp is owned by Parent Co", use:
-
-```sparql SPARQL
-PREFIX corp: <http://corp.example/>
-
-ASK WHERE {
-  corp:acme corp:ownedBy corp:parent .
+```json JSON-LD
+{
+  "@context": {
+    "user": "https://etok.me/#",
+    "schema": "https://schema.org/"
+  },
+  "@id": "user:person",
+  "@type": "schema:Person"
 }
 ```
 
-In the SDK, use the `sparql` method to perform this check:
+```turtle N-Triples
+<https://etok.me/#person> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Person> .
+```
+
+```html Microdata
+<div
+  itemscope
+  itemid="http://corp.example/acme"
+  itemtype="https://schema.org/Organization"
+>
+  <!-- Additional facts go here -->
+</div>
+```
+
+</CodeGroup>
+
+Items can consolidate multiple facts into a single structure. Here, we assert
+that Ethan is a person with the given name "Ethan":
+
+<CodeGroup>
+
+```turtle Turtle
+@prefix user: <https://etok.me/#> .
+@prefix schema: <https://schema.org/> .
+
+user:person a schema:Person ;
+  schema:givenName "Ethan" .
+```
+
+```json JSON-LD
+{
+  "@context": {
+    "user": "https://etok.me/#",
+    "schema": "https://schema.org/"
+  },
+  "@id": "user:person",
+  "@type": "schema:Person",
+  "schema:givenName": "Ethan"
+}
+```
+
+```turtle N-Triples
+<https://etok.me/#person> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Person> .
+<https://etok.me/#person> <https://schema.org/givenName> "Ethan" .
+```
+
+```html Microdata
+<div
+  itemscope
+  itemid="http://corp.example/acme"
+  itemtype="https://schema.org/Organization"
+>
+  <span itemprop="https://schema.org/legalName">Acme Corp</span>
+</div>
+```
+
+</CodeGroup>
+
+## Verification
+
+To verify a fact, Worlds uses the SPARQL ASK query. This provides a
+deterministic boolean answer without probabilistic guessing.
+
+For example, to verify if "Ethan works at Wazoo", use:
+
+```sparql SPARQL
+PREFIX wazoo: <https://wazoo.dev/#>
+
+ASK WHERE {
+  <https://etok.me/#person> wazoo:worksFor <https://wazoo.dev/#organization> .
+}
+```
+
+In the API, use the `sparql` method to perform this check:
 
 ```typescript TypeScript
-// Worlds.sparql accepts either a world ID or a human-readable slug.
+// worlds.sparql accepts either a world ID or a human-readable slug.
 const result = await worlds.sparql(
   "my-world-slug",
   "PREFIX corp: <http://corp.example/> ASK WHERE { corp:acme corp:ownedBy corp:parent . }",

@@ -72,11 +72,18 @@ individually. Each tool factory requires the same
 [configuration options](#usage).
 
 ```typescript
+import { Worlds } from "@wazoo/worlds-sdk";
 import {
   createDiscoverSchemaTool,
   createExecuteSparqlTool,
   createSearchEntitiesTool,
 } from "@wazoo/worlds-ai-sdk";
+
+const worlds = new Worlds({
+  apiKey: process.env.WORLDS_API_KEY,
+});
+
+const sources = ["my-world-slug"];
 
 const discoverSchema = createDiscoverSchemaTool({ worlds, sources });
 const executeSparql = createExecuteSparqlTool({ worlds, sources });
