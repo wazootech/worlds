@@ -1,0 +1,77 @@
+---
+title: "Update"
+description: "Mutate graph state with RDF patches."
+---
+
+Autonomous agents write new facts into the graph to evolve the world. 
+Worlds supports multiple strategies for ingesting and synchronized 
+knowledge within a stateful context.
+
+## State mutations
+
+A world mutates its state using **RDF patches**—granular additions and deletions 
+of facts. Because Worlds functions as a chronological, append-only ledger, 
+these patches permanently preserve historical truth.
+
+### SPARQL updates
+
+The most common way to mutate state is executing SPARQL updates. When an agent 
+runs an `INSERT` or `DELETE` command, Worlds translates it into a deterministic 
+patch.
+
+```sparql SPARQL
+PREFIX corp: <http://corp.example/>
+
+INSERT DATA {
+  <corp:acme> corp:ownedBy <corp:parent> .
+}
+```
+
+### Ingestion strategies
+
+*   **One-time import**: Bootstrapping a world via CLI or SDK using existing 
+    Turtle or N-Quads files.
+*   **Direct SDK ingestion**: Real-time insertion from agentic loops using 
+    [`@wazoo/worlds-sdk`](https://jsr.io/@wazoo/worlds-sdk).
+*   **Data synchronization**: Hooking into external event streams via a 
+    forward-sync proxy to translate webhooks into graph facts.
+
+---
+
+## Architecture
+
+While agents interact with Worlds abstractly, the platform manages the 
+underlying RDF data through a deterministic pipeline.
+
+### RDF patching pipeline
+
+When a mutation is requested, the system performs the following sequence:
+
+1.  **Identification**: [Skolemizes](https://en.wikipedia.org/wiki/Skolem_normal_form) 
+    and hashes each quad to a unique triple ID.
+2.  **Relational Storage**: Upserts the resulting triples into the database.
+3.  **Semantic Indexing**: Chunks and embeds literal values for 
+    [hybrid search](/worlds/query).
+4.  **Triggers**: SQL triggers synchronize `rdf:type` relations to specific 
+    type tables.
+
+### Execution pipeline
+
+When executing a SPARQL query via the API, the system follows this pipeline:
+
+1.  Loads the world metadata from the main database.
+2.  Resolves the world-specific database client.
+3.  Executes the query over the resulting RDF blob using the **Comunica** engine.
+4.  Updates the world metadata if the blob changed during a SPARQL update.
+
+---
+
+## Feedback ingestion
+
+Beyond the initial ingestion of facts, the world evolves through a recursive 
+loop of human feedback. When a human corrects or approves an agent's reasoning, 
+that feedback is asserted as a verifiable triple in the ledger.
+
+This historical truth remains in the ledger, allowing future queries to be 
+guided by this preference data. Learn more about steered retrieval in 
+the [Alignment](/worlds/alignment) deep-dive.

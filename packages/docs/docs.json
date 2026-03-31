@@ -74,10 +74,14 @@
         "group": "Worlds",
         "pages": [
           "worlds/index",
-          "worlds/ontology",
           "worlds/query",
+          "worlds/update",
           "worlds/alignment"
         ]
+      },
+      {
+        "group": "Reference",
+        "pages": ["worlds/ontology"]
       },
       {
         "group": "Integrations",
