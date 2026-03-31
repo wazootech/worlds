@@ -1,31 +1,30 @@
 import { ulid } from "@std/ulid/ulid";
 import { DataFactory, Parser, Store, Writer } from "n3";
-import {
-  type CreateWorldParams,
-  type ExecuteSparqlOutput,
-  executeSparqlOutputSchema,
-  type Log,
-  logSchema,
-  type RdfFormat,
-  type TripleSearchResult,
-  type UpdateWorldParams,
-  type World,
-  worldSchema,
-} from "./schema.ts";
-import type { WorldsInterface } from "./types.ts";
 import { ChunksSearchRepository } from "./database/repositories/world/chunks/mod.ts";
 import { WorldsRepository } from "./database/repositories/system/worlds/mod.ts";
 import { BlobsRepository } from "./database/repositories/world/blobs/mod.ts";
 import { LogsRepository } from "./database/repositories/world/logs/mod.ts";
 import { BatchPatchHandler, handlePatch } from "./rdf/patch/mod.ts";
-import type { Patch } from "./rdf/patch/mod.ts";
 import { sparql } from "./rdf/sparql.ts";
 import { isSparqlUpdate } from "./utils.ts";
-import type { WorldsContext } from "./context.ts";
 import {
   DEFAULT_SERIALIZATION,
   getSerializationByFormat,
 } from "./rdf/core/serialization.ts";
+import { executeSparqlOutputSchema, logSchema, worldSchema } from "./schema.ts";
+import type { WorldsInterface } from "./types.ts";
+import type { WorldRow } from "./database/repositories/system/worlds/mod.ts";
+import type { Patch } from "./rdf/patch/mod.ts";
+import type { WorldsContext } from "./context.ts";
+import type {
+  CreateWorldParams,
+  ExecuteSparqlOutput,
+  Log,
+  RdfFormat,
+  TripleSearchResult,
+  UpdateWorldParams,
+  World,
+} from "./schema.ts";
 
 const { namedNode, quad } = DataFactory;
 
@@ -71,11 +70,11 @@ export class LocalWorlds implements WorldsInterface {
   }
 
   /**
-   * get fetches a single world by its ID.
+   * get fetches a single world by its ID or slug.
    */
-  async get(id: string): Promise<World | null> {
-    const world = await this.worldsRepository.getById(id);
-    if (!world || world.deleted_at != null) {
+  async get(idOrSlug: string): Promise<World | null> {
+    const world = await this.resolveWorld(idOrSlug);
+    if (!world) {
       return null;
     }
 
@@ -88,6 +87,23 @@ export class LocalWorlds implements WorldsInterface {
       updatedAt: world.updated_at,
       deletedAt: world.deleted_at,
     });
+  }
+
+  /**
+   * resolveWorld finds a world record by its ID or slug.
+   */
+  private async resolveWorld(idOrSlug: string): Promise<WorldRow | null> {
+    const worldById = await this.worldsRepository.getById(idOrSlug);
+    if (worldById && worldById.deleted_at === null) {
+      return worldById;
+    }
+
+    const worldBySlug = await this.worldsRepository.getBySlug(idOrSlug);
+    if (worldBySlug && worldBySlug.deleted_at === null) {
+      return worldBySlug;
+    }
+
+    return null;
   }
 
   /**
@@ -132,13 +148,13 @@ export class LocalWorlds implements WorldsInterface {
   /**
    * update updates a world's metadata.
    */
-  async update(id: string, data: UpdateWorldParams): Promise<void> {
-    const world = await this.worldsRepository.getById(id);
-    if (!world || world.deleted_at != null) {
+  async update(idOrSlug: string, data: UpdateWorldParams): Promise<void> {
+    const world = await this.resolveWorld(idOrSlug);
+    if (!world) {
       throw new Error("World not found");
     }
 
-    await this.worldsRepository.update(id, {
+    await this.worldsRepository.update(world.id, {
       slug: data.slug ?? world.slug,
       label: data.label ?? world.label,
       description: data.description !== undefined
@@ -151,13 +167,13 @@ export class LocalWorlds implements WorldsInterface {
   /**
    * delete marks a world as deleted.
    */
-  async delete(id: string): Promise<void> {
-    const world = await this.worldsRepository.getById(id);
-    if (!world || world.deleted_at != null) {
+  async delete(idOrSlug: string): Promise<void> {
+    const world = await this.resolveWorld(idOrSlug);
+    if (!world) {
       throw new Error("World not found");
     }
 
-    await this.worldsRepository.update(id, {
+    await this.worldsRepository.update(world.id, {
       deleted_at: Date.now(),
     });
   }
@@ -166,19 +182,19 @@ export class LocalWorlds implements WorldsInterface {
    * sparql executes a SPARQL query or update against a specific world.
    */
   async sparql(
-    id: string,
+    idOrSlug: string,
     query: string,
     _options?: {
       defaultGraphUris?: string[];
       namedGraphUris?: string[];
     },
   ): Promise<ExecuteSparqlOutput> {
-    const world = await this.worldsRepository.getById(id);
-    if (!world || world.deleted_at != null) {
+    const world = await this.resolveWorld(idOrSlug);
+    if (!world) {
       throw new Error("World not found");
     }
 
-    const managedWorld = await this.appContext.libsql.manager.get(id);
+    const managedWorld = await this.appContext.libsql.manager.get(world.id);
     const patchHandler = new BatchPatchHandler({
       patch: (patches: Patch[]) =>
         handlePatch(managedWorld.database, this.appContext.embeddings, patches),
@@ -200,12 +216,12 @@ export class LocalWorlds implements WorldsInterface {
 
       const updatedAt = Date.now();
       await blobsRepository.set(newData, updatedAt);
-      await this.worldsRepository.update(id, { updated_at: updatedAt });
+      await this.worldsRepository.update(world.id, { updated_at: updatedAt });
 
       const logsRepository = new LogsRepository(managedWorld.database);
       await logsRepository.add({
         id: ulid(),
-        world_id: id,
+        world_id: world.id,
         timestamp: Date.now(),
         level: "info",
         message: "SPARQL update",
@@ -218,7 +234,7 @@ export class LocalWorlds implements WorldsInterface {
     const logsRepository = new LogsRepository(managedWorld.database);
     await logsRepository.add({
       id: ulid(),
-      world_id: id,
+      world_id: world.id,
       timestamp: Date.now(),
       level: "info",
       message: "SPARQL query",
@@ -246,7 +262,7 @@ export class LocalWorlds implements WorldsInterface {
    * search performs semantic/text search on triples using vector embeddings.
    */
   async search(
-    id: string,
+    idOrSlug: string,
     query: string,
     options?: {
       limit?: number;
@@ -255,8 +271,8 @@ export class LocalWorlds implements WorldsInterface {
       types?: string[];
     },
   ): Promise<TripleSearchResult[]> {
-    const world = await this.worldsRepository.getById(id);
-    if (!world || world.deleted_at != null) {
+    const world = await this.resolveWorld(idOrSlug);
+    if (!world) {
       throw new Error("World not found");
     }
 
@@ -273,11 +289,11 @@ export class LocalWorlds implements WorldsInterface {
       limit: options?.limit ?? 20,
     });
 
-    const managed = await this.appContext.libsql.manager.get(id);
+    const managed = await this.appContext.libsql.manager.get(world.id);
     const logsRepository = new LogsRepository(managed.database);
     await logsRepository.add({
       id: ulid(),
-      world_id: id,
+      world_id: world.id,
       timestamp: Date.now(),
       level: "info",
       message: "Semantic search executed",
@@ -296,14 +312,14 @@ export class LocalWorlds implements WorldsInterface {
    * import ingests RDF data into a world and updates the semantic index.
    */
   async import(
-    id: string,
+    idOrSlug: string,
     data: string | ArrayBuffer,
     options?: {
       format?: RdfFormat;
     },
   ): Promise<void> {
-    const world = await this.worldsRepository.getById(id);
-    if (!world || world.deleted_at != null) {
+    const world = await this.resolveWorld(idOrSlug);
+    if (!world) {
       throw new Error("World not found");
     }
 
@@ -331,7 +347,7 @@ export class LocalWorlds implements WorldsInterface {
           return;
         }
         try {
-          const managed = await this.appContext.libsql.manager.get(id);
+          const managed = await this.appContext.libsql.manager.get(world.id);
           const blobsRepository = new BlobsRepository(managed.database);
           const now = Date.now();
 
@@ -345,12 +361,12 @@ export class LocalWorlds implements WorldsInterface {
           );
 
           await blobsRepository.set(new TextEncoder().encode(result), now);
-          await this.worldsRepository.update(id, { updated_at: now });
+          await this.worldsRepository.update(world.id, { updated_at: now });
 
           const logsRepository = new LogsRepository(managed.database);
           await logsRepository.add({
             id: ulid(),
-            world_id: id,
+            world_id: world.id,
             timestamp: now,
             level: "info",
             message: "World data imported",
@@ -369,11 +385,11 @@ export class LocalWorlds implements WorldsInterface {
    * export retrieves a world's facts in the specified RDF format.
    */
   async export(
-    id: string,
+    idOrSlug: string,
     options?: { format?: RdfFormat },
   ): Promise<ArrayBuffer> {
-    const world = await this.worldsRepository.getById(id);
-    if (!world || world.deleted_at != null) {
+    const world = await this.resolveWorld(idOrSlug);
+    if (!world) {
       throw new Error("World not found");
     }
 
@@ -384,7 +400,7 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error(`Unsupported format: ${options?.format}`);
     }
 
-    const managed = await this.appContext.libsql.manager.get(id);
+    const managed = await this.appContext.libsql.manager.get(world.id);
     const blobsRepository = new BlobsRepository(managed.database);
     const worldData = await blobsRepository.get();
 
@@ -485,26 +501,26 @@ export class LocalWorlds implements WorldsInterface {
    * listLogs retrieves execution and audit logs from the world database.
    */
   async listLogs(
-    id: string,
+    idOrSlug: string,
     options?: {
       page?: number;
       pageSize?: number;
       level?: string;
     },
   ): Promise<Log[]> {
-    const world = await this.worldsRepository.getById(id);
-    if (!world || world.deleted_at != null) {
+    const world = await this.resolveWorld(idOrSlug);
+    if (!world) {
       throw new Error("World not found");
     }
 
-    const managed = await this.appContext.libsql.manager.get(id);
+    const managed = await this.appContext.libsql.manager.get(world.id);
     const logsRepository = new LogsRepository(managed.database);
 
     const page = options?.page ?? 1;
     const pageSize = options?.pageSize ?? 20;
 
     const rows = await logsRepository.listByWorld(
-      id,
+      world.id,
       page,
       pageSize,
       options?.level,

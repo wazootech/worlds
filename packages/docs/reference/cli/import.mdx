@@ -5,21 +5,21 @@ description: "Import RDF triples into a world"
 
 Streams a local file containing RDF assertions into a remote world.
 
-<ParamField path="worldId" type="string" required>
-  The unique system identifier of the target world.
+<ParamField path="--world" type="string" required>
+  The unique system identifier of the target world. *Alias:* `-w`
 </ParamField>
 
-<ParamField path="file_path" type="string" required>
-  The relative or absolute local file path to the RDF file.
+<ParamField path="--file" type="string" required>
+  The relative or absolute path to the RDF file.
 </ParamField>
 
 <ParamField path="--format" type="string">
-  The RDF serialization format. Accepted values include `turtle` and `n-quads`.
-  *Alias:* `-f`
+  The RDF serialization format. *Options:* `turtle`, `n-quads`, `n-triples`,
+  `trig`. *Alias:* `-f`
 </ParamField>
 
 ### Usage
 
 ```bash
-worlds import <worldId> ./data.ttl --format turtle
+worlds import --world my-world --file ./data.ttl --format turtle
 ```

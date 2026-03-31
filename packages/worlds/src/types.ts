@@ -24,9 +24,9 @@ export interface WorldsInterface {
   }): Promise<World[]>;
 
   /**
-   * get fetches a single world by its ID.
+   * get fetches a single world by its ID or slug.
    */
-  get(id: string): Promise<World | null>;
+  get(idOrSlug: string): Promise<World | null>;
 
   /**
    * create creates a new world.
@@ -36,18 +36,18 @@ export interface WorldsInterface {
   /**
    * update updates an existing world.
    */
-  update(id: string, params: UpdateWorldParams): Promise<void>;
+  update(idOrSlug: string, params: UpdateWorldParams): Promise<void>;
 
   /**
    * delete deletes a world.
    */
-  delete(id: string): Promise<void>;
+  delete(idOrSlug: string): Promise<void>;
 
   /**
    * sparql executes a SPARQL query or update against a world.
    */
   sparql(
-    id: string,
+    idOrSlug: string,
     query: string,
     options?: {
       defaultGraphUris?: string[];
@@ -59,7 +59,7 @@ export interface WorldsInterface {
    * ask performs a deterministic boolean check (SPARQL ASK) against a world.
    */
   ask(
-    id: string,
+    idOrSlug: string,
     queryOrTriple: string,
   ): Promise<boolean>;
 
@@ -67,7 +67,7 @@ export interface WorldsInterface {
    * search perform semantic/text search on triples in a world.
    */
   search(
-    id: string,
+    idOrSlug: string,
     query: string,
     options?: {
       limit?: number;
@@ -81,7 +81,7 @@ export interface WorldsInterface {
    * import imports RDF data into a world.
    */
   import(
-    id: string,
+    idOrSlug: string,
     data: string | ArrayBuffer,
     options?: {
       format?: RdfFormat;
@@ -92,7 +92,7 @@ export interface WorldsInterface {
    * export exports a world in the specified RDF format.
    */
   export(
-    id: string,
+    idOrSlug: string,
     options?: { format?: RdfFormat },
   ): Promise<ArrayBuffer>;
 
@@ -100,7 +100,7 @@ export interface WorldsInterface {
    * getServiceDescription gets the SPARQL service description.
    */
   getServiceDescription(
-    id: string,
+    idOrSlug: string,
     options: { endpointUrl: string; format?: RdfFormat },
   ): Promise<string>;
 
@@ -108,7 +108,7 @@ export interface WorldsInterface {
    * listLogs lists the execution/audit logs for a world.
    */
   listLogs(
-    id: string,
+    idOrSlug: string,
     options?: {
       page?: number;
       pageSize?: number;

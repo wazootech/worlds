@@ -1,7 +1,7 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
 import { ulid } from "@std/ulid/ulid";
+import type { Tool } from "ai";
 import type { CreateToolsOptions } from "#/options.ts";
 
 /**
@@ -41,14 +41,12 @@ export const generateIriOutputSchema: z.ZodType<GenerateIriOutput> = z.object(
 );
 
 /**
- * GenerateIriTool is a tool that generates a unique IRI
- * (Internationalized Resource Identifier) for a new entity.
+ * GenerateIriTool is a tool that generates a unique IRI for a new entity.
  */
 export type GenerateIriTool = Tool<GenerateIriInput, GenerateIriOutput>;
 
 /**
- * createGenerateIriTool creates a tool that generates a unique IRI
- * (Internationalized Resource Identifier) for a new entity.
+ * createGenerateIriTool creates a tool that generates a unique IRI for a new entity.
  */
 export function createGenerateIriTool(
   { generateIri = () => `https://wazoo.dev/.well-known/genid/${ulid()}` }:

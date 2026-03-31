@@ -147,8 +147,9 @@ ASK WHERE {
 In the SDK, use the `sparql` method to perform this check:
 
 ```typescript TypeScript
+// Worlds.sparql accepts either a world ID or a human-readable slug.
 const result = await worlds.sparql(
-  worldId,
+  "my-world-slug",
   "PREFIX corp: <http://corp.example/> ASK WHERE { corp:acme corp:ownedBy corp:parent . }",
 );
 

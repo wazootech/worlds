@@ -1,10 +1,8 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
-import {
-  type TripleSearchResult,
-  tripleSearchResultSchema,
-} from "@wazoo/worlds-sdk";
+import { tripleSearchResultSchema } from "@wazoo/worlds-sdk";
+import type { Tool } from "ai";
+import type { TripleSearchResult } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "#/options.ts";
 
 /**
@@ -23,7 +21,7 @@ export interface SearchEntitiesInput {
 export const searchEntitiesInputSchema: z.ZodType<SearchEntitiesInput> = z
   .object({
     source: z.string().describe(
-      "The ID of the source to search within.",
+      "The ID or slug of the source to search within.",
     ),
     query: z.string().describe(
       "The text of the associated entity as mentioned in the given text.",

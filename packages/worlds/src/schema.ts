@@ -455,10 +455,10 @@ export const logSchema: z.ZodType<Log> = z.object({
 });
 
 /**
- * Source represents a data source ID.
+ * Source represents a data source world by ID or slug.
  */
 export interface Source {
-  id: string;
+  world: string;
 
   write?: boolean;
 
@@ -466,7 +466,7 @@ export interface Source {
 }
 
 export const sourceSchema: z.ZodType<Source> = z.object({
-  id: z.string(),
+  world: z.string(),
   write: z.boolean().optional(),
   schema: z.boolean().optional(),
 });

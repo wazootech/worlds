@@ -5,7 +5,13 @@ import type {
 } from "#/tools/disambiguate-entities.ts";
 
 /**
- * CreateToolsOptions is the options for the createTools function.
+ * SourceInput is a flexible way to specify a data source.
+ * It can be a string (ID or slug) for read-only access, or a Source object for granular control.
+ */
+export type SourceInput = string | Source;
+
+/**
+ * CreateToolsOptions are the configuration options for tool creation.
  */
 export interface CreateToolsOptions {
   /**
@@ -16,7 +22,7 @@ export interface CreateToolsOptions {
   /**
    * sources is the list of sources visible to the tools.
    */
-  sources: Source[];
+  sources: SourceInput[];
 
   /**
    * generateIri is a function that generates an IRI for new entities.

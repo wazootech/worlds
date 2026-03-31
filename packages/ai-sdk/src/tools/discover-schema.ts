@@ -1,13 +1,15 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions } from "#/options.ts";
+import type { Tool } from "ai";
 import {
   discoverSchema,
-  type DiscoverSchemaInput,
   discoverSchemaInputSchema,
-  type DiscoverSchemaOutput,
   discoverSchemaOutputSchema,
 } from "../discover-schema.ts";
+import type {
+  DiscoverSchemaInput,
+  DiscoverSchemaOutput,
+} from "../discover-schema.ts";
+import type { CreateToolsOptions } from "#/options.ts";
 
 /**
  * DiscoverSchemaTool is a tool that discovers RDF classes and properties.

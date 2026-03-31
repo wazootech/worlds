@@ -5,30 +5,30 @@ description: "Search items using hybrid similarity"
 
 Executes a semantic hybrid search against the world's underlying vector index.
 
-<ParamField path="worldId" type="string" required>
-  The unique system identifier of the target world.
+<ParamField path="--world" type="string" required>
+  The unique system identifier of the target world. *Alias:* `-w`
 </ParamField>
 
-<ParamField path="query" type="string" required>
-  The semantic search query evaluated by the embedding model.
+<ParamField path="--query" type="string" required>
+  The free-text search string. *Alias:* `-q`
 </ParamField>
 
 <ParamField path="--limit" type="number">
-  The maximum number of matches to return. *Alias:* `-l`
+  The maximum number of entities to return. Default is 10. *Alias:* `-l`
 </ParamField>
 
-<ParamField path="--subjects" type="string[]">
-  Restrict the semantic search geometrically to specific subject IRIs. Pass this
-  flag multiple times for multiple subjects. *Alias:* `-s`
+<ParamField path="--subjects" type="string">
+  Specifies IRIs to restrict the search context. Can be provided multiple times.
+  *Alias:* `-s`
 </ParamField>
 
-<ParamField path="--predicates" type="string[]">
-  Restrict the semantic search to specific predicate IRIs. Pass this flag
-  multiple times for multiple predicates. *Alias:* `-p`
+<ParamField path="--predicates" type="string">
+  Specifies IRIs of properties to restrict the search context. Can be provided
+  multiple times. *Alias:* `-p`
 </ParamField>
 
 ### Usage
 
 ```bash
-worlds search <worldId> "the chemical composition of water" --limit 5
+worlds search --world my-world --query "Acme Corp operations" --limit 5
 ```

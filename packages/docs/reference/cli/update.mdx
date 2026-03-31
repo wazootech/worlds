@@ -7,24 +7,24 @@ Updates the high-level metadata assigned to a World. Note that this does _not_
 modify the graph data inside the World; for that, use the [sparql](./sparql.mdx)
 command.
 
-<ParamField path="worldId" type="string" required>
-  The unique system identifier of the target world.
-</ParamField>
-
-<ParamField path="--label" type="string">
-  The human-readable title of your world. *Alias:* `-l`
+<ParamField path="--world" type="string" required>
+  The unique system identifier of the target world. *Alias:* `-w`
 </ParamField>
 
 <ParamField path="--slug" type="string">
-  A unique URL-friendly string identifier. *Alias:* `-s`
+  A new human-readable, URL-friendly identifier for the world. *Alias:* `-s`
+</ParamField>
+
+<ParamField path="--label" type="string">
+  A new human-readable name for the world. *Alias:* `-l`
 </ParamField>
 
 <ParamField path="--description" type="string">
-  A descriptive summary of the world's purpose. *Alias:* `-d`
+  A new detailed description of the world's contents. *Alias:* `-d`
 </ParamField>
 
 ### Usage
 
 ```bash
-worlds update <worldId> --label "Production World"
+worlds update --world my-world --label "Renamed World"
 ```
