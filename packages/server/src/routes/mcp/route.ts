@@ -5,8 +5,21 @@ import { authorizeRequest } from "#/middleware/auth.ts";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
 import {
   LocalWorlds,
-  createWorldParamsSchema,
-  worldSchema,
+  worldsQuerySchema,
+  worldsListSchema,
+  worldsGetSchema,
+  worldsCreateSchema,
+  worldsImportSchema,
+  worldsExportSchema,
+  worldsSearchSchema,
+  worldsSearchOutputSchema,
+  type WorldsQueryInput,
+  type WorldsListInput,
+  type WorldsGetInput,
+  type WorldsCreateInput,
+  type WorldsImportInput,
+  type WorldsExportInput,
+  type WorldsSearchInput,
 } from "@wazoo/worlds-sdk";
 
 export default (appContext: WorldsContext) => {
@@ -29,12 +42,9 @@ export default (appContext: WorldsContext) => {
     "worlds_query",
     {
       description: "Query a Worlds knowledge graph using SPARQL",
-      inputSchema: z.object({
-        world: z.string().describe("The world ID to query"),
-        query: z.string().describe("SPARQL query string"),
-      }),
+      inputSchema: worldsQuerySchema,
     },
-    async (args: { world: string; query: string }) => {
+    async (args) => {
       const result = await worlds.sparql(args.world, args.query);
       return {
         content: [
@@ -51,12 +61,9 @@ export default (appContext: WorldsContext) => {
     "worlds_list",
     {
       description: "List all available worlds",
-      inputSchema: z.object({
-        page: z.number().default(1).describe("Page number"),
-        pageSize: z.number().default(20).describe("Page size"),
-      }),
+      inputSchema: worldsListSchema,
     },
-    async (args: { page: number; pageSize: number }) => {
+    async (args) => {
       const result = await worlds.list({ page: args.page, pageSize: args.pageSize });
       return {
         content: [
@@ -73,11 +80,9 @@ export default (appContext: WorldsContext) => {
     "worlds_get",
     {
       description: "Get a world by ID",
-      inputSchema: z.object({
-        world: z.string().describe("The world ID to retrieve"),
-      }),
+      inputSchema: worldsGetSchema,
     },
-    async (args: { world: string }) => {
+    async (args) => {
       const worldData = await worlds.get(args.world);
       if (!worldData) {
         return {
@@ -100,9 +105,9 @@ export default (appContext: WorldsContext) => {
     "worlds_create",
     {
       description: "Create a new world",
-      inputSchema: createWorldParamsSchema,
+      inputSchema: worldsCreateSchema,
     },
-    async (args: { slug: string; label: string; description?: string | null }) => {
+    async (args) => {
       const world = await worlds.create(args);
       return {
         content: [
@@ -119,12 +124,9 @@ export default (appContext: WorldsContext) => {
     "worlds_import",
     {
       description: "Import RDF data into a world",
-      inputSchema: z.object({
-        world: z.string().describe("The world ID to import data into"),
-        data: z.string().describe("RDF data in N-Triples or N-Quads format"),
-      }),
+      inputSchema: worldsImportSchema,
     },
-    async (args: { world: string; data: string }) => {
+    async (args) => {
       await worlds.import(args.world, args.data, { contentType: "application/n-triples" });
       return {
         content: [
@@ -141,11 +143,9 @@ export default (appContext: WorldsContext) => {
     "worlds_export",
     {
       description: "Export a world as RDF data",
-      inputSchema: z.object({
-        world: z.string().describe("The world ID to export"),
-      }),
+      inputSchema: worldsExportSchema,
     },
-    async (args: { world: string }) => {
+    async (args) => {
       const buffer = await worlds.export(args.world, {
         contentType: "application/n-quads",
       });
@@ -154,6 +154,31 @@ export default (appContext: WorldsContext) => {
           {
             type: "text",
             text: new TextDecoder().decode(buffer),
+          },
+        ],
+      };
+    },
+  );
+
+  server.registerTool(
+    "worlds_search",
+    {
+      description: "Search for facts in a Worlds knowledge graph using semantic search",
+      inputSchema: worldsSearchSchema,
+      outputSchema: worldsSearchOutputSchema,
+    },
+    async (args) => {
+      const results = await worlds.search(args.world, args.query, {
+        limit: args.limit,
+        types: args.types,
+        subjects: args.subjects,
+        predicates: args.predicates,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ results }, null, 2),
           },
         ],
       };

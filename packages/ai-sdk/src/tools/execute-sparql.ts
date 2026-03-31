@@ -1,6 +1,10 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { executeSparqlOutputSchema, isSparqlUpdate } from "@wazoo/worlds-sdk";
+import {
+  executeSparqlOutputSchema,
+  isSparqlUpdate,
+  worldsQuerySchema,
+} from "@wazoo/worlds-sdk";
 import type { Tool } from "ai";
 import type { ExecuteSparqlOutput } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "#/options.ts";
@@ -8,22 +12,7 @@ import type { CreateToolsOptions } from "#/options.ts";
 /**
  * ExecuteSparqlInput is the input to the executeSparql tool.
  */
-export interface ExecuteSparqlInput {
-  source: string;
-  sparql: string;
-}
-
-/**
- * executeSparqlInputSchema is the input schema for the executeSparql tool.
- */
-export const executeSparqlInputSchema: z.ZodType<ExecuteSparqlInput> = z.object(
-  {
-    source: z.string().describe(
-      "The ID or slug of the source to execute the query against.",
-    ),
-    sparql: z.string().describe("The SPARQL query or update to execute."),
-  },
-);
+export type ExecuteSparqlInput = z.infer<typeof worldsQuerySchema>;
 
 /**
  * ExecuteSparqlTool is a tool that executes SPARQL queries and updates.
@@ -39,23 +28,23 @@ export function createExecuteSparqlTool(
   return tool({
     description:
       "Execute SPARQL queries and updates against a specific world knowledge base.",
-    inputSchema: executeSparqlInputSchema,
+    inputSchema: worldsQuerySchema,
     outputSchema: executeSparqlOutputSchema,
     execute: async (input: ExecuteSparqlInput) => {
-      const { sparql, source } = input;
+      const { query, world: source } = input;
       const s = sources.find((s) =>
         (typeof s === "string" ? s : s.world) === source
       );
       const isWritable = typeof s === "object" ? s.write : false;
 
-      if (isSparqlUpdate(sparql) && !isWritable) {
+      if (isSparqlUpdate(query) && !isWritable) {
         throw new Error(
           "Write operations are disabled. This source is configured as read-only. " +
             "Only SELECT, ASK, CONSTRUCT, and DESCRIBE queries are allowed.",
         );
       }
 
-      return await worlds.sparql(source, sparql);
+      return await worlds.sparql(source, query);
     },
   });
 }
