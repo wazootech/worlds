@@ -37,3 +37,23 @@ $$score = \sum_{d \in D} \frac{1}{60 + rank(d)}$$
 
 This ensures that a result ranked highly by multiple signals surfaces to the
 top, while noise from any single signal is suppressed.
+
+## Execute a search
+
+Use the `worlds.search` method to perform a hybrid retrieval across your world.
+
+```typescript TypeScript
+import { Worlds } from "@wazoo/worlds-sdk";
+
+const worlds = new Worlds({
+  apiKey: process.env.WORLDS_API_KEY,
+});
+
+// Search for an item using natural language
+const results = await worlds.search("my-world-id", "Ethan's manager", {
+  limit: 5,
+  types: ["schema:Person"],
+});
+
+console.log("Search results:", results);
+```

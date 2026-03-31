@@ -14,15 +14,25 @@ results without probabilistic guessing.
 
 ### Symbolic logic
 
-Given triples such as `user:person wazoo:worksFor wazoo:organization`, query for the
-organization:
+Given triples such as `user:person wazoo:worksFor wazoo:organization`, query for
+the organization:
 
-```sparql SPARQL
-PREFIX wazoo: <https://wazoo.dev/#>
+```typescript TypeScript
+import { Worlds } from "@wazoo/worlds-sdk";
 
-SELECT ?wazoo WHERE {
-  <https://etok.me/#person> wazoo:worksFor ?wazoo .
-}
+const worlds = new Worlds({
+  apiKey: process.env.WORLDS_API_KEY,
+});
+
+// Execute a SPARQL query to retrieve facts
+const response = await worlds.sparql(
+  "my-world-id",
+  `PREFIX wazoo: <https://wazoo.dev/#>
+
+  SELECT ?wazoo WHERE {
+    <https://etok.me/#person> wazoo:worksFor ?wazoo .
+  }`,
+);
 ```
 
 ### Neuro-symbolic reasoning

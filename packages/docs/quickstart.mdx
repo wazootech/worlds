@@ -81,7 +81,7 @@ await worlds.import(
 // 4. Retrieve the fact with absolute precision
 const result = await worlds.sparql(
   "quickstart-cloud",
-  `PREFIX org: <http://org.example/>
+  `PREFIX wazoo: <https://wazoo.dev/#>
   SELECT ?wazoo WHERE { <https://etok.me/#person> wazoo:worksFor ?wazoo }`,
 );
 
