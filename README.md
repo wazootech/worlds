@@ -19,19 +19,20 @@
   <a href="https://deepwiki.com/wazootech/worlds"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" /></a>
 </p>
 
-Worlds Platform is the open-source **verifiable context layer** for AI. It is a
+Worlds Platform is the open-source verifiable context layer for AI. It is a
 deterministic reasoning engine designed to manage, query, and prove knowledge
 using [SPARQL](https://www.w3.org/TR/sparql11-overview/) standards at the edge.
 
-Worlds Platform provides an interoperable context graph to improve agent
-reasoning.
+Worlds provides an interoperable context graph to manage, query, and prove
+high-stakes knowledge at the edge.
 
-- **Reasoning**: Built-in SPARQL support for complex reasoning and federated
+- Reasoning: Built-in SPARQL support for complex reasoning and federated
   knowledge discovery.
-- **Agnostic**: Bring Your Own Brain (BYOB). Works with any LLM, framework, or
-  agent.
-- **Performance**: Designed for the edge. Low latency store operations.
-- **AI-native**: First-class support for LLM tool-calling and context injection.
+- Agnostic: Bring your own model. Works with any LLM, framework, or agent.
+- AI-native: First-class support for LLM tool-calling and context injection.
+- Verifiable: Complete provenance and explainability for all knowledge.
+- Continual learning: Worlds is designed to learn and improve recall and
+  reasoning with gaining more experience.
 
 Worlds delivers these features through a unified, open-source API.
 
@@ -72,7 +73,7 @@ No RDF expertise required. Simple and modular.
 The Worlds SDK provides AI agents with persistent, verifiable context.
 
 > [!IMPORTANT]
-> **Context is not just RAG.** Worlds Platform focuses on deterministic symbolic
+> Context is not just RAG. Worlds Platform focuses on deterministic symbolic
 > logic. It understands actual relationships and hierarchies, moving beyond
 > "best guess" similarity matches to verifiable reasoning.
 
