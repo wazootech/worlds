@@ -11,7 +11,11 @@ import {
   DEFAULT_SERIALIZATION,
   getSerializationByContentType,
 } from "./rdf/core/serialization.ts";
-import { executeSparqlOutputSchema, logSchema, worldSchema } from "./schema.ts";
+import {
+  executeSparqlOutputSchema,
+  logSchema,
+  worldSchema,
+} from "./schemas/mod.ts";
 import type { WorldsInterface } from "./types.ts";
 import type { WorldRow } from "./database/repositories/system/worlds/mod.ts";
 import type { Patch } from "./rdf/patch/mod.ts";
@@ -24,7 +28,7 @@ import type {
   UpdateWorldParams,
   World,
   WorldsContentType,
-} from "./schema.ts";
+} from "./schemas/mod.ts";
 
 const { namedNode, quad } = DataFactory;
 

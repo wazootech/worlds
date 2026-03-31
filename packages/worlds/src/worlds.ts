@@ -9,7 +9,7 @@ import type {
   UpdateWorldParams,
   World,
   WorldsContentType,
-} from "./schema.ts";
+} from "./schemas/mod.ts";
 
 /**
  * Worlds is the main entry point for the Worlds API SDK.

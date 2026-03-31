@@ -1,18 +1,6 @@
 import { z } from "zod";
-import type { Source } from "@wazoo/worlds-sdk";
 
-export type { Source };
-
-/**
- * sourceSchema is the Zod schema for a source.
- */
-export const sourceSchema: z.ZodType<Source> = z.object({
-  world: z.string().describe("The ID or slug of the source."),
-  write: z.boolean().optional().describe("Whether the source is writable."),
-  schema: z.boolean().optional().describe(
-    "Whether the source is a schema source.",
-  ),
-});
+export type { Source } from "@wazoo/worlds-sdk";
 
 /**
  * EntitySchema represents a class or property in the ontology.

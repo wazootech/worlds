@@ -1,5 +1,5 @@
 import { assertEquals, assertExists } from "@std/assert";
-import type { SparqlSelectResults } from "./schema.ts";
+import type { SparqlSelectResults } from "./schemas/mod.ts";
 import { createTestContext } from "./engine-context.ts";
 import { LocalWorlds } from "./local.ts";
 

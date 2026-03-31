@@ -7,7 +7,7 @@ import type {
   UpdateWorldParams,
   World,
   WorldsContentType,
-} from "./schema.ts";
+} from "./schemas/mod.ts";
 import { parseError } from "./utils.ts";
 import type { WorldsInterface } from "./types.ts";
 

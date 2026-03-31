@@ -8,7 +8,7 @@ export * from "./worlds.ts";
 export * from "./local.ts";
 export * from "./errors/errors.ts";
 export * from "./remote.ts";
-export * from "./schema.ts";
+export * from "./schemas/mod.ts";
 export * from "./types.ts";
 export * from "./engine-context.ts";
 export * from "./database/init.ts";

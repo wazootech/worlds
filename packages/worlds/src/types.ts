@@ -9,7 +9,7 @@ import type {
   UpdateWorldParams,
   World,
   WorldsContentType,
-} from "./schema.ts";
+} from "./schemas/mod.ts";
 
 /**
  * WorldsOptions are the options for the Worlds API SDK.

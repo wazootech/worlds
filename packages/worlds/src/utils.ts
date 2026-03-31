@@ -1,5 +1,5 @@
-import type { Source } from "./schema.ts";
-import { errorResponseDataSchema } from "./schema.ts";
+import type { Source } from "./schemas/mod.ts";
+import { errorResponseDataSchema } from "./schemas/mod.ts";
 
 /**
  * parseError parses an error response from the API.
