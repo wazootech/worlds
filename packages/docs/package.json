@@ -8,7 +8,7 @@
     "check": "mintlify validate",
     "format": "prettier \"**/*.{md,mdx,json}\" --write",
     "format:check": "prettier \"**/*.{md,mdx,json}\" --check",
-    "precommit": "npm run format && npm run check"
+    "precommit": "npm run format:check --silent && npm run check --silent"
   },
   "keywords": [],
   "author": "Wazoo",

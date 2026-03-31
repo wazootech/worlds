@@ -11,24 +11,19 @@
     "start:cli": "deno -A --env=./packages/cli/.env ./packages/cli/main.ts",
     "start:docs": "npm run dev --prefix ./packages/docs",
     "start:server": "deno serve -A --env=./packages/server/.env ./packages/server/main.ts",
-    "test": "deno test -A",
-    "lint": "deno lint",
-    "fmt": "deno fmt",
+    "test": "deno test -A --reporter=dot",
+    "lint": "deno lint --json",
+    "fmt": "deno fmt --check",
     "check": "deno check",
-    "publish:dry": "deno publish --dry-run --allow-dirty",
+    "publish:dry": "deno publish --dry-run --allow-dirty --quiet",
     "reset:console": "npm run reset --prefix ./packages/console",
     "precommit:console": "npm run precommit --prefix packages/console",
     "precommit:docs": "npm run precommit --prefix packages/docs",
+    "precommit:core": {
+      "dependencies": ["fmt", "lint", "check", "test", "publish:dry"]
+    },
     "precommit": {
-      "dependencies": [
-        "fmt",
-        "lint",
-        "check",
-        "test",
-        "precommit:docs",
-        "precommit:console",
-        "publish:dry"
-      ]
+      "dependencies": ["precommit:core", "precommit:console", "precommit:docs"]
     }
   },
   "imports": {

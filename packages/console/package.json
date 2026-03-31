@@ -8,8 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "check": "tsc --noEmit",
-    "precommit": "npm run lint && npm run format && npm run check",
+    "precommit": "npm run lint --silent && npm run format:check --silent && npm run check --silent",
     "update:sdk": "npx jsr add @wazoo/worlds-sdk",
     "reset": "taskkill /F /IM deno.exe /T & rimraf .next/dev/lock"
   },
