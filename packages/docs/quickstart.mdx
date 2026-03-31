@@ -54,37 +54,37 @@ pnpm i jsr:@wazoo/worlds-sdk
     3. Inject a semantic fact ([triple](/worlds#facts)).
     4. Query that fact deterministically using [SPARQL](/worlds/query).
 
-    ```typescript index.ts
-    import { Worlds } from "@wazoo/worlds-sdk";
+```typescript index.ts
+import { Worlds } from "@wazoo/worlds-sdk";
 
-    // 1. Connect (Drop directly into the cloud engine)
-    const worlds = new Worlds({
-      apiKey: process.env.WORLDS_API_KEY!,
-      baseUrl: "https://api.wazoo.dev",
-    });
+// 1. Connect (Drop directly into the cloud engine)
+const worlds = new Worlds({
+  apiKey: process.env.WORLDS_API_KEY!,
+  baseUrl: "https://api.wazoo.dev",
+});
 
-    // 2. Create an isolated world
-    const world = await worlds.create({
-      slug: "quickstart-cloud",
-      label: "My First World"
-    });
+// 2. Create an isolated world
+const world = await worlds.create({
+  slug: "quickstart-cloud",
+  label: "My First World",
+});
 
-    // 3. Inject a mission-critical fact (Subject -> Predicate -> Object)
-    await worlds.import(
-      "quickstart-cloud",
-      `@prefix corp: <http://corp.example/> .
-      corp:acme <#ownedBy> <#parent-co> .`,
-      { contentType: "text/turtle" },
-    );
+// 3. Inject a mission-critical fact (Subject -> Predicate -> Object)
+await worlds.import(
+  "quickstart-cloud",
+  `@prefix corp: <http://corp.example/> .
+  corp:acme <#ownedBy> <#parent-co> .`,
+  { contentType: "text/turtle" },
+);
 
-    // 4. Retrieve the fact with absolute precision
-    const result = await worlds.sparql(
-      "quickstart-cloud",
-      `SELECT ?parent WHERE { <#acme-corp> <#ownedBy> ?parent }`
-    );
+// 4. Retrieve the fact with absolute precision
+const result = await worlds.sparql(
+  "quickstart-cloud",
+  `SELECT ?parent WHERE { <#acme-corp> <#ownedBy> ?parent }`,
+);
 
-    console.log("Verifiable context retrieved:", JSON.stringify(result, null, 2));
-    ```
+console.log("Verifiable context retrieved:", JSON.stringify(result, null, 2));
+```
 
   </Step>
 
