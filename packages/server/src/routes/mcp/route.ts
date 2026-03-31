@@ -1,8 +1,13 @@
 import { McpServer } from "npm:@modelcontextprotocol/sdk@1.29.0";
+import { z } from "zod";
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
-import { LocalWorlds } from "@wazoo/worlds-sdk";
+import {
+  LocalWorlds,
+  createWorldParamsSchema,
+  worldSchema,
+} from "@wazoo/worlds-sdk";
 
 export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);
@@ -20,111 +25,135 @@ export default (appContext: WorldsContext) => {
     },
   );
 
-  server.setRequestHandler(
-    { method: "tools/list" },
-    async () => {
+  server.registerTool(
+    "worlds_query",
+    {
+      description: "Query a Worlds knowledge graph using SPARQL",
+      inputSchema: z.object({
+        world: z.string().describe("The world ID to query"),
+        query: z.string().describe("SPARQL query string"),
+      }),
+    },
+    async (args: { world: string; query: string }) => {
+      const result = await worlds.sparql(args.world, args.query);
       return {
-        tools: [
+        content: [
           {
-            name: "worlds_query",
-            description: "Query a Worlds knowledge graph using SPARQL",
-            inputSchema: {
-              type: "object",
-              properties: {
-                world: {
-                  type: "string",
-                  description: "The world ID to query",
-                },
-                query: {
-                  type: "string",
-                  description: "SPARQL query string",
-                },
-              },
-              required: ["world", "query"],
-            },
+            type: "text",
+            text: JSON.stringify(result, null, 2),
           },
+        ],
+      };
+    },
+  );
+
+  server.registerTool(
+    "worlds_list",
+    {
+      description: "List all available worlds",
+      inputSchema: z.object({
+        page: z.number().default(1).describe("Page number"),
+        pageSize: z.number().default(20).describe("Page size"),
+      }),
+    },
+    async (args: { page: number; pageSize: number }) => {
+      const result = await worlds.list({ page: args.page, pageSize: args.pageSize });
+      return {
+        content: [
           {
-            name: "worlds_list",
-            description: "List all available worlds",
-            inputSchema: {
-              type: "object",
-              properties: {
-                page: {
-                  type: "number",
-                  description: "Page number",
-                  default: 1,
-                },
-                pageSize: {
-                  type: "number",
-                  description: "Page size",
-                  default: 20,
-                },
-              },
-            },
+            type: "text",
+            text: JSON.stringify(result, null, 2),
           },
+        ],
+      };
+    },
+  );
+
+  server.registerTool(
+    "worlds_get",
+    {
+      description: "Get a world by ID",
+      inputSchema: z.object({
+        world: z.string().describe("The world ID to retrieve"),
+      }),
+    },
+    async (args: { world: string }) => {
+      const worldData = await worlds.get(args.world);
+      if (!worldData) {
+        return {
+          content: [{ type: "text", text: "World not found" }],
+          isError: true,
+        };
+      }
+      return {
+        content: [
           {
-            name: "worlds_get",
-            description: "Get a world by ID",
-            inputSchema: {
-              type: "object",
-              properties: {
-                world: {
-                  type: "string",
-                  description: "The world ID to retrieve",
-                },
-              },
-              required: ["world"],
-            },
+            type: "text",
+            text: JSON.stringify(worldData, null, 2),
           },
+        ],
+      };
+    },
+  );
+
+  server.registerTool(
+    "worlds_create",
+    {
+      description: "Create a new world",
+      inputSchema: createWorldParamsSchema,
+    },
+    async (args: { slug: string; label: string; description?: string | null }) => {
+      const world = await worlds.create(args);
+      return {
+        content: [
           {
-            name: "worlds_create",
-            description: "Create a new world",
-            inputSchema: {
-              type: "object",
-              properties: {
-                worldId: {
-                  type: "string",
-                  description: "ID for the new world",
-                },
-                name: {
-                  type: "string",
-                  description: "Name of the world",
-                },
-              },
-              required: ["worldId", "name"],
-            },
+            type: "text",
+            text: JSON.stringify(world, null, 2),
           },
+        ],
+      };
+    },
+  );
+
+  server.registerTool(
+    "worlds_import",
+    {
+      description: "Import RDF data into a world",
+      inputSchema: z.object({
+        world: z.string().describe("The world ID to import data into"),
+        data: z.string().describe("RDF data in N-Triples or N-Quads format"),
+      }),
+    },
+    async (args: { world: string; data: string }) => {
+      await worlds.import(args.world, args.data, { contentType: "application/n-triples" });
+      return {
+        content: [
           {
-            name: "worlds_import",
-            description: "Import RDF data into a world",
-            inputSchema: {
-              type: "object",
-              properties: {
-                world: {
-                  type: "string",
-                  description: "The world ID to import data into",
-                },
-                data: {
-                  type: "string",
-                  description: "RDF data in N-Triples or N-Quads format",
-                },
-              },
-              required: ["world", "data"],
-            },
+            type: "text",
+            text: "Data imported successfully",
           },
+        ],
+      };
+    },
+  );
+
+  server.registerTool(
+    "worlds_export",
+    {
+      description: "Export a world as RDF data",
+      inputSchema: z.object({
+        world: z.string().describe("The world ID to export"),
+      }),
+    },
+    async (args: { world: string }) => {
+      const buffer = await worlds.export(args.world, {
+        contentType: "application/n-quads",
+      });
+      return {
+        content: [
           {
-            name: "worlds_export",
-            description: "Export a world as RDF data",
-            inputSchema: {
-              type: "object",
-              properties: {
-                world: {
-                  type: "string",
-                  description: "The world ID to export",
-                },
-              },
-              required: ["world"],
-            },
+            type: "text",
+            text: new TextDecoder().decode(buffer),
           },
         ],
       };
@@ -132,148 +161,16 @@ export default (appContext: WorldsContext) => {
   );
 
   server.setRequestHandler(
-    { method: "tools/call" },
-    async (request: { name: string; arguments: Record<string, unknown> }) => {
-      const { name, arguments: args } = request;
-
-      try {
-        switch (name) {
-          case "worlds_query": {
-            const result = await worlds.sparql(args.world as string, args.query as string);
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: JSON.stringify(result, null, 2),
-                },
-              ],
-            };
-          }
-
-          case "worlds_list": {
-            const result = await worlds.list({
-              page: (args.page as number) ?? 1,
-              pageSize: (args.pageSize as number) ?? 20,
-            });
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: JSON.stringify(result, null, 2),
-                },
-              ],
-            };
-          }
-
-          case "worlds_get": {
-            const world = await worlds.get(args.world as string);
-            if (!world) {
-              return {
-                content: [
-                  {
-                    type: "text",
-                    text: "World not found",
-                  },
-                ],
-                isError: true,
-              };
-            }
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: JSON.stringify(world, null, 2),
-                },
-              ],
-            };
-          }
-
-          case "worlds_create": {
-            const world = await worlds.create({
-              slug: args.worldId as string,
-              label: args.name as string,
-            });
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: JSON.stringify(world, null, 2),
-                },
-              ],
-            };
-          }
-
-          case "worlds_import": {
-            const dataStr = args.data as string;
-            await worlds.import(
-              args.world as string,
-              dataStr,
-              { contentType: "application/n-triples" },
-            );
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: "Data imported successfully",
-                },
-              ],
-            };
-          }
-
-          case "worlds_export": {
-            const buffer = await worlds.export(args.world as string, {
-              contentType: "application/n-quads",
-            });
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: new TextDecoder().decode(buffer),
-                },
-              ],
-            };
-          }
-
-          default:
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Unknown tool: ${name}`,
-                },
-              ],
-              isError: true,
-            };
-        }
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: error instanceof Error ? error.message : String(error),
-            },
-          ],
-          isError: true,
-        };
-      }
-    },
-  );
-
-  server.setRequestHandler(
     { method: "resources/list" },
     async () => {
-      return {
-        resources: [],
-      };
+      return { resources: [] };
     },
   );
 
   server.setRequestHandler(
     { method: "resources/read" },
     async () => {
-      return {
-        contents: [],
-      };
+      return { contents: [] };
     },
   );
 
@@ -284,7 +181,6 @@ export default (appContext: WorldsContext) => {
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });
     }
-
     return server.fetch(ctx.request);
   });
 
@@ -293,7 +189,6 @@ export default (appContext: WorldsContext) => {
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });
     }
-
     return server.fetch(ctx.request);
   });
 
