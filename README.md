@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>High-stakes verifiable context for AI.</strong>
+  <strong>World models as a service. Verifiable context for AI.</strong>
 </p>
 
 <p align="center">
