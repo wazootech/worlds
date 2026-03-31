@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>High-Stakes Verifiable Context for AI.</strong>
+  <strong>High-stakes verifiable context for AI.</strong>
 </p>
 
 <p align="center">
@@ -67,7 +67,7 @@ No RDF expertise required. Simple and modular.
 </tr>
 </table>
 
-## High-Stakes Context for your AI
+## High-stakes context for your AI
 
 The Worlds SDK provides AI agents with persistent, verifiable context.
 

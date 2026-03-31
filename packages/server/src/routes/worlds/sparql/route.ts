@@ -1,5 +1,5 @@
 import { Router } from "@fartlabs/rt";
-import type { RdfFormat } from "@wazoo/worlds-sdk";
+import type { WorldsContentType } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
 import {
@@ -60,7 +60,7 @@ export default (appContext: WorldsContext) => {
         const serialization = negotiateSerialization(ctx.request);
         const description = await worlds.getServiceDescription(worldId, {
           endpointUrl: ctx.request.url,
-          format: serialization.format as RdfFormat,
+          contentType: serialization.contentType as WorldsContentType,
         });
         return new Response(description, {
           headers: { "Content-Type": serialization.contentType },

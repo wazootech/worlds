@@ -3,10 +3,10 @@ import type {
   CreateWorldParams,
   ExecuteSparqlOutput,
   Log,
-  RdfFormat,
   TripleSearchResult,
   UpdateWorldParams,
   World,
+  WorldsContentType,
 } from "./schema.ts";
 import { parseError } from "./utils.ts";
 import type { WorldsInterface } from "./types.ts";
@@ -286,20 +286,14 @@ export class RemoteWorlds implements WorldsInterface {
     idOrSlug: string,
     data: string | ArrayBuffer,
     options?: {
-      format?: RdfFormat;
+      contentType?: WorldsContentType;
     },
   ): Promise<void> {
     const url = new URL(
       `${this.options.baseUrl}/worlds/${idOrSlug}/import`,
     );
 
-    const contentType = options?.format === "turtle"
-      ? "text/turtle"
-      : options?.format === "n-triples"
-      ? "application/n-triples"
-      : options?.format === "n3"
-      ? "text/n3"
-      : "application/n-quads";
+    const contentType = options?.contentType ?? "application/n-quads";
 
     const response = await this.fetch(url, {
       method: "POST",
@@ -317,17 +311,17 @@ export class RemoteWorlds implements WorldsInterface {
   }
 
   /**
-   * export exports a world in the specified RDF format.
+   * export exports a world in the specified RDF content type.
    */
   public async export(
     idOrSlug: string,
-    options?: { format?: RdfFormat },
+    options?: { contentType?: WorldsContentType },
   ): Promise<ArrayBuffer> {
     const url = new URL(
       `${this.options.baseUrl}/worlds/${idOrSlug}/export`,
     );
-    if (options?.format) {
-      url.searchParams.set("format", options.format);
+    if (options?.contentType) {
+      url.searchParams.set("contentType", options.contentType);
     }
 
     const response = await this.fetch(url, {
@@ -349,21 +343,19 @@ export class RemoteWorlds implements WorldsInterface {
    */
   public async getServiceDescription(
     idOrSlug: string,
-    options: { endpointUrl: string; format?: RdfFormat },
+    options: { endpointUrl: string; contentType?: WorldsContentType },
   ): Promise<string> {
     const url = new URL(
       `${this.options.baseUrl}/worlds/${idOrSlug}/sparql`,
     );
-    if (options.format) {
-      url.searchParams.set("format", options.format);
+    if (options.contentType) {
+      url.searchParams.set("contentType", options.contentType);
     }
 
     const response = await this.fetch(url, {
       headers: {
         Authorization: `Bearer ${this.options.apiKey}`,
-        Accept: options.format === "turtle"
-          ? "text/turtle"
-          : "application/n-quads",
+        Accept: options.contentType ?? "application/n-quads",
       },
     });
 

@@ -3,8 +3,8 @@ import { Router } from "@fartlabs/rt";
 import {
   createWorldParamsSchema,
   paginationParamsSchema,
-  type RdfFormat,
   updateWorldParamsSchema,
+  type WorldsContentType,
 } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
@@ -54,32 +54,33 @@ export default (appContext: WorldsContext) => {
         }
 
         const url = new URL(ctx.request.url);
-        const formatParam = url.searchParams.get("format") as RdfFormat | null;
+        const contentTypeParam = url.searchParams.get("contentType") as
+          | WorldsContentType
+          | null;
 
         let serialization;
-        if (formatParam) {
+        if (contentTypeParam) {
           serialization = {
-            format: formatParam,
-            contentType: formatParam === "turtle"
-              ? "text/turtle"
-              : "application/n-quads",
+            contentType: contentTypeParam,
           };
         } else {
-          const negotiated = negotiateSerialization(ctx.request, "n-quads");
+          const negotiated = negotiateSerialization(
+            ctx.request,
+            "application/n-quads",
+          );
           serialization = {
-            format: negotiated.format as RdfFormat,
-            contentType: negotiated.contentType,
+            contentType: negotiated.contentType as WorldsContentType,
           };
         }
 
         try {
           const buffer = await worlds.export(worldId, {
-            format: serialization.format,
+            contentType: serialization.contentType,
           });
           return await handleETagRequest(
             ctx.request,
             new Response(buffer, {
-              headers: { "Content-Type": serialization.contentType },
+              headers: { "Content-Type": serialization.contentType as string },
             }),
           );
         } catch (error) {
@@ -103,11 +104,12 @@ export default (appContext: WorldsContext) => {
         }
 
         const body = await ctx.request.arrayBuffer();
-        const contentType = ctx.request.headers.get("Content-Type") || "";
-        const format = contentType.includes("turtle") ? "turtle" : "n-quads";
+        const contentType =
+          ctx.request.headers.get("Content-Type") as WorldsContentType ||
+          "application/n-quads";
 
         try {
-          await worlds.import(worldId, body, { format: format as RdfFormat });
+          await worlds.import(worldId, body, { contentType });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.BadRequest(

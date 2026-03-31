@@ -9,7 +9,7 @@ import { sparql } from "./rdf/sparql.ts";
 import { isSparqlUpdate } from "./utils.ts";
 import {
   DEFAULT_SERIALIZATION,
-  getSerializationByFormat,
+  getSerializationByContentType,
 } from "./rdf/core/serialization.ts";
 import { executeSparqlOutputSchema, logSchema, worldSchema } from "./schema.ts";
 import type { WorldsInterface } from "./types.ts";
@@ -20,10 +20,10 @@ import type {
   CreateWorldParams,
   ExecuteSparqlOutput,
   Log,
-  RdfFormat,
   TripleSearchResult,
   UpdateWorldParams,
   World,
+  WorldsContentType,
 } from "./schema.ts";
 
 const { namedNode, quad } = DataFactory;
@@ -308,14 +308,11 @@ export class LocalWorlds implements WorldsInterface {
     return results;
   }
 
-  /**
-   * import ingests RDF data into a world and updates the semantic index.
-   */
   async import(
     idOrSlug: string,
     data: string | ArrayBuffer,
     options?: {
-      format?: RdfFormat;
+      contentType?: WorldsContentType;
     },
   ): Promise<void> {
     const world = await this.resolveWorld(idOrSlug);
@@ -323,11 +320,11 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error("World not found");
     }
 
-    const serialization = options?.format
-      ? getSerializationByFormat(options.format)
+    const serialization = options?.contentType
+      ? getSerializationByContentType(options.contentType)
       : DEFAULT_SERIALIZATION;
     if (!serialization) {
-      throw new Error(`Unsupported format: ${options?.format}`);
+      throw new Error(`Unsupported content type: ${options?.contentType}`);
     }
 
     const body = typeof data === "string"
@@ -382,22 +379,22 @@ export class LocalWorlds implements WorldsInterface {
   }
 
   /**
-   * export retrieves a world's facts in the specified RDF format.
+   * export retrieves a world's facts in the specified RDF content type.
    */
   async export(
     idOrSlug: string,
-    options?: { format?: RdfFormat },
+    options?: { contentType?: WorldsContentType },
   ): Promise<ArrayBuffer> {
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
       throw new Error("World not found");
     }
 
-    const serialization = options?.format
-      ? getSerializationByFormat(options.format)
+    const serialization = options?.contentType
+      ? getSerializationByContentType(options.contentType)
       : DEFAULT_SERIALIZATION;
     if (!serialization) {
-      throw new Error(`Unsupported format: ${options?.format}`);
+      throw new Error(`Unsupported content type: ${options?.contentType}`);
     }
 
     const managed = await this.appContext.libsql.manager.get(world.id);
@@ -434,13 +431,13 @@ export class LocalWorlds implements WorldsInterface {
    */
   getServiceDescription(
     _id: string,
-    options: { endpointUrl: string; format?: RdfFormat },
+    options: { endpointUrl: string; contentType?: WorldsContentType },
   ): Promise<string> {
-    const serialization = options.format
-      ? getSerializationByFormat(options.format)
+    const serialization = options.contentType
+      ? getSerializationByContentType(options.contentType)
       : DEFAULT_SERIALIZATION;
     if (!serialization) {
-      throw new Error(`Unsupported format: ${options.format}`);
+      throw new Error(`Unsupported content type: ${options.contentType}`);
     }
 
     return new Promise((resolve, reject) => {

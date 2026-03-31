@@ -2,10 +2,10 @@ import type {
   CreateWorldParams,
   ExecuteSparqlOutput,
   Log,
-  RdfFormat,
   TripleSearchResult,
   UpdateWorldParams,
   World,
+  WorldsContentType,
 } from "./schema.ts";
 
 /**
@@ -84,16 +84,16 @@ export interface WorldsInterface {
     idOrSlug: string,
     data: string | ArrayBuffer,
     options?: {
-      format?: RdfFormat;
+      contentType?: WorldsContentType;
     },
   ): Promise<void>;
 
   /**
-   * export exports a world in the specified RDF format.
+   * export exports a world in the specified RDF content type.
    */
   export(
     idOrSlug: string,
-    options?: { format?: RdfFormat },
+    options?: { contentType?: WorldsContentType },
   ): Promise<ArrayBuffer>;
 
   /**
@@ -101,7 +101,7 @@ export interface WorldsInterface {
    */
   getServiceDescription(
     idOrSlug: string,
-    options: { endpointUrl: string; format?: RdfFormat },
+    options: { endpointUrl: string; contentType?: WorldsContentType },
   ): Promise<string>;
 
   /**

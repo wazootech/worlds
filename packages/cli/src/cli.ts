@@ -1,5 +1,5 @@
 import type { ModelMessage } from "ai";
-import type { RdfFormat, Worlds } from "@wazoo/worlds-sdk";
+import type { Worlds, WorldsContentType } from "@wazoo/worlds-sdk";
 import { parseArgs } from "@std/cli/parse-args";
 import { Spinner } from "@std/cli/unstable-spinner";
 import { render } from "cfonts";
@@ -264,14 +264,14 @@ export class WorldsCli {
   public async import(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["world", "file", "format"],
-      alias: { w: "world", f: "format", h: "help" },
+      string: ["world", "file", "content-type"],
+      alias: { w: "world", f: "file", c: "content-type", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds import --world <id> --file <file_path> [--format <turtle|n-quads|...>]",
+        "Usage: worlds import --world <id> --file <file_path> [--content-type <text/turtle|application/n-quads|...>]",
       );
       return;
     }
@@ -279,13 +279,13 @@ export class WorldsCli {
     const path = parsed.file as string;
     if (!world || !path) {
       console.error(
-        "Usage: worlds import --world <id> --file <file_path> [--format <turtle|n-quads|...>]",
+        "Usage: worlds import --world <id> --file <file_path> [--content-type <text/turtle|application/n-quads|...>]",
       );
       return;
     }
     const data = await Deno.readFile(path);
     await this.worlds.import(world, data.buffer as ArrayBuffer, {
-      format: parsed.format as RdfFormat,
+      contentType: parsed["content-type"] as WorldsContentType,
     });
     console.log(`Imported data into world ${world}`);
   }
@@ -296,26 +296,26 @@ export class WorldsCli {
   public async export(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["world", "format"],
-      alias: { w: "world", f: "format", h: "help" },
+      string: ["world", "content-type"],
+      alias: { w: "world", c: "content-type", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds export --world <id> [--format <turtle|n-quads|...>]",
+        "Usage: worlds export --world <id> [--content-type <text/turtle|application/n-quads|...>]",
       );
       return;
     }
     const world = parsed.world as string;
     if (!world) {
       console.error(
-        "Usage: worlds export --world <id> [--format <turtle|n-quads|...>]",
+        "Usage: worlds export --world <id> [--content-type <text/turtle|application/n-quads|...>]",
       );
       return;
     }
     const buffer = await this.worlds.export(world, {
-      format: parsed.format as RdfFormat,
+      contentType: parsed["content-type"] as WorldsContentType,
     });
     await Deno.stdout.write(new Uint8Array(buffer));
   }

@@ -13,13 +13,14 @@ Streams a local file containing RDF assertions into a remote world.
   The relative or absolute path to the RDF file.
 </ParamField>
 
-<ParamField path="--format" type="string">
-  The RDF serialization format. *Options:* `turtle`, `n-quads`, `n-triples`,
-  `trig`. *Alias:* `-f`
+<ParamField path="--content-type" type="string">
+  The RDF serialization content type. *Options:* `text/turtle`,
+  `application/n-quads`, `application/n-triples`, `text/n3`, `application/trig`.
+  *Alias:* `-c`
 </ParamField>
 
 ### Usage
 
 ```bash
-worlds import --world my-world --file ./data.ttl --format turtle
+worlds import --world my-world --file ./data.ttl --content-type text/turtle
 ```

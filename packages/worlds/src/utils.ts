@@ -7,8 +7,8 @@ import { errorResponseDataSchema } from "./schema.ts";
 export async function parseError(response: Response): Promise<string> {
   let errorMessage = `${response.status} ${response.statusText}`;
   try {
-    const contentType = response.headers.get("content-type");
-    if (contentType?.includes("application/json")) {
+    const WorldsContentType = response.headers.get("content-type");
+    if (WorldsContentType?.includes("application/json")) {
       const json = await response.json();
       const result = errorResponseDataSchema.safeParse(json);
       if (result.success) {

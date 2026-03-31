@@ -44,7 +44,7 @@ export function createValidateRdfTool(
       if (source && worlds && hasSchemaSupport) {
         try {
           const buffer = await worlds.export(source, {
-            format: "n-triples",
+            contentType: "application/n-triples",
           });
           const text = new TextDecoder().decode(buffer);
           const parser = new n3.Parser({ format: "N-Triples" });

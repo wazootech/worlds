@@ -165,7 +165,7 @@ Deno.test("Worlds", async (t) => {
 
     // 3. Export in Turtle format
     const turtleBuffer = await worlds.export(id, {
-      format: "turtle",
+      contentType: "text/turtle",
     });
     const turtle = new TextDecoder().decode(turtleBuffer);
     assert(turtle.includes("<http://example.org/subject>"));
@@ -174,7 +174,7 @@ Deno.test("Worlds", async (t) => {
   await t.step("import world", async () => {
     const turtleData =
       '<http://example.org/subject2> <http://example.org/predicate> "Imported Object" .';
-    await worlds.import(id, turtleData, { format: "turtle" });
+    await worlds.import(id, turtleData, { contentType: "text/turtle" });
 
     const nQuadsBuffer = await worlds.export(id);
     const nQuads = new TextDecoder().decode(nQuadsBuffer);

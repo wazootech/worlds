@@ -73,7 +73,7 @@ engine, inject a verifiable fact, and retrieve it deterministically.
     await worlds.import(
       "quickstart-cloud",
       `<#acme-corp> <#ownedBy> <#parent-co> .`,
-      { format: "turtle" }
+      { contentType: "text/turtle" }
     );
 
     // 4. Retrieve the fact with absolute precision

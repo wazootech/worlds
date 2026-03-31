@@ -411,18 +411,22 @@ export const executeSparqlOutputSchema: z.ZodType<ExecuteSparqlOutput> = z
   ]);
 
 /**
- * RdfFormat represents the supported RDF serialization formats.
+ * WorldsContentType represents the supported RDF serialization content types.
  */
-export type RdfFormat = "turtle" | "n-quads" | "n-triples" | "n3";
+export type WorldsContentType =
+  | "text/turtle"
+  | "application/n-quads"
+  | "application/n-triples"
+  | "text/n3";
 
 /**
- * rdfFormatSchema is the Zod schema for RdfFormat.
+ * worldsContentTypeSchema is the Zod schema for WorldsContentType.
  */
-export const rdfFormatSchema: z.ZodType<RdfFormat> = z.enum([
-  "turtle",
-  "n-quads",
-  "n-triples",
-  "n3",
+export const worldsContentTypeSchema: z.ZodType<WorldsContentType> = z.enum([
+  "text/turtle",
+  "application/n-quads",
+  "application/n-triples",
+  "text/n3",
 ]);
 
 /**
