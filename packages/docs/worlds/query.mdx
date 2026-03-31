@@ -37,6 +37,11 @@ the deterministic traversal across verified facts.
 | Goal      | Item disambiguation | Factual traversal       |
 | Logic     | Probabilistic       | Symbolic                |
 
+The Worlds API provides an external source of truth that an agent can
+deterministically verify. In practice, an LLM accesses this source of truth via
+tool calling, allowing it to ground its responses in verified facts rather than
+probabilistic weights.
+
 ---
 
 ## High-stakes context
