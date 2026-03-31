@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   executeSparqlOutputSchema,
   isSparqlUpdate,
+  toolDescriptions,
   worldsQuerySchema,
 } from "@wazoo/worlds-sdk";
 import type { Tool } from "ai";
@@ -26,8 +27,7 @@ export function createExecuteSparqlTool(
   { worlds, sources }: CreateToolsOptions,
 ): ExecuteSparqlTool {
   return tool({
-    description:
-      "Execute SPARQL queries and updates against a specific world knowledge base.",
+    description: toolDescriptions.worldsQuery,
     inputSchema: worldsQuerySchema,
     outputSchema: executeSparqlOutputSchema,
     execute: async (input: ExecuteSparqlInput) => {

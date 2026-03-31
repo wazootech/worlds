@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { worldSchema, createWorldParamsSchema } from "./world.ts";
+import { createWorldParamsSchema, worldSchema } from "./world.ts";
 import { tripleSearchResultSchema } from "./search.ts";
 import { executeSparqlOutputSchema } from "./sparql.ts";
 
@@ -37,10 +37,18 @@ export type WorldsExportInput = z.infer<typeof worldsExportSchema>;
 export const worldsSearchSchema = z.object({
   world: z.string().describe("The world ID to search within"),
   query: z.string().describe("The search query"),
-  types: z.array(z.string()).optional().describe("Optional RDF types to filter by"),
-  subjects: z.array(z.string()).optional().describe("Optional subjects to filter by"),
-  predicates: z.array(z.string()).optional().describe("Optional predicates to filter by"),
-  limit: z.number().min(1).max(100).default(20).describe("Maximum number of results"),
+  types: z.array(z.string()).optional().describe(
+    "Optional RDF types to filter by",
+  ),
+  subjects: z.array(z.string()).optional().describe(
+    "Optional subjects to filter by",
+  ),
+  predicates: z.array(z.string()).optional().describe(
+    "Optional predicates to filter by",
+  ),
+  limit: z.number().min(1).max(100).default(20).describe(
+    "Maximum number of results",
+  ),
 });
 export type WorldsSearchInput = z.infer<typeof worldsSearchSchema>;
 
@@ -74,7 +82,8 @@ export const toolDescriptions = {
   worldsCreate: "Create a new world",
   worldsImport: "Import RDF data into a world",
   worldsExport: "Export a world as RDF data",
-  worldsSearch: "Search for facts in a Worlds knowledge graph using semantic search",
+  worldsSearch:
+    "Search for facts in a Worlds knowledge graph using semantic search",
 } as const;
 
 export const toolOutputSchemas = {

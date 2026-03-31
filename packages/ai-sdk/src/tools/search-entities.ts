@@ -1,9 +1,10 @@
 import { tool } from "ai";
 import { z } from "zod";
 import {
+  toolDescriptions,
   tripleSearchResultSchema,
-  worldsSearchSchema,
   worldsSearchOutputSchema,
+  worldsSearchSchema,
 } from "@wazoo/worlds-sdk";
 import type { Tool } from "ai";
 import type { TripleSearchResult } from "@wazoo/worlds-sdk";
@@ -27,8 +28,7 @@ export function createSearchEntitiesTool(
   { worlds }: CreateToolsOptions,
 ): SearchEntitiesTool {
   return tool({
-    description:
-      "Search for entities in the knowledge base. Returns a list of candidates to help resolve ambiguities.",
+    description: toolDescriptions.worldsSearch,
     inputSchema: worldsSearchSchema,
     outputSchema: worldsSearchOutputSchema,
     execute: async (input: SearchEntitiesInput) => {

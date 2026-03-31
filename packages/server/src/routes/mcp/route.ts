@@ -5,22 +5,22 @@ import { authorizeRequest } from "#/middleware/auth.ts";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
 import {
   LocalWorlds,
-  worldsQuerySchema,
-  worldsListSchema,
-  worldsGetSchema,
-  worldsCreateSchema,
-  worldsImportSchema,
-  worldsExportSchema,
-  worldsSearchSchema,
-  worldsSearchOutputSchema,
   toolDescriptions,
-  type WorldsQueryInput,
-  type WorldsListInput,
-  type WorldsGetInput,
   type WorldsCreateInput,
-  type WorldsImportInput,
+  worldsCreateSchema,
   type WorldsExportInput,
+  worldsExportSchema,
+  type WorldsGetInput,
+  worldsGetSchema,
+  type WorldsImportInput,
+  worldsImportSchema,
+  type WorldsListInput,
+  worldsListSchema,
+  type WorldsQueryInput,
+  worldsQuerySchema,
   type WorldsSearchInput,
+  worldsSearchOutputSchema,
+  worldsSearchSchema,
 } from "@wazoo/worlds-sdk";
 
 export default (appContext: WorldsContext) => {
@@ -65,7 +65,10 @@ export default (appContext: WorldsContext) => {
       inputSchema: worldsListSchema,
     },
     async (args: WorldsListInput) => {
-      const result = await worlds.list({ page: args.page, pageSize: args.pageSize });
+      const result = await worlds.list({
+        page: args.page,
+        pageSize: args.pageSize,
+      });
       return {
         content: [
           {
@@ -128,7 +131,9 @@ export default (appContext: WorldsContext) => {
       inputSchema: worldsImportSchema,
     },
     async (args: WorldsImportInput) => {
-      await worlds.import(args.world, args.data, { contentType: "application/n-triples" });
+      await worlds.import(args.world, args.data, {
+        contentType: "application/n-triples",
+      });
       return {
         content: [
           {
