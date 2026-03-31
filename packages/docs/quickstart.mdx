@@ -15,7 +15,7 @@ Before writing code, you need a Worlds API key.
 2. Generate an API key.
 3. Save it securely to your `.env` file as `WORLDS_API_KEY`.
 
-## Hello, world!
+## Hello, World!
 
 Follow this sequence to train on the core interaction loop: connect to the cloud
 engine, inject a verifiable fact, and retrieve it deterministically.
@@ -46,7 +46,7 @@ pnpm i jsr:@wazoo/worlds-sdk
 
   </Step>
 
-  <Step title="Observe the execution">
+  <Step title="See it in action">
     Run the following self-contained script to execute a complete neuro-symbolic loop:
     
     1. Connect to the Cloud API.
@@ -72,16 +72,17 @@ const world = await worlds.create({
 // 3. Inject a mission-critical fact (Subject -> Predicate -> Object)
 await worlds.import(
   "quickstart-cloud",
-  `@prefix corp: <http://corp.example/> .
-  corp:acme corp:ownedBy corp:parent .`,
+  `@prefix user: <http://user.example/> .
+  @prefix org: <http://org.example/> .
+  user:ethan org:worksAt org:wazoo .`,
   { contentType: "text/turtle" },
 );
 
 // 4. Retrieve the fact with absolute precision
 const result = await worlds.sparql(
   "quickstart-cloud",
-  `PREFIX corp: <http://corp.example/>
-  SELECT ?parent WHERE { corp:acme corp:ownedBy ?parent }`,
+  `PREFIX org: <http://org.example/>
+  SELECT ?org WHERE { <http://user.example/ethan> org:worksAt ?org }`,
 );
 
 console.log("Verifiable context retrieved:", JSON.stringify(result, null, 2));
@@ -96,12 +97,12 @@ console.log("Verifiable context retrieved:", JSON.stringify(result, null, 2));
     Verifiable context retrieved:
     {
       "head": {
-        "vars": ["parent"]
+        "vars": ["org"]
       },
       "results": {
         "bindings": [
           {
-            "parent": { "type": "uri", "value": "http://corp.example/parent" }
+            "org": { "type": "uri", "value": "http://org.example/wazoo" }
           }
         ]
       }
