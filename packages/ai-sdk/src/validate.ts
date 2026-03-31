@@ -8,8 +8,19 @@ import type { CreateToolsOptions } from "./options.ts";
  * Triple is a simplified representation of an RDF triple.
  */
 export interface Triple {
+  /**
+   * subject is the subject IRI of the triple.
+   */
   subject: string;
+
+  /**
+   * predicate is the predicate IRI of the triple.
+   */
   predicate: string;
+
+  /**
+   * object is the object IRI or literal value.
+   */
   object: string;
 }
 
@@ -26,8 +37,19 @@ export const tripleSchema: z.ZodType<Triple> = z.object({
  * ValidateRdfInput is the input to the validateRdf tool.
  */
 export interface ValidateRdfInput {
+  /**
+   * triples is the list of triples to validate.
+   */
   triples: Triple[];
+
+  /**
+   * ontology is the schema and classes to validate against.
+   */
   ontology: Ontology;
+
+  /**
+   * source is the optional context source.
+   */
   source?: string;
 }
 
@@ -51,7 +73,14 @@ export const validateRdfInputSchema: z.ZodType<ValidateRdfInput> = z
  * ValidateRdfOutput is the output of the validateRdf tool.
  */
 export interface ValidateRdfOutput {
+  /**
+   * isValid is true if the RDF conforms to the ontology and SHACL shapes.
+   */
   isValid: boolean;
+
+  /**
+   * errors contains the list of validation failure messages.
+   */
   errors: string[];
 }
 
@@ -79,7 +108,7 @@ export async function validateRdf(
   const errors: string[] = [];
   const allowedProperties = new Set(ontology.properties);
 
-  // 1. Basic Ontology Validation
+  // Basic Ontology Validation
   const RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   const allowedClasses = new Set(ontology.classes);
 
@@ -102,7 +131,7 @@ export async function validateRdf(
     }
   }
 
-  // 2. SHACL Validation (if shapes provided)
+  // SHACL Validation (if shapes provided)
   const shacl = ontology.shacl ?? options.shacl;
   if (shacl) {
     try {

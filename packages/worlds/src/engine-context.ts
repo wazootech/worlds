@@ -3,7 +3,7 @@ import { ulid } from "@std/ulid/ulid";
 import { initializeDatabase } from "./database/init.ts";
 import { MemoryDatabaseManager } from "./database/managers/memory-manager.ts";
 import type { Embeddings } from "./embeddings/embeddings.ts";
-import type { WorldsContext } from "./context.ts";
+import type { WorldsContext } from "./types.ts";
 
 /**
  * createTestContext creates a test application context with an in-memory

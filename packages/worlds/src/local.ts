@@ -15,7 +15,7 @@ import { executeSparqlOutputSchema, logSchema, worldSchema } from "./schema.ts";
 import type { WorldsInterface } from "./types.ts";
 import type { WorldRow } from "./database/repositories/system/worlds/mod.ts";
 import type { Patch } from "./rdf/patch/mod.ts";
-import type { WorldsContext } from "./context.ts";
+import type { WorldsContext } from "./types.ts";
 import type {
   CreateWorldParams,
   ExecuteSparqlOutput,

@@ -63,9 +63,24 @@ export const entitySchema: z.ZodType<EntitySchema> = z.union([
  * Ontology represents a collection of class and property definitions.
  */
 export interface Ontology {
+  /**
+   * classes is the list of allowed class IRIs.
+   */
   classes: string[];
+
+  /**
+   * properties is the list of allowed property IRIs.
+   */
   properties: string[];
+
+  /**
+   * shacl is the optional SHACL shapes (Turtle) for validation.
+   */
   shacl?: string;
+
+  /**
+   * definitions is the optional list of detailed entity schemas.
+   */
   definitions?: EntitySchema[];
 }
 
