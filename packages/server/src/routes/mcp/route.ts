@@ -1,4 +1,4 @@
-import { McpServer } from "npm:@modelcontextprotocol/sdk@1.29.0";
+import { McpServer } from "@modelcontextprotocol/sdk";
 import { z } from "zod";
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
