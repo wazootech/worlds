@@ -76,7 +76,7 @@ three components called terms.
 </Frame>
 
 <ResponseField name="Subject" type="Term">
-  The item you are describing e.g., `user:me`
+  The item you are describing e.g., `user:person`
 </ResponseField>
 
 <ResponseField name="Predicate" type="Term">
@@ -92,10 +92,10 @@ three components called terms.
 The Object of a triple determines how the graph grows. Facts branch into two
 types:
 
-- Item-to-item: Connects two distinct items e.g., `user:me` ->
-  `schema:worksFor` -> `wazoo:wazoo`
+- Item-to-item: Connects two distinct items e.g., `user:person` ->
+  `schema:worksFor` -> `wazoo:organization`
 - Item-to-value: Connects an item to a raw data value, adding searchable detail
-  but acting as a terminal point e.g., `user:me` -> `schema:givenName` ->
+  but acting as a terminal point e.g., `user:person` -> `schema:givenName` ->
   `"Ethan"`
 
 <div align="center">
@@ -103,7 +103,7 @@ types:
 ```mermaid
 graph LR
     subgraph "Memory graph"
-    A((user:me)) -->|schema:worksFor| B((wazoo:wazoo))
+    A((user:person)) -->|schema:worksFor| B((wazoo:organization))
     A -->|schema:givenName| C[/"Ethan"/]
     end
     style A fill:#FF9800,stroke:#F57C00,color:#fff
@@ -123,25 +123,25 @@ To assert "Ethan is a Person", the syntax goes:
 <CodeGroup>
 
 ```turtle Turtle
-@prefix user: <https://etok.me/> .
+@prefix user: <https://etok.me/#> .
 @prefix schema: <https://schema.org/> .
 
-user:me a schema:Person .
+user:person a schema:Person .
 ```
 
 ```json JSON-LD
 {
   "@context": {
-    "user": "https://etok.me/",
+    "user": "https://etok.me/#",
     "schema": "https://schema.org/"
   },
-  "@id": "user:me",
+  "@id": "user:person",
   "@type": "schema:Person"
 }
 ```
 
 ```turtle N-Triples
-<https://etok.me/me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Person> .
+<https://etok.me/#person> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Person> .
 ```
 
 ```html Microdata
@@ -162,28 +162,28 @@ that Ethan is a person with the given name "Ethan":
 <CodeGroup>
 
 ```turtle Turtle
-@prefix user: <https://etok.me/> .
+@prefix user: <https://etok.me/#> .
 @prefix schema: <https://schema.org/> .
 
-user:me a schema:Person ;
+user:person a schema:Person ;
   schema:givenName "Ethan" .
 ```
 
 ```json JSON-LD
 {
   "@context": {
-    "user": "https://etok.me/",
+    "user": "https://etok.me/#",
     "schema": "https://schema.org/"
   },
-  "@id": "user:me",
+  "@id": "user:person",
   "@type": "schema:Person",
   "schema:givenName": "Ethan"
 }
 ```
 
 ```turtle N-Triples
-<https://etok.me/me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Person> .
-<https://etok.me/me> <https://schema.org/givenName> "Ethan" .
+<https://etok.me/#person> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Person> .
+<https://etok.me/#person> <https://schema.org/givenName> "Ethan" .
 ```
 
 ```html Microdata
@@ -206,10 +206,10 @@ deterministic boolean answer without probabilistic guessing.
 For example, to verify if "Ethan works at Wazoo", use:
 
 ```sparql SPARQL
-PREFIX wazoo: <https://wazoo.dev/>
+PREFIX wazoo: <https://wazoo.dev/#>
 
 ASK WHERE {
-  <https://etok.me/me> wazoo:worksFor <https://wazoo.dev/wazoo> .
+  <https://etok.me/#person> wazoo:worksFor <https://wazoo.dev/#organization> .
 }
 ```
 

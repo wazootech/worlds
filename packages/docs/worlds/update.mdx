@@ -20,11 +20,11 @@ runs an `INSERT` or `DELETE` command, Worlds translates it into a deterministic
 patch.
 
 ```sparql SPARQL
-PREFIX corp: <http://corp.example/>
+PREFIX wazoo: <https://wazoo.dev/#>
 PREFIX schema: <https://schema.org/>
 
 INSERT DATA {
-  corp:acme a schema:Organization .
+  wazoo:organization a schema:Organization .
 }
 ```
 
@@ -81,7 +81,7 @@ import { worlds } from "@wazoo/worlds-sdk";
 await worlds.assertPreference("my-world-id", {
   factId: "fact:123",
   reward: 1.0,
-  agentId: "user:ethan",
+  agentId: "user:person",
 });
 ```
 

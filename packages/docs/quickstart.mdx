@@ -72,9 +72,9 @@ const world = await worlds.create({
 // 3. Inject a mission-critical fact (Subject -> Predicate -> Object)
 await worlds.import(
   "quickstart-cloud",
-  `@prefix user: <https://etok.me/> .
-  @prefix wazoo: <https://wazoo.dev/> .
-  user:me wazoo:worksFor wazoo:wazoo .`,
+  `@prefix user: <https://etok.me/#> .
+  @prefix wazoo: <https://wazoo.dev/#> .
+  user:person wazoo:worksFor wazoo:organization .`,
   { contentType: "text/turtle" },
 );
 
@@ -82,7 +82,7 @@ await worlds.import(
 const result = await worlds.sparql(
   "quickstart-cloud",
   `PREFIX org: <http://org.example/>
-  SELECT ?wazoo WHERE { <https://etok.me/me> wazoo:worksFor ?wazoo }`,
+  SELECT ?wazoo WHERE { <https://etok.me/#person> wazoo:worksFor ?wazoo }`,
 );
 
 console.log("Verifiable context retrieved:", JSON.stringify(result, null, 2));
@@ -102,7 +102,7 @@ console.log("Verifiable context retrieved:", JSON.stringify(result, null, 2));
       "results": {
         "bindings": [
           {
-            "wazoo": { "type": "uri", "value": "https://wazoo.dev/wazoo" }
+            "wazoo": { "type": "uri", "value": "https://wazoo.dev/#organization" }
           }
         ]
       }
