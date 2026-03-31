@@ -14,14 +14,13 @@ results without probabilistic guessing.
 
 ### Symbolic logic
 
-Given triples such as `corp:acme corp:ownedBy corp:parent`, query for the parent
-company:
+Given triples such as `user:ethan schema:worksAt org:wazoo`, query for the organization:
 
 ```sparql SPARQL
-PREFIX corp: <http://corp.example/>
+PREFIX schema: <https://schema.org/>
 
-SELECT ?parent WHERE {
-  <corp:acme> corp:ownedBy ?parent .
+SELECT ?org WHERE {
+  <http://user.example/ethan> schema:worksAt ?org .
 }
 ```
 
@@ -39,8 +38,8 @@ the deterministic traversal across verified facts.
 
 The Worlds API provides an external source of truth that an agent can
 deterministically verify. In practice, an LLM accesses this source of truth via
-tool calling, allowing it to ground its responses in verified facts rather than
-probabilistic weights.
+tool calling, allowing it to ground its responses in **verified facts** rather
+than probabilistic weights.
 
 ---
 

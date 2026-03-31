@@ -49,13 +49,15 @@ Worlds maintains an append-only, chronological ledger of facts, allowing agents
 to understand exactly how state and information evolve.
 
 Conceptually, a fact functions exactly like a structured assertion. For example,
-the assertion "Acme Corp is owned by Parent Co" can be represented as:
+the assertion "Ethan is a person" can be represented as:
 
 <div align="center">
 
 ```mermaid
 graph LR
-    A((Acme Corp)) -->|ownedBy| B((Parent Co))
+    A((Ethan)) -->|is a| B((Person))
+    style A fill:#FF9800,stroke:#F57C00,color:#fff
+    style B fill:#FF9800,stroke:#F57C00,color:#fff
 ```
 
 </div>
@@ -100,11 +102,13 @@ types:
 
 ```mermaid
 graph LR
-    subgraph "RDF graph"
-    A((corp:acme)) -->|corp:ownedBy| B((corp:parent))
-    A -->|corp:legalName| C[/"Acme Corp"/]
+    subgraph "Memory graph"
+    A((user:ethan)) -->|schema:worksAt| B((org:wazoo))
+    A -->|schema:givenName| C[/"Ethan"/]
     end
-    style C stroke-dasharray: 5 5
+    style A fill:#FF9800,stroke:#F57C00,color:#fff
+    style B fill:#FF9800,stroke:#F57C00,color:#fff
+    style C fill:#FFB74D,stroke:#FF9800,color:#000
 ```
 
 </div>
@@ -114,30 +118,30 @@ graph LR
 To codify knowledge, Worlds standard RDF serialization formats for expressing
 triples in plain text.
 
-To assert "Acme Corp is a Legal Entity", the syntax goes:
+To assert "Ethan is a Person", the syntax goes:
 
 <CodeGroup>
 
 ```turtle Turtle
-@prefix corp: <http://corp.example/> .
+@prefix user: <http://user.example/> .
 @prefix schema: <https://schema.org/> .
 
-corp:acme a schema:Organization .
+user:ethan a schema:Person .
 ```
 
 ```json JSON-LD
 {
   "@context": {
-    "corp": "http://corp.example/",
+    "user": "http://user.example/",
     "schema": "https://schema.org/"
   },
-  "@id": "corp:acme",
-  "@type": "schema:Organization"
+  "@id": "user:ethan",
+  "@type": "schema:Person"
 }
 ```
 
 ```turtle N-Triples
-<http://corp.example/acme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Organization> .
+<http://user.example/ethan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Person> .
 ```
 
 ```html Microdata
@@ -153,33 +157,33 @@ corp:acme a schema:Organization .
 </CodeGroup>
 
 Items can consolidate multiple facts into a single structure. Here, we assert
-that Acme Corp is an organization with the legal name "Acme Corp":
+that Ethan is a person with the given name "Ethan":
 
 <CodeGroup>
 
 ```turtle Turtle
-@prefix corp: <http://corp.example/> .
+@prefix user: <http://user.example/> .
 @prefix schema: <https://schema.org/> .
 
-corp:acme a schema:Organization ;
-  schema:legalName "Acme Corp" .
+user:ethan a schema:Person ;
+  schema:givenName "Ethan" .
 ```
 
 ```json JSON-LD
 {
   "@context": {
-    "corp": "http://corp.example/",
+    "user": "http://user.example/",
     "schema": "https://schema.org/"
   },
-  "@id": "corp:acme",
-  "@type": "schema:Organization",
-  "schema:legalName": "Acme Corp"
+  "@id": "user:ethan",
+  "@type": "schema:Person",
+  "schema:givenName": "Ethan"
 }
 ```
 
 ```turtle N-Triples
-<http://corp.example/acme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Organization> .
-<http://corp.example/acme> <https://schema.org/legalName> "Acme Corp" .
+<http://user.example/ethan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Person> .
+<http://user.example/ethan> <https://schema.org/givenName> "Ethan" .
 ```
 
 ```html Microdata
@@ -199,13 +203,13 @@ corp:acme a schema:Organization ;
 To verify a fact, Worlds uses the SPARQL ASK query. This provides a
 deterministic boolean answer without probabilistic guessing.
 
-For example, to verify if "Acme Corp is owned by Parent Co", use:
+For example, to verify if "Ethan works at Wazoo", use:
 
 ```sparql SPARQL
-PREFIX corp: <http://corp.example/>
+PREFIX org: <http://org.example/>
 
 ASK WHERE {
-  corp:acme corp:ownedBy corp:parent .
+  <http://user.example/ethan> org:worksAt <http://org.example/wazoo> .
 }
 ```
 

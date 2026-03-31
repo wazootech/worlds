@@ -4,7 +4,9 @@ description: "Documentation formatting and structural guidelines"
 ---
 
 The Worlds documentation follows strict editorial guidelines to optimize for
-**developer momentum, technical authority, and zero fluff.**
+**developer momentum, technical authority, and zero fluff.** Note that
+"zero fluff" does not mean "zero character"—clarity is prioritized, but project
+flavor (such as the memory metaphor) is essential for intuition.
 
 ## File conventions
 
@@ -26,6 +28,9 @@ The Worlds documentation follows strict editorial guidelines to optimize for
   - _Good:_ "By combining facts with a search index, agents can use semantic
     search to instantly find the right item, and then switch to reasoning over
     the RDF graph."
+- **Standard Terminology**: Use **Worlds API** and **Verified facts** for
+  technical descriptions of state. Reserve metaphors for higher-level
+  conceptual analogies (e.g., "Fact as a structured assertion").
 - **Actionable Documentation**: Publish pages only when they provide actionable
   technical value.
 
@@ -63,7 +68,10 @@ The Worlds documentation follows strict editorial guidelines to optimize for
 - **Editorializing words**: Omit "obviously", "simply", "just", or "easily".
 - **Generic fluff**: Omit generic introductions and concluding summaries.
 - **Imaginative phrasing**: Avoid anthropomorphic language to describe AI (e.g.,
-  avoid "brain", use "model").
+  avoid "brain", use "model"). **Exception:** High-utility metaphors like
+  **Memory** are permitted to aid developer intuition, though technical
+  descriptions should prioritize terms like **Worlds API** and
+  **Verified facts**.
 - **Idioms and metaphors**: Avoid phrases that obscure precision (e.g., "heavy
   lifting").
 - **Single-model references**: Discuss general capabilities future-proofed by
@@ -86,7 +94,8 @@ The Worlds documentation follows strict editorial guidelines to optimize for
 - **Source-Truth Alignment**: Method signatures and properties must mirror
   TypeScript definitions.
 - **Keep it simple**: Keep examples practical and concise.
-- **Realistic values**: Use realistic values (avoid "foo" or "bar").
+- **Realistic values**: Use realistic values (avoid "foo" or "bar"). Relational
+  facts should use canonical project examples like `user:ethan` and `org:wazoo`.
 - **Tested code**: Verify code works before including it.
 - **Import consistency**: Group types above values in import sections.
 
