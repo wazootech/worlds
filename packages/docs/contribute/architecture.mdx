@@ -385,15 +385,59 @@ fact as an entity with its own metadata.
   and tune their models based on historical reward signals.
 </Card>
 
-## Alignment and agency
+## Alignment & intentional agency
 
 RLHF transforms Worlds from a statistical mimicry engine into a system of 
-intentional agency. By treating human feedback as [verifiable state](/worlds/update#feedback-ingestion), 
-Worlds enables a recursive quality loop where the system continuously optimizes 
-its ontology and probability landscape to align with human intent.
+intentional agency. This creates a recursive quality loop where the system 
+optimizes its ontology and probability landscape to align with humans.
 
-Learn more about recursive state refinement and recursive learning in the 
-[Alignment](/worlds/alignment) deep-dive.
+### Probability reshaping
+
+RLHF acts as a series of nudges in the model's high-dimensional token space:
+*   **Logit shift**: Increases raw scores for preferred paths and suppresses 
+    undesired ones.
+*   **Softmax filter**: Ensures that during inference, the model is statistically 
+    driven toward outcomes that align with the [recorded preferences](/worlds/update#feedback-ingestion).
+
+### Scalable supervision
+
+As systems scale, human evaluation becomes a bottleneck. Worlds enables 
+**Scalable Supervision** (RLAIF) by using AI judges to evaluate candidate triples.
+
+*   **Continuous evaluation**: Scalable supervision is the operationalized form 
+    of an **Eval**, allowing the system to scale its alignment without manual 
+    intervention.
+*   **Constitutional AI (CAI)**: Alignment guided by a core set of principles 
+    (the ontology). Agents perform **Self-Critique** to ensure proposed 
+    triples do not violate constitutional rules.
+*   **Collaborative oversight**: Independent validator agents cross-verify 
+    knowledge. Every approval is a reified fact (`worlds:verifiedBy :agent_A`), 
+    creating an auditable log of the alignment process.
+
+### Autonomous discovery
+
+By leveraging the graph as a feedback mechanism, agents can grow a dataset 
+from scratch. This process is known as **Reinforcement Learning from Knowledge 
+Graph Feedback (RLKGF)**.
+
+1.  **Competency questions**: The agent identifies gaps in the current graph.
+2.  **Self-correcting ontologies**: The agent proposes and tests new classes 
+    for logical consistency using SPARQL `ASK` queries. 
+3.  **Reward signal**: If the structure maintains logic and answers the 
+    competency questions, it receives a higher reward.
+
+### Academic grounding
+
+This recursive approach to alignment is supported by major AI research:
+
+*   **Recursive reward modeling (RRM)**: Jan Leike et al. (OpenAI) argue in 
+    ["Scalable agent alignment via reward modeling"](https://arxiv.org/abs/1811.07871) 
+    that breaking complex evaluations into recursive sub-tasks is key to 
+    scaling oversight.
+*   **Constitutional AI (CAI)**: The framework pioneered by Anthropic for 
+    aligning models via self-critique and principle-based "Constitutions." 
+*   **Recursive self-improvement (RSI)**: The theoretical basis for systems found 
+    in the work of Nick Bostrom and Eliezer Yudkowsky.
 
 ## Design principles
 

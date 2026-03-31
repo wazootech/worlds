@@ -74,9 +74,9 @@
         "group": "Worlds",
         "pages": [
           "worlds/index",
+          "worlds/search",
           "worlds/query",
-          "worlds/update",
-          "worlds/alignment"
+          "worlds/update"
         ]
       },
       {

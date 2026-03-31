@@ -1,50 +1,16 @@
 ---
-title: "Search and query"
-description: "Semantic disambiguation and deterministic reasoning."
+title: "Query"
+description: "Deterministic reasoning and symbolic logic."
 ---
 
-Before reasoning about facts, agents must find the correct starting point.
-Worlds combines probabilistic search with deterministic logic to provide 
-verifiable context for autonomous agents.
-
-## Hybrid search
-
-**Hybrid search** disambiguates natural language queries, resolving them to the
-correct semantic entity (IRI) before executing symbolic logic.
-
-### Why not only vector search?
-
-Standard vector search retrieves semantically similar text, but agents require
-factual precision. If an agent searches for "Ethan's manager", a pure vector
-query might return "Gregory's manager" because their text embeddings are nearly
-identical in vector space.
-
-### Why not just SPARQL?
-
-While SPARQL supports structured logic and keyword search, it cannot perform
-semantic vector retrieval. Worlds fuses three complementary signals to guarantee
-accuracy.
-
-| Signal | Technique | What it captures |
-| :--- | :--- | :--- |
-| Semantic | Vector embeddings (1536-dim) | Conceptual meaning |
-| Keyword | FTS5 / BM25 | Exact term matches |
-| Graph context | RDF relationship filters | Structural relationships |
-
-### Reciprocal rank fusion
-
-Results from each signal are merged using **Reciprocal Rank Fusion (RRF)** to 
-produce a single unified ranking:
-
-$$score = \sum_{d \in D} \frac{1}{60 + rank(d)}$$
-
----
+After [hybrid search](/worlds/search) disambiguates a starting item, agents 
+traverse its connected facts using **SPARQL** (SPARQL Protocol and RDF 
+Query Language). This is the W3C standard for knowledge graphs.
 
 ## SPARQL reasoning
 
-After disambiguating a starting item, agents traverse its connected facts using 
-**SPARQL** (SPARQL Protocol and RDF Query Language). This is the W3C standard 
-for knowledge graphs.
+SPARQL matches patterns against facts, follows relationships, and returns exact 
+results without probabilistic guessing.
 
 ### Symbolic logic
 
@@ -59,26 +25,20 @@ SELECT ?parent WHERE {
 }
 ```
 
-SPARQL matches patterns against facts, deterministically following relationships
-to return exact results without probabilistic guessing.
-
 ### SPARQL vs. vector search
 
-<ResponseField name="Precision" type="SPARQL">
-  Exact and deterministic results based on verified relationships.
-</ResponseField>
-
-<ResponseField name="Precision" type="Vector search">
-  Approximate and probabilistic results based on semantic similarity.
-</ResponseField>
+| Dimension     | SPARQL                   | Vector search              |
+| :------------ | :----------------------- | :------------------------- |
+| **Precision** | Exact, deterministic     | Approximate, probabilistic |
+| **Output**    | Verified facts           | Ranked candidates          |
 
 ---
 
 ## High-stakes context
 
-Standard RAG struggles with evolving facts and complex relational queries.
+Standard RAG struggles with evolving facts and complex relational queries. 
 Worlds maintains a **living knowledge graph** where contradictions are resolved 
-at the data layer rather than relying on LLM heuristics.
+at the data layer.
 
 ### The evolving fact
 
@@ -89,7 +49,7 @@ Consider a scenario where information changes rapidly:
 
 Traditional RAG retrieves both contradictory chunks, forcing the LLM to guess. 
 Worlds updates the specific graph relationship, ensuring the agent only 
-retrieves the CURRENT, PROVABLE state.
+retrieves the CURRENT state.
 
 ### Grounding agents in ontologies
 
@@ -97,23 +57,22 @@ By using `discover-schema`, agents retrieve the world's ontology before
 attempting to query it.
 
 1.  **Discovery**: Agent retrieves the world's ontology.
-2.  **Mapping**: Agent maps the user's intent to specific RDF classes and 
-    predicates.
-3.  **Querying**: Agent executes precise SPARQL queries instead of depending
+2.  **Mapping**: Agent maps intent to specific RDF classes and predicates.
+3.  **Querying**: Agent executes precise SPARQL queries instead of depending 
     solely on vector similarity.
 
 ---
 
 ## Preference-aware retrieval
 
-While standard SPARQL is strictly deterministic, a world's retrieval can be 
-further aligned with human intent through feedback.
+While standard SPARQL is strictly deterministic, retrieval can be further 
+aligned with human intent through feedback.
 
 ### Guided traversal
 
-When a query results in multiple valid paths (e.g., across conflicting synonyms 
-or multi-hop options), the engine uses the reshaped probability landscape to 
-prefer the path that has historically yielded high-reward results.
+When a query results in multiple valid paths, the engine uses the reshaped 
+probability landscape to prefer the path that has historically yielded 
+high-reward results. 
 
 This transformation moves the system from deterministic reasoning to **intentional 
-agency**. Learn more about this in the [Alignment](/worlds/alignment) section.
+agency**. Learn more about the theory in the [Architecture](/contribute/architecture#alignment--intentional-agency) deep-dive.
