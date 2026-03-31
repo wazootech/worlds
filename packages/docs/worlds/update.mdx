@@ -61,3 +61,23 @@ regulatory filing updates or internal ledger movements.
     SPARQL `INSERT` operation asserting that a specific user opened it.
 3.  **Apply updates**: Execute the mutation against the world, allowing the
     engine to translate it into a safe, atomic RDF patch.
+
+## Feedback ingestion
+
+Worlds is designed for continual learning. Beyond the initial ingestion of
+facts, the graph evolves through a recursive loop of human feedback.
+
+When a human corrects or approves an agent's reasoning, that feedback is not
+just used to update the model—it is asserted as a verifiable triple in the
+world's ledger.
+
+1.  Capture preference: the agent records the human's preference for a specific
+    query result or relationship.
+2.  Assert triple: the system inserts mutation quads (e.g.,
+    `<result_id> worlds:hasPreference worlds:Accepted`).
+3.  Refine state: this historical truth remains in the ledger, allowing future
+    queries to be guided by this preference data.
+
+By treating feedback as state, Worlds transforms from a static knowledge base
+into a malleable context. Learn more about this in the
+[Alignment](/worlds/alignment) deep-dive.

@@ -313,47 +313,14 @@ handling.
 
 ## Alignment and agency
 
-Reinforcement Learning from Human Feedback (RLHF) transforms models from
-statistical mimicry to intentional agency. It uses preference data to steer
-high-dimensional behavior instead of manual, rule-based programming. This
-framework enables the creation of personalized software by anchoring model
-outputs in specific human values and contextual data.
+RLHF transforms Worlds from a statistical mimicry engine into a system of
+intentional agency. By treating human feedback as
+[verifiable state](/worlds/update#feedback-ingestion), Worlds enables a
+recursive quality loop where the system continuously optimizes its ontology and
+probability landscape to align with human intent.
 
-### Probability reshaping
-
-RLHF sculpts the probability landscape of a model. While base models represent a
-flat map of word sequences, RLHF introduces sequential nudges in token space:
-
-- **Logit shift**: Increases raw scores for preferred paths and suppresses
-  undesired outcomes.
-- **Softmax filter**: Drives inference toward helpfulness and safety by
-  statistically blocking paths to poor outcomes.
-
-### Engineering trade-offs
-
-A KL Divergence penalty anchors the model to its original capabilities and
-prevents drift. This constraint mitigates Reward Hacking, where a model
-maximizes reward scores through repetitive or sycophantic phrasing rather than
-actual utility.
-
-### Autonomous leap
-
-In continual learning systems, tokens evolve into actions and sentences into
-trajectories.
-
-- World models: RLHF aligns internal simulations of cause-and-effect with human
-  values.
-- Recursive learning: Systems use feedback to update policies in real-time,
-  navigating the tension between discovering new environmental peaks and
-  maintaining safety protocols.
-
-### Contextual personalization
-
-The probability landscape is further sculpted by the local context stored within
-a World. While global alignment provides a baseline, Contextual Alignment
-leverages local [triples](/worlds#facts) and preference data to fine-tune agent
-behavior for specific users or organizations. This transforms the "World Model"
-into a system of record for personal agency.
+Learn more about recursive state refinement and recursive learning in the
+[Alignment](/worlds/alignment) deep-dive.
 
 ## Design principles
 

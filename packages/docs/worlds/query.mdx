@@ -124,8 +124,29 @@ map semantic intent to logical execution.
   precise logic to traverse the graph and return the grandparent.
 - **Zero hallucination**: Agents only use terms that actually exist in the
   world's schema.
-- **Deterministic reliability**: Ensure the agent's mental model strictly
-  matches the actual data structure.
+
+## Preference-aware retrieval
+
+The future of querying in Worlds is preference-aware. While standard SPARQL is
+strictly deterministic, a world's truth can be further aligned with human intent
+through feedback.
+
+### Guided traversal
+
+When a query could result in multiple valid paths (e.g., across conflicting
+synonyms or multi-hop relationship options), the engine uses the reshaped
+probability landscape to prefer the path that has historically yielded
+high-reward results.
+
+This transformation moves the system from deterministic reasoning to intentional
+agency.
+
+- Traditional RAG: brute-force semantic similarity.
+- Deterministic Worlds: symbolic, graph-based traversal.
+- Preference-Aware Worlds: symbolic traversal guided by human-aligned weights
+  (RLHF).
+
+Learn more about this in the [Alignment](/worlds/alignment) deep-dive.
 
 ## Architecture
 

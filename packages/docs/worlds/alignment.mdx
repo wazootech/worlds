@@ -1,0 +1,92 @@
+---
+title: "Alignment"
+description:
+  "How Worlds enables RLHF and Intentional Agency through recursive learning."
+---
+
+Worlds is the engine for personalized, alignment-driven software. By providing a
+stateful substrate for autonomous agents, it enables the practical application
+of Reinforcement Learning from Human Feedback (RLHF) to steer high-dimensional
+model behavior.
+
+## Probability reshaping
+
+In its most raw form, RLHF is the process of sculpting a probability landscape.
+An LLM starts as a map of all possible word sequences. RLHF acts as a series of
+nudges in token space:
+
+- Logit shift: increases raw scores for preferred paths and suppresses undesired
+  ones.
+- Softmax filter: ensures that during inference, the model is statistically
+  driven toward helpfulness and safety, effectively blocking parts of the token
+  maze that lead to poor outcomes.
+
+---
+
+## Engineering constraints
+
+In practice, this is a balancing act managed by the KL Divergence penalty. This
+mathematical anchor prevents the model from drifting too far from its original
+language capabilities.
+
+### Reward hacking
+
+Without this constraint, the model suffers from reward hacking, where it finds
+cheats in the token space—like repetitive or sycophantic phrasing—to maximize
+the reward score while losing actual utility. Worlds provides the verifiable
+context required to monitor and mitigate these hacks by grounding model outputs
+in facts.
+
+---
+
+## Autonomous trajectories
+
+When applied to continual learning autonomous systems, the tokens evolve into
+actions and the sentences become trajectories.
+
+- World models: RLHF aligns the system’s internal simulation of cause-and-effect
+  with human values.
+- Recursive learning: The system uses feedback to update its policy in
+  real-time, navigating the tension between learning new environmental peaks and
+  avoiding the catastrophic forgetting of previous safety protocols.
+
+---
+
+## Recursive quality loop
+
+The future of intentional agency relies on the recursive quality loop. This is
+where the recursive optimization becomes a core feature rather than a bug.
+
+### Recursive state refinement
+
+Traditional databases rely on static schemas, which act as a lossy filter for
+human preference. In Worlds, human feedback is ingested as verifiable triples in
+the world itself (e.g., `query:xyz :hasFeedback :positive`).
+
+This creates a self-refining memory system:
+
+1.  Agent performs query $\rightarrow$ Human gives feedback
+2.  Feedback becomes a triple in the ledger
+3.  Ontology evolution: The agent optimizes its own representation of data
+    (schema) to align with the refined feedback.
+4.  Reshaped retrieval: Future queries follow the reshaped probability landscape
+    toward high-reward paths.
+
+### Academic grounding
+
+The idea that recursive oversight is necessary for true alignment is supported
+by major AI research:
+
+- Recursive reward modeling (RRM): Jan Leike et al. (OpenAI) argue in
+  ["Scalable agent alignment via reward modeling"](https://arxiv.org/abs/1811.07871)
+  that breaking complex evaluations into recursive sub-tasks is the only way to
+  scale oversight and align models with nuanced human intent.
+- Recursive self-improvement (RSI): The theoretical basis for systems found in
+  the work of Nick Bostrom and Eliezer Yudkowsky, where meta-optimization of
+  internal schemas leads to optimal state configurations.
+
+### Bottom line
+
+RLHF transforms a model that can predict anything into a system that prefers
+preferred outcomes. You can use preference data to steer high-dimensional
+behavior through a verifiable, recursive loop of recorded state refinement.
