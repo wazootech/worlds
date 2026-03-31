@@ -74,15 +74,17 @@ When a user or supervisor provides feedback (e.g., a thumbs up or a specific
 correction), the API records this as a preference item connected to the original
 fact.
 
-```typescript TypeScript
-import { worlds } from "@wazoo/worlds-sdk";
+```sparql SPARQL
+PREFIX worlds: <https://schema.wazoo.dev#>
+PREFIX user: <https://etok.me/#>
 
-// Assert a preference (reward) for a specific fact entity
-await worlds.assertPreference("my-world-id", {
-  factId: "fact:123",
-  reward: 1.0,
-  agentId: "user:person",
-});
+INSERT DATA {
+  <fact:123> worlds:hasPreference [
+    a worlds:Preference ;
+    worlds:hasReward 1.0 ;
+    worlds:verifiedBy user:person
+  ] .
+}
 ```
 
 ## Recursive learning
