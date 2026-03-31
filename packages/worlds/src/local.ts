@@ -245,20 +245,6 @@ export class LocalWorlds implements WorldsInterface {
   }
 
   /**
-   * ask performs a deterministic boolean check (SPARQL ASK).
-   */
-  async ask(
-    id: string,
-    queryOrTriple: string,
-  ): Promise<boolean> {
-    const result = await this.sparql(id, queryOrTriple);
-    if (!result || typeof result !== "object" || !("boolean" in result)) {
-      return false;
-    }
-    return result.boolean as boolean;
-  }
-
-  /**
    * search performs semantic/text search on triples using vector embeddings.
    */
   async search(

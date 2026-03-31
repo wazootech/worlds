@@ -215,20 +215,6 @@ export class RemoteWorlds implements WorldsInterface {
   }
 
   /**
-   * ask performs a deterministic boolean check (SPARQL ASK) against a world.
-   */
-  public async ask(
-    idOrSlug: string,
-    queryOrTriple: string,
-  ): Promise<boolean> {
-    const result = await this.sparql(idOrSlug, queryOrTriple);
-    if (!result || typeof result !== "object" || !("boolean" in result)) {
-      return false;
-    }
-    return result.boolean as boolean;
-  }
-
-  /**
    * search performs semantic/text search on a world using vector embeddings.
    */
   public async search(

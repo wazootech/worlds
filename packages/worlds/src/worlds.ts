@@ -52,20 +52,6 @@ export class Worlds implements WorldsInterface {
   }
 
   /**
-   * create creates a new isolated world.
-   */
-  public create(data: CreateWorldParams): Promise<World> {
-    return this.engine.create(data);
-  }
-
-  /**
-   * update updates an existing world's metadata.
-   */
-  public update(id: string, data: UpdateWorldParams): Promise<void> {
-    return this.engine.update(id, data);
-  }
-
-  /**
    * delete permanently removes a world.
    */
   public delete(id: string): Promise<void> {
@@ -87,13 +73,17 @@ export class Worlds implements WorldsInterface {
   }
 
   /**
-   * ask performs a deterministic boolean check (SPARQL ASK).
+   * create creates a new isolated world.
    */
-  public ask(
-    id: string,
-    queryOrTriple: string,
-  ): Promise<boolean> {
-    return this.engine.ask(id, queryOrTriple);
+  public create(data: CreateWorldParams): Promise<World> {
+    return this.engine.create(data);
+  }
+
+  /**
+   * update updates an existing world's metadata.
+   */
+  public update(id: string, data: UpdateWorldParams): Promise<void> {
+    return this.engine.update(id, data);
   }
 
   /**
