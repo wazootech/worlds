@@ -3,19 +3,19 @@ title: "Query"
 description: "Deterministic reasoning and symbolic logic."
 ---
 
-After [hybrid search](/worlds/search) disambiguates a starting item, agents 
-traverse its connected facts using **SPARQL** (SPARQL Protocol and RDF 
-Query Language). This is the W3C standard for knowledge graphs.
+After [hybrid search](/worlds/search) disambiguates a starting item, agents
+traverse its connected facts using SPARQL (SPARQL Protocol and RDF Query
+Language). This is the W3C standard for knowledge graphs.
 
 ## SPARQL reasoning
 
-SPARQL matches patterns against facts, follows relationships, and returns exact 
+SPARQL matches patterns against facts, follows relationships, and returns exact
 results without probabilistic guessing.
 
 ### Symbolic logic
 
-Given triples such as `corp:acme corp:ownedBy corp:parent`, query for the 
-parent company:
+Given triples such as `corp:acme corp:ownedBy corp:parent`, query for the parent
+company:
 
 ```sparql SPARQL
 PREFIX corp: <http://corp.example/>
@@ -27,52 +27,53 @@ SELECT ?parent WHERE {
 
 ### SPARQL vs. vector search
 
-| Dimension     | SPARQL                   | Vector search              |
-| :------------ | :----------------------- | :------------------------- |
-| **Precision** | Exact, deterministic     | Approximate, probabilistic |
-| **Output**    | Verified facts           | Ranked candidates          |
+| Dimension | SPARQL               | Vector search              |
+| :-------- | :------------------- | :------------------------- |
+| Precision | Exact, deterministic | Approximate, probabilistic |
+| Output    | Verified facts       | Ranked candidates          |
 
 ---
 
 ## High-stakes context
 
-Standard RAG struggles with evolving facts and complex relational queries. 
-Worlds maintains a **living knowledge graph** where contradictions are resolved 
-at the data layer.
+Standard RAG struggles with evolving facts and complex relational queries.
+Worlds maintains a living knowledge graph where contradictions are resolved at
+the data layer.
 
 ### The evolving fact
 
 Consider a scenario where information changes rapidly:
-1. **Monday:** "I am working on Project Apollo."
-2. **Wednesday:** "I am pausing Apollo to focus on Project Hermes."
-3. **Friday:** "What am I working on?"
 
-Traditional RAG retrieves both contradictory chunks, forcing the LLM to guess. 
-Worlds updates the specific graph relationship, ensuring the agent only 
-retrieves the CURRENT state.
+1. Monday: "I am working on Project Apollo."
+2. Wednesday: "I am pausing Apollo to focus on Project Hermes."
+3. Friday: "What am I working on?"
+
+Traditional RAG retrieves both contradictory chunks, forcing the LLM to guess.
+Worlds updates the specific graph relationship, ensuring the agent only
+retrieves the current state.
 
 ### Grounding agents in ontologies
 
-By using `discover-schema`, agents retrieve the world's ontology before 
+By using `discover-schema`, agents retrieve the world's ontology before
 attempting to query it.
 
-1.  **Discovery**: Agent retrieves the world's ontology.
-2.  **Mapping**: Agent maps intent to specific RDF classes and predicates.
-3.  **Querying**: Agent executes precise SPARQL queries instead of depending 
-    solely on vector similarity.
+1.  Discovery: Agent retrieves the world's ontology.
+2.  Mapping: Agent maps intent to specific RDF classes and predicates.
+3.  Querying: Agent executes precise SPARQL queries instead of depending solely
+    on vector similarity.
 
 ---
 
 ## Preference-aware retrieval
 
-While standard SPARQL is strictly deterministic, retrieval can be further 
+While standard SPARQL is strictly deterministic, retrieval can be further
 aligned with human intent through feedback.
 
-### Guided traversal
+When a query results in multiple valid paths, the engine uses the reshaped
+probability landscape to prefer the path that has historically yielded
+high-reward results.
 
-When a query results in multiple valid paths, the engine uses the reshaped 
-probability landscape to prefer the path that has historically yielded 
-high-reward results. 
-
-This transformation moves the system from deterministic reasoning to **intentional 
-agency**. Learn more about the theory in the [Architecture](/contribute/architecture#alignment--intentional-agency) deep-dive.
+This transformation moves the system from deterministic reasoning to intentional
+agency. Learn more about the theory in the
+[Architecture](/contribute/architecture#alignment--intentional-agency)
+deep-dive.

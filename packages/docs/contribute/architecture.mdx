@@ -5,18 +5,18 @@ description: "How Worlds works"
 
 The Worlds Platform utilizes a managed [neuro-symbolic](/manifesto)
 infrastructure designed for edge-distributed, agentic memory. Built on the
-[Deno](https://deno.com/) runtime, it separates the **Worlds Console** for
-management from the **Worlds API** for high-performance execution.
+[Deno](https://deno.com/) runtime, it separates the Worlds console for
+management from the Worlds API for high-performance execution.
 
 ## The connection model
 
 The connection model uses composable components to scale system complexity:
 
-- **Client**: Use the `@wazoo/worlds-sdk` or standard HTTP requests inside an
-  agent like Claude, Gemini, or a custom script to connect to the platform.
-- **Memory**: A World is an isolated sandbox for agent memories. You must target
-  a specific World using an API key and the World ID for every request.
-- **Dashboard**: Use the Worlds Console to generate API keys, explore data, and
+- Client: Use the `@wazoo/worlds-sdk` or standard HTTP requests inside an agent
+  like Claude, Gemini, or a custom script to connect to the Worlds API.
+- Memory: A World is an isolated sandbox for agent memories. You must target a
+  specific World using an API key and the World ID for every request.
+- Dashboard: Use the Worlds Console to generate API keys, explore data, and
   manage billing.
 
 <Info>Agents use an API key to read and write facts to a specific World.</Info>
@@ -32,7 +32,7 @@ graph LR
         direction TB
         Dev([Developer])
         Agent([AI agent])
-        SDK["Worlds SDK"]
+        API["Worlds API"]
     end
 
     subgraph Console ["Worlds Console"]
@@ -41,9 +41,9 @@ graph LR
         Auth[Identity service]
     end
 
-    subgraph API ["Worlds API (World Engine)"]
+    subgraph API_S ["Worlds API (World Engine)"]
         direction TB
-        Engine["Reasoning engine<br/><i>Hot RDF memory</i>"]
+        Engine["Reasoning engine<br/>Hot RDF memory"]
         Sync["Forward-sync"]
     end
 
@@ -57,8 +57,8 @@ graph LR
     ConsoleView <==>|Management| Auth
 
     %% Agent/Data Flow
-    Agent <==>|SDK / MCP| Engine
-    SDK --- Engine
+    Agent <==>|API / MCP| Engine
+    API --- Engine
 
     %% Internal Processing
     Engine -.->|Hydrate / Flush| DB
@@ -74,16 +74,16 @@ The platform splits operations into two primary layers:
   <div>
 ### Worlds Console
 
-The **Worlds Console** acts as the system's control plane. It manages identity
-through WorkOS, handles organization-level provisioning, and orchestrates
-**Worlds API** instances.
+The Worlds Console acts as the system control plane. It manages identity through
+WorkOS, handles organization-level provisioning, and orchestrates Worlds API
+instances.
 
   </div>
 
   <div>
 ### Worlds API
 
-The **Worlds API Server** handles RDF graph management, [SPARQL](/worlds/query)
+The Worlds API Server handles RDF graph management, [SPARQL](/worlds/query)
 execution, and [hybrid search](/worlds/search). This is the API layer where your
 information lives.
 
@@ -92,33 +92,33 @@ information lives.
 
 ## Automated provisioning
 
-The connection between the Worlds Console and the API Server is automated
-through a robust provisioning layer. This ensures that every organization has a
+The connection between the Worlds Console and the Worlds API Server is automated
+through a provisioning layer. This ensures that every organization has a
 dedicated, isolated API instance.
 
 ### App management abstraction
 
 The system utilizes an `AppManager` interface (located in
-`packages/console/src/lib/apps`) to abstract the deployment of the API server.
-This allows the platform to seamlessly switch between local development and
-production environments:
+`packages/console/src/lib/apps`) to abstract the deployment of the Worlds API
+server. This allows the platform to seamlessly switch between local development
+and production environments:
 
-- **Local Development**: Uses `LocalAppManager` to spawn background `deno serve`
+- Local development: Uses `LocalAppManager` to spawn background `deno serve`
   processes. It manages port allocation and maps organization logins to local
   child processes.
-- **Production**: Uses `DenoAppManager` to interact with the Deno Deploy API. It
-  leverages **Deno sandboxes** to orchestrate new projects and manage automated
+- Production: Uses `DenoAppManager` to interact with the Deno Deploy API. It
+  leverages Deno sandboxes to orchestrate new projects and manage automated
   deployments of the latest server builds.
 
 ### Bootstrap flow
 
-The console orchestrates the lifecycle of an API server from initial
-organization setup to production deployment.
+The Worlds Console orchestrates the lifecycle of a Worlds API server from
+initial organization setup to production deployment.
 
 ```mermaid
 sequenceDiagram
     participant User as User
-    participant Console as Console
+    participant Console as Worlds Console
     participant WorkOS as WorkOS
     participant DB as Turso (SQLite)
     participant Deno as Deno Deploy (Sandbox)
@@ -137,8 +137,8 @@ sequenceDiagram
 ```
 
 <Note>
-  The `Worlds API` is stateless by design. All state is persisted in the
-  provisioned SQLite/Turso databases, allowing the API server to be
+  The Worlds API is stateless by design. All state is persisted in the
+  provisioned SQLite/Turso databases, allowing the Worlds API server to be
   re-provisioned or scaled instantly.
 </Note>
 
@@ -159,8 +159,8 @@ flowchart TD
         CLOUD["Cloud connectors<br/>Notion, Obsidian, GDrive"]
     end
 
-    subgraph Ingestion ["Agent-native SDK"]
-        SDK["Worlds SDK<br/>search / sparql / discover"]
+    subgraph Ingestion ["Agent-native API"]
+        API["Worlds API<br/>search / sparql / discover"]
         MCP["MCP protocol<br/>Claude, Cursor, Gemini"]
     end
 
@@ -182,11 +182,11 @@ flowchart TD
     end
 
     %% Data Flow
-    RAW --> SDK
-    CLOUD --> SDK
-    SDK <--> MCP
+    RAW --> API
+    CLOUD --> API
+    API <--> MCP
 
-    SDK -->|SPARQL update| SPARQL
+    API -->|SPARQL update| SPARQL
     SPARQL --> PROXY
 
     PROXY -->|Quad patches| SKOLEM
@@ -222,11 +222,11 @@ requests to reduce read latency.
 Persistence utilizes an edge-distributed database to maintain semantic
 integrity. The system relies on a multi-index strategy:
 
-- **Graph indexing**: Stores structural data records as an append-only
-  chronological ledger. This enables rapid pattern matching.
-- **Vector indexing**: Stores high-dimensional embeddings for text segments.
-  This enables semantic similarity search at the edge.
-- **Full-text indexing**: Provides exact keyword matching and ranking.
+- Graph indexing: Stores structural data records as an append-only chronological
+  ledger. This enables rapid pattern matching.
+- Vector indexing: Stores high-dimensional embeddings for text segments. This
+  enables semantic similarity search at the edge.
+- Full-text indexing: Provides exact keyword matching and ranking.
 
 When executing a search, the engine utilizes Reciprocal Rank Fusion (RRF) to
 combine results from the vector index and full-text index into a single, unified
@@ -234,7 +234,7 @@ relevance ranking. Structural graph constraints further restrict these results.
 
 ## Resource hierarchy
 
-**Organizations** host **Worlds** to ensure strict data isolation and scale.
+Organizations host Worlds to ensure strict data isolation and scale.
 
 ```mermaid
 graph LR
@@ -250,9 +250,9 @@ graph LR
 
 Each World is a specific context or knowledge graph managed by the server.
 
-- **Dedicated storage**: Each World maintains its own secondary SQLite database
-  for [triples](/worlds#facts), chunks, and embeddings.
-- **Isolation**: Access Worlds via `/v1/worlds/{id}` to ensure zero
+- Dedicated storage: Each World maintains its own secondary SQLite database for
+  [triples](/worlds#facts), chunks, and embeddings.
+- Isolation: Access Worlds via `/v1/worlds/{id}` to ensure zero
   cross-contamination between contexts.
 
 ## Deno runtime
@@ -261,40 +261,41 @@ Worlds uses the [Deno](https://deno.com/) runtime for its
 [security](https://docs.deno.com/runtime/fundamentals/security/) and runtime
 capabilities:
 
-- **Secure by default**: Deno's permission model requires explicit grants for
+- Secure by default: Deno's permission model requires explicit grants for
   network, file system, and environment access. This reduces the attack surface
   of each deployment.
-- **Web-standard APIs**: The server exports a standard `fetch` handler, making
-  it natively compatible with edge distribution platforms like Deno Deploy.
-- **TypeScript-native**: No build step or transpiler configuration required. The
+- Web-standard APIs: The server exports a standard `fetch` handler, making it
+  natively compatible with edge distribution platforms like Deno Deploy.
+- TypeScript-native: No build step or transpiler configuration required. The
   entire codebase is TypeScript from source to execution.
-- **Edge-ready**: Native support for Deno Deploy enables low-latency
-  distribution close to users.
+- Edge-ready: Native support for Deno Deploy enables low-latency distribution
+  close to users.
 
 ## Monorepo topology
 
-The ecosystem uses a Deno workspace. The `sdk` package serves as the primary
-bridge for the CLI, AI-SDK, and Console to communicate with the API Server.
+The ecosystem uses a Deno workspace. The API package serves as the primary
+bridge for the CLI, AI-API, and Console to communicate with the Worlds API
+server.
 
 ```mermaid
 graph TD
     ROOT["Deno workspace root"]
     SERVER["@wazoo/worlds-server"]
-    SDK["@wazoo/worlds-sdk"]
-    AISDK["@wazoo/worlds-ai-sdk"]
+    API["@wazoo/worlds-sdk"]
+    AI_API["@wazoo/worlds-ai-sdk"]
     CLI["@wazoo/worlds-cli"]
     CONSOLE["worlds-console<br/>Next.js"]
 
     ROOT --> SERVER
-    ROOT --> SDK
-    ROOT --> AISDK
+    ROOT --> API
+    ROOT --> AI_API
     ROOT --> CLI
     ROOT -.-> CONSOLE
 
-    CLI --> SDK
-    AISDK --> SDK
-    CONSOLE --> SDK
-    SDK --> SERVER
+    CLI --> API
+    AI_API --> API
+    CONSOLE --> API
+    API --> SERVER
 ```
 
 ### Repository layout
@@ -313,8 +314,8 @@ handling.
 
 ## Semantic data model
 
-Worlds utilizes a standardized core ontology to provide agents with a predictable 
-set of primitives for reasoning, alignment, and discovery.
+Worlds utilizes a standardized core ontology to provide agents with a
+predictable set of primitives for reasoning, alignment, and discovery.
 
 ### Core classes
 
@@ -360,8 +361,8 @@ set of primitives for reasoning, alignment, and discovery.
 
 ## Reification strategy
 
-To enable high-stakes agency, Worlds uses **reification**—the process of making an 
-assertion (a triple) a first-class item. This allows agents to treat a specific 
+To enable high-stakes agency, Worlds uses reification—the process of making an
+assertion (a triple) a first-class item. This allows agents to treat a specific
 fact as an entity with its own metadata.
 
 ### How it works
@@ -374,70 +375,68 @@ fact as an entity with its own metadata.
     Worlds creates a `worlds:Fact` item to represent this unique statement.
   </Step>
   <Step title="Attachment of metadata">
-    Metadata (provenance, rewards, timestamps) is attached to the fact entity 
+    Metadata (provenance, rewards, timestamps) is attached to the fact entity
     rather than the raw relationship.
   </Step>
 </Steps>
 
 <Card title="Strategic value" icon="sparkles">
-  Reification is the foundation of the recursive quality loop. By treating facts 
-  as items, agents can query reasoning paths, filter by trusted verifiers, 
-  and tune their models based on historical reward signals.
+  Reification is the foundation of the recursive quality loop. By treating facts
+  as items, agents can query reasoning paths, filter by trusted verifiers, and
+  tune their models based on historical reward signals.
 </Card>
 
 ## Alignment & intentional agency
 
-RLHF transforms Worlds from a statistical mimicry engine into a system of 
-intentional agency. This creates a recursive quality loop where the system 
+RLHF transforms Worlds from a statistical mimicry engine into a system of
+intentional agency. This creates a recursive quality loop where the system
 optimizes its ontology and probability landscape to align with humans.
 
 ### Probability reshaping
 
-RLHF acts as a series of nudges in the model's high-dimensional token space:
-*   **Logit shift**: Increases raw scores for preferred paths and suppresses 
-    undesired ones.
-*   **Softmax filter**: Ensures that during inference, the model is statistically 
-    driven toward outcomes that align with the [recorded preferences](/worlds/update#feedback-ingestion).
+Reinforcement Learning from Human Feedback (RLHF) acts as a series of nudges in
+the model's high-dimensional token space:
 
-### Scalable supervision
+- Logit shift: Increases raw scores for preferred paths and suppresses undesired
+  ones.
+- **Softmax filter**: Ensures that during inference, the model is statistically
+  driven toward outcomes that align with the
+  [recorded preferences](/worlds/update#feedback-ingestion).
 
-As systems scale, human evaluation becomes a bottleneck. Worlds enables 
-**Scalable Supervision** (RLAIF) by using AI judges to evaluate candidate triples.
+As systems scale, human evaluation becomes a bottleneck. Worlds enables scalable
+supervision (RLAIF) by using AI judges to evaluate candidate triples.
 
-*   **Continuous evaluation**: Scalable supervision is the operationalized form 
-    of an **Eval**, allowing the system to scale its alignment without manual 
-    intervention.
-*   **Constitutional AI (CAI)**: Alignment guided by a core set of principles 
-    (the ontology). Agents perform **Self-Critique** to ensure proposed 
-    triples do not violate constitutional rules.
-*   **Collaborative oversight**: Independent validator agents cross-verify 
-    knowledge. Every approval is a reified fact (`worlds:verifiedBy :agent_A`), 
-    creating an auditable log of the alignment process.
+- Continuous evaluation: Scalable supervision is the operationalized form of an
+  eval, allowing the system to scale its alignment without manual intervention.
+- Constitutional AI (CAI): Alignment guided by a core set of principles (the
+  ontology). Agents perform self-critique to ensure proposed triples do not
+  violate constitutional rules.
+- Collaborative oversight: Independent validator agents cross-verify knowledge.
+  Every approval is a reified fact (`worlds:verifiedBy :agent_A`), creating an
+  auditable log of the alignment process.
 
-### Autonomous discovery
+By leveraging the graph as a feedback mechanism, agents can grow a dataset from
+scratch. This process is known as reinforcement learning from knowledge graph
+feedback (RLKGF).
 
-By leveraging the graph as a feedback mechanism, agents can grow a dataset 
-from scratch. This process is known as **Reinforcement Learning from Knowledge 
-Graph Feedback (RLKGF)**.
-
-1.  **Competency questions**: The agent identifies gaps in the current graph.
-2.  **Self-correcting ontologies**: The agent proposes and tests new classes 
-    for logical consistency using SPARQL `ASK` queries. 
-3.  **Reward signal**: If the structure maintains logic and answers the 
-    competency questions, it receives a higher reward.
+1.  Competency questions: The agent identifies gaps in the current graph.
+2.  Self-correcting ontologies: The agent proposes and tests new classes for
+    logical consistency using SPARQL ASK queries.
+3.  Reward signal: If the structure maintains logic and answers the competency
+    questions, it receives a higher reward.
 
 ### Academic grounding
 
 This recursive approach to alignment is supported by major AI research:
 
-*   **Recursive reward modeling (RRM)**: Jan Leike et al. (OpenAI) argue in 
-    ["Scalable agent alignment via reward modeling"](https://arxiv.org/abs/1811.07871) 
-    that breaking complex evaluations into recursive sub-tasks is key to 
-    scaling oversight.
-*   **Constitutional AI (CAI)**: The framework pioneered by Anthropic for 
-    aligning models via self-critique and principle-based "Constitutions." 
-*   **Recursive self-improvement (RSI)**: The theoretical basis for systems found 
-    in the work of Nick Bostrom and Eliezer Yudkowsky.
+- Recursive reward modeling (RRM): Jan Leike et al. (OpenAI) argue in "Scalable
+  agent alignment via reward modeling" (https://arxiv.org/abs/1811.07871) that
+  breaking complex evaluations into recursive sub-tasks is key to scaling
+  oversight.
+- Constitutional AI (CAI): The framework pioneered by Anthropic for aligning
+  models via self-critique and principle-based "Constitutions."
+- Recursive self-improvement (RSI): The theoretical basis for systems found in
+  the work of Nick Bostrom and Eliezer Yudkowsky.
 
 ## Design principles
 
@@ -447,11 +446,16 @@ A key design feature is the use of hot-swappable resource managers. The core
 logic remains identical, while the implementation swaps based on the
 environment:
 
-| Resource     | Local development     | Production                       |
-| :----------- | :-------------------- | :------------------------------- |
-| **Compute**  | Local child processes | Deno Deploy (via Deno Sandboxes) |
-| **Storage**  | Local SQLite files    | SQLite / Turso                   |
-| **Identity** | Mock identity file    | WorkOS Identity Service          |
+| Resource | Local development     | Production                       |
+| :------- | :-------------------- | :------------------------------- |
+| Compute  | Local child processes | Deno Deploy (via Deno Sandboxes) |
+| Storage  | Local SQLite files    | SQLite / Turso                   |
+| Identity | Mock identity file    | WorkOS                           |
 
 This pattern allows the entire stack to run locally with zero cloud
 dependencies.
+
+The Worlds API integrates symbolic precision with the statistical power of large
+language models. By reifying facts and aligning state through human feedback,
+the platform provides a deterministic substrate for intentional agency in
+high-stakes contexts.

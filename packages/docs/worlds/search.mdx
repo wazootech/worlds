@@ -3,37 +3,37 @@ title: "Search"
 description: "Semantic disambiguation and hybrid retrieval."
 ---
 
-Before reasoning about facts, agents must find the correct starting point. 
-**Hybrid search** disambiguates natural language queries, resolving them to 
-the correct semantic entity (IRI) before executing symbolic logic.
+Before reasoning about facts, agents must find the correct starting point.
+Hybrid search disambiguates natural language queries, resolving them to the
+correct semantic entity (IRI) before executing symbolic logic.
 
 ## Why not only vector search?
 
-Standard vector search retrieves semantically similar text, but agents require 
-factual precision. If an agent searches for "Ethan's manager", a pure vector 
-query might return "Gregory's manager" because their text embeddings are nearly 
+Standard vector search retrieves semantically similar text, but agents require
+factual precision. If an agent searches for "Ethan's manager", a pure vector
+query might return "Gregory's manager" because their text embeddings are nearly
 identical in vector space.
 
 ## Hybrid retrieval
 
-Worlds fuses three complementary signals to guarantee retrieval accuracy. By 
-layering keyword precision and structural graph filters on top of vector 
+Worlds fuses three complementary signals to guarantee retrieval accuracy. By
+layering keyword precision and structural graph filters on top of vector
 embeddings, hybrid search ensures the agent resolves the exact item it needs.
 
-| Signal            | Technique                   | What it captures         |
-| :---------------- | :-------------------------- | :----------------------- |
-| **Semantic**      | Vector embeddings (1536-dim)| Conceptual meaning       |
-| **Keyword**       | FTS5 / BM25                 | Exact term matches       |
-| **Graph context** | RDF relationship filters    | Structural relationships |
+| Signal        | Technique                    | What it captures         |
+| :------------ | :--------------------------- | :----------------------- |
+| Semantic      | Vector embeddings (1536-dim) | Conceptual meaning       |
+| Keyword       | FTS5 / BM25                  | Exact term matches       |
+| Graph context | RDF relationship filters     | Structural relationships |
 
 ---
 
 ## Reciprocal rank fusion
 
-Results from each signal are merged using **Reciprocal Rank Fusion (RRF)**, an 
+Results from each signal are merged using Reciprocal Rank Fusion (RRF), an
 algorithm that produces a single unified relevance ranking:
 
 $$score = \sum_{d \in D} \frac{1}{60 + rank(d)}$$
 
-This ensures that a result ranked highly by multiple signals surfaces to the 
+This ensures that a result ranked highly by multiple signals surfaces to the
 top, while noise from any single signal is suppressed.

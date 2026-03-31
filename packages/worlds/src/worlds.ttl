@@ -2,12 +2,12 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix worlds: <http://worlds.dev/v1#> .
+@prefix worlds: <https://schema.wazoo.dev#> .
 
 # Core Worlds Ontology
 # High-stakes verifiable context for autonomous agents.
 
-<http://worlds.dev/v1#> a owl:Ontology ;
+<https://schema.wazoo.dev#> a owl:Ontology ;
     rdfs:label "Core Worlds Ontology" ;
     rdfs:comment "Standard vocabulary for agentic memory, verifiable context, and recursive state refinement." .
 
