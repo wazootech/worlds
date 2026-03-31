@@ -121,23 +121,33 @@ To assert "Acme Corp is a Legal Entity", the syntax goes:
   @prefix corp: <http://corp.example/> .
   @prefix schema: <https://schema.org/> .
 
-  corp:acme a schema:Organization .
-  ```
+corp:acme a schema:Organization .
 
-  ```json JSON-LD
-  {
-    "@context": {
-      "corp": "http://corp.example/",
-      "schema": "https://schema.org/"
-    },
-    "@id": "corp:acme",
-    "@type": "schema:Organization"
-  }
-  ```
+````
 
-  ```nt N-Triples
-  <http://corp.example/acme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Organization> .
-  ```
+```json JSON-LD
+{
+  "@context": {
+    "corp": "http://corp.example/",
+    "schema": "https://schema.org/"
+  },
+  "@id": "corp:acme",
+  "@type": "schema:Organization"
+}
+````
+
+```nt N-Triples
+<http://corp.example/acme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Organization> .
+```
+
+```html Microdata
+<div
+  itemscope
+  itemid="http://corp.example/acme"
+  itemtype="https://schema.org/Organization"
+></div>
+```
+
 </CodeGroup>
 
 To expand on an item, use a semicolon `;` to chain multiple facts together.
@@ -149,26 +159,37 @@ Corp".
   @prefix corp: <http://corp.example/> .
   @prefix schema: <https://schema.org/> .
 
-  corp:acme a schema:Organization ;
-    schema:legalName "Acme Corp" .
-  ```
+corp:acme a schema:Organization ; schema:legalName "Acme Corp" .
 
-  ```json JSON-LD
-  {
-    "@context": {
-      "corp": "http://corp.example/",
-      "schema": "https://schema.org/"
-    },
-    "@id": "corp:acme",
-    "@type": "schema:Organization",
-    "schema:legalName": "Acme Corp"
-  }
-  ```
+````
 
-  ```nt N-Triples
-  <http://corp.example/acme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Organization> .
-  <http://corp.example/acme> <https://schema.org/legalName> "Acme Corp" .
-  ```
+```json JSON-LD
+{
+  "@context": {
+    "corp": "http://corp.example/",
+    "schema": "https://schema.org/"
+  },
+  "@id": "corp:acme",
+  "@type": "schema:Organization",
+  "schema:legalName": "Acme Corp"
+}
+````
+
+```nt N-Triples
+<http://corp.example/acme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Organization> .
+<http://corp.example/acme> <https://schema.org/legalName> "Acme Corp" .
+```
+
+```html Microdata
+<div
+  itemscope
+  itemid="http://corp.example/acme"
+  itemtype="https://schema.org/Organization"
+>
+  <span itemprop="https://schema.org/legalName">Acme Corp</span>
+</div>
+```
+
 </CodeGroup>
 
 ## Verification
