@@ -1,21 +1,57 @@
 ---
-title: "Query"
-description: "High-stakes reasoning and deterministic traversal"
+title: "Search and query"
+description: "Semantic disambiguation and deterministic reasoning."
 ---
 
-After disambiguating a starting item with [hybrid search](/worlds/search),
-agents must traverse its connected facts.
+Before reasoning about facts, agents must find the correct starting point.
+Worlds combines probabilistic search with deterministic logic to provide 
+verifiable context for autonomous agents.
 
-**SPARQL** (SPARQL Protocol and RDF Query Language) is the W3C-standard query
-language for knowledge graphs. In Worlds, it provides the strict symbolic logic
-to perform deterministic reasoning.
+## Hybrid search
 
-## How it looks
+**Hybrid search** disambiguates natural language queries, resolving them to the
+correct semantic entity (IRI) before executing symbolic logic.
 
-Given triples such as `corp:acme corp:ownedBy corp:parent`, query for the parent
-company:
+### Why not only vector search?
 
-```sparql
+Standard vector search retrieves semantically similar text, but agents require
+factual precision. If an agent searches for "Ethan's manager", a pure vector
+query might return "Gregory's manager" because their text embeddings are nearly
+identical in vector space.
+
+### Why not just SPARQL?
+
+While SPARQL supports structured logic and keyword search, it cannot perform
+semantic vector retrieval. Worlds fuses three complementary signals to guarantee
+accuracy.
+
+| Signal | Technique | What it captures |
+| :--- | :--- | :--- |
+| Semantic | Vector embeddings (1536-dim) | Conceptual meaning |
+| Keyword | FTS5 / BM25 | Exact term matches |
+| Graph context | RDF relationship filters | Structural relationships |
+
+### Reciprocal rank fusion
+
+Results from each signal are merged using **Reciprocal Rank Fusion (RRF)** to 
+produce a single unified ranking:
+
+$$score = \sum_{d \in D} \frac{1}{60 + rank(d)}$$
+
+---
+
+## SPARQL reasoning
+
+After disambiguating a starting item, agents traverse its connected facts using 
+**SPARQL** (SPARQL Protocol and RDF Query Language). This is the W3C standard 
+for knowledge graphs.
+
+### Symbolic logic
+
+Given triples such as `corp:acme corp:ownedBy corp:parent`, query for the 
+parent company:
+
+```sparql SPARQL
 PREFIX corp: <http://corp.example/>
 
 SELECT ?parent WHERE {
@@ -24,178 +60,60 @@ SELECT ?parent WHERE {
 ```
 
 SPARQL matches patterns against facts, deterministically following relationships
-to return exact results.
+to return exact results without probabilistic guessing.
 
-## SPARQL vs. vector search
+### SPARQL vs. vector search
 
-| Dimension     | SPARQL                   | Vector search              |
-| :------------ | :----------------------- | :------------------------- |
-| **Precision** | Exact, deterministic     | Approximate, probabilistic |
-| **Best for**  | Structured relationships | Semantic similarity        |
-| **Output**    | Verified facts           | Ranked candidates          |
+<ResponseField name="Precision" type="SPARQL">
+  Exact and deterministic results based on verified relationships.
+</ResponseField>
 
-Worlds combines both via [hybrid search](/worlds/search) so you get the best of
-each.
+<ResponseField name="Precision" type="Vector search">
+  Approximate and probabilistic results based on semantic similarity.
+</ResponseField>
+
+---
+
+## High-stakes context
 
 Standard RAG struggles with evolving facts and complex relational queries.
-Worlds solves this using **high-stakes verifiable context**.
-
-## Limits of probabilistic RAG
-
-In traditional RAG, you chunk and embed text for retrieval based on semantic
-similarity. This works for static information but fails to capture relationship
-dynamics or state changes.
+Worlds maintains a **living knowledge graph** where contradictions are resolved 
+at the data layer rather than relying on LLM heuristics.
 
 ### The evolving fact
 
+Consider a scenario where information changes rapidly:
 1. **Monday:** "I am working on Project Apollo."
 2. **Wednesday:** "I am pausing Apollo to focus on Project Hermes."
 3. **Friday:** "What am I working on?"
 
-Traditional RAG retrieves both chunks, forcing the LLM to resolve the
-contradiction via heuristics. As data grows, retrieval becomes noisy.
+Traditional RAG retrieves both contradictory chunks, forcing the LLM to guess. 
+Worlds updates the specific graph relationship, ensuring the agent only 
+retrieves the CURRENT, PROVABLE state.
 
-<Prompt>
-  **Worlds system prompt template:**
+### Grounding agents in ontologies
 
-```text
-You are a deterministic agent connected to a Worlds knowledge graph.
-When answering user queries:
-1. Use your tools to perform a SPARQL query or [hybrid search](/worlds/search) on the verifiable context.
-2. The retrieved relationships represent the CURRENT, PROVABLE state.
-3. Respond strictly utilizing the relationships extracted, overriding any probabilistic generation.
-```
-
-</Prompt>
-
-## High-stakes context
-
-Worlds maintains a **living knowledge graph**. Instead of storing raw text, it
-extracts meaning as [triples](/worlds#facts), namely subject → predicate →
-object.
-
-When facts change, Worlds updates specific graph relationships. This resolves
-contradictions at the data layer rather than relying on LLM reasoning.
-
-### RAG vs. Worlds
-
-![RAG vs Graph RAG](/images/rag-vs-worlds.png)
-
-| Feature       | Traditional RAG     | Worlds                                         |
-| :------------ | :------------------ | :--------------------------------------------- |
-| **Search**    | Semantic similarity | Hybrid, combining semantic and relational      |
-| **State**     | Stateless           | Stateful, resolving contradictions             |
-| **Inference** | Hallucination-prone | Deterministic reasoning                        |
-| **Structure** | Unstructured chunks | Knowledge primitives, namely items and triples |
-
-## Implementing graph RAG
-
-To implement graph RAG with Worlds, follow the
-[ingestion pipeline](/contribute/architecture) to transform your unstructured
-data into a queryable graph.
-
-Ontology RAG uses rigid, predefined schemas to guide agentic reasoning and data
-retrieval. This ensures your agents operate within a well-defined conceptual
-boundary.
-
-## Grounding agents in ontologies
-
-By using `discover-schema`, your agent can retrieve the available classes and
-properties of a world before attempting to query it.
+By using `discover-schema`, agents retrieve the world's ontology before 
+attempting to query it.
 
 1.  **Discovery**: Agent retrieves the world's ontology.
-2.  **Mapping**: Agent maps the user's natural language request to specific RDF
-    classes and predicates.
+2.  **Mapping**: Agent maps the user's intent to specific RDF classes and 
+    predicates.
 3.  **Querying**: Agent executes precise SPARQL queries instead of depending
     solely on vector similarity.
 
-## Why use ontology RAG?
-
-Deep learning feeds unstructured data into neural networks, hoping models infer
-ground truth. By contrast, neuro-symbolic AI in Worlds explicitly grounds
-language models in semantic structures.
-
-Steering models into a predefined ontology provides the strict context needed to
-map semantic intent to logical execution.
-
-- **Complex logic**: If user A is the parent of B, and B is the parent of C,
-  vector search cannot reliably infer A is the grandparent of C based on text
-  similarity. SPARQL and a defined ontology deterministically execute the
-  precise logic to traverse the graph and return the grandparent.
-- **Zero hallucination**: Agents only use terms that actually exist in the
-  world's schema.
+---
 
 ## Preference-aware retrieval
 
-The future of querying in Worlds is preference-aware. While standard SPARQL is
-strictly deterministic, a world's truth can be further aligned with human intent
-through feedback.
+While standard SPARQL is strictly deterministic, a world's retrieval can be 
+further aligned with human intent through feedback.
 
 ### Guided traversal
 
-When a query could result in multiple valid paths (e.g., across conflicting
-synonyms or multi-hop relationship options), the engine uses the reshaped
-probability landscape to prefer the path that has historically yielded
-high-reward results.
+When a query results in multiple valid paths (e.g., across conflicting synonyms 
+or multi-hop options), the engine uses the reshaped probability landscape to 
+prefer the path that has historically yielded high-reward results.
 
-This transformation moves the system from deterministic reasoning to intentional
-agency.
-
-- Traditional RAG: brute-force semantic similarity.
-- Deterministic Worlds: symbolic, graph-based traversal.
-- Preference-Aware Worlds: symbolic traversal guided by human-aligned weights
-  (RLHF).
-
-Learn more about this in the [Alignment](/worlds/alignment) deep-dive.
-
-## Architecture
-
-While agents interact with Worlds abstractly, the platform manages the
-underlying RDF data through a pipeline.
-
-### RDF blob handling
-
-The system manages RDF data through several core utilities:
-
-- **N3 utility**: Provides functions to convert between RDF blobs, such as
-  N-Quads strings, and in-memory N3 stores.
-- **SPARQL utility**: Executes SPARQL queries using the Comunica engine over an
-  N3 store.
-  <Info>
-    **Comunica** is an open-source SPARQL query engine built for the web. It
-    handles large RDF data sources efficiently.
-  </Info>
-
-### RDF patching
-
-Centralized in the core patch service, the system processes mutations for the
-world database:
-
-1.  **Deterministic identification**:
-    [Skolemizes](https://en.wikipedia.org/wiki/Skolem_normal_form) and hashes
-    each quad to a unique triple ID.
-2.  **Relational storage**: Upserts the resulting [triples](/worlds#facts) into
-    the `triples` table.
-3.  **Semantic indexing**: Chunks and embeds literal values for
-    [hybrid search](/worlds/search).
-4.  **Triggers**: SQL triggers synchronize `rdf:type` relations to the
-    `item_types` table.
-
-### SPARQL execution pipeline
-
-When you execute a SPARQL query via the API, the system follows this pipeline:
-
-1.  Loads the world metadata from the main database.
-2.  Resolves the world-specific database client via
-    `databaseManager.get(worldId)`.
-3.  Executes `handlePatch` with a handler that applies updates to the world
-    client.
-    <ParamField path="worldId" type="string" required>
-      The specific world ID to target for the patch context.
-    </ParamField>
-    <ParamField path="patch" type="Quad[]" required>
-      The array of RDF Quads representing the changes to be applied.
-    </ParamField>
-4.  Executes the SPARQL query over the resulting RDF blob.
-5.  Updates the world metadata in the main database if the blob changed during a
-    SPARQL update.
+This transformation moves the system from deterministic reasoning to **intentional 
+agency**. Learn more about this in the [Alignment](/worlds/alignment) section.
