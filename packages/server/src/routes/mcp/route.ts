@@ -13,6 +13,7 @@ import {
   worldsExportSchema,
   worldsSearchSchema,
   worldsSearchOutputSchema,
+  toolDescriptions,
   type WorldsQueryInput,
   type WorldsListInput,
   type WorldsGetInput,
@@ -41,10 +42,10 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     "worlds_query",
     {
-      description: "Query a Worlds knowledge graph using SPARQL",
+      description: toolDescriptions.worldsQuery,
       inputSchema: worldsQuerySchema,
     },
-    async (args) => {
+    async (args: WorldsQueryInput) => {
       const result = await worlds.sparql(args.world, args.query);
       return {
         content: [
@@ -60,10 +61,10 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     "worlds_list",
     {
-      description: "List all available worlds",
+      description: toolDescriptions.worldsList,
       inputSchema: worldsListSchema,
     },
-    async (args) => {
+    async (args: WorldsListInput) => {
       const result = await worlds.list({ page: args.page, pageSize: args.pageSize });
       return {
         content: [
@@ -79,10 +80,10 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     "worlds_get",
     {
-      description: "Get a world by ID",
+      description: toolDescriptions.worldsGet,
       inputSchema: worldsGetSchema,
     },
-    async (args) => {
+    async (args: WorldsGetInput) => {
       const worldData = await worlds.get(args.world);
       if (!worldData) {
         return {
@@ -104,10 +105,10 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     "worlds_create",
     {
-      description: "Create a new world",
+      description: toolDescriptions.worldsCreate,
       inputSchema: worldsCreateSchema,
     },
-    async (args) => {
+    async (args: WorldsCreateInput) => {
       const world = await worlds.create(args);
       return {
         content: [
@@ -123,10 +124,10 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     "worlds_import",
     {
-      description: "Import RDF data into a world",
+      description: toolDescriptions.worldsImport,
       inputSchema: worldsImportSchema,
     },
-    async (args) => {
+    async (args: WorldsImportInput) => {
       await worlds.import(args.world, args.data, { contentType: "application/n-triples" });
       return {
         content: [
@@ -142,10 +143,10 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     "worlds_export",
     {
-      description: "Export a world as RDF data",
+      description: toolDescriptions.worldsExport,
       inputSchema: worldsExportSchema,
     },
-    async (args) => {
+    async (args: WorldsExportInput) => {
       const buffer = await worlds.export(args.world, {
         contentType: "application/n-quads",
       });
@@ -163,11 +164,11 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     "worlds_search",
     {
-      description: "Search for facts in a Worlds knowledge graph using semantic search",
+      description: toolDescriptions.worldsSearch,
       inputSchema: worldsSearchSchema,
       outputSchema: worldsSearchOutputSchema,
     },
-    async (args) => {
+    async (args: WorldsSearchInput) => {
       const results = await worlds.search(args.world, args.query, {
         limit: args.limit,
         types: args.types,

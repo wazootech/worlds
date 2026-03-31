@@ -67,6 +67,16 @@ export const toolSchemas = {
   worldsSearch: worldsSearchSchema,
 } as const;
 
+export const toolDescriptions = {
+  worldsQuery: "Query a Worlds knowledge graph using SPARQL",
+  worldsList: "List all available worlds",
+  worldsGet: "Get a world by ID",
+  worldsCreate: "Create a new world",
+  worldsImport: "Import RDF data into a world",
+  worldsExport: "Export a world as RDF data",
+  worldsSearch: "Search for facts in a Worlds knowledge graph using semantic search",
+} as const;
+
 export const toolOutputSchemas = {
   worldsList: worldsListOutputSchema,
   worldsSearch: worldsSearchOutputSchema,
