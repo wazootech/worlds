@@ -73,14 +73,15 @@ const world = await worlds.create({
 await worlds.import(
   "quickstart-cloud",
   `@prefix corp: <http://corp.example/> .
-  corp:acme <#ownedBy> <#parent-co> .`,
+  corp:acme corp:ownedBy corp:parent .`,
   { contentType: "text/turtle" },
 );
 
 // 4. Retrieve the fact with absolute precision
 const result = await worlds.sparql(
   "quickstart-cloud",
-  `SELECT ?parent WHERE { <#acme-corp> <#ownedBy> ?parent }`,
+  `PREFIX corp: <http://corp.example/>
+  SELECT ?parent WHERE { corp:acme corp:ownedBy ?parent }`,
 );
 
 console.log("Verifiable context retrieved:", JSON.stringify(result, null, 2));
@@ -100,7 +101,7 @@ console.log("Verifiable context retrieved:", JSON.stringify(result, null, 2));
       "results": {
         "bindings": [
           {
-            "parent": { "type": "uri", "value": "parent-co" }
+            "parent": { "type": "uri", "value": "http://corp.example/parent" }
           }
         ]
       }
