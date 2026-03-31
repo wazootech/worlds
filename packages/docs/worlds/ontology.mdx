@@ -1,0 +1,88 @@
+---
+title: "Core Ontology"
+description: "Standard RDFS classes and properties for agentic context."
+---
+
+Worlds manages knowledge through a standardized core ontology. This common vocabulary provides agents with a predictable set of primitives for reasoning, alignment, and discovery.
+
+## Namespace
+
+The core ontology is defined in the `worlds:` namespace:
+
+```turtle
+@prefix worlds: <http://worlds.dev/v1#> .
+```
+
+## Core classes
+
+Agents use these base classes to categorize information within a World.
+
+*   worlds:World: The root container for a stateful knowledge graph sandbox.
+*   worlds:Item: A unique semantic entity defined by an IRI.
+*   worlds:Fact: A verified triple recorded in the chronological ledger.
+*   worlds:Agent: An entity with agency, such as an AI model or a human user.
+*   worlds:Preference: A recorded value alignment or reward signal.
+*   worlds:Observation: A raw data input or event captured by an agent.
+
+## Core properties
+
+These properties define the relationships between items and their metadata.
+
+### System properties
+
+*   worlds:hasItem: Connects a World to an Item.
+*   worlds:hasFact: Connects an Item or World to a Fact.
+*   worlds:assertedAt: The precision timestamp when a fact was committed.
+
+### Agency and alignment
+
+*   worlds:hasPreference: Links a Fact to a human or autonomous preference signal.
+*   worlds:hasReward: A numerical reward score (0.0 to 1.0).
+*   worlds:discoveredBy: Links an Item to the Agent that proposed it.
+*   worlds:verifiedBy: Links a Fact to the Agent that verified it.
+
+## Examples
+
+### Defining a fact with preference
+
+In Turtle syntax, you can assert a fact and attach an autonomous alignment signal:
+
+```turtle
+@prefix worlds: <http://worlds.dev/v1#> .
+@prefix user: <http://user.example/> .
+
+# The item
+user:ethan a worlds:Item .
+
+# The preference signal
+_:pref1 a worlds:Preference ;
+    worlds:hasReward 0.9 ;
+    worlds:verifiedBy user:validator_agent .
+
+# Attaching preference to a relationship
+user:ethan worlds:hasPreference _:pref1 .
+```
+
+### JSON-LD representation
+
+For external integrations, the ontology maps to standard JSON-LD:
+
+```json
+{
+  "@context": {
+    "worlds": "http://worlds.dev/v1#",
+    "hasReward": "worlds:hasReward",
+    "verifiedBy": "worlds:verifiedBy"
+  },
+  "@type": "worlds:Preference",
+  "hasReward": 0.9,
+  "verifiedBy": "user:validator_agent"
+}
+```
+
+## Domain extension
+
+The core ontology acts as a foundation. Developers should extend these classes 
+to create domain-specific schemas (e.g., `health:Patient` subclassing `worlds:Item`). 
+Autonomous discovery loops use these base types to understand the lifecycle 
+of information from raw observation to verified fact.

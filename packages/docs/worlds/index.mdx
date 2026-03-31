@@ -38,15 +38,16 @@ An item is...
 ## Properties
 
 Properties connect items. They define actions or attributes, such as `worksAt`
-or `givenName`. The complete set of valid properties forms the ontology. Agents
-use this ontology to interact with the graph.
+or `givenName`. The set of valid properties forms the ontology. Agents
+use the [Core Ontology](/worlds/ontology) to interact with the graph.
 
 ## Facts
 
 A fact is a unit of data expressed as a structured statement that connects two
 items using a property. Every fact is inherently bound to the dimension of
 **time**. Worlds maintains an append-only, chronological ledger of facts,
-allowing agents to understand exactly how state and information evolve.
+allowing agents to understand exactly how state and information evolve. 
+See the [Core Ontology](/worlds/ontology) for the standard `worlds:Fact` definition.
 
 Conceptually, a fact functions exactly like a structured assertion. For example,
 the assertion "Acme Corp is owned by Parent Co" can be represented as:
