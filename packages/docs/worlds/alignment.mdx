@@ -1,129 +1,117 @@
 ---
 title: "Alignment"
-description:
-  "How Worlds enables RLHF and Intentional Agency through recursive learning."
+description: "How Worlds enables RLHF and Intentional Agency through recursive learning."
 ---
 
-Worlds is the engine for personalized, alignment-driven software. By providing a
-stateful substrate for autonomous agents, it enables the practical application
-of Reinforcement Learning from Human Feedback (RLHF) to steer high-dimensional
-model behavior.
+Worlds is the engine for personalized, alignment-driven software. By providing a stateful substrate for autonomous agents, it enables the practical application of Reinforcement Learning from Human Feedback (RLHF) to steer high-dimensional model behavior.
 
 ## Probability reshaping
 
-In its most raw form, RLHF is the process of sculpting a probability landscape.
-An LLM starts as a map of all possible word sequences. RLHF acts as a series of
-nudges in token space:
+In its most raw form, RLHF is the process of sculpting a probability landscape. An LLM starts as a map of all possible word sequences. RLHF acts as a series of nudges in token space:
 
-- Logit shift: increases raw scores for preferred paths and suppresses undesired
-  ones.
-- Softmax filter: ensures that during inference, the model is statistically
-  driven toward helpfulness and safety, effectively blocking parts of the token
-  maze that lead to poor outcomes.
+*   Logit shift: increases raw scores for preferred paths and suppresses undesired ones.
+*   Softmax filter: ensures that during inference, the model is statistically driven toward helpfulness and safety, effectively blocking parts of the token maze that lead to poor outcomes.
 
 ---
 
 ## Engineering constraints
 
-In practice, this is a balancing act managed by the KL Divergence penalty. This
-mathematical anchor prevents the model from drifting too far from its original
-language capabilities.
+In practice, this is a balancing act managed by the KL Divergence penalty. This mathematical anchor prevents the model from drifting too far from its original language capabilities.
 
 ### Reward hacking
-
-Without this constraint, the model suffers from reward hacking, where it finds
-cheats in the token space—like repetitive or sycophantic phrasing—to maximize
-the reward score while losing actual utility. Worlds provides the verifiable
-context required to monitor and mitigate these hacks by grounding model outputs
-in facts.
+Without this constraint, the model suffers from reward hacking, where it finds cheats in the token space—like repetitive or sycophantic phrasing—to maximize the reward score while losing actual utility. Worlds provides the verifiable context required to monitor and mitigate these hacks by grounding model outputs in facts.
 
 ---
 
 ## Autonomous trajectories
 
-When applied to continual learning autonomous systems, the tokens evolve into
-actions and the sentences become trajectories.
+When applied to continual learning autonomous systems, the tokens evolve into actions and the sentences become trajectories.
 
-- World models: RLHF aligns the system’s internal simulation of cause-and-effect
-  with human values.
-- Recursive learning: The system uses feedback to update its policy in
-  real-time, navigating the tension between learning new environmental peaks and
-  avoiding the catastrophic forgetting of previous safety protocols.
+*   World models: RLHF aligns the system’s internal simulation of cause-and-effect with human values.
+*   Recursive learning: The system uses feedback to update its policy in real-time, navigating the tension between learning new environmental peaks and avoiding the catastrophic forgetting of previous safety protocols.
 
 ---
 
 ## Recursive quality loop
 
-The future of intentional agency relies on the recursive quality loop. This is
-where recursive optimization becomes a core feature rather than a bug.
+The future of intentional agency relies on the recursive quality loop. This is where recursive optimization becomes a core feature rather than a bug.
 
 ### Recursive state refinement
 
-Traditional databases rely on static schemas, which act as a lossy filter for
-human preference. In Worlds, human feedback is ingested as verifiable triples in
-the world itself (e.g., `query:xyz :hasFeedback :positive`).
+Traditional databases rely on static schemas, which act as a lossy filter for human preference. In Worlds, human feedback is ingested as verifiable triples in the world itself (e.g., `query:xyz :hasFeedback :positive`).
 
 This creates a self-refining memory system:
-
 1.  Agent performs query $\rightarrow$ Human gives feedback
 2.  Feedback becomes a triple in the ledger
-3.  Ontology evolution: The agent optimizes its own representation of data
-    (schema) to align with the refined feedback.
-4.  Reshaped retrieval: Future queries follow the reshaped probability landscape
-    toward high-reward paths.
+3.  Ontology evolution: The agent optimizes its own representation of data (schema) to align with the refined feedback.
+4.  Reshaped retrieval: Future queries follow the reshaped probability landscape toward high-reward paths.
 
 ---
 
 ## Scalable supervision
 
-As systems scale, human evaluation becomes a bottleneck. Worlds enables Scalable
-Supervision by using Reinforcement Learning from AI Feedback (RLAIF):
+As systems scale, human evaluation becomes a bottleneck. Worlds enables Scalable Supervision by using Reinforcement Learning from AI Feedback (RLAIF):
 
-- AI judges: high-reasoning models (such as Claude 3.5 Sonnet or GPT-4o)
-  evaluate candidate triples against a constitution or world model.
-- Autonomous triples: feedback is asserted autonomously into the ledger (e.g.,
-  `result:123 worlds:hasAutonomousReward 0.9`), allowing the system to scale its
-  alignment without manual intervention.
+*   AI judges: high-reasoning models (such as Claude 3.5 Sonnet or GPT-4o) evaluate candidate triples against a constitution or world model.
+*   Autonomous triples: feedback is asserted autonomously into the ledger (e.g., `result:123 worlds:hasAutonomousReward 0.9`), allowing the system to scale its alignment without manual intervention.
+
+---
+
+## Continuous evaluation
+
+In Worlds, Scalable Supervision is the "In-Loop" version of an **Eval**. While traditional "Offline Evals" benchmark a model during development, Continuous Evaluation operationalizes those tests for real-time alignment.
+
+### The eval-as-reward cycle
+
+An eval logic (e.g., "Is this fact logically consistent?") becomes a reward signal.
+1.  **Observational Capture**: An agent traps a raw data event as a `worlds:Observation`.
+2.  **In-Loop Evaluation**: A validator agent runs a multi-step "Eval" against the observation.
+3.  **Reward Assertion**: The result is reified as a `worlds:Fact` with a `worlds:hasReward` signal.
+
+---
+
+## Constitutional AI
+
+Worlds provides the stateful substrate for **Constitutional AI (CAI)**—alignment guided by a core set of principles rather than human labels.
+
+### Axiomatic alignment
+
+The core ontology acts as the "Constitution." Agents perform **Self-Critique** by querying the graph to see if their proposed triples violate any axiomatic rules.
+-   **Critique**: The agent uses SPARQL `ASK` queries to test for logical contradictions.
+-   **Revision**: If a violation is found, the agent revises its candidate triple before it is committed to the ledger.
+
+---
+
+## Multi-agent oversight
+
+No single model should be the final arbiter of truth. Worlds enables **Collaborative Oversight** where independent agents cross-verify knowledge.
+
+*   **Validator consensus**: Multiple independent validator agents must approve a proposed fact before it is promoted from a `candidate` to a `verified` state.
+*   **Traceable audits**: Every approval is a reified fact (`worlds:verifiedBy :agent_A`). This creates a permanent, auditable log of which agent authorized what information, and the logic they used.
 
 ---
 
 ## Autonomous discovery
 
-By leveraging the graph itself as the feedback mechanism, agents can grow a
-dataset and ontology from scratch. This process is known as Reinforcement
-Learning from Knowledge Graph Feedback (RLKGF).
+By leveraging the graph itself as the feedback mechanism, agents can grow a dataset and ontology from scratch. This process is known as Reinforcement Learning from Knowledge Graph Feedback (RLKGF).
 
 ### Growing from scratch
 
-Instead of human-engineered schemas, agents "discover" the world through a
-recursive alignment loop:
+Instead of human-engineered schemas, agents "discover" the world through a recursive alignment loop:
+1.  Competency questions: the agent analyzes raw input to generate queries about missing relationships or gaps in the graph.
+2.  Self-correcting ontologies: the agent proposes new classes and properties and tests them for logical consistency using SPARQL ASK queries. 
+3.  Reward signal: if the new structure maintains graph logic and answers the competency questions, it receives a higher reward.
 
-1.  Competency questions: the agent analyzes raw input to generate queries about
-    missing relationships or gaps in the graph.
-2.  Self-correcting ontologies: the agent proposes new classes and properties
-    and tests them for logical consistency using SPARQL ASK queries.
-3.  Reward signal: if the new structure maintains graph logic and answers the
-    competency questions, it receives a higher reward.
-
-This transforms the world model from a static snapshot into an evolving,
-agent-driven memory that remains verifiable and traceable through the permanent
-ledger.
+This transforms the world model from a static snapshot into an evolving, agent-driven memory that remains verifiable and traceable through the permanent ledger.
 
 ### Academic grounding
 
-The idea that recursive oversight is necessary for true alignment is supported
-by major AI research:
+The idea that recursive oversight is necessary for true alignment is supported by major AI research:
 
-- Recursive reward modeling (RRM): Jan Leike et al. (OpenAI) argue in
-  ["Scalable agent alignment via reward modeling"](https://arxiv.org/abs/1811.07871)
-  that breaking complex evaluations into recursive sub-tasks is the only way to
-  scale oversight and align models with nuanced human intent.
-- Recursive self-improvement (RSI): The theoretical basis for systems found in
-  the work of Nick Bostrom and Eliezer Yudkowsky, where meta-optimization of
-  internal schemas leads to optimal state configurations.
+*   Recursive reward modeling (RRM): Jan Leike et al. (OpenAI) argue in ["Scalable agent alignment via reward modeling"](https://arxiv.org/abs/1811.07871) that breaking complex evaluations into recursive sub-tasks is the only way to scale oversight and align models with nuanced human intent.
+*   Constitutional AI (CAI): The framework pioneered by Anthropic for aligning models via self-critique and a principle-based "Constitution." 
+*   Recursive self-improvement (RSI): The theoretical basis for systems found in the work of Nick Bostrom and Eliezer Yudkowsky, where meta-optimization of internal schemas leads to optimal state configurations.
 
 ### Bottom line
 
-RLHF transforms a model that can predict anything into a system that prefers
-preferred outcomes. You can use preference data to steer high-dimensional
-behavior through a verifiable, recursive loop of recorded state refinement.
+RLHF transforms a model that can predict anything into a system that prefers preferred outcomes. You can use preference data to steer high-dimensional behavior through a verifiable, recursive loop of recorded state refinement.
