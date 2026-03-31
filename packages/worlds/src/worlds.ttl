@@ -7,71 +7,71 @@
 # Core Worlds Ontology
 # High-stakes verifiable context for autonomous agents.
 
-<http://worlds.dev/v1#> rdf:type owl:Ontology ;
+<http://worlds.dev/v1#> a owl:Ontology ;
     rdfs:label "Core Worlds Ontology" ;
     rdfs:comment "Standard vocabulary for agentic memory, verifiable context, and recursive state refinement." .
 
 # Classes
 
-worlds:World rdf:type rdfs:Class ;
+worlds:World a rdfs:Class ;
     rdfs:label "World" ;
     rdfs:comment "The root container for a stateful knowledge graph sandbox." .
 
-worlds:Item rdf:type rdfs:Class ;
+worlds:Item a rdfs:Class ;
     rdfs:label "Item" ;
     rdfs:comment "A unique semantic entity defined by an IRI within a World." .
 
-worlds:Fact rdf:type rdfs:Class ;
+worlds:Fact a rdfs:Class ;
     rdfs:label "Fact" ;
     rdfs:comment "A verified triple recorded in the chronological, append-only ledger." .
 
-worlds:Agent rdf:type rdfs:Class ;
+worlds:Agent a rdfs:Class ;
     rdfs:label "Agent" ;
     rdfs:comment "An entity with agency, such as an AI model or a human user." .
 
-worlds:Preference rdf:type rdfs:Class ;
+worlds:Preference a rdfs:Class ;
     rdfs:label "Preference" ;
     rdfs:comment "A recorded value alignment or reward signal." .
 
-worlds:Observation rdf:type rdfs:Class ;
+worlds:Observation a rdfs:Class ;
     rdfs:label "Observation" ;
     rdfs:comment "A raw data input or sensory event trapped by an agent." .
 
 # Properties
 
-worlds:hasItem rdf:type rdf:Property ;
+worlds:hasItem a rdf:Property ;
     rdfs:label "has item" ;
     rdfs:comment "Connects a World to a constituent Item." ;
     rdfs:domain worlds:World ;
     rdfs:range worlds:Item .
 
-worlds:hasFact rdf:type rdf:Property ;
+worlds:hasFact a rdf:Property ;
     rdfs:label "has fact" ;
     rdfs:comment "Connects an Item or World to a recorded Fact." ;
     rdfs:range worlds:Fact .
 
-worlds:hasPreference rdf:type rdf:Property ;
+worlds:hasPreference a rdf:Property ;
     rdfs:label "has preference" ;
     rdfs:comment "Links a Fact or Item to a human or autonomous preference signal." ;
     rdfs:range worlds:Preference .
 
-worlds:hasReward rdf:type rdf:Property ;
+worlds:hasReward a rdf:Property ;
     rdfs:label "has reward" ;
     rdfs:comment "A numerical score (0.0 to 1.0) representing an alignment signal." ;
     rdfs:domain worlds:Preference ;
     rdfs:range xsd:decimal .
 
-worlds:discoveredBy rdf:type rdf:Property ;
+worlds:discoveredBy a rdf:Property ;
     rdfs:label "discovered by" ;
     rdfs:comment "Connects a Fact or Item to the Agent that first proposed it." ;
     rdfs:range worlds:Agent .
 
-worlds:verifiedBy rdf:type rdf:Property ;
+worlds:verifiedBy a rdf:Property ;
     rdfs:label "verified by" ;
     rdfs:comment "Connects a Fact to the Agent or User that verified its truth." ;
     rdfs:range worlds:Agent .
 
-worlds:assertedAt rdf:type rdf:Property ;
+worlds:assertedAt a rdf:Property ;
     rdfs:label "asserted at" ;
     rdfs:comment "The precise ISO timestamp when a fact was committed to the ledger." ;
     rdfs:domain worlds:Fact ;
