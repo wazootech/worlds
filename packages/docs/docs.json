@@ -80,10 +80,6 @@
         ]
       },
       {
-        "group": "Reference",
-        "pages": ["worlds/ontology"]
-      },
-      {
         "group": "Integrations",
         "pages": [
           "integrations/ai-sdk",

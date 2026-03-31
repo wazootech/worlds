@@ -311,15 +311,88 @@ The server follows a modular layout organized by service and resource:
 The Worlds Server follows a structured lifecycle for initialization and request
 handling.
 
+## Semantic data model
+
+Worlds utilizes a standardized core ontology to provide agents with a predictable 
+set of primitives for reasoning, alignment, and discovery.
+
+### Core classes
+
+<ResponseField name="worlds:World" type="Class">
+  The root container for a stateful knowledge graph sandbox.
+</ResponseField>
+
+<ResponseField name="worlds:Item" type="Class">
+  A unique semantic entity defined by an IRI.
+</ResponseField>
+
+<ResponseField name="worlds:Fact" type="Class">
+  A verified triple recorded in the chronological ledger.
+</ResponseField>
+
+<ResponseField name="worlds:Agent" type="Class">
+  An entity with agency, such as an AI model or a human user.
+</ResponseField>
+
+<ResponseField name="worlds:Preference" type="Class">
+  A recorded value alignment or reward signal.
+</ResponseField>
+
+### Core properties
+
+<ResponseField name="worlds:hasFact" type="Property">
+  Connects an Item or World to a Fact.
+</ResponseField>
+
+<ResponseField name="worlds:hasPreference" type="Property">
+  Links a Fact to a human or autonomous preference signal.
+</ResponseField>
+
+<ResponseField name="worlds:hasReward" type="Property">
+  A numerical reward score (0.0 to 1.0) representing an alignment signal.
+</ResponseField>
+
+<ResponseField name="worlds:verifiedBy" type="Property">
+  Links a Fact to the Agent that verified it.
+</ResponseField>
+
+---
+
+## Reification strategy
+
+To enable high-stakes agency, Worlds uses **reification**—the process of making an 
+assertion (a triple) a first-class item. This allows agents to treat a specific 
+fact as an entity with its own metadata.
+
+### How it works
+
+<Steps>
+  <Step title="The raw assertion">
+    Consider the flat relationship: `user:ethan worlds:worksAt org:wazoo`.
+  </Step>
+  <Step title="Creation of the fact entity">
+    Worlds creates a `worlds:Fact` item to represent this unique statement.
+  </Step>
+  <Step title="Attachment of metadata">
+    Metadata (provenance, rewards, timestamps) is attached to the fact entity 
+    rather than the raw relationship.
+  </Step>
+</Steps>
+
+<Card title="Strategic value" icon="sparkles">
+  Reification is the foundation of the recursive quality loop. By treating facts 
+  as items, agents can query reasoning paths, filter by trusted verifiers, 
+  and tune their models based on historical reward signals.
+</Card>
+
 ## Alignment and agency
 
-RLHF transforms Worlds from a statistical mimicry engine into a system of
-intentional agency. By treating human feedback as
-[verifiable state](/worlds/update#feedback-ingestion), Worlds enables a
-recursive quality loop where the system continuously optimizes its ontology and
-probability landscape to align with human intent.
+RLHF transforms Worlds from a statistical mimicry engine into a system of 
+intentional agency. By treating human feedback as [verifiable state](/worlds/update#feedback-ingestion), 
+Worlds enables a recursive quality loop where the system continuously optimizes 
+its ontology and probability landscape to align with human intent.
 
-Learn more about recursive state refinement and recursive learning in the
+Learn more about recursive state refinement and recursive learning in the 
 [Alignment](/worlds/alignment) deep-dive.
 
 ## Design principles
