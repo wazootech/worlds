@@ -84,18 +84,39 @@ export const tripleSearchResultSchema: z.ZodType<TripleSearchResult> = z.object(
  * World represents a world in the Worlds API.
  */
 export interface World {
+  /**
+   * id is the unique identifier of the world.
+   */
   id: string;
 
+  /**
+   * slug is the URL-friendly name of the world.
+   */
   slug: string;
 
+  /**
+   * label is the human-readable name of the world.
+   */
   label: string;
 
+  /**
+   * description is an optional human-readable description of the world.
+   */
   description: string | null;
 
+  /**
+   * createdAt is the millisecond timestamp of creation.
+   */
   createdAt: number;
 
+  /**
+   * updatedAt is the millisecond timestamp of the last update.
+   */
   updatedAt: number;
 
+  /**
+   * deletedAt is the millisecond timestamp of deletion, if applicable.
+   */
   deletedAt: number | null;
 }
 
@@ -116,10 +137,19 @@ export const worldSchema: z.ZodType<World> = z.object({
  * CreateWorldParams represents the parameters for creating a world.
  */
 export interface CreateWorldParams {
+  /**
+   * slug is the URL-friendly name for the new world.
+   */
   slug: string;
 
+  /**
+   * label is the human-readable name for the new world.
+   */
   label: string;
 
+  /**
+   * description is an optional human-readable description.
+   */
   description?: string | null;
 }
 
@@ -136,10 +166,19 @@ export const createWorldParamsSchema: z.ZodType<CreateWorldParams> = z.object({
  * UpdateWorldParams represents the parameters for updating a world.
  */
 export interface UpdateWorldParams {
+  /**
+   * slug is the updated URL-friendly name.
+   */
   slug?: string;
 
+  /**
+   * label is the updated human-readable name.
+   */
   label?: string;
 
+  /**
+   * description is the updated human-readable description.
+   */
   description?: string | null;
 }
 
@@ -218,14 +257,29 @@ export const sparqlValueSchema: z.ZodType<SparqlValue> = z.lazy(() =>
  * SparqlServiceDescription represents a SPARQL 1.1 Service Description.
  */
 export interface SparqlServiceDescription {
+  /**
+   * endpoint is the URL of the SPARQL endpoint.
+   */
   endpoint: string;
 
+  /**
+   * supportedLanguages is the list of SPARQL languages supported.
+   */
   supportedLanguages: string[];
 
+  /**
+   * features is the list of SPARQL features supported.
+   */
   features: string[];
 
+  /**
+   * resultFormats is the list of result formats supported.
+   */
   resultFormats: string[];
 
+  /**
+   * defaultDataset is the description of the default dataset.
+   */
   defaultDataset?: {
     graphs: Array<{
       uri?: string;
@@ -269,15 +323,24 @@ export const sparqlBindingSchema: z.ZodType<SparqlBinding> = z.record(
  * SparqlSelectResults represents the results of a SPARQL SELECT query.
  */
 export interface SparqlSelectResults {
+  /**
+   * head contains the variable names and optional links.
+   */
   head: {
     vars: string[];
     link: string[] | null;
   };
 
+  /**
+   * results contains the bindings for each result.
+   */
   results: {
     bindings: SparqlBinding[];
   };
 
+  /**
+   * boolean is undefined for SELECT results.
+   */
   boolean?: undefined;
 }
 
@@ -300,12 +363,21 @@ export const sparqlSelectResultsSchema: z.ZodType<SparqlSelectResults> = z
  * SparqlAskResults represents the results of a SPARQL ASK query.
  */
 export interface SparqlAskResults {
+  /**
+   * head contains optional links for the result.
+   */
   head: {
     link: string[] | null;
   };
 
+  /**
+   * boolean is the result of the ASK query.
+   */
   boolean: boolean;
 
+  /**
+   * results is undefined for ASK results.
+   */
   results?: undefined;
 }
 
@@ -324,18 +396,30 @@ export const sparqlAskResultsSchema: z.ZodType<SparqlAskResults> = z.object({
  * SparqlQuad represents a single quad result (for CONSTRUCT/DESCRIBE).
  */
 export interface SparqlQuad {
+  /**
+   * subject is the subject (URI or BNode).
+   */
   subject: {
     type: "uri" | "bnode";
     value: string;
   };
 
+  /**
+   * predicate is the predicate (URI).
+   */
   predicate: {
     type: "uri";
     value: string;
   };
 
+  /**
+   * object is the object value.
+   */
   object: SparqlValue;
 
+  /**
+   * graph is the graph where the triple exists.
+   */
   graph: {
     type: "default" | "uri";
     value: string;
@@ -365,14 +449,23 @@ export const sparqlQuadSchema: z.ZodType<SparqlQuad> = z.object({
  * SparqlQuadsResults represents the results of a SPARQL CONSTRUCT/DESCRIBE query.
  */
 export interface SparqlQuadsResults {
+  /**
+   * head contains optional links for the result.
+   */
   head: {
     link: string[] | null;
   };
 
+  /**
+   * results contains the quads found.
+   */
   results: {
     quads: SparqlQuad[];
   };
 
+  /**
+   * boolean is undefined for QUAD results.
+   */
   boolean?: undefined;
 }
 
@@ -433,16 +526,34 @@ export const worldsContentTypeSchema: z.ZodType<WorldsContentType> = z.enum([
  * Log represents a log entry in a world.
  */
 export interface Log {
+  /**
+   * id is the unique identifier of the log entry.
+   */
   id: string;
 
+  /**
+   * worldId is the ID of the world the log belongs to.
+   */
   worldId: string;
 
+  /**
+   * timestamp is the millisecond timestamp of the log.
+   */
   timestamp: number;
 
+  /**
+   * level is the severity level of the log.
+   */
   level: "info" | "warn" | "error" | "debug";
 
+  /**
+   * message is the human-readable log message.
+   */
   message: string;
 
+  /**
+   * metadata is optional structured context for the log.
+   */
   metadata: Record<string, unknown> | null;
 }
 
@@ -462,13 +573,25 @@ export const logSchema: z.ZodType<Log> = z.object({
  * Source represents a data source world by ID or slug.
  */
 export interface Source {
+  /**
+   * world is the ID or slug of the source world.
+   */
   world: string;
 
+  /**
+   * write indicates if write access is enabled for this source.
+   */
   write?: boolean;
 
+  /**
+   * schema indicates if this source should be treated as a schema source.
+   */
   schema?: boolean;
 }
 
+/**
+ * sourceSchema is the Zod schema for Source.
+ */
 export const sourceSchema: z.ZodType<Source> = z.object({
   world: z.string(),
   write: z.boolean().optional(),
@@ -479,11 +602,20 @@ export const sourceSchema: z.ZodType<Source> = z.object({
  * ErrorResponseData is the standard error response format.
  */
 export interface ErrorResponseData {
+  /**
+   * error contains the detailed error information.
+   */
   error: {
+    /**
+     * message is the human-readable error description.
+     */
     message: string;
   };
 }
 
+/**
+ * errorResponseDataSchema is the Zod schema for ErrorResponseData.
+ */
 export const errorResponseDataSchema: z.ZodType<ErrorResponseData> = z.object({
   error: z.object({
     message: z.string(),
@@ -494,8 +626,14 @@ export const errorResponseDataSchema: z.ZodType<ErrorResponseData> = z.object({
  * PaginationParams represents the parameters for pagination.
  */
 export interface PaginationParams {
+  /**
+   * page is the 1-indexed page number to fetch.
+   */
   page?: number;
 
+  /**
+   * pageSize is the number of items per page.
+   */
   pageSize?: number;
 }
 

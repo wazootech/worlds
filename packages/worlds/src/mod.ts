@@ -10,8 +10,6 @@ export * from "./errors/errors.ts";
 export * from "./remote.ts";
 export * from "./schema.ts";
 export * from "./types.ts";
-export * from "./options.ts";
-export * from "./context.ts";
 export * from "./engine-context.ts";
 export * from "./database/init.ts";
 export * from "./database/managers/memory-manager.ts";

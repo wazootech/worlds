@@ -1,4 +1,4 @@
-import type { WorldsOptions } from "./options.ts";
+import type { WorldsOptions } from "./types.ts";
 import type {
   CreateWorldParams,
   ExecuteSparqlOutput,
@@ -17,6 +17,9 @@ import type { WorldsInterface } from "./types.ts";
 export class RemoteWorlds implements WorldsInterface {
   private readonly fetch: typeof fetch;
 
+  /**
+   * RemoteWorlds initializes the TypeScript SDK client.
+   */
   public constructor(
     private readonly options: WorldsOptions,
   ) {

@@ -79,7 +79,7 @@ export async function validateRdf(
   const errors: string[] = [];
   const allowedProperties = new Set(ontology.properties);
 
-  // 1. Basic Ontology Validation
+  // Basic Ontology Validation
   const RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   const allowedClasses = new Set(ontology.classes);
 
@@ -102,7 +102,7 @@ export async function validateRdf(
     }
   }
 
-  // 2. SHACL Validation (if shapes provided)
+  // SHACL Validation (if shapes provided)
   const shacl = ontology.shacl ?? options.shacl;
   if (shacl) {
     try {

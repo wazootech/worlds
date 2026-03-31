@@ -1,5 +1,5 @@
 import type { Client } from "@libsql/client";
-import type { WorldsContext } from "../../../../context.ts";
+import type { WorldsContext } from "../../../../types.ts";
 import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { TripleSearchResult } from "../../../../schema.ts";
 import type { WorldRow } from "../../system/worlds/schema.ts";
@@ -108,12 +108,12 @@ export class ChunksSearchRepository {
       limit = 10,
     } = params;
 
-    // 1. Generate Embeddings
+    // Generate Embeddings
     const vector = query
       ? await this.ctx.embeddings.embed(query)
       : new Array(1536).fill(0);
 
-    // 2. Procure world record if not provided
+    // Procure world record if not provided
     let world = params.world;
     if (!world && worldId) {
       world = await this.worlds.getById(worldId) ?? undefined;
@@ -127,7 +127,7 @@ export class ChunksSearchRepository {
       return [];
     }
 
-    // 4. Search across the target world
+    // Search across the target world
     try {
       const managed = await this.ctx.libsql.manager.get(world.id);
 
@@ -177,7 +177,7 @@ export class ChunksSearchRepository {
         };
       });
 
-      // 4. Sort by combined rank and limit
+      // Sort by combined rank and limit
       return results
         .sort((a, b) => b.score - a.score)
         .slice(0, limit);

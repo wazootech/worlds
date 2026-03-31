@@ -1,4 +1,4 @@
-import type { WorldsContext } from "./context.ts";
+import type { WorldsContext } from "./types.ts";
 import type { DatabaseManager } from "./database/manager.ts";
 import type { Embeddings } from "./embeddings/embeddings.ts";
 import { createClient } from "@libsql/client";

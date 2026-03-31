@@ -1,3 +1,6 @@
+import type { Client } from "@libsql/client";
+import type { Embeddings } from "#/embeddings/embeddings.ts";
+import type { DatabaseManager } from "#/database/manager.ts";
 import type {
   CreateWorldParams,
   ExecuteSparqlOutput,
@@ -7,6 +10,64 @@ import type {
   World,
   WorldsContentType,
 } from "./schema.ts";
+
+/**
+ * WorldsOptions are the options for the Worlds API SDK.
+ */
+export interface WorldsOptions {
+  /**
+   * engine is an optional local engine for the Worlds API.
+   * If provided, the SDK will use this engine instead of making remote requests.
+   */
+  engine?: WorldsInterface;
+
+  /**
+   * baseUrl is the base URL of the Worlds API. It should not include the /v1 suffix.
+   */
+  baseUrl?: string;
+
+  /**
+   * apiKey is the API key for the Worlds API.
+   */
+  apiKey?: string;
+
+  /**
+   * fetch fetches a resource from the network. It returns a `Promise` that
+   * resolves to the `Response` to that `Request`, whether it is successful
+   * or not.
+   */
+  fetch?: typeof globalThis.fetch;
+}
+
+/**
+ * WorldsContext is the shared context for the Worlds engine.
+ */
+export interface WorldsContext {
+  /**
+   * apiKey is an optional API key for authentication.
+   */
+  apiKey?: string;
+
+  /**
+   * embeddings is the embedding strategy used for semantic search.
+   */
+  embeddings: Embeddings;
+
+  /**
+   * libsql contains the database client and manager.
+   */
+  libsql: {
+    /**
+     * database is the core LibSQL database client.
+     */
+    database: Client;
+
+    /**
+     * manager is the database manager for world-specific databases.
+     */
+    manager: DatabaseManager;
+  };
+}
 
 /**
  * WorldsInterface is the core interface for interacting with Worlds.
@@ -64,7 +125,7 @@ export interface WorldsInterface {
   ): Promise<boolean>;
 
   /**
-   * search perform semantic/text search on triples in a world.
+   * search performs semantic/text search on triples in a world.
    */
   search(
     idOrSlug: string,

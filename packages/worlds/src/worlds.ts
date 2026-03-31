@@ -1,4 +1,4 @@
-import type { WorldsOptions } from "./options.ts";
+import type { WorldsOptions } from "./types.ts";
 import { RemoteWorlds } from "./remote.ts";
 import type { WorldsInterface } from "./types.ts";
 import type {
@@ -13,14 +13,12 @@ import type {
 
 /**
  * Worlds is the main entry point for the Worlds API SDK.
- * It can act as a local engine or a remote client.
  */
 export class Worlds implements WorldsInterface {
   private readonly engine: WorldsInterface;
 
   /**
-   * constructor initializes the Worlds SDK.
-   * @param options The configuration options.
+   * Worlds initializes the Worlds SDK.
    */
   public constructor(options: WorldsOptions) {
     if (options.engine) {

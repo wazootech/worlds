@@ -25,12 +25,12 @@ export interface CreateToolsOptions {
   sources: SourceInput[];
 
   /**
-   * generateIri is a function that generates an IRI for new entities.
+   * generateIri generates an IRI for new entities.
    */
   generateIri?: () => string | Promise<string>;
 
   /**
-   * disambiguate is a function that disambiguates entities.
+   * disambiguate maps natural language entities to existing IRIs.
    */
   disambiguate?: (
     input: DisambiguateEntitiesInput,
