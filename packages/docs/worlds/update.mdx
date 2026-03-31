@@ -21,9 +21,10 @@ patch.
 
 ```sparql SPARQL
 PREFIX corp: <http://corp.example/>
+PREFIX schema: <https://schema.org/>
 
 INSERT DATA {
-  <corp:acme> corp:ownedBy <corp:parent> .
+  corp:acme a schema:Organization .
 }
 ```
 

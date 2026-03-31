@@ -369,7 +369,8 @@ fact as an entity with its own metadata.
 
 <Steps>
   <Step title="The raw assertion">
-    Consider the flat relationship: `user:ethan worlds:worksAt org:wazoo`.
+    Consider the flat relationship:
+    `@prefix user: <http://user.example/> . @prefix worlds: <https://schema.wazoo.dev#> . user:ethan worlds:worksAt <http://org.example/wazoo> .`
   </Step>
   <Step title="Creation of the fact entity">
     Worlds creates a `worlds:Fact` item to represent this unique statement.

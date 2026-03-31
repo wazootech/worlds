@@ -111,23 +111,65 @@ graph LR
 
 ### Serialization
 
-To illustrate these concepts, Worlds uses Turtle, a standard RDF serialization
-format for expressing triples in plain text.
+To codify knowledge, Worlds standard RDF serialization formats for expressing
+triples in plain text.
 
 To assert "Acme Corp is a Legal Entity", the syntax goes:
 
-```turtle Turtle
-corp:acme a schema:Organization .
-```
+<CodeGroup>
+  ```turtle Turtle
+  @prefix corp: <http://corp.example/> .
+  @prefix schema: <https://schema.org/> .
+
+  corp:acme a schema:Organization .
+  ```
+
+  ```json JSON-LD
+  {
+    "@context": {
+      "corp": "http://corp.example/",
+      "schema": "https://schema.org/"
+    },
+    "@id": "corp:acme",
+    "@type": "schema:Organization"
+  }
+  ```
+
+  ```nt N-Triples
+  <http://corp.example/acme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Organization> .
+  ```
+</CodeGroup>
 
 To expand on an item, use a semicolon `;` to chain multiple facts together.
 Here, we assert that Acme Corp is an organization, and its legal name is "Acme
 Corp".
 
-```turtle Turtle
-corp:acme a schema:Organization ;
- schema:legalName "Acme Corp" .
-```
+<CodeGroup>
+  ```turtle Turtle
+  @prefix corp: <http://corp.example/> .
+  @prefix schema: <https://schema.org/> .
+
+  corp:acme a schema:Organization ;
+    schema:legalName "Acme Corp" .
+  ```
+
+  ```json JSON-LD
+  {
+    "@context": {
+      "corp": "http://corp.example/",
+      "schema": "https://schema.org/"
+    },
+    "@id": "corp:acme",
+    "@type": "schema:Organization",
+    "schema:legalName": "Acme Corp"
+  }
+  ```
+
+  ```nt N-Triples
+  <http://corp.example/acme> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://schema.org/Organization> .
+  <http://corp.example/acme> <https://schema.org/legalName> "Acme Corp" .
+  ```
+</CodeGroup>
 
 ## Verification
 

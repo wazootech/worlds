@@ -72,7 +72,8 @@ engine, inject a verifiable fact, and retrieve it deterministically.
     // 3. Inject a mission-critical fact (Subject -> Predicate -> Object)
     await worlds.import(
       "quickstart-cloud",
-      `<#acme-corp> <#ownedBy> <#parent-co> .`,
+      `@prefix corp: <http://corp.example/> .
+      corp:acme <#ownedBy> <#parent-co> .`,
       { contentType: "text/turtle" }
     );
 
