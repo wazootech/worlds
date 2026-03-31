@@ -14,13 +14,14 @@ results without probabilistic guessing.
 
 ### Symbolic logic
 
-Given triples such as `user:ethan schema:worksAt org:wazoo`, query for the organization:
+Given triples such as `user:me wazoo:worksFor wazoo:wazoo`, query for the
+organization:
 
 ```sparql SPARQL
-PREFIX schema: <https://schema.org/>
+PREFIX wazoo: <https://wazoo.dev/>
 
-SELECT ?org WHERE {
-  <http://user.example/ethan> schema:worksAt ?org .
+SELECT ?wazoo WHERE {
+  <https://etok.me/me> wazoo:worksFor ?wazoo .
 }
 ```
 

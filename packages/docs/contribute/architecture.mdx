@@ -361,7 +361,7 @@ predictable set of primitives for reasoning, alignment, and discovery.
 
 ## Reification strategy
 
-To enable high-stakes agency, Worlds uses reification—the process of making an
+To enable high-stakes agency, Worlds uses reification, the process of making an
 assertion (a triple) a first-class item. This allows agents to treat a specific
 fact as an entity with its own metadata.
 
@@ -371,7 +371,7 @@ fact as an entity with its own metadata.
 
   <Step title="The raw assertion">
     Consider the flat relationship:
-    `@prefix user: <http://user.example/> . @prefix worlds: <https://schema.wazoo.dev#> . user:ethan worlds:worksAt <http://org.example/wazoo> .`
+    `@prefix user: <https://etok.me/> . @prefix worlds: <https://schema.wazoo.dev#> . user:me worlds:worksFor <https://wazoo.dev/wazoo> .`
   </Step>
   <Step title="Creation of the fact entity">
     Worlds creates a `worlds:Fact` item to represent this unique statement.
