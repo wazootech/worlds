@@ -1,10 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk";
-import { z } from "zod";
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
+import { LocalWorlds } from "@wazoo/worlds-sdk";
 import {
-  LocalWorlds,
   toolDescriptions,
   type WorldsCreateInput,
   worldsCreateSchema,
@@ -21,7 +20,7 @@ import {
   type WorldsSearchInput,
   worldsSearchOutputSchema,
   worldsSearchSchema,
-} from "@wazoo/worlds-sdk";
+} from "@wazoo/worlds-ai-sdk";
 
 export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);

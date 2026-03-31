@@ -2,12 +2,10 @@ import { tool } from "ai";
 import { z } from "zod";
 import {
   toolDescriptions,
-  tripleSearchResultSchema,
   worldsSearchOutputSchema,
   worldsSearchSchema,
-} from "@wazoo/worlds-sdk";
+} from "../schemas/tools.ts";
 import type { Tool } from "ai";
-import type { TripleSearchResult } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "#/options.ts";
 
 export type SearchEntitiesInput = z.infer<typeof worldsSearchSchema>;

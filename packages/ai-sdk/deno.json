@@ -5,6 +5,7 @@
   "exports": {
     ".": "./src/mod.ts",
     "./discover-schema": "./src/discover-schema.ts",
+    "./schemas/tools": "./src/schemas/tools.ts",
     "./tools/discover-schema": "./src/tools/discover-schema.ts",
     "./tools/execute-sparql": "./src/tools/execute-sparql.ts",
     "./tools/generate-iri": "./src/tools/generate-iri.ts",

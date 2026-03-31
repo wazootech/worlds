@@ -5,7 +5,7 @@ import {
   isSparqlUpdate,
   toolDescriptions,
   worldsQuerySchema,
-} from "@wazoo/worlds-sdk";
+} from "../schemas/tools.ts";
 import type { Tool } from "ai";
 import type { ExecuteSparqlOutput } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "#/options.ts";
