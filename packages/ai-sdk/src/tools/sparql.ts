@@ -12,7 +12,9 @@ import {
 } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, SourceInput, WorldsTool } from "#/types.ts";
 
-/** sparql executes a SPARQL query or update against a specific world. */
+/**
+ * sparql executes a SPARQL query or update against a specific world.
+ */
 export async function sparql(
   worlds: WorldsInterface,
   sources: SourceInput[],
@@ -34,10 +36,14 @@ export async function sparql(
   return await worlds.sparql(input);
 }
 
-/** WorldsSparqlTool is a tool for executing SPARQL queries and updates. */
+/**
+ * WorldsSparqlTool is a tool for executing SPARQL queries and updates.
+ */
 export type WorldsSparqlTool = Tool<WorldsSparqlInput, WorldsSparqlOutput>;
 
-/** worldsSparqlTool defines the configuration for the SPARQL execution tool. */
+/**
+ * worldsSparqlTool defines the configuration for the SPARQL execution tool.
+ */
 export const worldsSparqlTool: WorldsTool<
   WorldsSparqlInput,
   WorldsSparqlOutput
@@ -50,7 +56,9 @@ export const worldsSparqlTool: WorldsTool<
   isWrite: true,
 };
 
-/** createWorldsSparqlTool instantiates the SPARQL execution tool. */
+/**
+ * createWorldsSparqlTool instantiates the SPARQL execution tool.
+ */
 export function createWorldsSparqlTool(
   { worlds, sources }: CreateToolsOptions,
 ): WorldsSparqlTool {

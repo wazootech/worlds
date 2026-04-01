@@ -7,7 +7,9 @@ import {
 } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-/** get retrieves detailed metadata for a specific world. */
+/**
+ * get retrieves detailed metadata for a specific world.
+ */
 export async function get(
   worlds: WorldsInterface,
   input: WorldsGetInput,
@@ -19,10 +21,14 @@ export async function get(
   return world;
 }
 
-/** WorldsGetTool is a tool for retrieving world metadata. */
+/**
+ * WorldsGetTool is a tool for retrieving world metadata.
+ */
 export type WorldsGetTool = Tool<WorldsGetInput, World>;
 
-/** worldsGetTool defines the configuration for the world retrieval tool. */
+/**
+ * worldsGetTool defines the configuration for the world retrieval tool.
+ */
 export const worldsGetTool: WorldsTool<WorldsGetInput, World> = {
   name: "worlds_get",
   description:
@@ -32,7 +38,9 @@ export const worldsGetTool: WorldsTool<WorldsGetInput, World> = {
   isWrite: false,
 };
 
-/** createWorldsGetTool instantiates the world retrieval tool. */
+/**
+ * createWorldsGetTool instantiates the world retrieval tool.
+ */
 export function createWorldsGetTool(
   { worlds }: CreateToolsOptions,
 ): WorldsGetTool {

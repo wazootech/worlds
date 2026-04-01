@@ -5,19 +5,25 @@ import type { WorldsDeleteInput, WorldsInterface } from "@wazoo/worlds-sdk";
 import { worldsDeleteInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-/** WorldsDeleteOutput is the output for deleting a world. */
+/**
+ * WorldsDeleteOutput is the output for deleting a world.
+ */
 export interface WorldsDeleteOutput {
   success: boolean;
 }
 
-/** worldsDeleteOutputSchema is the Zod schema for world deletion output. */
+/**
+ * worldsDeleteOutputSchema is the Zod schema for world deletion output.
+ */
 export const worldsDeleteOutputSchema: z.ZodType<WorldsDeleteOutput> = z.object(
   {
     success: z.boolean(),
   },
 );
 
-/** deleteWorld permanently deletes a world and all its data. */
+/**
+ * deleteWorld permanently deletes a world and all its data.
+ */
 export async function deleteWorld(
   worlds: WorldsInterface,
   input: WorldsDeleteInput,
@@ -26,10 +32,14 @@ export async function deleteWorld(
   return { success: true };
 }
 
-/** WorldsDeleteTool is a tool for deleting a world. */
+/**
+ * WorldsDeleteTool is a tool for deleting a world.
+ */
 export type WorldsDeleteTool = Tool<WorldsDeleteInput, WorldsDeleteOutput>;
 
-/** worldsDeleteTool defines the configuration for the world deletion tool. */
+/**
+ * worldsDeleteTool defines the configuration for the world deletion tool.
+ */
 export const worldsDeleteTool: WorldsTool<
   WorldsDeleteInput,
   WorldsDeleteOutput
@@ -42,7 +52,9 @@ export const worldsDeleteTool: WorldsTool<
   isWrite: true,
 };
 
-/** createWorldsDeleteTool instantiates the world deletion tool. */
+/**
+ * createWorldsDeleteTool instantiates the world deletion tool.
+ */
 export function createWorldsDeleteTool(
   { worlds }: CreateToolsOptions,
 ): WorldsDeleteTool {

@@ -11,7 +11,9 @@ import {
 } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-/** create creates a new isolated world. */
+/**
+ * create creates a new isolated world.
+ */
 export async function create(
   worlds: WorldsInterface,
   input: WorldsCreateInput,
@@ -19,10 +21,14 @@ export async function create(
   return await worlds.create(input);
 }
 
-/** WorldsCreateTool is a tool for creating a new world. */
+/**
+ * WorldsCreateTool is a tool for creating a new world.
+ */
 export type WorldsCreateTool = Tool<WorldsCreateInput, World>;
 
-/** worldsCreateTool defines the configuration for the world creation tool. */
+/**
+ * worldsCreateTool defines the configuration for the world creation tool.
+ */
 export const worldsCreateTool: WorldsTool<
   WorldsCreateInput,
   World
@@ -35,7 +41,9 @@ export const worldsCreateTool: WorldsTool<
   isWrite: true,
 };
 
-/** createWorldsCreateTool instantiates the world creation tool. */
+/**
+ * createWorldsCreateTool instantiates the world creation tool.
+ */
 export function createWorldsCreateTool(
   { worlds }: CreateToolsOptions,
 ): WorldsCreateTool {

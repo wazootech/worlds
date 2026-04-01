@@ -9,17 +9,23 @@ import type {
 import { worldSchema, worldsListInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-/** WorldsListOutput is the output for listing worlds. */
+/**
+ * WorldsListOutput is the output for listing worlds.
+ */
 export interface WorldsListOutput {
   worlds: World[];
 }
 
-/** worldsListOutputSchema is the Zod schema for world listing output. */
+/**
+ * worldsListOutputSchema is the Zod schema for world listing output.
+ */
 export const worldsListOutputSchema: z.ZodType<WorldsListOutput> = z.object({
   worlds: z.array(worldSchema),
 });
 
-/** list retrieves a list of all datasets (worlds). */
+/**
+ * list retrieves a list of all datasets (worlds).
+ */
 export async function list(
   worlds: WorldsInterface,
   input: WorldsListInput,
@@ -28,10 +34,14 @@ export async function list(
   return { worlds: worldsList };
 }
 
-/** WorldsListTool is a tool for listing worlds. */
+/**
+ * WorldsListTool is a tool for listing worlds.
+ */
 export type WorldsListTool = Tool<WorldsListInput, WorldsListOutput>;
 
-/** worldsListTool defines the configuration for the world listing tool. */
+/**
+ * worldsListTool defines the configuration for the world listing tool.
+ */
 export const worldsListTool: WorldsTool<
   WorldsListInput,
   WorldsListOutput
@@ -44,7 +54,9 @@ export const worldsListTool: WorldsTool<
   isWrite: false,
 };
 
-/** createWorldsListTool instantiates the world listing tool. */
+/**
+ * createWorldsListTool instantiates the world listing tool.
+ */
 export function createWorldsListTool(
   { worlds }: CreateToolsOptions,
 ): WorldsListTool {

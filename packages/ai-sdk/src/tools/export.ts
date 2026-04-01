@@ -5,19 +5,25 @@ import type { WorldsExportInput, WorldsInterface } from "@wazoo/worlds-sdk";
 import { worldsExportInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-/** WorldsExportOutput is the output for exporting RDF data from a world in the AI SDK. */
+/**
+ * WorldsExportOutput is the output for exporting RDF data from a world in the AI SDK.
+ */
 export interface WorldsExportOutput {
   data: string;
 }
 
-/** worldsExportOutputSchema is the Zod schema for world export output. */
+/**
+ * worldsExportOutputSchema is the Zod schema for world export output.
+ */
 export const worldsExportOutputSchema: z.ZodType<WorldsExportOutput> = z.object(
   {
     data: z.string(),
   },
 );
 
-/** exportWorld retrieves a world's facts in RDF format. */
+/**
+ * exportWorld retrieves a world's facts in RDF format.
+ */
 export async function exportWorld(
   worlds: WorldsInterface,
   input: WorldsExportInput,
@@ -26,10 +32,14 @@ export async function exportWorld(
   return { data: new TextDecoder().decode(buffer) };
 }
 
-/** WorldsExportTool is a tool for exporting RDF data from a world. */
+/**
+ * WorldsExportTool is a tool for exporting RDF data from a world.
+ */
 export type WorldsExportTool = Tool<WorldsExportInput, WorldsExportOutput>;
 
-/** worldsExportTool defines the configuration for the world export tool. */
+/**
+ * worldsExportTool defines the configuration for the world export tool.
+ */
 export const worldsExportTool: WorldsTool<
   WorldsExportInput,
   WorldsExportOutput
@@ -42,7 +52,9 @@ export const worldsExportTool: WorldsTool<
   isWrite: false,
 };
 
-/** createWorldsExportTool instantiates the world export tool. */
+/**
+ * createWorldsExportTool instantiates the world export tool.
+ */
 export function createWorldsExportTool(
   { worlds }: CreateToolsOptions,
 ): WorldsExportTool {

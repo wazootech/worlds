@@ -12,18 +12,24 @@ import {
 } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-/** WorldsSearchOutputData is the wrapper for search results in the AI SDK. */
+/**
+ * WorldsSearchOutputData is the wrapper for search results in the AI SDK.
+ */
 export interface WorldsSearchOutputData {
   results: WorldsSearchOutput[];
 }
 
-/** worldsSearchOutputSchema is the Zod schema for search output. */
+/**
+ * worldsSearchOutputSchema is the Zod schema for search output.
+ */
 export const worldsSearchOutputSchema: z.ZodType<WorldsSearchOutputData> = z
   .object({
     results: z.array(engineWorldsSearchOutputSchema),
   });
 
-/** search performs a semantic or text search for entities within a world. */
+/**
+ * search performs a semantic or text search for entities within a world.
+ */
 export async function search(
   worlds: WorldsInterface,
   input: WorldsSearchInput,
@@ -32,13 +38,17 @@ export async function search(
   return { results };
 }
 
-/** WorldsSearchTool is a tool for searching entities within a world. */
+/**
+ * WorldsSearchTool is a tool for searching entities within a world.
+ */
 export type WorldsSearchTool = Tool<
   WorldsSearchInput,
   WorldsSearchOutputData
 >;
 
-/** worldsSearchTool defines the configuration for the entity search tool. */
+/**
+ * worldsSearchTool defines the configuration for the entity search tool.
+ */
 export const worldsSearchTool: WorldsTool<
   WorldsSearchInput,
   WorldsSearchOutputData
@@ -51,7 +61,9 @@ export const worldsSearchTool: WorldsTool<
   isWrite: false,
 };
 
-/** createWorldsSearchTool instantiates the entity search tool. */
+/**
+ * createWorldsSearchTool instantiates the entity search tool.
+ */
 export function createWorldsSearchTool(
   { worlds }: CreateToolsOptions,
 ): WorldsSearchTool {

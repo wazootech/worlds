@@ -5,19 +5,25 @@ import type { WorldsImportInput, WorldsInterface } from "@wazoo/worlds-sdk";
 import { worldsImportInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-/** WorldsImportOutput is the output for importing RDF data into a world. */
+/**
+ * WorldsImportOutput is the output for importing RDF data into a world.
+ */
 export interface WorldsImportOutput {
   success: boolean;
 }
 
-/** worldsImportOutputSchema is the Zod schema for world import output. */
+/**
+ * worldsImportOutputSchema is the Zod schema for world import output.
+ */
 export const worldsImportOutputSchema: z.ZodType<WorldsImportOutput> = z.object(
   {
     success: z.boolean(),
   },
 );
 
-/** importWorld ingests RDF data into a world. */
+/**
+ * importWorld ingests RDF data into a world.
+ */
 export async function importWorld(
   worlds: WorldsInterface,
   input: WorldsImportInput,
@@ -26,10 +32,14 @@ export async function importWorld(
   return { success: true };
 }
 
-/** WorldsImportTool is a tool for importing RDF data into a world. */
+/**
+ * WorldsImportTool is a tool for importing RDF data into a world.
+ */
 export type WorldsImportTool = Tool<WorldsImportInput, WorldsImportOutput>;
 
-/** worldsImportTool defines the configuration for the world import tool. */
+/**
+ * worldsImportTool defines the configuration for the world import tool.
+ */
 export const worldsImportTool: WorldsTool<
   WorldsImportInput,
   WorldsImportOutput
@@ -42,7 +52,9 @@ export const worldsImportTool: WorldsTool<
   isWrite: true,
 };
 
-/** createWorldsImportTool instantiates the world import tool. */
+/**
+ * createWorldsImportTool instantiates the world import tool.
+ */
 export function createWorldsImportTool(
   { worlds }: CreateToolsOptions,
 ): WorldsImportTool {

@@ -5,17 +5,23 @@ import type { Log, WorldsInterface, WorldsLogsInput } from "@wazoo/worlds-sdk";
 import { logSchema, worldsLogsInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-/** WorldsLogsOutput is the output for retrieving logs in the AI SDK. */
+/**
+ * WorldsLogsOutput is the output for retrieving logs in the AI SDK.
+ */
 export interface WorldsLogsOutput {
   logs: Log[];
 }
 
-/** worldsLogsOutputSchema is the Zod schema for log retrieval output. */
+/**
+ * worldsLogsOutputSchema is the Zod schema for log retrieval output.
+ */
 export const worldsLogsOutputSchema: z.ZodType<WorldsLogsOutput> = z.object({
   logs: z.array(logSchema),
 });
 
-/** listLogs retrieves execution and audit logs for a specific world. */
+/**
+ * listLogs retrieves execution and audit logs for a specific world.
+ */
 export async function listLogs(
   worlds: WorldsInterface,
   input: WorldsLogsInput,
@@ -24,10 +30,14 @@ export async function listLogs(
   return { logs: logsList };
 }
 
-/** WorldsLogsTool is a tool for listing world logs. */
+/**
+ * WorldsLogsTool is a tool for listing world logs.
+ */
 export type WorldsLogsTool = Tool<WorldsLogsInput, WorldsLogsOutput>;
 
-/** worldsLogsTool defines the configuration for the world logs tool. */
+/**
+ * worldsLogsTool defines the configuration for the world logs tool.
+ */
 export const worldsLogsTool: WorldsTool<
   WorldsLogsInput,
   WorldsLogsOutput
@@ -40,7 +50,9 @@ export const worldsLogsTool: WorldsTool<
   isWrite: false,
 };
 
-/** createWorldsLogsTool instantiates the world logs tool. */
+/**
+ * createWorldsLogsTool instantiates the world logs tool.
+ */
 export function createWorldsLogsTool(
   { worlds }: CreateToolsOptions,
 ): WorldsLogsTool {

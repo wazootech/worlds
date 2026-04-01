@@ -5,19 +5,25 @@ import type { WorldsInterface, WorldsUpdateInput } from "@wazoo/worlds-sdk";
 import { worldsUpdateInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-/** WorldsUpdateOutput is the output for updating a world in the AI SDK. */
+/**
+ * WorldsUpdateOutput is the output for updating a world in the AI SDK.
+ */
 export interface WorldsUpdateOutput {
   success: boolean;
 }
 
-/** worldsUpdateOutputSchema is the type for the update tool output. */
+/**
+ * worldsUpdateOutputSchema is the type for the update tool output.
+ */
 export const worldsUpdateOutputSchema: z.ZodType<WorldsUpdateOutput> = z.object(
   {
     success: z.boolean(),
   },
 );
 
-/** update updates a world's metadata. */
+/**
+ * update updates a world's metadata.
+ */
 export async function update(
   worlds: WorldsInterface,
   input: WorldsUpdateInput,
@@ -26,10 +32,14 @@ export async function update(
   return { success: true };
 }
 
-/** WorldsUpdateTool is a tool for updating a world. */
+/**
+ * WorldsUpdateTool is a tool for updating a world.
+ */
 export type WorldsUpdateTool = Tool<WorldsUpdateInput, WorldsUpdateOutput>;
 
-/** worldsUpdateTool defines the configuration for the world update tool. */
+/**
+ * worldsUpdateTool defines the configuration for the world update tool.
+ */
 export const worldsUpdateTool: WorldsTool<
   WorldsUpdateInput,
   WorldsUpdateOutput
@@ -42,7 +52,9 @@ export const worldsUpdateTool: WorldsTool<
   isWrite: true,
 };
 
-/** createWorldsUpdateTool instantiates the world update tool. */
+/**
+ * createWorldsUpdateTool instantiates the world update tool.
+ */
 export function createWorldsUpdateTool(
   { worlds }: CreateToolsOptions,
 ): WorldsUpdateTool {
