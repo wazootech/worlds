@@ -3,7 +3,7 @@ import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
 import { LocalWorlds } from "@wazoo/worlds-sdk";
-import type { SourceInput } from "@wazoo/worlds-ai-sdk/options";
+import type { SourceInput } from "@wazoo/worlds-ai-sdk/types";
 
 import type { WorldsSparqlInput } from "@wazoo/worlds-ai-sdk/tools/sparql";
 import { sparql, worldsSparqlTool } from "@wazoo/worlds-ai-sdk/tools/sparql";
@@ -24,18 +24,18 @@ import {
 } from "@wazoo/worlds-ai-sdk/tools/delete";
 import type { WorldsImportInput } from "@wazoo/worlds-ai-sdk/tools/import";
 import {
-  importData,
+  importWorld,
   worldsImportTool,
 } from "@wazoo/worlds-ai-sdk/tools/import";
 import type { WorldsExportInput } from "@wazoo/worlds-ai-sdk/tools/export";
 import {
-  exportData,
+  exportWorld,
   worldsExportTool,
 } from "@wazoo/worlds-ai-sdk/tools/export";
 import type { WorldsLogsInput } from "@wazoo/worlds-ai-sdk/tools/logs";
 import { listLogs, worldsLogsTool } from "@wazoo/worlds-ai-sdk/tools/logs";
 
-import type { CreateToolsOptions } from "@wazoo/worlds-ai-sdk/options";
+import type { CreateToolsOptions } from "@wazoo/worlds-ai-sdk/types";
 import type { McpServer as McpServerType } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 type McpToolOptions = {
@@ -154,7 +154,7 @@ const TOOLS: ToolDefinition[] = [
       ...worldsImportTool,
       title: "Import",
     },
-    fn: (w, _s, a) => importData(w, a as WorldsImportInput),
+    fn: (w, _s, a) => importWorld(w, a as WorldsImportInput),
   },
   {
     tool: {
@@ -163,7 +163,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (w, _s, a) => exportData(w, a as WorldsExportInput),
+    fn: (w, _s, a) => exportWorld(w, a as WorldsExportInput),
   },
   {
     tool: {

@@ -24,7 +24,7 @@
     "./tools/export/schema": "./src/tools/export/schema.ts",
     "./tools/logs": "./src/tools/logs/mod.ts",
     "./tools/logs/schema": "./src/tools/logs/schema.ts",
-    "./options": "./src/options.ts"
+    "./types": "./src/types.ts"
   },
   "imports": {
     "#/": "./src/"
