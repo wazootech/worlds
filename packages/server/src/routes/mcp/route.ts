@@ -1,5 +1,4 @@
-// @ts-nocheck - MCP SDK type mismatches with Zod v4
-import { McpServer } from "npm:@modelcontextprotocol/sdk@1.8.0/server/mcp.js";
+import { McpServer } from "npm:@modelcontextprotocol/sdk@1.29.0/server/mcp.js";
 import { z } from "zod";
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
@@ -8,7 +7,6 @@ import { LocalWorlds } from "@wazoo/worlds-sdk";
 import {
   executeSparqlTool,
   searchEntitiesTool,
-  worldsSearchOutputSchema,
   worldsQuerySchema,
   worldsListSchema,
   worldsGetSchema,
@@ -16,8 +14,17 @@ import {
   worldsImportSchema,
   worldsExportSchema,
   worldsSearchSchema,
+  worldsSearchOutputSchema,
 } from "@wazoo/worlds-ai-sdk";
-import type { WorldsListInput, WorldsGetInput, WorldsCreateInput, WorldsImportInput, WorldsExportInput, WorldsSearchInput } from "@wazoo/worlds-ai-sdk";
+import type {
+  WorldsCreateInput,
+  WorldsExportInput,
+  WorldsGetInput,
+  WorldsImportInput,
+  WorldsListInput,
+  WorldsQueryInput,
+  WorldsSearchInput,
+} from "@wazoo/worlds-ai-sdk";
 
 export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);
@@ -32,13 +39,15 @@ export default (appContext: WorldsContext) => {
     },
   });
 
-  server.tool(
+  server.registerTool(
     executeSparqlTool.name,
     {
+      title: "Worlds SPARQL Query",
       description: executeSparqlTool.description,
-      ...executeSparqlTool.inputSchema,
+      inputSchema: worldsQuerySchema,
+      outputSchema: executeSparqlTool.outputSchema,
     },
-    async (args: { world: string; query: string }) => {
+    async (args: WorldsQueryInput) => {
       const result = await worlds.sparql(args.world, args.query);
       return {
         content: [
@@ -51,17 +60,15 @@ export default (appContext: WorldsContext) => {
     },
   );
 
-  server.tool(
+  server.registerTool(
     "worlds_list",
     {
+      title: "List Worlds",
       description: "List all available worlds",
-      ...worldsListSchema.shape,
+      inputSchema: worldsListSchema,
     },
     async (args: WorldsListInput) => {
-      const result = await worlds.list({
-        page: args.page,
-        pageSize: args.pageSize,
-      });
+      const result = await worlds.list({ page: args.page, pageSize: args.pageSize });
       return {
         content: [
           {
@@ -73,11 +80,12 @@ export default (appContext: WorldsContext) => {
     },
   );
 
-  server.tool(
+  server.registerTool(
     "worlds_get",
     {
+      title: "Get World",
       description: "Get a world by ID",
-      ...worldsGetSchema.shape,
+      inputSchema: worldsGetSchema,
     },
     async (args: WorldsGetInput) => {
       const worldData = await worlds.get(args.world);
@@ -98,11 +106,12 @@ export default (appContext: WorldsContext) => {
     },
   );
 
-  server.tool(
+  server.registerTool(
     "worlds_create",
     {
+      title: "Create World",
       description: "Create a new world",
-      ...worldsCreateSchema.shape,
+      inputSchema: worldsCreateSchema,
     },
     async (args: WorldsCreateInput) => {
       const world = await worlds.create(args);
@@ -117,11 +126,12 @@ export default (appContext: WorldsContext) => {
     },
   );
 
-  server.tool(
+  server.registerTool(
     "worlds_import",
     {
+      title: "Import RDF",
       description: "Import RDF data into a world",
-      ...worldsImportSchema.shape,
+      inputSchema: worldsImportSchema,
     },
     async (args: WorldsImportInput) => {
       await worlds.import(args.world, args.data, {
@@ -138,11 +148,12 @@ export default (appContext: WorldsContext) => {
     },
   );
 
-  server.tool(
+  server.registerTool(
     "worlds_export",
     {
+      title: "Export RDF",
       description: "Export a world as RDF data",
-      ...worldsExportSchema.shape,
+      inputSchema: worldsExportSchema,
     },
     async (args: WorldsExportInput) => {
       const buffer = await worlds.export(args.world, {
@@ -159,11 +170,13 @@ export default (appContext: WorldsContext) => {
     },
   );
 
-  server.tool(
+  server.registerTool(
     searchEntitiesTool.name,
     {
+      title: "Search Entities",
       description: searchEntitiesTool.description,
-      ...searchEntitiesTool.inputSchema.shape,
+      inputSchema: worldsSearchSchema,
+      outputSchema: worldsSearchOutputSchema,
     },
     async (args: WorldsSearchInput) => {
       const results = await worlds.search(args.world, args.query, {

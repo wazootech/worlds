@@ -24,6 +24,7 @@ export { createExecuteSparqlTool } from "./tools/execute-sparql.ts";
 export { createSearchEntitiesTool } from "./tools/search-entities.ts";
 export { executeSparqlTool } from "./tool-definitions/execute-sparql.ts";
 export { searchEntitiesTool } from "./tool-definitions/search-entities.ts";
+export { toolDescriptions, toolNames, toolSchemas } from "./schemas/tools.ts";
 export * from "./tools/discover-schema.ts";
 export * from "./tools/generate-iri.ts";
 export * from "./tools/disambiguate-entities.ts";
