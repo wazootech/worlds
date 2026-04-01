@@ -18,11 +18,20 @@ import { create, worldsCreateTool } from "@wazoo/worlds-ai-sdk/tools/create";
 import type { WorldsUpdateInput } from "@wazoo/worlds-ai-sdk/tools/update";
 import { update, worldsUpdateTool } from "@wazoo/worlds-ai-sdk/tools/update";
 import type { WorldsDeleteInput } from "@wazoo/worlds-ai-sdk/tools/delete";
-import { deleteWorld, worldsDeleteTool } from "@wazoo/worlds-ai-sdk/tools/delete";
+import {
+  deleteWorld,
+  worldsDeleteTool,
+} from "@wazoo/worlds-ai-sdk/tools/delete";
 import type { WorldsImportInput } from "@wazoo/worlds-ai-sdk/tools/import";
-import { importData, worldsImportTool } from "@wazoo/worlds-ai-sdk/tools/import";
+import {
+  importData,
+  worldsImportTool,
+} from "@wazoo/worlds-ai-sdk/tools/import";
 import type { WorldsExportInput } from "@wazoo/worlds-ai-sdk/tools/export";
-import { exportData, worldsExportTool } from "@wazoo/worlds-ai-sdk/tools/export";
+import {
+  exportData,
+  worldsExportTool,
+} from "@wazoo/worlds-ai-sdk/tools/export";
 import type { WorldsLogsInput } from "@wazoo/worlds-ai-sdk/tools/logs";
 import { listLogs, worldsLogsTool } from "@wazoo/worlds-ai-sdk/tools/logs";
 
@@ -84,7 +93,11 @@ function registerMcpTool(
 
 type ToolDefinition = {
   tool: McpToolOptions;
-  fn: (worlds: CreateToolsOptions["worlds"], sources: CreateToolsOptions["sources"], args: unknown) => Promise<unknown>;
+  fn: (
+    worlds: CreateToolsOptions["worlds"],
+    sources: CreateToolsOptions["sources"],
+    args: unknown,
+  ) => Promise<unknown>;
 };
 
 const TOOLS: ToolDefinition[] = [

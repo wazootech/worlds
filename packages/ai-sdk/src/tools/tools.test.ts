@@ -49,9 +49,11 @@ const mockWorldsBase: WorldsInterface = {
 };
 
 function createMockWorlds(
-  overrides?: Partial<{
-    [K in keyof WorldsInterface]?: WorldsInterface[K];
-  }>,
+  overrides?: Partial<
+    {
+      [K in keyof WorldsInterface]?: WorldsInterface[K];
+    }
+  >,
 ): WorldsInterface {
   return { ...mockWorldsBase, ...overrides } as WorldsInterface;
 }
@@ -79,17 +81,20 @@ Deno.test("sparql tool", async (t) => {
     ]);
   });
 
-  await t.step("executes INSERT DATA successfully with writable source", async () => {
-    const mockWorlds = createMockWorlds({
-      sparql: () => Promise.resolve(null),
-    });
-    const writableSources = [{ world: "test-world", write: true }];
-    const result = await sparql(mockWorlds, writableSources as never, {
-      world: "test-world",
-      query: "INSERT DATA { <http://s> <http://p> <http://o> }",
-    });
-    assertEquals(result, null);
-  });
+  await t.step(
+    "executes INSERT DATA successfully with writable source",
+    async () => {
+      const mockWorlds = createMockWorlds({
+        sparql: () => Promise.resolve(null),
+      });
+      const writableSources = [{ world: "test-world", write: true }];
+      const result = await sparql(mockWorlds, writableSources as never, {
+        world: "test-world",
+        query: "INSERT DATA { <http://s> <http://p> <http://o> }",
+      });
+      assertEquals(result, null);
+    },
+  );
 
   await t.step("throws on write operation with read-only source", async () => {
     const sources = [{ world: "test-world", write: false }];
@@ -290,7 +295,8 @@ Deno.test("import tool", async (t) => {
         return Promise.resolve();
       },
     });
-    const turtleData = '<http://example.org/s> <http://example.org/p> "object" .';
+    const turtleData =
+      '<http://example.org/s> <http://example.org/p> "object" .';
     await importData(mockWorlds, {
       world: "test-world",
       data: turtleData,
@@ -313,8 +319,7 @@ Deno.test("export tool", async (t) => {
     const mockData =
       "<http://example.org/s> <http://example.org/p> <http://example.org/o> .";
     const mockWorlds = createMockWorlds({
-      export: () =>
-        Promise.resolve(new TextEncoder().encode(mockData).buffer),
+      export: () => Promise.resolve(new TextEncoder().encode(mockData).buffer),
     });
     const result = await exportData(mockWorlds, { world: "test-world" });
     assertEquals(result.data.includes("http://example.org/s"), true);
