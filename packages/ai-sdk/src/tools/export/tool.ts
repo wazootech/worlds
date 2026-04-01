@@ -1,9 +1,21 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
+import { z } from "zod";
+import type { WorldsExportInput, WorldsInterface } from "@wazoo/worlds-sdk";
+import { worldsExportInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
-import type { WorldsInterface } from "@wazoo/worlds-sdk";
-import type { WorldsExportInput, WorldsExportOutput } from "./schema.ts";
-import { worldsExportInputSchema, worldsExportOutputSchema } from "./schema.ts";
+
+/** WorldsExportOutput is the output for exporting RDF data from a world in the AI SDK. */
+export interface WorldsExportOutput {
+  data: string;
+}
+
+/** worldsExportOutputSchema is the Zod schema for world export output. */
+export const worldsExportOutputSchema: z.ZodType<WorldsExportOutput> = z.object(
+  {
+    data: z.string(),
+  },
+);
 
 /** exportWorld retrieves a world's facts in RDF format. */
 export async function exportWorld(

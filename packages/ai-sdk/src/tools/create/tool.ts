@@ -1,9 +1,15 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
+import type {
+  World,
+  WorldsCreateInput,
+  WorldsInterface,
+} from "@wazoo/worlds-sdk";
+import {
+  worldSchema as worldsCreateOutputSchema,
+  worldsCreateInputSchema,
+} from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
-import type { World, WorldsInterface } from "@wazoo/worlds-sdk";
-import type { WorldsCreateInput } from "./schema.ts";
-import { worldsCreateInputSchema, worldsCreateOutputSchema } from "./schema.ts";
 
 /** create creates a new isolated world. */
 export async function create(

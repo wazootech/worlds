@@ -1,9 +1,19 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
+import { z } from "zod";
+import type { Log, WorldsInterface, WorldsLogsInput } from "@wazoo/worlds-sdk";
+import { logSchema, worldsLogsInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
-import type { WorldsInterface } from "@wazoo/worlds-sdk";
-import type { WorldsLogsInput, WorldsLogsOutput } from "./schema.ts";
-import { worldsLogsInputSchema, worldsLogsOutputSchema } from "./schema.ts";
+
+/** WorldsLogsOutput is the output for retrieving logs in the AI SDK. */
+export interface WorldsLogsOutput {
+  logs: Log[];
+}
+
+/** worldsLogsOutputSchema is the Zod schema for log retrieval output. */
+export const worldsLogsOutputSchema: z.ZodType<WorldsLogsOutput> = z.object({
+  logs: z.array(logSchema),
+});
 
 /** listLogs retrieves execution and audit logs for a specific world. */
 export async function listLogs(

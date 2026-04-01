@@ -1,9 +1,21 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
+import { z } from "zod";
+import type { WorldsDeleteInput, WorldsInterface } from "@wazoo/worlds-sdk";
+import { worldsDeleteInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
-import type { WorldsInterface } from "@wazoo/worlds-sdk";
-import type { WorldsDeleteInput, WorldsDeleteOutput } from "./schema.ts";
-import { worldsDeleteInputSchema, worldsDeleteOutputSchema } from "./schema.ts";
+
+/** WorldsDeleteOutput is the output for deleting a world. */
+export interface WorldsDeleteOutput {
+  success: boolean;
+}
+
+/** worldsDeleteOutputSchema is the Zod schema for world deletion output. */
+export const worldsDeleteOutputSchema: z.ZodType<WorldsDeleteOutput> = z.object(
+  {
+    success: z.boolean(),
+  },
+);
 
 /** deleteWorld permanently deletes a world and all its data. */
 export async function deleteWorld(

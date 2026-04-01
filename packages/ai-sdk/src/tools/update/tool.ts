@@ -1,9 +1,21 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
+import { z } from "zod";
+import type { WorldsInterface, WorldsUpdateInput } from "@wazoo/worlds-sdk";
+import { worldsUpdateInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
-import type { WorldsInterface } from "@wazoo/worlds-sdk";
-import type { WorldsUpdateInput, WorldsUpdateOutput } from "./schema.ts";
-import { worldsUpdateInputSchema, worldsUpdateOutputSchema } from "./schema.ts";
+
+/** WorldsUpdateOutput is the output for updating a world in the AI SDK. */
+export interface WorldsUpdateOutput {
+  success: boolean;
+}
+
+/** worldsUpdateOutputSchema is the type for the update tool output. */
+export const worldsUpdateOutputSchema: z.ZodType<WorldsUpdateOutput> = z.object(
+  {
+    success: z.boolean(),
+  },
+);
 
 /** update updates a world's metadata. */
 export async function update(

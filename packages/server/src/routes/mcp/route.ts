@@ -1,41 +1,44 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
-import type { WorldsContext } from "@wazoo/worlds-sdk";
+import type {
+  WorldsContext,
+  WorldsCreateInput,
+  WorldsDeleteInput,
+  WorldsExportInput,
+  WorldsGetInput,
+  WorldsImportInput,
+  WorldsListInput,
+  WorldsLogsInput,
+  WorldsSearchInput,
+  WorldsSparqlInput,
+  WorldsUpdateInput,
+} from "@wazoo/worlds-sdk";
 import { LocalWorlds } from "@wazoo/worlds-sdk";
-import type { SourceInput } from "@wazoo/worlds-ai-sdk/types";
+import type {
+  CreateToolsOptions,
+  SourceInput,
+} from "@wazoo/worlds-ai-sdk/types";
 
-import type { WorldsSparqlInput } from "@wazoo/worlds-ai-sdk/tools/sparql";
 import { sparql, worldsSparqlTool } from "@wazoo/worlds-ai-sdk/tools/sparql";
-import type { WorldsSearchInput } from "@wazoo/worlds-ai-sdk/tools/search";
 import { search, worldsSearchTool } from "@wazoo/worlds-ai-sdk/tools/search";
-import type { WorldsListInput } from "@wazoo/worlds-ai-sdk/tools/list";
 import { list, worldsListTool } from "@wazoo/worlds-ai-sdk/tools/list";
-import type { WorldsGetInput } from "@wazoo/worlds-ai-sdk/tools/get";
 import { get, worldsGetTool } from "@wazoo/worlds-ai-sdk/tools/get";
-import type { WorldsCreateInput } from "@wazoo/worlds-ai-sdk/tools/create";
 import { create, worldsCreateTool } from "@wazoo/worlds-ai-sdk/tools/create";
-import type { WorldsUpdateInput } from "@wazoo/worlds-ai-sdk/tools/update";
 import { update, worldsUpdateTool } from "@wazoo/worlds-ai-sdk/tools/update";
-import type { WorldsDeleteInput } from "@wazoo/worlds-ai-sdk/tools/delete";
 import {
   deleteWorld,
   worldsDeleteTool,
 } from "@wazoo/worlds-ai-sdk/tools/delete";
-import type { WorldsImportInput } from "@wazoo/worlds-ai-sdk/tools/import";
 import {
   importWorld,
   worldsImportTool,
 } from "@wazoo/worlds-ai-sdk/tools/import";
-import type { WorldsExportInput } from "@wazoo/worlds-ai-sdk/tools/export";
 import {
   exportWorld,
   worldsExportTool,
 } from "@wazoo/worlds-ai-sdk/tools/export";
-import type { WorldsLogsInput } from "@wazoo/worlds-ai-sdk/tools/logs";
 import { listLogs, worldsLogsTool } from "@wazoo/worlds-ai-sdk/tools/logs";
-
-import type { CreateToolsOptions } from "@wazoo/worlds-ai-sdk/types";
 import type { McpServer as McpServerType } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 type McpToolOptions = {

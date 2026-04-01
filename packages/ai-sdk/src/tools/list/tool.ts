@@ -1,9 +1,23 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
+import { z } from "zod";
+import type {
+  World,
+  WorldsInterface,
+  WorldsListInput,
+} from "@wazoo/worlds-sdk";
+import { worldSchema, worldsListInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
-import type { WorldsInterface } from "@wazoo/worlds-sdk";
-import type { WorldsListInput, WorldsListOutput } from "./schema.ts";
-import { worldsListInputSchema, worldsListOutputSchema } from "./schema.ts";
+
+/** WorldsListOutput is the output for listing worlds. */
+export interface WorldsListOutput {
+  worlds: World[];
+}
+
+/** worldsListOutputSchema is the Zod schema for world listing output. */
+export const worldsListOutputSchema: z.ZodType<WorldsListOutput> = z.object({
+  worlds: z.array(worldSchema),
+});
 
 /** list retrieves a list of all datasets (worlds). */
 export async function list(

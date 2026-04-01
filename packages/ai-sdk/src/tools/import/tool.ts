@@ -1,9 +1,21 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
+import { z } from "zod";
+import type { WorldsImportInput, WorldsInterface } from "@wazoo/worlds-sdk";
+import { worldsImportInputSchema } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
-import type { WorldsInterface } from "@wazoo/worlds-sdk";
-import type { WorldsImportInput, WorldsImportOutput } from "./schema.ts";
-import { worldsImportInputSchema, worldsImportOutputSchema } from "./schema.ts";
+
+/** WorldsImportOutput is the output for importing RDF data into a world. */
+export interface WorldsImportOutput {
+  success: boolean;
+}
+
+/** worldsImportOutputSchema is the Zod schema for world import output. */
+export const worldsImportOutputSchema: z.ZodType<WorldsImportOutput> = z.object(
+  {
+    success: z.boolean(),
+  },
+);
 
 /** importWorld ingests RDF data into a world. */
 export async function importWorld(

@@ -1,9 +1,27 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
+import { z } from "zod";
+import type {
+  WorldsInterface,
+  WorldsSearchInput,
+  WorldsSearchOutput,
+} from "@wazoo/worlds-sdk";
+import {
+  worldsSearchInputSchema,
+  worldsSearchOutputSchema as engineWorldsSearchOutputSchema,
+} from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
-import type { WorldsInterface } from "@wazoo/worlds-sdk";
-import type { WorldsSearchInput, WorldsSearchOutputData } from "./schema.ts";
-import { worldsSearchInputSchema, worldsSearchOutputSchema } from "./schema.ts";
+
+/** WorldsSearchOutputData is the wrapper for search results in the AI SDK. */
+export interface WorldsSearchOutputData {
+  results: WorldsSearchOutput[];
+}
+
+/** worldsSearchOutputSchema is the Zod schema for search output. */
+export const worldsSearchOutputSchema: z.ZodType<WorldsSearchOutputData> = z
+  .object({
+    results: z.array(engineWorldsSearchOutputSchema),
+  });
 
 /** search performs a semantic or text search for entities within a world. */
 export async function search(

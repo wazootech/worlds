@@ -1,9 +1,16 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
+import type {
+  WorldsInterface,
+  WorldsSparqlInput,
+  WorldsSparqlOutput,
+} from "@wazoo/worlds-sdk";
+import {
+  isSparqlUpdate,
+  worldsSparqlInputSchema,
+  worldsSparqlOutputSchema,
+} from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions, SourceInput, WorldsTool } from "#/types.ts";
-import { isSparqlUpdate, type WorldsInterface } from "@wazoo/worlds-sdk";
-import type { WorldsSparqlInput, WorldsSparqlOutput } from "./schema.ts";
-import { worldsSparqlInputSchema, worldsSparqlOutputSchema } from "./schema.ts";
 
 /** sparql executes a SPARQL query or update against a specific world. */
 export async function sparql(
