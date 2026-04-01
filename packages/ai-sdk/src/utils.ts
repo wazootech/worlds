@@ -1,3 +1,5 @@
+import type { Source } from "@wazoo/worlds-sdk";
+
 import type { ExecuteSparqlTool } from "#/tools/sparql/mod.ts";
 import type { GenerateIriTool } from "#/tools/generate/mod.ts";
 import type { SearchEntitiesTool } from "#/tools/search/mod.ts";
@@ -23,7 +25,6 @@ import { createWorldsExportTool } from "#/tools/export/mod.ts";
 import { createLogsTool } from "#/tools/logs/mod.ts";
 
 import type { CreateToolsOptions } from "#/options.ts";
-import type { Source } from "@wazoo/worlds-sdk";
 
 /**
  * createTools creates a toolset from a CreateToolsOptions.

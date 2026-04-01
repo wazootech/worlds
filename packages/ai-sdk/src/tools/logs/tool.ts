@@ -23,7 +23,7 @@ export type LogsListTool = Tool<ListLogsInput, ListLogsOutput>;
 
 /** logsTool defines the configuration for the world logs tool. */
 export const logsTool = {
-  name: "logs",
+  name: "list_logs",
   description:
     "Retrieves execution and audit logs for a specific world. Use this tool when you need to troubleshoot operations, verify imports, or audit query history. Input must be a 'world' ID and optional 'page' and 'pageSize'. Returns an array of log objects.",
   inputSchema: listLogsInputSchema,
