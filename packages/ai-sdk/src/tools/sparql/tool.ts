@@ -1,12 +1,7 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type {
-  CreateToolsOptions,
-  SourceInput,
-  WorldsInterface,
-  WorldsTool,
-} from "#/types.ts";
-import { isSparqlUpdate } from "@wazoo/worlds-sdk";
+import type { CreateToolsOptions, SourceInput, WorldsTool } from "#/types.ts";
+import { isSparqlUpdate, type WorldsInterface } from "@wazoo/worlds-sdk";
 import type { WorldsSparqlInput, WorldsSparqlOutput } from "./schema.ts";
 import { worldsSparqlInputSchema, worldsSparqlOutputSchema } from "./schema.ts";
 
