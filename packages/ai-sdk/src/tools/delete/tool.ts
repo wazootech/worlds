@@ -1,12 +1,8 @@
-import { tool } from "ai";
 import type { Tool } from "ai";
+import { tool } from "ai";
 import type { CreateToolsOptions } from "#/options.ts";
-import {
-  type WorldsDeleteInput,
-  worldsDeleteInputSchema,
-  type WorldsDeleteOutput,
-  worldsDeleteOutputSchema,
-} from "./schema.ts";
+import type { WorldsDeleteInput, WorldsDeleteOutput } from "./schema.ts";
+import { worldsDeleteInputSchema, worldsDeleteOutputSchema } from "./schema.ts";
 
 /** deleteWorld permanently deletes a world and all its data. */
 export async function deleteWorld(

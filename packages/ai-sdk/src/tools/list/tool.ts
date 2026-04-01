@@ -1,12 +1,8 @@
-import { tool } from "ai";
 import type { Tool } from "ai";
+import { tool } from "ai";
 import type { CreateToolsOptions } from "#/options.ts";
-import {
-  type WorldsListInput,
-  worldsListInputSchema,
-  type WorldsListOutput,
-  worldsListOutputSchema,
-} from "./schema.ts";
+import type { WorldsListInput, WorldsListOutput } from "./schema.ts";
+import { worldsListInputSchema, worldsListOutputSchema } from "./schema.ts";
 
 /** list retrieves a list of all datasets (worlds). */
 export async function list(

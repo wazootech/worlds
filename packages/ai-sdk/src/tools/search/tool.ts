@@ -1,12 +1,8 @@
-import { tool } from "ai";
 import type { Tool } from "ai";
+import { tool } from "ai";
 import type { CreateToolsOptions } from "#/options.ts";
-import {
-  type WorldsSearchInput,
-  worldsSearchInputSchema,
-  type WorldsSearchOutputData,
-  worldsSearchOutputSchema,
-} from "./schema.ts";
+import type { WorldsSearchInput, WorldsSearchOutputData } from "./schema.ts";
+import { worldsSearchInputSchema, worldsSearchOutputSchema } from "./schema.ts";
 
 /** search performs a semantic or text search for entities within a world. */
 export async function search(

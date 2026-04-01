@@ -1,13 +1,12 @@
-import { tool } from "ai";
 import type { Tool } from "ai";
+import { tool } from "ai";
 import type { CreateToolsOptions } from "#/options.ts";
+import type { World } from "@wazoo/worlds-sdk";
 import {
   type WorldsGetInput,
   worldsGetInputSchema,
   worldsGetOutputSchema,
 } from "./schema.ts";
-
-import type { World } from "@wazoo/worlds-sdk";
 
 /** get retrieves detailed metadata for a specific world. */
 export async function get(

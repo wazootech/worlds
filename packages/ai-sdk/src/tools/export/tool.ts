@@ -1,12 +1,8 @@
-import { tool } from "ai";
 import type { Tool } from "ai";
+import { tool } from "ai";
 import type { CreateToolsOptions } from "#/options.ts";
-import {
-  type WorldsExportInput,
-  worldsExportInputSchema,
-  type WorldsExportOutput,
-  worldsExportOutputSchema,
-} from "./schema.ts";
+import type { WorldsExportInput, WorldsExportOutput } from "./schema.ts";
+import { worldsExportInputSchema, worldsExportOutputSchema } from "./schema.ts";
 
 /** exportData retrieves a world's facts in RDF format. */
 export async function exportData(

@@ -1,12 +1,8 @@
-import { tool } from "ai";
 import type { Tool } from "ai";
+import { tool } from "ai";
 import type { CreateToolsOptions } from "#/options.ts";
-import {
-  type WorldsLogsInput,
-  worldsLogsInputSchema,
-  type WorldsLogsOutput,
-  worldsLogsOutputSchema,
-} from "./schema.ts";
+import type { WorldsLogsInput, WorldsLogsOutput } from "./schema.ts";
+import { worldsLogsInputSchema, worldsLogsOutputSchema } from "./schema.ts";
 
 /** listLogs retrieves execution and audit logs for a specific world. */
 export async function listLogs(
