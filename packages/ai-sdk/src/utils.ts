@@ -22,7 +22,7 @@ import { createWorldsImportTool } from "#/tools/import/mod.ts";
 import { createWorldsExportTool } from "#/tools/export/mod.ts";
 import { createWorldsLogsTool } from "#/tools/logs/mod.ts";
 
-import type { CreateToolsOptions } from "#/options.ts";
+import type { CreateToolsOptions } from "#/types.ts";
 
 /**
  * createTools creates a toolset from a CreateToolsOptions.

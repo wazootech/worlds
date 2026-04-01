@@ -3,8 +3,7 @@
  * @module
  */
 
-export * from "./options.ts";
-export * from "./schema.ts";
+export * from "./types.ts";
 export * from "./utils.ts";
 
 export * from "./tools/sparql/mod.ts";

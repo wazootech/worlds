@@ -4,7 +4,7 @@ import type {
   CreateToolsOptions,
   WorldsInterface,
   WorldsTool,
-} from "#/options.ts";
+} from "#/types.ts";
 import type { World } from "@wazoo/worlds-sdk";
 import type { WorldsCreateInput } from "./schema.ts";
 import { worldsCreateInputSchema, worldsCreateOutputSchema } from "./schema.ts";
@@ -30,7 +30,6 @@ export const worldsCreateTool: WorldsTool<
     "Creates a new isolated knowledge graph (world). Use this tool when the user wants to start a fresh dataset or project space. Input must include a unique 'slug' and a human-readable 'label'. Returns the newly created world object.",
   inputSchema: worldsCreateInputSchema,
   outputSchema: worldsCreateOutputSchema,
-  category: "write",
   isWrite: true,
 };
 

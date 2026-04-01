@@ -4,7 +4,7 @@ import type {
   CreateToolsOptions,
   WorldsInterface,
   WorldsTool,
-} from "#/options.ts";
+} from "#/types.ts";
 import type { World } from "@wazoo/worlds-sdk";
 import {
   type WorldsGetInput,
@@ -34,7 +34,6 @@ export const worldsGetTool: WorldsTool<WorldsGetInput, World> = {
     "Retrieves detailed metadata for a specific world. Use this tool when you have a world ID and need to check its configuration, labels, or creation date. Input must be a 'world' ID. Returns a world metadata object.",
   inputSchema: worldsGetInputSchema,
   outputSchema: worldsGetOutputSchema,
-  category: "read",
   isWrite: false,
 };
 

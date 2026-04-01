@@ -1,18 +1,13 @@
 import type { z } from "zod";
 import type { Source, WorldsInterface } from "@wazoo/worlds-sdk";
 
-export type { WorldsInterface };
+export type { Source, WorldsInterface };
 
 /**
  * SourceInput is a flexible way to specify a data source.
  * It can be a string (ID or slug) for read-only access, or a Source object for granular control.
  */
 export type SourceInput = string | Source;
-
-/**
- * WorldsToolCategory classifies the tool for security and capability routing.
- */
-export type WorldsToolCategory = "read" | "write" | "admin";
 
 /**
  * WorldsTool defines the metadata and schema for a Worlds tool.
@@ -37,11 +32,6 @@ export interface WorldsTool<TInput = unknown, TOutput = unknown> {
    * outputSchema is the Zod schema for the tool's response.
    */
   outputSchema: z.ZodType<TOutput>;
-
-  /**
-   * category classifies the tool for security and capability routing.
-   */
-  category: WorldsToolCategory;
 
   /**
    * isWrite indicates if the tool can modify state or data.

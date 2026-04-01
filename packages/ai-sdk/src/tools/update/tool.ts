@@ -4,7 +4,7 @@ import type {
   CreateToolsOptions,
   WorldsInterface,
   WorldsTool,
-} from "#/options.ts";
+} from "#/types.ts";
 import type { WorldsUpdateInput, WorldsUpdateOutput } from "./schema.ts";
 import { worldsUpdateInputSchema, worldsUpdateOutputSchema } from "./schema.ts";
 
@@ -30,7 +30,6 @@ export const worldsUpdateTool: WorldsTool<
     "Updates an existing world's metadata, such as its label or slug. Input must include the 'world' ID and at least one field to change. Returns a success indicator.",
   inputSchema: worldsUpdateInputSchema,
   outputSchema: worldsUpdateOutputSchema,
-  category: "write",
   isWrite: true,
 };
 

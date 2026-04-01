@@ -4,7 +4,7 @@ import type {
   CreateToolsOptions,
   WorldsInterface,
   WorldsTool,
-} from "#/options.ts";
+} from "#/types.ts";
 import type { WorldsSearchInput, WorldsSearchOutputData } from "./schema.ts";
 import { worldsSearchInputSchema, worldsSearchOutputSchema } from "./schema.ts";
 
@@ -33,7 +33,6 @@ export const worldsSearchTool: WorldsTool<
     "Performs semantic or text search for entities and facts within a specific world. Use this tool when a user asks about an entity by a natural language name or needs to find related information by proximity. Input must be a 'world' ID and a 'query' string. Returns an array of search results including IRIs and relevance scores.",
   inputSchema: worldsSearchInputSchema,
   outputSchema: worldsSearchOutputSchema,
-  category: "read",
   isWrite: false,
 };
 

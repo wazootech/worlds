@@ -4,7 +4,7 @@ import type {
   CreateToolsOptions,
   WorldsInterface,
   WorldsTool,
-} from "#/options.ts";
+} from "#/types.ts";
 import type { WorldsLogsInput, WorldsLogsOutput } from "./schema.ts";
 import { worldsLogsInputSchema, worldsLogsOutputSchema } from "./schema.ts";
 
@@ -30,7 +30,6 @@ export const worldsLogsTool: WorldsTool<
     "Retrieves execution and audit logs for a specific world. Use this tool when you need to troubleshoot operations, verify imports, or audit query history. Input must be a 'world' ID and optional 'page' and 'pageSize'. Returns an array of log objects.",
   inputSchema: worldsLogsInputSchema,
   outputSchema: worldsLogsOutputSchema,
-  category: "read",
   isWrite: false,
 };
 

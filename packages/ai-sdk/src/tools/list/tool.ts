@@ -4,7 +4,7 @@ import type {
   CreateToolsOptions,
   WorldsInterface,
   WorldsTool,
-} from "#/options.ts";
+} from "#/types.ts";
 import type { WorldsListInput, WorldsListOutput } from "./schema.ts";
 import { worldsListInputSchema, worldsListOutputSchema } from "./schema.ts";
 
@@ -30,7 +30,6 @@ export const worldsListTool: WorldsTool<
     "Retrieves a list of all datasets (worlds) currently managed by the engine. Use this tool when you need to know which worlds exist or to find a world's ID by its label. Returns an array of world objects.",
   inputSchema: worldsListInputSchema,
   outputSchema: worldsListOutputSchema,
-  category: "read",
   isWrite: false,
 };
 

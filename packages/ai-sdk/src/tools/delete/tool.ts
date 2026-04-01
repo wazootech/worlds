@@ -4,7 +4,7 @@ import type {
   CreateToolsOptions,
   WorldsInterface,
   WorldsTool,
-} from "#/options.ts";
+} from "#/types.ts";
 import type { WorldsDeleteInput, WorldsDeleteOutput } from "./schema.ts";
 import { worldsDeleteInputSchema, worldsDeleteOutputSchema } from "./schema.ts";
 
@@ -30,7 +30,6 @@ export const worldsDeleteTool: WorldsTool<
     "Permanently deletes a world and all its associated data. This action is irreversible. Use this tool only when you are certain the world and its data are no longer needed. Input must be a 'world' ID. Returns a success indicator.",
   inputSchema: worldsDeleteInputSchema,
   outputSchema: worldsDeleteOutputSchema,
-  category: "write",
   isWrite: true,
 };
 

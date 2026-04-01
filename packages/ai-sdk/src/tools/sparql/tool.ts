@@ -5,7 +5,7 @@ import type {
   SourceInput,
   WorldsInterface,
   WorldsTool,
-} from "#/options.ts";
+} from "#/types.ts";
 import { isSparqlUpdate } from "@wazoo/worlds-sdk";
 import type { WorldsSparqlInput, WorldsSparqlOutput } from "./schema.ts";
 import { worldsSparqlInputSchema, worldsSparqlOutputSchema } from "./schema.ts";
@@ -45,7 +45,6 @@ export const worldsSparqlTool: WorldsTool<
     "Executes a SPARQL query or update against a specific world. Use this tool when you need to retrieve raw facts, perform complex joins, or modify the knowledge graph via SPARQL. Input must be a 'world' ID and a 'query' string. Returns a JSON result object with bindings for SELECT/ASK or a boolean for updates.",
   inputSchema: worldsSparqlInputSchema,
   outputSchema: worldsSparqlOutputSchema,
-  category: "write",
   isWrite: true,
 };
 

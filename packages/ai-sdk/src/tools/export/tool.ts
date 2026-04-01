@@ -4,7 +4,7 @@ import type {
   CreateToolsOptions,
   WorldsInterface,
   WorldsTool,
-} from "#/options.ts";
+} from "#/types.ts";
 import type { WorldsExportInput, WorldsExportOutput } from "./schema.ts";
 import { worldsExportInputSchema, worldsExportOutputSchema } from "./schema.ts";
 
@@ -30,7 +30,6 @@ export const worldsExportTool: WorldsTool<
     "Retrieves the entire collection of facts from a world in RDF format. Use this tool when you need to back up a dataset or move data between environments. Input must be a 'world' ID. Returns a string containing the world's facts in N-Quads format.",
   inputSchema: worldsExportInputSchema,
   outputSchema: worldsExportOutputSchema,
-  category: "read",
   isWrite: false,
 };
 

@@ -4,7 +4,7 @@ import type {
   CreateToolsOptions,
   WorldsInterface,
   WorldsTool,
-} from "#/options.ts";
+} from "#/types.ts";
 import type { WorldsImportInput, WorldsImportOutput } from "./schema.ts";
 import { worldsImportInputSchema, worldsImportOutputSchema } from "./schema.ts";
 
@@ -30,7 +30,6 @@ export const worldsImportTool: WorldsTool<
     "Ingests RDF data into an existing world's graph. Use this tool when you have raw Turtle, N-Triples, or N-Quads data to upload. Input must be a 'world' ID and a 'data' string. Returns a success indicator.",
   inputSchema: worldsImportInputSchema,
   outputSchema: worldsImportOutputSchema,
-  category: "write",
   isWrite: true,
 };
 
