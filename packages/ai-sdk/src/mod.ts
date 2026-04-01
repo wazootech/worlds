@@ -4,7 +4,7 @@
  */
 
 export * from "./types.ts";
-export * from "./utils.ts";
+export * from "./factory.ts";
 
 export * from "./tools/sparql/mod.ts";
 export * from "./tools/search/mod.ts";

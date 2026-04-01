@@ -39,8 +39,8 @@ export function createTools(options: CreateToolsOptions): {
   export: WorldsExportTool;
   logs: WorldsLogsTool;
 } {
-  const normalizedSources: Source[] = options.sources.map((s) =>
-    typeof s === "string" ? { world: s } : s
+  const normalizedSources: Source[] = options.sources.map((source) =>
+    typeof source === "string" ? { world: source } : source
   );
   const normalizedOptions: CreateToolsOptions = {
     ...options,
