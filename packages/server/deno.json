@@ -8,7 +8,7 @@
   "imports": {
     "#/": "./src/",
     "@fartlabs/rt": "jsr:@fartlabs/rt@^0.0.11",
-    "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.1.0",
+    "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.29.0",
     "@std/http": "jsr:@std/http@^1.0.25",
     "@std/path": "jsr:@std/path@^1.0.8",
     "@wazoo/worlds-ai-sdk": "../ai-sdk/src/mod.ts",
