@@ -6,14 +6,24 @@ import {
   worldsListInputSchema,
   type WorldsListOutput,
   worldsListOutputSchema,
-} from "#/tools/worlds-list/schema.ts";
+} from "#/tools/list/schema.ts";
+
+/** listWorlds retrieves a list of all datasets (worlds). */
+export async function listWorlds(
+  worlds: CreateToolsOptions["worlds"],
+  input: WorldsListInput,
+): Promise<WorldsListOutput> {
+  const { page, pageSize } = input;
+  const worldsList = await worlds.list({ page, pageSize });
+  return { worlds: worldsList };
+}
 
 /** WorldsListTool is a tool for listing worlds. */
 export type WorldsListTool = Tool<WorldsListInput, WorldsListOutput>;
 
 /** worldsListTool defines the configuration for the world listing tool. */
 export const worldsListTool = {
-  name: "worlds_list",
+  name: "list_worlds",
   description:
     "Retrieves a list of all datasets (worlds) currently managed by the engine. Use this tool when you need to know which worlds exist or to find a world's ID by its label. Returns an array of world objects.",
   inputSchema: worldsListInputSchema,
@@ -27,9 +37,7 @@ export function createWorldsListTool(
   return tool({
     ...worldsListTool,
     execute: async (input) => {
-      const { page, pageSize } = input;
-      const worldsList = await worlds.list({ page, pageSize });
-      return { worlds: worldsList };
+      return await listWorlds(worlds, input);
     },
   });
 }

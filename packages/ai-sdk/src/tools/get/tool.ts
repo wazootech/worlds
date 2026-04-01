@@ -5,7 +5,19 @@ import {
   type WorldsGetInput,
   worldsGetInputSchema,
   worldsGetOutputSchema,
-} from "#/tools/worlds-get/schema.ts";
+} from "#/tools/get/schema.ts";
+
+/** getWorld retrieves detailed metadata for a specific world. */
+export async function getWorld(
+  worlds: CreateToolsOptions["worlds"],
+  input: WorldsGetInput,
+): Promise<World> {
+  const world = await worlds.get(input.world);
+  if (!world) {
+    throw new Error("World not found");
+  }
+  return world;
+}
 import type { World } from "@wazoo/worlds-sdk";
 
 /** WorldsGetTool is a tool for retrieving world metadata. */
@@ -13,7 +25,7 @@ export type WorldsGetTool = Tool<WorldsGetInput, World>;
 
 /** worldsGetTool defines the configuration for the world retrieval tool. */
 export const worldsGetTool = {
-  name: "worlds_get",
+  name: "get_world",
   description:
     "Retrieves detailed metadata for a specific world. Use this tool when you have a world ID and need to check its configuration, labels, or creation date. Input must be a 'world' ID. Returns a world metadata object.",
   inputSchema: worldsGetInputSchema,
@@ -27,11 +39,7 @@ export function createWorldsGetTool(
   return tool({
     ...worldsGetTool,
     execute: async (input) => {
-      const world = await worlds.get(input.world);
-      if (!world) {
-        throw new Error("World not found");
-      }
-      return world;
+      return await getWorld(worlds, input);
     },
   });
 }

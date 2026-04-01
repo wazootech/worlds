@@ -1,15 +1,27 @@
-import type { DiscoverSchemaTool } from "#/tools/discover-schema/mod.ts";
-import type { ExecuteSparqlTool } from "#/tools/execute-sparql/mod.ts";
-import type { GenerateIriTool } from "#/tools/generate-iri/mod.ts";
-import type { SearchEntitiesTool } from "#/tools/search-entities/mod.ts";
-import type { DisambiguateEntitiesTool } from "#/tools/disambiguate-entities/mod.ts";
-import type { ValidateRdfTool } from "#/tools/validate-rdf/mod.ts";
-import { createDiscoverSchemaTool } from "#/tools/discover-schema/mod.ts";
-import { createExecuteSparqlTool } from "#/tools/execute-sparql/mod.ts";
-import { createGenerateIriTool } from "#/tools/generate-iri/mod.ts";
-import { createSearchEntitiesTool } from "#/tools/search-entities/mod.ts";
-import { createDisambiguateEntitiesTool } from "#/tools/disambiguate-entities/mod.ts";
-import { createValidateRdfTool } from "#/tools/validate-rdf/mod.ts";
+import type { ExecuteSparqlTool } from "#/tools/sparql/mod.ts";
+import type { GenerateIriTool } from "#/tools/generate/mod.ts";
+import type { SearchEntitiesTool } from "#/tools/search/mod.ts";
+import type { DisambiguateEntitiesTool } from "#/tools/match/mod.ts";
+import type { ValidateRdfTool } from "#/tools/validate/mod.ts";
+import type { WorldsListTool } from "#/tools/list/mod.ts";
+import type { WorldsGetTool } from "#/tools/get/mod.ts";
+import type { WorldsCreateTool } from "#/tools/create/mod.ts";
+import type { WorldsImportTool } from "#/tools/import/mod.ts";
+import type { WorldsExportTool } from "#/tools/export/mod.ts";
+import type { LogsListTool } from "#/tools/logs/mod.ts";
+
+import { createExecuteSparqlTool } from "#/tools/sparql/mod.ts";
+import { createGenerateIriTool } from "#/tools/generate/mod.ts";
+import { createSearchEntitiesTool } from "#/tools/search/mod.ts";
+import { createDisambiguateEntitiesTool } from "#/tools/match/mod.ts";
+import { createValidateRdfTool } from "#/tools/validate/mod.ts";
+import { createWorldsListTool } from "#/tools/list/mod.ts";
+import { createWorldsGetTool } from "#/tools/get/mod.ts";
+import { createWorldsCreateTool } from "#/tools/create/mod.ts";
+import { createWorldsImportTool } from "#/tools/import/mod.ts";
+import { createWorldsExportTool } from "#/tools/export/mod.ts";
+import { createLogsTool } from "#/tools/logs/mod.ts";
+
 import type { CreateToolsOptions } from "#/options.ts";
 import type { Source } from "@wazoo/worlds-sdk";
 
@@ -17,12 +29,17 @@ import type { Source } from "@wazoo/worlds-sdk";
  * createTools creates a toolset from a CreateToolsOptions.
  */
 export function createTools(options: CreateToolsOptions): {
-  discoverSchema: DiscoverSchemaTool;
-  executeSparql: ExecuteSparqlTool;
-  generateIri: GenerateIriTool;
-  searchEntities: SearchEntitiesTool;
-  disambiguateEntities: DisambiguateEntitiesTool;
-  validateRdf: ValidateRdfTool;
+  sparql: ExecuteSparqlTool;
+  search: SearchEntitiesTool;
+  match: DisambiguateEntitiesTool;
+  list: WorldsListTool;
+  get: WorldsGetTool;
+  create: WorldsCreateTool;
+  import: WorldsImportTool;
+  export: WorldsExportTool;
+  generate: GenerateIriTool;
+  validate: ValidateRdfTool;
+  logs: LogsListTool;
 } {
   const normalizedSources: Source[] = options.sources.map((s) =>
     typeof s === "string" ? { world: s } : s
@@ -34,22 +51,37 @@ export function createTools(options: CreateToolsOptions): {
   );
 
   return {
-    discoverSchema: createDiscoverSchemaTool(
+    sparql: createExecuteSparqlTool(
       normalizedOptions as unknown as CreateToolsOptions,
     ),
-    executeSparql: createExecuteSparqlTool(
+    search: createSearchEntitiesTool(
       normalizedOptions as unknown as CreateToolsOptions,
     ),
-    generateIri: createGenerateIriTool(
+    match: createDisambiguateEntitiesTool(
       normalizedOptions as unknown as CreateToolsOptions,
     ),
-    searchEntities: createSearchEntitiesTool(
+    list: createWorldsListTool(
       normalizedOptions as unknown as CreateToolsOptions,
     ),
-    disambiguateEntities: createDisambiguateEntitiesTool(
+    get: createWorldsGetTool(
       normalizedOptions as unknown as CreateToolsOptions,
     ),
-    validateRdf: createValidateRdfTool(
+    create: createWorldsCreateTool(
+      normalizedOptions as unknown as CreateToolsOptions,
+    ),
+    import: createWorldsImportTool(
+      normalizedOptions as unknown as CreateToolsOptions,
+    ),
+    export: createWorldsExportTool(
+      normalizedOptions as unknown as CreateToolsOptions,
+    ),
+    generate: createGenerateIriTool(
+      normalizedOptions as unknown as CreateToolsOptions,
+    ),
+    validate: createValidateRdfTool(
+      normalizedOptions as unknown as CreateToolsOptions,
+    ),
+    logs: createLogsTool(
       normalizedOptions as unknown as CreateToolsOptions,
     ),
   };

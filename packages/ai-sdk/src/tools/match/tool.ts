@@ -4,11 +4,11 @@ import type { CreateToolsOptions } from "#/options.ts";
 import {
   disambiguateEntitiesInputSchema,
   disambiguateEntitiesOutputSchema,
-} from "#/tools/disambiguate-entities/schema.ts";
+} from "#/tools/match/schema.ts";
 import type {
   DisambiguateEntitiesInput,
   DisambiguateEntitiesOutput,
-} from "#/tools/disambiguate-entities/schema.ts";
+} from "#/tools/match/schema.ts";
 
 /** defaultDisambiguate provides a heuristic-based entity selection. */
 export function defaultDisambiguate({
@@ -21,7 +21,7 @@ export function defaultDisambiguate({
 
   // Filter for exact label matches first
   const exactMatch = candidates.find(
-    (c) => c.object.toLowerCase() === query.toLowerCase(),
+    (c: { object: string }) => c.object.toLowerCase() === query.toLowerCase(),
   );
   if (exactMatch) {
     return {
@@ -60,7 +60,7 @@ export type DisambiguateEntitiesTool = Tool<
 
 /** disambiguateEntitiesTool defines the metadata for the entity disambiguation tool. */
 export const disambiguateEntitiesTool = {
-  name: "disambiguate_entities",
+  name: "match_entities",
   description:
     "Selects the most likely match from a list of potential IRI candidates. Use this tool after a search returns multiple possible entities and you need a deterministic way to pick the correct one. Input must be a list of 'candidates' and the 'query' text. Returns the best matching entity or null.",
   inputSchema: disambiguateEntitiesInputSchema,

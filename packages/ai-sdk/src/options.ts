@@ -1,8 +1,8 @@
-import type { Source, Worlds } from "@wazoo/worlds-sdk";
+import type { Source, WorldsInterface } from "@wazoo/worlds-sdk";
 import type {
   DisambiguateEntitiesInput,
   DisambiguateEntitiesOutput,
-} from "./tools/disambiguate-entities/mod.ts";
+} from "./tools/match/mod.ts";
 
 /**
  * SourceInput is a flexible way to specify a data source.
@@ -15,9 +15,9 @@ export type SourceInput = string | Source;
  */
 export interface CreateToolsOptions {
   /**
-   * worlds is the Worlds instance to use for the tools.
+   * worlds is the Worlds interface to use for the tools.
    */
-  worlds: Worlds;
+  worlds: WorldsInterface;
 
   /**
    * sources is the list of sources visible to the tools.

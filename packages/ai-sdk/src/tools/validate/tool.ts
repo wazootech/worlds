@@ -6,12 +6,12 @@ import type { CreateToolsOptions } from "#/options.ts";
 import {
   validateRdfInputSchema,
   validateRdfOutputSchema,
-} from "#/tools/validate-rdf/schema.ts";
+} from "#/tools/validate/schema.ts";
 import type {
   Triple,
   ValidateRdfInput,
   ValidateRdfOutput,
-} from "#/tools/validate-rdf/schema.ts";
+} from "#/tools/validate/schema.ts";
 
 /** validateRdf validates a set of triples against an ontology and optional SHACL shapes. */
 export async function validateRdf(

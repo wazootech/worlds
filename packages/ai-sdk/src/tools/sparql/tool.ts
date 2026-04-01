@@ -7,7 +7,29 @@ import {
   executeSparqlInputSchema,
   type ExecuteSparqlOutput,
   executeSparqlOutputSchema,
-} from "#/tools/execute-sparql/schema.ts";
+} from "#/tools/sparql/schema.ts";
+
+/** executeSparql executes a SPARQL query or update against a specific world. */
+export async function executeSparql(
+  worlds: CreateToolsOptions["worlds"],
+  sources: CreateToolsOptions["sources"],
+  input: ExecuteSparqlInput,
+): Promise<ExecuteSparqlOutput> {
+  const { query, world: source } = input;
+  const s = sources.find((s) =>
+    (typeof s === "string" ? s : s.world) === source
+  );
+  const isWritable = typeof s === "object" ? s.write : false;
+
+  if (isSparqlUpdate(query) && !isWritable) {
+    throw new Error(
+      "Write operations are disabled. This source is configured as read-only. " +
+        "Only SELECT, ASK, CONSTRUCT, and DESCRIBE queries are allowed.",
+    );
+  }
+
+  return await worlds.sparql(source, query);
+}
 
 /** ExecuteSparqlTool is a tool for executing SPARQL queries and updates. */
 export type ExecuteSparqlTool = Tool<ExecuteSparqlInput, ExecuteSparqlOutput>;
@@ -28,20 +50,7 @@ export function createExecuteSparqlTool(
   return tool({
     ...executeSparqlTool,
     execute: async (input) => {
-      const { query, world: source } = input;
-      const s = sources.find((s) =>
-        (typeof s === "string" ? s : s.world) === source
-      );
-      const isWritable = typeof s === "object" ? s.write : false;
-
-      if (isSparqlUpdate(query) && !isWritable) {
-        throw new Error(
-          "Write operations are disabled. This source is configured as read-only. " +
-            "Only SELECT, ASK, CONSTRUCT, and DESCRIBE queries are allowed.",
-        );
-      }
-
-      return await worlds.sparql(source, query);
+      return await executeSparql(worlds, sources, input);
     },
   });
 }

@@ -5,7 +5,15 @@ import {
   type WorldsCreateInput,
   worldsCreateInputSchema,
   worldsCreateOutputSchema,
-} from "#/tools/worlds-create/schema.ts";
+} from "#/tools/create/schema.ts";
+
+/** createWorld creates a new isolated world. */
+export async function createWorld(
+  worlds: CreateToolsOptions["worlds"],
+  input: WorldsCreateInput,
+): Promise<World> {
+  return await worlds.create(input);
+}
 import type { World } from "@wazoo/worlds-sdk";
 
 /** WorldsCreateTool is a tool for creating a new world. */
@@ -13,7 +21,7 @@ export type WorldsCreateTool = Tool<WorldsCreateInput, World>;
 
 /** worldsCreateTool defines the configuration for the world creation tool. */
 export const worldsCreateTool = {
-  name: "worlds_create",
+  name: "create_world",
   description:
     "Creates a new isolated knowledge graph (world). Use this tool when the user wants to start a fresh dataset or project space. Input must include a unique 'slug' and a human-readable 'label'. Returns the newly created world object.",
   inputSchema: worldsCreateInputSchema,
@@ -27,7 +35,7 @@ export function createWorldsCreateTool(
   return tool({
     ...worldsCreateTool,
     execute: async (input) => {
-      return await worlds.create(input);
+      return await createWorld(worlds, input);
     },
   });
 }

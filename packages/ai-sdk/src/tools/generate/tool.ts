@@ -5,11 +5,11 @@ import type { CreateToolsOptions } from "#/options.ts";
 import {
   generateIriInputSchema,
   generateIriOutputSchema,
-} from "#/tools/generate-iri/schema.ts";
+} from "#/tools/generate/schema.ts";
 import type {
   GenerateIriInput,
   GenerateIriOutput,
-} from "#/tools/generate-iri/schema.ts";
+} from "#/tools/generate/schema.ts";
 
 /** GenerateIriTool is a tool that generates a unique IRI for a new entity. */
 export type GenerateIriTool = Tool<GenerateIriInput, GenerateIriOutput>;
