@@ -45,46 +45,25 @@ export function createTools(options: CreateToolsOptions): {
   const normalizedSources: Source[] = options.sources.map((s) =>
     typeof s === "string" ? { world: s } : s
   );
-  const normalizedOptions = { ...options, sources: normalizedSources };
+  const normalizedOptions: CreateToolsOptions = {
+    ...options,
+    sources: normalizedSources,
+  };
 
-  validateCreateToolsOptions(
-    normalizedOptions as unknown as CreateToolsOptions,
-  );
+  validateCreateToolsOptions(normalizedOptions);
 
   return {
-    sparql: createExecuteSparqlTool(
-      normalizedOptions as unknown as CreateToolsOptions,
-    ),
-    search: createSearchEntitiesTool(
-      normalizedOptions as unknown as CreateToolsOptions,
-    ),
-    match: createDisambiguateEntitiesTool(
-      normalizedOptions as unknown as CreateToolsOptions,
-    ),
-    list: createWorldsListTool(
-      normalizedOptions as unknown as CreateToolsOptions,
-    ),
-    get: createWorldsGetTool(
-      normalizedOptions as unknown as CreateToolsOptions,
-    ),
-    create: createWorldsCreateTool(
-      normalizedOptions as unknown as CreateToolsOptions,
-    ),
-    import: createWorldsImportTool(
-      normalizedOptions as unknown as CreateToolsOptions,
-    ),
-    export: createWorldsExportTool(
-      normalizedOptions as unknown as CreateToolsOptions,
-    ),
-    generate: createGenerateIriTool(
-      normalizedOptions as unknown as CreateToolsOptions,
-    ),
-    validate: createValidateRdfTool(
-      normalizedOptions as unknown as CreateToolsOptions,
-    ),
-    logs: createLogsTool(
-      normalizedOptions as unknown as CreateToolsOptions,
-    ),
+    sparql: createExecuteSparqlTool(normalizedOptions),
+    search: createSearchEntitiesTool(normalizedOptions),
+    match: createDisambiguateEntitiesTool(normalizedOptions),
+    list: createWorldsListTool(normalizedOptions),
+    get: createWorldsGetTool(normalizedOptions),
+    create: createWorldsCreateTool(normalizedOptions),
+    import: createWorldsImportTool(normalizedOptions),
+    export: createWorldsExportTool(normalizedOptions),
+    generate: createGenerateIriTool(normalizedOptions),
+    validate: createValidateRdfTool(normalizedOptions),
+    logs: createLogsTool(normalizedOptions),
   };
 }
 
