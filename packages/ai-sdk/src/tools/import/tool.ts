@@ -1,6 +1,10 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
+import type {
+  CreateToolsOptions,
+  WorldsInterface,
+  WorldsTool,
+} from "#/options.ts";
 import type { WorldsImportInput, WorldsImportOutput } from "./schema.ts";
 import { worldsImportInputSchema, worldsImportOutputSchema } from "./schema.ts";
 
@@ -17,12 +21,17 @@ export async function importWorld(
 export type WorldsImportTool = Tool<WorldsImportInput, WorldsImportOutput>;
 
 /** worldsImportTool defines the configuration for the world import tool. */
-export const worldsImportTool = {
+export const worldsImportTool: WorldsTool<
+  WorldsImportInput,
+  WorldsImportOutput
+> = {
   name: "worlds_import",
   description:
     "Ingests RDF data into an existing world's graph. Use this tool when you have raw Turtle, N-Triples, or N-Quads data to upload. Input must be a 'world' ID and a 'data' string. Returns a success indicator.",
   inputSchema: worldsImportInputSchema,
   outputSchema: worldsImportOutputSchema,
+  category: "write",
+  isWrite: true,
 };
 
 /** createWorldsImportTool instantiates the world import tool. */

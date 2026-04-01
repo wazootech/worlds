@@ -1,6 +1,10 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
+import type {
+  CreateToolsOptions,
+  WorldsInterface,
+  WorldsTool,
+} from "#/options.ts";
 import type { WorldsExportInput, WorldsExportOutput } from "./schema.ts";
 import { worldsExportInputSchema, worldsExportOutputSchema } from "./schema.ts";
 
@@ -17,12 +21,17 @@ export async function exportWorld(
 export type WorldsExportTool = Tool<WorldsExportInput, WorldsExportOutput>;
 
 /** worldsExportTool defines the configuration for the world export tool. */
-export const worldsExportTool = {
+export const worldsExportTool: WorldsTool<
+  WorldsExportInput,
+  WorldsExportOutput
+> = {
   name: "worlds_export",
   description:
     "Retrieves the entire collection of facts from a world in RDF format. Use this tool when you need to back up a dataset or move data between environments. Input must be a 'world' ID. Returns a string containing the world's facts in N-Quads format.",
   inputSchema: worldsExportInputSchema,
   outputSchema: worldsExportOutputSchema,
+  category: "read",
+  isWrite: false,
 };
 
 /** createWorldsExportTool instantiates the world export tool. */

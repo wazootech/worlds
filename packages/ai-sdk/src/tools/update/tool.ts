@@ -1,6 +1,10 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
+import type {
+  CreateToolsOptions,
+  WorldsInterface,
+  WorldsTool,
+} from "#/options.ts";
 import type { WorldsUpdateInput, WorldsUpdateOutput } from "./schema.ts";
 import { worldsUpdateInputSchema, worldsUpdateOutputSchema } from "./schema.ts";
 
@@ -17,12 +21,17 @@ export async function update(
 export type WorldsUpdateTool = Tool<WorldsUpdateInput, WorldsUpdateOutput>;
 
 /** worldsUpdateTool defines the configuration for the world update tool. */
-export const worldsUpdateTool = {
+export const worldsUpdateTool: WorldsTool<
+  WorldsUpdateInput,
+  WorldsUpdateOutput
+> = {
   name: "worlds_update",
   description:
     "Updates an existing world's metadata, such as its label or slug. Input must include the 'world' ID and at least one field to change. Returns a success indicator.",
   inputSchema: worldsUpdateInputSchema,
   outputSchema: worldsUpdateOutputSchema,
+  category: "write",
+  isWrite: true,
 };
 
 /** createWorldsUpdateTool instantiates the world update tool. */

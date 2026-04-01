@@ -1,6 +1,10 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
+import type {
+  CreateToolsOptions,
+  WorldsInterface,
+  WorldsTool,
+} from "#/options.ts";
 import type { World } from "@wazoo/worlds-sdk";
 import {
   type WorldsGetInput,
@@ -24,12 +28,14 @@ export async function get(
 export type WorldsGetTool = Tool<WorldsGetInput, World>;
 
 /** worldsGetTool defines the configuration for the world retrieval tool. */
-export const worldsGetTool = {
+export const worldsGetTool: WorldsTool<WorldsGetInput, World> = {
   name: "worlds_get",
   description:
     "Retrieves detailed metadata for a specific world. Use this tool when you have a world ID and need to check its configuration, labels, or creation date. Input must be a 'world' ID. Returns a world metadata object.",
   inputSchema: worldsGetInputSchema,
   outputSchema: worldsGetOutputSchema,
+  category: "read",
+  isWrite: false,
 };
 
 /** createWorldsGetTool instantiates the world retrieval tool. */

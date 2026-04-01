@@ -1,6 +1,10 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
+import type {
+  CreateToolsOptions,
+  WorldsInterface,
+  WorldsTool,
+} from "#/options.ts";
 import type { WorldsLogsInput, WorldsLogsOutput } from "./schema.ts";
 import { worldsLogsInputSchema, worldsLogsOutputSchema } from "./schema.ts";
 
@@ -17,12 +21,17 @@ export async function listLogs(
 export type WorldsLogsTool = Tool<WorldsLogsInput, WorldsLogsOutput>;
 
 /** worldsLogsTool defines the configuration for the world logs tool. */
-export const worldsLogsTool = {
+export const worldsLogsTool: WorldsTool<
+  WorldsLogsInput,
+  WorldsLogsOutput
+> = {
   name: "worlds_logs",
   description:
     "Retrieves execution and audit logs for a specific world. Use this tool when you need to troubleshoot operations, verify imports, or audit query history. Input must be a 'world' ID and optional 'page' and 'pageSize'. Returns an array of log objects.",
   inputSchema: worldsLogsInputSchema,
   outputSchema: worldsLogsOutputSchema,
+  category: "read",
+  isWrite: false,
 };
 
 /** createWorldsLogsTool instantiates the world logs tool. */

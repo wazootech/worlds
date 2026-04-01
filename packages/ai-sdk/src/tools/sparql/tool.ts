@@ -1,6 +1,11 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions, SourceInput, WorldsInterface } from "#/options.ts";
+import type {
+  CreateToolsOptions,
+  SourceInput,
+  WorldsInterface,
+  WorldsTool,
+} from "#/options.ts";
 import { isSparqlUpdate } from "@wazoo/worlds-sdk";
 import type { WorldsSparqlInput, WorldsSparqlOutput } from "./schema.ts";
 import { worldsSparqlInputSchema, worldsSparqlOutputSchema } from "./schema.ts";
@@ -31,12 +36,17 @@ export async function sparql(
 export type WorldsSparqlTool = Tool<WorldsSparqlInput, WorldsSparqlOutput>;
 
 /** worldsSparqlTool defines the configuration for the SPARQL execution tool. */
-export const worldsSparqlTool = {
+export const worldsSparqlTool: WorldsTool<
+  WorldsSparqlInput,
+  WorldsSparqlOutput
+> = {
   name: "worlds_sparql",
   description:
     "Executes a SPARQL query or update against a specific world. Use this tool when you need to retrieve raw facts, perform complex joins, or modify the knowledge graph via SPARQL. Input must be a 'world' ID and a 'query' string. Returns a JSON result object with bindings for SELECT/ASK or a boolean for updates.",
   inputSchema: worldsSparqlInputSchema,
   outputSchema: worldsSparqlOutputSchema,
+  category: "write",
+  isWrite: true,
 };
 
 /** createWorldsSparqlTool instantiates the SPARQL execution tool. */
