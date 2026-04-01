@@ -1,12 +1,12 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions } from "#/options.ts";
+import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
 import type { WorldsLogsInput, WorldsLogsOutput } from "./schema.ts";
 import { worldsLogsInputSchema, worldsLogsOutputSchema } from "./schema.ts";
 
 /** listLogs retrieves execution and audit logs for a specific world. */
 export async function listLogs(
-  worlds: CreateToolsOptions["worlds"],
+  worlds: WorldsInterface,
   input: WorldsLogsInput,
 ): Promise<WorldsLogsOutput> {
   const logsList = await worlds.listLogs(input);

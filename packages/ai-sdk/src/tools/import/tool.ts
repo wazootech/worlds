@@ -1,12 +1,12 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions } from "#/options.ts";
+import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
 import type { WorldsImportInput, WorldsImportOutput } from "./schema.ts";
 import { worldsImportInputSchema, worldsImportOutputSchema } from "./schema.ts";
 
-/** importData ingests RDF data into a world. */
-export async function importData(
-  worlds: CreateToolsOptions["worlds"],
+/** importWorld ingests RDF data into a world. */
+export async function importWorld(
+  worlds: WorldsInterface,
   input: WorldsImportInput,
 ): Promise<WorldsImportOutput> {
   await worlds.import(input);
@@ -32,7 +32,7 @@ export function createWorldsImportTool(
   return tool({
     ...worldsImportTool,
     execute: async (input) => {
-      return await importData(worlds, input);
+      return await importWorld(worlds, input);
     },
   });
 }

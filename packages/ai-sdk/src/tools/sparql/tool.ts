@@ -1,14 +1,14 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions } from "#/options.ts";
+import type { CreateToolsOptions, SourceInput, WorldsInterface } from "#/options.ts";
 import { isSparqlUpdate } from "@wazoo/worlds-sdk";
 import type { WorldsSparqlInput, WorldsSparqlOutput } from "./schema.ts";
 import { worldsSparqlInputSchema, worldsSparqlOutputSchema } from "./schema.ts";
 
 /** sparql executes a SPARQL query or update against a specific world. */
 export async function sparql(
-  worlds: CreateToolsOptions["worlds"],
-  sources: CreateToolsOptions["sources"],
+  worlds: WorldsInterface,
+  sources: SourceInput[],
   input: WorldsSparqlInput,
 ): Promise<WorldsSparqlOutput> {
   const { query, world: source } = input;

@@ -16,8 +16,8 @@ import { get, worldsGetTool } from "./get/tool.ts";
 import { create, worldsCreateTool } from "./create/tool.ts";
 import { update, worldsUpdateTool } from "./update/tool.ts";
 import { deleteWorld, worldsDeleteTool } from "./delete/tool.ts";
-import { importData, worldsImportTool } from "./import/tool.ts";
-import { exportData, worldsExportTool } from "./export/tool.ts";
+import { importWorld, worldsImportTool } from "./import/tool.ts";
+import { exportWorld, worldsExportTool } from "./export/tool.ts";
 import { listLogs, worldsLogsTool } from "./logs/tool.ts";
 
 function createMockWorld(overrides?: Partial<World>): World {
@@ -297,7 +297,7 @@ Deno.test("import tool", async (t) => {
     });
     const turtleData =
       '<http://example.org/s> <http://example.org/p> "object" .';
-    await importData(mockWorlds, {
+    await importWorld(mockWorlds, {
       world: "test-world",
       data: turtleData,
       contentType: "text/turtle",
@@ -321,7 +321,7 @@ Deno.test("export tool", async (t) => {
     const mockWorlds = createMockWorlds({
       export: () => Promise.resolve(new TextEncoder().encode(mockData).buffer),
     });
-    const result = await exportData(mockWorlds, { world: "test-world" });
+    const result = await exportWorld(mockWorlds, { world: "test-world" });
     assertEquals(result.data.includes("http://example.org/s"), true);
   });
 
@@ -333,7 +333,7 @@ Deno.test("export tool", async (t) => {
         return Promise.resolve(new ArrayBuffer(0));
       },
     });
-    await exportData(mockWorlds, {
+    await exportWorld(mockWorlds, {
       world: "test-world",
       contentType: "text/turtle",
     });

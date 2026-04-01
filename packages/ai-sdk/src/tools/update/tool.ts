@@ -1,12 +1,12 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions } from "#/options.ts";
+import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
 import type { WorldsUpdateInput, WorldsUpdateOutput } from "./schema.ts";
 import { worldsUpdateInputSchema, worldsUpdateOutputSchema } from "./schema.ts";
 
 /** update updates a world's metadata. */
 export async function update(
-  worlds: CreateToolsOptions["worlds"],
+  worlds: WorldsInterface,
   input: WorldsUpdateInput,
 ): Promise<WorldsUpdateOutput> {
   await worlds.update(input);

@@ -1,12 +1,12 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions } from "#/options.ts";
+import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
 import type { WorldsListInput, WorldsListOutput } from "./schema.ts";
 import { worldsListInputSchema, worldsListOutputSchema } from "./schema.ts";
 
 /** list retrieves a list of all datasets (worlds). */
 export async function list(
-  worlds: CreateToolsOptions["worlds"],
+  worlds: WorldsInterface,
   input: WorldsListInput,
 ): Promise<WorldsListOutput> {
   const worldsList = await worlds.list(input);

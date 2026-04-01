@@ -1,12 +1,12 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions } from "#/options.ts";
+import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
 import type { WorldsSearchInput, WorldsSearchOutputData } from "./schema.ts";
 import { worldsSearchInputSchema, worldsSearchOutputSchema } from "./schema.ts";
 
 /** search performs a semantic or text search for entities within a world. */
 export async function search(
-  worlds: CreateToolsOptions["worlds"],
+  worlds: WorldsInterface,
   input: WorldsSearchInput,
 ): Promise<WorldsSearchOutputData> {
   const results = await worlds.search(input);

@@ -1,12 +1,12 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions } from "#/options.ts";
+import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
 import type { WorldsExportInput, WorldsExportOutput } from "./schema.ts";
 import { worldsExportInputSchema, worldsExportOutputSchema } from "./schema.ts";
 
-/** exportData retrieves a world's facts in RDF format. */
-export async function exportData(
-  worlds: CreateToolsOptions["worlds"],
+/** exportWorld retrieves a world's facts in RDF format. */
+export async function exportWorld(
+  worlds: WorldsInterface,
   input: WorldsExportInput,
 ): Promise<WorldsExportOutput> {
   const buffer = await worlds.export(input);
@@ -32,7 +32,7 @@ export function createWorldsExportTool(
   return tool({
     ...worldsExportTool,
     execute: async (input) => {
-      return await exportData(worlds, input);
+      return await exportWorld(worlds, input);
     },
   });
 }

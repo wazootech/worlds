@@ -1,6 +1,6 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import type { CreateToolsOptions } from "#/options.ts";
+import type { CreateToolsOptions, WorldsInterface } from "#/options.ts";
 import type { World } from "@wazoo/worlds-sdk";
 import {
   type WorldsGetInput,
@@ -10,7 +10,7 @@ import {
 
 /** get retrieves detailed metadata for a specific world. */
 export async function get(
-  worlds: CreateToolsOptions["worlds"],
+  worlds: WorldsInterface,
   input: WorldsGetInput,
 ): Promise<World> {
   const world = await worlds.get(input);
