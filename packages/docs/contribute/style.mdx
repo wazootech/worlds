@@ -102,7 +102,8 @@ flavor (such as the memory metaphor) is essential for intuition.
   facts should use canonical project examples like `user:person` and
   `wazoo:organization`.
 - **Tested code**: Verify code works before including it.
-- **Import consistency**: Group types above values in import sections.
+- **Import consistency**: Group type imports above value imports. When importing
+  from the same path, the `import type` declaration must appear first.
 
 ## Development standards
 
@@ -119,14 +120,20 @@ flavor (such as the memory metaphor) is essential for intuition.
   declarations.
 - **Tree-shaking optimization**: Use the most specific module entry points
   (e.g., `import { ulid } from "@std/ulid/ulid"`).
-- **Import path strategy**: Use aliases (`#/`, `@/`) for all imports.
-  Never use relative paths (`./`, `../`).
+- **Import path strategy**: Use aliases (`#/`, `@/`) for cross-package imports.
+  Local relative paths (`./`) are permitted for files within the same directory
+  or subdirectories. Never use parent relative paths (`../`).
 
 ### Documentation (JSDoc)
 
 - **Identifier-first descriptions**: Descriptions must start with the exact name
-  of the identifier.
-  - _Good:_ `/** signOutAction signs out the current user session. */`
+  of the identifier. Use multiline format for readability.
+  - _Good:_
+    ```typescript
+    /**
+     * signOutAction signs out the current user session.
+     */
+    ```
   - _Bad:_ `/** Signs out the current user session. */`
 
 ### Clean code
