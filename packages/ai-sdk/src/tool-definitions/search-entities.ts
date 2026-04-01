@@ -1,16 +1,10 @@
 import { tool } from "ai";
 import { z } from "zod";
-import {
-  worldsSearchSchema,
-  worldsSearchOutputSchema,
-} from "../schemas/tools.ts";
+import { searchEntitiesToolDefinition } from "../schemas/search-entities.ts";
 import type { CreateToolsOptions } from "#/options.ts";
 
 export const searchEntitiesTool = {
-  name: "worlds_search",
-  description: "Search for facts in a Worlds knowledge graph using semantic search",
-  inputSchema: worldsSearchSchema,
-  outputSchema: worldsSearchOutputSchema,
+  ...searchEntitiesToolDefinition,
 };
 
 export function createSearchEntitiesTool(

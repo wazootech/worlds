@@ -1,17 +1,12 @@
 import { tool } from "ai";
 import { z } from "zod";
-import {
-  executeSparqlOutputSchema,
-  isSparqlUpdate,
-  worldsQuerySchema,
-} from "../schemas/tools.ts";
+import { executeSparqlToolDefinition, worldsQuerySchema } from "../schemas/execute-sparql.ts";
+import { executeSparqlOutputSchema, isSparqlUpdate } from "@wazoo/worlds-sdk";
 import type { ExecuteSparqlOutput } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "#/options.ts";
 
 export const executeSparqlTool = {
-  name: "worlds_query",
-  description: "Query a Worlds knowledge graph using SPARQL",
-  inputSchema: worldsQuerySchema,
+  ...executeSparqlToolDefinition,
   outputSchema: executeSparqlOutputSchema,
 };
 

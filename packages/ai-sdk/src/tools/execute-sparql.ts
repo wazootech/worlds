@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { executeSparqlTool } from "../tool-definitions/execute-sparql.ts";
-import { executeSparqlOutputSchema, isSparqlUpdate } from "../schemas/tools.ts";
+import { executeSparqlOutputSchema, isSparqlUpdate } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "#/options.ts";
 
 export type ExecuteSparqlInput = z.infer<typeof executeSparqlTool.inputSchema>;

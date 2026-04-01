@@ -14,7 +14,13 @@ import {
   worldsImportSchema,
   worldsExportSchema,
   worldsSearchSchema,
-  worldsSearchOutputSchema,
+  executeSparqlToolDefinition,
+  worldsListToolDefinition,
+  worldsGetToolDefinition,
+  worldsCreateToolDefinition,
+  worldsImportToolDefinition,
+  worldsExportToolDefinition,
+  searchEntitiesToolDefinition,
 } from "@wazoo/worlds-ai-sdk";
 import type {
   WorldsCreateInput,
@@ -176,7 +182,6 @@ export default (appContext: WorldsContext) => {
       title: "Search Entities",
       description: searchEntitiesTool.description,
       inputSchema: worldsSearchSchema,
-      outputSchema: worldsSearchOutputSchema,
     },
     async (args: WorldsSearchInput) => {
       const results = await worlds.search(args.world, args.query, {
