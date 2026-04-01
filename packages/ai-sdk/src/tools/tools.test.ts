@@ -9,16 +9,16 @@ import type {
 } from "@wazoo/worlds-sdk";
 import type { Log, World, WorldsSearchOutput } from "@wazoo/worlds-sdk";
 
-import { sparql, worldsSparqlTool } from "./sparql/tool.ts";
-import { search, worldsSearchTool } from "./search/tool.ts";
-import { list, worldsListTool } from "./list/tool.ts";
-import { get, worldsGetTool } from "./get/tool.ts";
-import { create, worldsCreateTool } from "./create/tool.ts";
-import { update, worldsUpdateTool } from "./update/tool.ts";
-import { deleteWorld, worldsDeleteTool } from "./delete/tool.ts";
-import { importWorld, worldsImportTool } from "./import/tool.ts";
-import { exportWorld, worldsExportTool } from "./export/tool.ts";
-import { listLogs, worldsLogsTool } from "./logs/tool.ts";
+import { sparql, worldsSparqlTool } from "./sparql.ts";
+import { search, worldsSearchTool } from "./search.ts";
+import { list, worldsListTool } from "./list.ts";
+import { get, worldsGetTool } from "./get.ts";
+import { create, worldsCreateTool } from "./create.ts";
+import { update, worldsUpdateTool } from "./update.ts";
+import { deleteWorld, worldsDeleteTool } from "./delete.ts";
+import { importWorld, worldsImportTool } from "./import.ts";
+import { exportWorld, worldsExportTool } from "./export.ts";
+import { listLogs, worldsLogsTool } from "./logs.ts";
 
 function createMockWorld(overrides?: Partial<World>): World {
   const now = Date.now();

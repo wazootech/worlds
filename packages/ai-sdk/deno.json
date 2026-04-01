@@ -4,16 +4,16 @@
 
   "exports": {
     ".": "./src/mod.ts",
-    "./tools/sparql": "./src/tools/sparql/tool.ts",
-    "./tools/search": "./src/tools/search/tool.ts",
-    "./tools/list": "./src/tools/list/tool.ts",
-    "./tools/get": "./src/tools/get/tool.ts",
-    "./tools/create": "./src/tools/create/tool.ts",
-    "./tools/update": "./src/tools/update/tool.ts",
-    "./tools/delete": "./src/tools/delete/tool.ts",
-    "./tools/import": "./src/tools/import/tool.ts",
-    "./tools/export": "./src/tools/export/tool.ts",
-    "./tools/logs": "./src/tools/logs/tool.ts",
+    "./tools/sparql": "./src/tools/sparql.ts",
+    "./tools/search": "./src/tools/search.ts",
+    "./tools/list": "./src/tools/list.ts",
+    "./tools/get": "./src/tools/get.ts",
+    "./tools/create": "./src/tools/create.ts",
+    "./tools/update": "./src/tools/update.ts",
+    "./tools/delete": "./src/tools/delete.ts",
+    "./tools/import": "./src/tools/import.ts",
+    "./tools/export": "./src/tools/export.ts",
+    "./tools/logs": "./src/tools/logs.ts",
     "./types": "./src/types.ts"
   },
   "imports": {
