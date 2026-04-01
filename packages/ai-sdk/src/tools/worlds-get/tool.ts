@@ -1,15 +1,17 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { CreateToolsOptions } from "../../options.ts";
+import type { CreateToolsOptions } from "#/options.ts";
 import {
   type WorldsGetInput,
   worldsGetInputSchema,
   worldsGetOutputSchema,
-} from "./schema.ts";
+} from "#/tools/worlds-get/schema.ts";
 import type { World } from "@wazoo/worlds-sdk";
 
+/** WorldsGetTool is a tool for retrieving world metadata. */
 export type WorldsGetTool = Tool<WorldsGetInput, World>;
 
+/** worldsGetTool defines the configuration for the world retrieval tool. */
 export const worldsGetTool = {
   name: "worlds_get",
   description:
@@ -18,6 +20,7 @@ export const worldsGetTool = {
   outputSchema: worldsGetOutputSchema,
 };
 
+/** createWorldsGetTool instantiates the world retrieval tool. */
 export function createWorldsGetTool(
   { worlds }: CreateToolsOptions,
 ): WorldsGetTool {

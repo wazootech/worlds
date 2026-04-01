@@ -2,13 +2,18 @@ import { tool } from "ai";
 import * as n3 from "n3";
 import { Validator as SHACLValidator } from "shacl-engine";
 import type { Tool } from "ai";
-import type { CreateToolsOptions } from "../../options.ts";
-import { validateRdfInputSchema, validateRdfOutputSchema } from "./schema.ts";
-import type { Triple, ValidateRdfInput, ValidateRdfOutput } from "./schema.ts";
+import type { CreateToolsOptions } from "#/options.ts";
+import {
+  validateRdfInputSchema,
+  validateRdfOutputSchema,
+} from "#/tools/validate-rdf/schema.ts";
+import type {
+  Triple,
+  ValidateRdfInput,
+  ValidateRdfOutput,
+} from "#/tools/validate-rdf/schema.ts";
 
-/**
- * validateRdf validates a set of triples against an ontology and optional SHACL shapes.
- */
+/** validateRdf validates a set of triples against an ontology and optional SHACL shapes. */
 export async function validateRdf(
   { triples, ontology }: ValidateRdfInput,
   options: Partial<CreateToolsOptions> = {},
@@ -110,14 +115,10 @@ export async function validateRdf(
   };
 }
 
-/**
- * ValidateRdfTool is a tool that validates RDF data against an ontology.
- */
+/** ValidateRdfTool is a tool that validates RDF data against an ontology. */
 export type ValidateRdfTool = Tool<ValidateRdfInput, ValidateRdfOutput>;
 
-/**
- * validateRdfTool is a metadata object for the tool that validates RDF data.
- */
+/** validateRdfTool defines the metadata for the RDF validation tool. */
 export const validateRdfTool = {
   name: "validate_rdf",
   description:
@@ -126,9 +127,7 @@ export const validateRdfTool = {
   outputSchema: validateRdfOutputSchema,
 };
 
-/**
- * createValidateRdfTool creates a tool that validates RDF data against an ontology.
- */
+/** createValidateRdfTool instantiates the RDF validation tool. */
 export function createValidateRdfTool(
   options: CreateToolsOptions,
 ): ValidateRdfTool {

@@ -1,15 +1,11 @@
 import { z } from "zod";
 
-/**
- * GenerateIriInput is the input to the generateIri tool.
- */
+/** GenerateIriInput is the input to the IRI generation tool. */
 export interface GenerateIriInput {
   referenceText: string;
 }
 
-/**
- * generateIriInputSchema is the input schema for the generateIri tool.
- */
+/** generateIriInputSchema is the Zod schema for IRI generation input. */
 export const generateIriInputSchema: z.ZodType<GenerateIriInput> = z.object(
   {
     referenceText: z.string().describe(
@@ -18,16 +14,12 @@ export const generateIriInputSchema: z.ZodType<GenerateIriInput> = z.object(
   },
 );
 
-/**
- * GenerateIriOutput is the output of the generateIri tool.
- */
+/** GenerateIriOutput is the output of the IRI generation tool. */
 export interface GenerateIriOutput {
   iri: string;
 }
 
-/**
- * generateIriOutputSchema is the output schema for the generateIri tool.
- */
+/** generateIriOutputSchema is the Zod schema for IRI generation output. */
 export const generateIriOutputSchema: z.ZodType<GenerateIriOutput> = z.object(
   {
     iri: z.string().describe(

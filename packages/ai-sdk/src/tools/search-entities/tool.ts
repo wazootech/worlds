@@ -1,18 +1,20 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { CreateToolsOptions } from "../../options.ts";
+import type { CreateToolsOptions } from "#/options.ts";
 import {
   type SearchEntitiesInput,
   searchEntitiesInputSchema,
   type SearchEntitiesOutput,
   searchEntitiesOutputSchema,
-} from "./schema.ts";
+} from "#/tools/search-entities/schema.ts";
 
+/** SearchEntitiesTool is a tool for searching entities within a world. */
 export type SearchEntitiesTool = Tool<
   SearchEntitiesInput,
   SearchEntitiesOutput
 >;
 
+/** searchEntitiesTool defines the configuration for the entity search tool. */
 export const searchEntitiesTool = {
   name: "worlds_search",
   description:
@@ -21,6 +23,7 @@ export const searchEntitiesTool = {
   outputSchema: searchEntitiesOutputSchema,
 };
 
+/** createSearchEntitiesTool instantiates the entity search tool. */
 export function createSearchEntitiesTool(
   { worlds }: CreateToolsOptions,
 ): SearchEntitiesTool {

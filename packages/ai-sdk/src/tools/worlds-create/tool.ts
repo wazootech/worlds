@@ -1,15 +1,17 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { CreateToolsOptions } from "../../options.ts";
+import type { CreateToolsOptions } from "#/options.ts";
 import {
   type WorldsCreateInput,
   worldsCreateInputSchema,
   worldsCreateOutputSchema,
-} from "./schema.ts";
+} from "#/tools/worlds-create/schema.ts";
 import type { World } from "@wazoo/worlds-sdk";
 
+/** WorldsCreateTool is a tool for creating a new world. */
 export type WorldsCreateTool = Tool<WorldsCreateInput, World>;
 
+/** worldsCreateTool defines the configuration for the world creation tool. */
 export const worldsCreateTool = {
   name: "worlds_create",
   description:
@@ -18,6 +20,7 @@ export const worldsCreateTool = {
   outputSchema: worldsCreateOutputSchema,
 };
 
+/** createWorldsCreateTool instantiates the world creation tool. */
 export function createWorldsCreateTool(
   { worlds }: CreateToolsOptions,
 ): WorldsCreateTool {

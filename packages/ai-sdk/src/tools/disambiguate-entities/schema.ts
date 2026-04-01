@@ -2,17 +2,13 @@ import { z } from "zod";
 import { tripleSearchResultSchema } from "@wazoo/worlds-sdk";
 import type { TripleSearchResult } from "@wazoo/worlds-sdk";
 
-/**
- * DisambiguateEntitiesInput is the input to the disambiguateEntities tool.
- */
+/** DisambiguateEntitiesInput is the input to the entity disambiguation tool. */
 export interface DisambiguateEntitiesInput {
   candidates: TripleSearchResult[];
   query: string;
 }
 
-/**
- * disambiguateEntitiesInputSchema is the input schema for the disambiguateEntities tool.
- */
+/** disambiguateEntitiesInputSchema is the Zod schema for entity disambiguation input. */
 export const disambiguateEntitiesInputSchema: z.ZodType<
   DisambiguateEntitiesInput
 > = z.object({
@@ -24,18 +20,14 @@ export const disambiguateEntitiesInputSchema: z.ZodType<
   ),
 });
 
-/**
- * DisambiguateEntitiesOutput is the output of the disambiguateEntities tool.
- */
+/** DisambiguateEntitiesOutput is the output of the entity disambiguation tool. */
 export interface DisambiguateEntitiesOutput {
   match: TripleSearchResult | null;
   confidence: number;
   reason: string;
 }
 
-/**
- * disambiguateEntitiesOutputSchema is the output schema for the disambiguateEntities tool.
- */
+/** disambiguateEntitiesOutputSchema is the Zod schema for entity disambiguation output. */
 export const disambiguateEntitiesOutputSchema: z.ZodType<
   DisambiguateEntitiesOutput
 > = z.object({

@@ -1,18 +1,20 @@
 import { tool } from "ai";
 import { ulid } from "@std/ulid/ulid";
 import type { Tool } from "ai";
-import type { CreateToolsOptions } from "../../options.ts";
-import { generateIriInputSchema, generateIriOutputSchema } from "./schema.ts";
-import type { GenerateIriInput, GenerateIriOutput } from "./schema.ts";
+import type { CreateToolsOptions } from "#/options.ts";
+import {
+  generateIriInputSchema,
+  generateIriOutputSchema,
+} from "#/tools/generate-iri/schema.ts";
+import type {
+  GenerateIriInput,
+  GenerateIriOutput,
+} from "#/tools/generate-iri/schema.ts";
 
-/**
- * GenerateIriTool is a tool that generates a unique IRI for a new entity.
- */
+/** GenerateIriTool is a tool that generates a unique IRI for a new entity. */
 export type GenerateIriTool = Tool<GenerateIriInput, GenerateIriOutput>;
 
-/**
- * generateIriTool is a metadata object for the tool that generates a unique IRI for a new entity.
- */
+/** generateIriTool defines the metadata for the IRI generation tool. */
 export const generateIriTool = {
   name: "generate_iri",
   description:
@@ -21,9 +23,7 @@ export const generateIriTool = {
   outputSchema: generateIriOutputSchema,
 };
 
-/**
- * createGenerateIriTool creates a tool that generates a unique IRI for a new entity.
- */
+/** createGenerateIriTool instantiates the IRI generation tool. */
 export function createGenerateIriTool(
   { generateIri = () => `https://wazoo.dev/.well-known/genid/${ulid()}` }:
     Partial<CreateToolsOptions> = {},

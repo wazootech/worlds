@@ -1,20 +1,24 @@
 import { z } from "zod";
 import { worldSchema } from "@wazoo/worlds-sdk";
 
+/** WorldsListInput is the input for listing worlds. */
 export interface WorldsListInput {
   page?: number;
   pageSize?: number;
 }
 
+/** worldsListInputSchema is the Zod schema for world listing input. */
 export const worldsListInputSchema: z.ZodType<WorldsListInput> = z.object({
   page: z.number().default(1).describe("Page number"),
   pageSize: z.number().default(20).describe("Page size"),
 });
 
+/** WorldsListOutput is the output for listing worlds. */
 export interface WorldsListOutput {
   worlds: z.infer<typeof worldSchema>[];
 }
 
+/** worldsListOutputSchema is the Zod schema for world listing output. */
 export const worldsListOutputSchema: z.ZodType<WorldsListOutput> = z.object({
   worlds: z.array(worldSchema),
 });

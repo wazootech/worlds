@@ -1,59 +1,29 @@
 import { z } from "zod";
-import { ontologySchema } from "../../schema.ts";
-import type { Ontology } from "../../schema.ts";
+import { ontologySchema } from "#/schema.ts";
+import type { Ontology } from "#/schema.ts";
 
-/**
- * Triple is a simplified representation of an RDF triple.
- */
+/** Triple is a simplified representation of an RDF triple. */
 export interface Triple {
-  /**
-   * subject is the subject IRI of the triple.
-   */
   subject: string;
-
-  /**
-   * predicate is the predicate IRI of the triple.
-   */
   predicate: string;
-
-  /**
-   * object is the object IRI or literal value.
-   */
   object: string;
 }
 
-/**
- * tripleSchema is the schema for a simplified triple.
- */
+/** tripleSchema is the Zod schema for a simplified triple. */
 export const tripleSchema: z.ZodType<Triple> = z.object({
   subject: z.string().describe("The subject IRI."),
   predicate: z.string().describe("The predicate IRI."),
   object: z.string().describe("The object IRI or literal value."),
 });
 
-/**
- * ValidateRdfInput is the input to the validateRdf tool.
- */
+/** ValidateRdfInput is the input for the RDF validation tool. */
 export interface ValidateRdfInput {
-  /**
-   * triples is the list of triples to validate.
-   */
   triples: Triple[];
-
-  /**
-   * ontology is the schema and classes to validate against.
-   */
   ontology: Ontology;
-
-  /**
-   * source is the optional context source.
-   */
   source?: string;
 }
 
-/**
- * validateRdfInputSchema is the input schema for the validateRdf tool.
- */
+/** validateRdfInputSchema is the Zod schema for RDF validation input. */
 export const validateRdfInputSchema: z.ZodType<ValidateRdfInput> = z
   .object({
     triples: z.array(tripleSchema).describe(
@@ -67,24 +37,13 @@ export const validateRdfInputSchema: z.ZodType<ValidateRdfInput> = z
     ),
   });
 
-/**
- * ValidateRdfOutput is the output of the validateRdf tool.
- */
+/** ValidateRdfOutput is the output of the RDF validation tool. */
 export interface ValidateRdfOutput {
-  /**
-   * isValid is true if the RDF conforms to the ontology and SHACL shapes.
-   */
   isValid: boolean;
-
-  /**
-   * errors contains the list of validation failure messages.
-   */
   errors: string[];
 }
 
-/**
- * validateRdfOutputSchema is the output schema for the validateRdf tool.
- */
+/** validateRdfOutputSchema is the Zod schema for RDF validation output. */
 export const validateRdfOutputSchema: z.ZodType<ValidateRdfOutput> = z
   .object({
     isValid: z.boolean().describe(

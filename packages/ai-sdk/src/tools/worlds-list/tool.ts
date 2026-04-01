@@ -1,15 +1,17 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { CreateToolsOptions } from "../../options.ts";
+import type { CreateToolsOptions } from "#/options.ts";
 import {
   type WorldsListInput,
   worldsListInputSchema,
   type WorldsListOutput,
   worldsListOutputSchema,
-} from "./schema.ts";
+} from "#/tools/worlds-list/schema.ts";
 
+/** WorldsListTool is a tool for listing worlds. */
 export type WorldsListTool = Tool<WorldsListInput, WorldsListOutput>;
 
+/** worldsListTool defines the configuration for the world listing tool. */
 export const worldsListTool = {
   name: "worlds_list",
   description:
@@ -18,6 +20,7 @@ export const worldsListTool = {
   outputSchema: worldsListOutputSchema,
 };
 
+/** createWorldsListTool instantiates the world listing tool. */
 export function createWorldsListTool(
   { worlds }: CreateToolsOptions,
 ): WorldsListTool {

@@ -1,8 +1,8 @@
 import { assert, assertEquals } from "@std/assert";
 import { createServer } from "@wazoo/worlds-server";
 import { createTestContext, Worlds } from "@wazoo/worlds-sdk";
-import { discoverSchema } from "./tools/discover-schema/tool.ts";
-import type { DiscoverSchemaResult } from "./tools/discover-schema/schema.ts";
+import { discoverSchema } from "#/tools/discover-schema/tool.ts";
+import type { DiscoverSchemaResult } from "#/tools/discover-schema/schema.ts";
 
 Deno.test("discoverSchema function - Class and Property Discovery", async () => {
   const appContext = await createTestContext();

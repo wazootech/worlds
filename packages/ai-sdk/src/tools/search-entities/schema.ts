@@ -3,6 +3,7 @@ import { z } from "zod";
 import { tripleSearchResultSchema } from "@wazoo/worlds-sdk";
 import type { TripleSearchResult } from "@wazoo/worlds-sdk";
 
+/** SearchEntitiesInput is the input for searching entities. */
 export interface SearchEntitiesInput {
   world: string;
   query: string;
@@ -12,6 +13,7 @@ export interface SearchEntitiesInput {
   limit?: number;
 }
 
+/** searchEntitiesInputSchema is the Zod schema for entity search input. */
 export const searchEntitiesInputSchema: z.ZodType<SearchEntitiesInput> = z
   .object({
     world: z.string().describe("The world ID to search within"),
@@ -30,10 +32,12 @@ export const searchEntitiesInputSchema: z.ZodType<SearchEntitiesInput> = z
     ),
   });
 
+/** SearchEntitiesOutput is the output for searching entities. */
 export interface SearchEntitiesOutput {
   results: TripleSearchResult[];
 }
 
+/** searchEntitiesOutputSchema is the Zod schema for entity search output. */
 export const searchEntitiesOutputSchema: z.ZodType<SearchEntitiesOutput> = z
   .object({
     results: z.array(tripleSearchResultSchema),

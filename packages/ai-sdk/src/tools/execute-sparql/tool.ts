@@ -1,16 +1,18 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
 import { isSparqlUpdate } from "@wazoo/worlds-sdk";
-import type { CreateToolsOptions } from "../../options.ts";
+import type { CreateToolsOptions } from "#/options.ts";
 import {
   type ExecuteSparqlInput,
   executeSparqlInputSchema,
   type ExecuteSparqlOutput,
   executeSparqlOutputSchema,
-} from "./schema.ts";
+} from "#/tools/execute-sparql/schema.ts";
 
+/** ExecuteSparqlTool is a tool for executing SPARQL queries and updates. */
 export type ExecuteSparqlTool = Tool<ExecuteSparqlInput, ExecuteSparqlOutput>;
 
+/** executeSparqlTool defines the configuration for the SPARQL execution tool. */
 export const executeSparqlTool = {
   name: "worlds_query",
   description:
@@ -19,6 +21,7 @@ export const executeSparqlTool = {
   outputSchema: executeSparqlOutputSchema,
 };
 
+/** createExecuteSparqlTool instantiates the SPARQL execution tool. */
 export function createExecuteSparqlTool(
   { worlds, sources }: CreateToolsOptions,
 ): ExecuteSparqlTool {

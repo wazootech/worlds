@@ -1,15 +1,17 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { CreateToolsOptions } from "../../options.ts";
+import type { CreateToolsOptions } from "#/options.ts";
 import {
   type WorldsExportInput,
   worldsExportInputSchema,
   type WorldsExportOutput,
   worldsExportOutputSchema,
-} from "./schema.ts";
+} from "#/tools/worlds-export/schema.ts";
 
+/** WorldsExportTool is a tool for exporting RDF data from a world. */
 export type WorldsExportTool = Tool<WorldsExportInput, WorldsExportOutput>;
 
+/** worldsExportTool defines the configuration for the world export tool. */
 export const worldsExportTool = {
   name: "worlds_export",
   description:
@@ -18,6 +20,7 @@ export const worldsExportTool = {
   outputSchema: worldsExportOutputSchema,
 };
 
+/** createWorldsExportTool instantiates the world export tool. */
 export function createWorldsExportTool(
   { worlds }: CreateToolsOptions,
 ): WorldsExportTool {

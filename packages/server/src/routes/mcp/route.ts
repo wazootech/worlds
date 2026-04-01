@@ -41,6 +41,7 @@ import type { WorldsCreateInput } from "@wazoo/worlds-ai-sdk/tools/worlds-create
 import type { WorldsImportInput } from "@wazoo/worlds-ai-sdk/tools/worlds-import/schema";
 import type { WorldsExportInput } from "@wazoo/worlds-ai-sdk/tools/worlds-export/schema";
 
+/** mcpRouter defines the MCP server route and registers tools. */
 export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);
 
@@ -219,6 +220,7 @@ export default (appContext: WorldsContext) => {
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });
     }
+
     return server.server.fetch(ctx.request);
   });
 
@@ -227,6 +229,7 @@ export default (appContext: WorldsContext) => {
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });
     }
+
     return server.server.fetch(ctx.request);
   });
 

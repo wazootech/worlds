@@ -1,16 +1,16 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
 import type { Worlds } from "@wazoo/worlds-sdk";
-import type { CreateToolsOptions } from "../../options.ts";
+import type { CreateToolsOptions } from "#/options.ts";
 import {
   discoverSchemaInputSchema,
   discoverSchemaOutputSchema,
-} from "./schema.ts";
+} from "#/tools/discover-schema/schema.ts";
 import type {
   DiscoverSchemaInput,
   DiscoverSchemaOutput,
   DiscoverSchemaResult,
-} from "./schema.ts";
+} from "#/tools/discover-schema/schema.ts";
 
 const terms = {
   rdf: {
@@ -36,9 +36,7 @@ const terms = {
   },
 };
 
-/**
- * discoverSchema discovers classes and properties.
- */
+/** discoverSchema discovers classes and properties within a world. */
 export async function discoverSchema(
   worlds: Worlds,
   { source, referenceText, limit = 10 }: DiscoverSchemaInput,
@@ -170,17 +168,13 @@ export async function discoverSchema(
   };
 }
 
-/**
- * DiscoverSchemaTool is a tool that discovers RDF classes and properties.
- */
+/** DiscoverSchemaTool is a tool that discovers RDF classes and properties. */
 export type DiscoverSchemaTool = Tool<
   DiscoverSchemaInput,
   DiscoverSchemaOutput
 >;
 
-/**
- * discoverSchemaTool is a metadata object for the tool that discovers RDF classes and properties.
- */
+/** discoverSchemaTool defines the metadata for the schema discovery tool. */
 export const discoverSchemaTool = {
   name: "discover_schema",
   description:
@@ -189,9 +183,7 @@ export const discoverSchemaTool = {
   outputSchema: discoverSchemaOutputSchema,
 };
 
-/**
- * createDiscoverSchemaTool creates a tool that discovers RDF classes and properties.
- */
+/** createDiscoverSchemaTool instantiates the schema discovery tool. */
 export function createDiscoverSchemaTool(
   options: CreateToolsOptions,
 ): DiscoverSchemaTool {

@@ -1,18 +1,16 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { CreateToolsOptions } from "../../options.ts";
+import type { CreateToolsOptions } from "#/options.ts";
 import {
   disambiguateEntitiesInputSchema,
   disambiguateEntitiesOutputSchema,
-} from "./schema.ts";
+} from "#/tools/disambiguate-entities/schema.ts";
 import type {
   DisambiguateEntitiesInput,
   DisambiguateEntitiesOutput,
-} from "./schema.ts";
+} from "#/tools/disambiguate-entities/schema.ts";
 
-/**
- * defaultDisambiguate is the default implementation of the disambiguateEntities tool.
- */
+/** defaultDisambiguate provides a heuristic-based entity selection. */
 export function defaultDisambiguate({
   candidates,
   query,
@@ -54,17 +52,13 @@ export function defaultDisambiguate({
   };
 }
 
-/**
- * DisambiguateEntitiesTool is a tool that helps an agent narrow down search results.
- */
+/** DisambiguateEntitiesTool is a tool that helps an agent narrow down search results. */
 export type DisambiguateEntitiesTool = Tool<
   DisambiguateEntitiesInput,
   DisambiguateEntitiesOutput
 >;
 
-/**
- * disambiguateEntitiesTool is a metadata object for the tool that helps an agent narrow down search results.
- */
+/** disambiguateEntitiesTool defines the metadata for the entity disambiguation tool. */
 export const disambiguateEntitiesTool = {
   name: "disambiguate_entities",
   description:
@@ -73,9 +67,7 @@ export const disambiguateEntitiesTool = {
   outputSchema: disambiguateEntitiesOutputSchema,
 };
 
-/**
- * createDisambiguateEntitiesTool creates a tool that helps an agent narrow down search results.
- */
+/** createDisambiguateEntitiesTool instantiates the entity disambiguation tool. */
 export function createDisambiguateEntitiesTool(
   {
     disambiguate = defaultDisambiguate,
