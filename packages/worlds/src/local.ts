@@ -12,22 +12,30 @@ import {
   getSerializationByContentType,
 } from "./rdf/core/serialization.ts";
 import {
-  executeSparqlOutputSchema,
   logSchema,
   worldSchema,
+  worldsSparqlOutputSchema,
 } from "./schemas/mod.ts";
 import type { WorldsInterface } from "./types.ts";
 import type { WorldRow } from "./database/repositories/system/worlds/mod.ts";
 import type { Patch } from "./rdf/patch/mod.ts";
 import type { WorldsContext } from "./types.ts";
 import type {
-  CreateWorldParams,
-  ExecuteSparqlOutput,
   Log,
-  TripleSearchResult,
-  UpdateWorldParams,
   World,
   WorldsContentType,
+  WorldsCreateInput,
+  WorldsDeleteInput,
+  WorldsExportInput,
+  WorldsGetInput,
+  WorldsImportInput,
+  WorldsListInput,
+  WorldsLogsInput,
+  WorldsSearchInput,
+  WorldsSearchOutput,
+  WorldsSparqlInput,
+  WorldsSparqlOutput,
+  WorldsUpdateInput,
 } from "./schemas/mod.ts";
 
 const { namedNode, quad } = DataFactory;
@@ -45,18 +53,13 @@ export class LocalWorlds implements WorldsInterface {
   /**
    * list paginates all available worlds from the system database.
    */
-  async list(options?: {
-    limit?: number;
-    offset?: number;
-    page?: number; // Convenience
-    pageSize?: number; // Convenience
-  }): Promise<World[]> {
-    let limit = options?.limit ?? 20;
-    let offset = options?.offset ?? 0;
+  async list(input?: WorldsListInput): Promise<World[]> {
+    let limit = 20;
+    let offset = 0;
 
-    if (options?.page && options?.pageSize) {
-      limit = options.pageSize;
-      offset = (options.page - 1) * options.pageSize;
+    if (input?.page && input?.pageSize) {
+      limit = input.pageSize;
+      offset = (input.page - 1) * input.pageSize;
     }
 
     const rows = await this.worldsRepository.list(limit, offset);
@@ -76,8 +79,8 @@ export class LocalWorlds implements WorldsInterface {
   /**
    * get fetches a single world by its ID or slug.
    */
-  async get(idOrSlug: string): Promise<World | null> {
-    const world = await this.resolveWorld(idOrSlug);
+  async get(input: WorldsGetInput): Promise<World | null> {
+    const world = await this.resolveWorld(input.world);
     if (!world) {
       return null;
     }
@@ -113,7 +116,7 @@ export class LocalWorlds implements WorldsInterface {
   /**
    * create creates a new isolated world.
    */
-  async create(data: CreateWorldParams): Promise<World> {
+  async create(data: WorldsCreateInput): Promise<World> {
     const id = ulid();
     const { slug, label, description } = data;
 
@@ -152,7 +155,8 @@ export class LocalWorlds implements WorldsInterface {
   /**
    * update updates a world's metadata.
    */
-  async update(idOrSlug: string, data: UpdateWorldParams): Promise<void> {
+  async update(input: WorldsUpdateInput): Promise<void> {
+    const { world: idOrSlug, ...data } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
       throw new Error("World not found");
@@ -171,8 +175,8 @@ export class LocalWorlds implements WorldsInterface {
   /**
    * delete marks a world as deleted.
    */
-  async delete(idOrSlug: string): Promise<void> {
-    const world = await this.resolveWorld(idOrSlug);
+  async delete(input: WorldsDeleteInput): Promise<void> {
+    const world = await this.resolveWorld(input.world);
     if (!world) {
       throw new Error("World not found");
     }
@@ -185,14 +189,8 @@ export class LocalWorlds implements WorldsInterface {
   /**
    * sparql executes a SPARQL query or update against a specific world.
    */
-  async sparql(
-    idOrSlug: string,
-    query: string,
-    _options?: {
-      defaultGraphUris?: string[];
-      namedGraphUris?: string[];
-    },
-  ): Promise<ExecuteSparqlOutput> {
+  async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
+    const { world: idOrSlug, query } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
       throw new Error("World not found");
@@ -245,22 +243,15 @@ export class LocalWorlds implements WorldsInterface {
       metadata: { query: query.slice(0, 1000) },
     });
 
-    return executeSparqlOutputSchema.parse(result);
+    return worldsSparqlOutputSchema.parse(result);
   }
 
   /**
    * search performs semantic/text search on triples using vector embeddings.
    */
-  async search(
-    idOrSlug: string,
-    query: string,
-    options?: {
-      limit?: number;
-      subjects?: string[];
-      predicates?: string[];
-      types?: string[];
-    },
-  ): Promise<TripleSearchResult[]> {
+  async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
+    const { world: idOrSlug, query, limit, subjects, predicates, types } =
+      input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
       throw new Error("World not found");
@@ -273,10 +264,10 @@ export class LocalWorlds implements WorldsInterface {
     const results = await chunksSearchRepository.search({
       query,
       world,
-      subjects: options?.subjects,
-      predicates: options?.predicates,
-      types: options?.types,
-      limit: options?.limit ?? 20,
+      subjects,
+      predicates,
+      types,
+      limit: limit ?? 20,
     });
 
     const managed = await this.appContext.libsql.manager.get(world.id);
@@ -289,32 +280,27 @@ export class LocalWorlds implements WorldsInterface {
       message: "Semantic search executed",
       metadata: {
         query: query.slice(0, 500),
-        subjects: options?.subjects?.length ? options.subjects : null,
-        predicates: options?.predicates?.length ? options.predicates : null,
-        types: options?.types?.length ? options.types : null,
+        subjects: subjects?.length ? subjects : null,
+        predicates: predicates?.length ? predicates : null,
+        types: types?.length ? types : null,
       },
     });
 
     return results;
   }
 
-  async import(
-    idOrSlug: string,
-    data: string | ArrayBuffer,
-    options?: {
-      contentType?: WorldsContentType;
-    },
-  ): Promise<void> {
+  async import(input: WorldsImportInput): Promise<void> {
+    const { world: idOrSlug, data, contentType } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
       throw new Error("World not found");
     }
 
-    const serialization = options?.contentType
-      ? getSerializationByContentType(options.contentType)
+    const serialization = contentType
+      ? getSerializationByContentType(contentType)
       : DEFAULT_SERIALIZATION;
     if (!serialization) {
-      throw new Error(`Unsupported content type: ${options?.contentType}`);
+      throw new Error(`Unsupported content type: ${contentType}`);
     }
 
     const body = typeof data === "string"
@@ -371,20 +357,18 @@ export class LocalWorlds implements WorldsInterface {
   /**
    * export retrieves a world's facts in the specified RDF content type.
    */
-  async export(
-    idOrSlug: string,
-    options?: { contentType?: WorldsContentType },
-  ): Promise<ArrayBuffer> {
+  async export(input: WorldsExportInput): Promise<ArrayBuffer> {
+    const { world: idOrSlug, contentType } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
       throw new Error("World not found");
     }
 
-    const serialization = options?.contentType
-      ? getSerializationByContentType(options.contentType)
+    const serialization = contentType
+      ? getSerializationByContentType(contentType)
       : DEFAULT_SERIALIZATION;
     if (!serialization) {
-      throw new Error(`Unsupported content type: ${options?.contentType}`);
+      throw new Error(`Unsupported content type: ${contentType}`);
     }
 
     const managed = await this.appContext.libsql.manager.get(world.id);
@@ -420,14 +404,18 @@ export class LocalWorlds implements WorldsInterface {
    * getServiceDescription retrieves the SPARQL service description.
    */
   getServiceDescription(
-    _id: string,
-    options: { endpointUrl: string; contentType?: WorldsContentType },
+    input: {
+      world: string;
+      endpointUrl: string;
+      contentType?: WorldsContentType;
+    },
   ): Promise<string> {
-    const serialization = options.contentType
-      ? getSerializationByContentType(options.contentType)
+    const { endpointUrl, contentType } = input;
+    const serialization = contentType
+      ? getSerializationByContentType(contentType)
       : DEFAULT_SERIALIZATION;
     if (!serialization) {
-      throw new Error(`Unsupported content type: ${options.contentType}`);
+      throw new Error(`Unsupported content type: ${contentType}`);
     }
 
     return new Promise((resolve, reject) => {
@@ -436,7 +424,7 @@ export class LocalWorlds implements WorldsInterface {
       // SPARQL Service Description vocabulary
       const sd = "http://www.w3.org/ns/sparql-service-description#";
       const rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-      const endpoint = namedNode(options.endpointUrl);
+      const endpoint = namedNode(endpointUrl);
       const serviceType = namedNode(`${sd}Service`);
       const endpointProperty = namedNode(`${sd}endpoint`);
 
@@ -487,14 +475,8 @@ export class LocalWorlds implements WorldsInterface {
   /**
    * listLogs retrieves execution and audit logs from the world database.
    */
-  async listLogs(
-    idOrSlug: string,
-    options?: {
-      page?: number;
-      pageSize?: number;
-      level?: string;
-    },
-  ): Promise<Log[]> {
+  async listLogs(input: WorldsLogsInput): Promise<Log[]> {
+    const { world: idOrSlug, page: p, pageSize: ps, level } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
       throw new Error("World not found");
@@ -503,14 +485,14 @@ export class LocalWorlds implements WorldsInterface {
     const managed = await this.appContext.libsql.manager.get(world.id);
     const logsRepository = new LogsRepository(managed.database);
 
-    const page = options?.page ?? 1;
-    const pageSize = options?.pageSize ?? 20;
+    const page = p ?? 1;
+    const pageSize = ps ?? 20;
 
     const rows = await logsRepository.listByWorld(
       world.id,
       page,
       pageSize,
-      options?.level,
+      level,
     );
 
     const results = rows.map((log) =>

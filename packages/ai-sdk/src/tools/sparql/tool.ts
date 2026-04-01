@@ -3,18 +3,18 @@ import type { Tool } from "ai";
 import { isSparqlUpdate } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "#/options.ts";
 import {
-  type ExecuteSparqlInput,
-  executeSparqlInputSchema,
-  type ExecuteSparqlOutput,
-  executeSparqlOutputSchema,
-} from "#/tools/sparql/schema.ts";
+  type WorldsSparqlInput,
+  worldsSparqlInputSchema,
+  type WorldsSparqlOutput,
+  worldsSparqlOutputSchema,
+} from "./schema.ts";
 
 /** sparql executes a SPARQL query or update against a specific world. */
 export async function sparql(
   worlds: CreateToolsOptions["worlds"],
   sources: CreateToolsOptions["sources"],
-  input: ExecuteSparqlInput,
-): Promise<ExecuteSparqlOutput> {
+  input: WorldsSparqlInput,
+): Promise<WorldsSparqlOutput> {
   const { query, world: source } = input;
   const s = sources.find((s) =>
     (typeof s === "string" ? s : s.world) === source
@@ -28,25 +28,25 @@ export async function sparql(
     );
   }
 
-  return await worlds.sparql(source, query);
+  return await worlds.sparql(input);
 }
 
-/** ExecuteSparqlTool is a tool for executing SPARQL queries and updates. */
-export type ExecuteSparqlTool = Tool<ExecuteSparqlInput, ExecuteSparqlOutput>;
+/** WorldsSparqlTool is a tool for executing SPARQL queries and updates. */
+export type WorldsSparqlTool = Tool<WorldsSparqlInput, WorldsSparqlOutput>;
 
 /** worldsSparqlTool defines the configuration for the SPARQL execution tool. */
 export const worldsSparqlTool = {
   name: "worlds_sparql",
   description:
     "Executes a SPARQL query or update against a specific world. Use this tool when you need to retrieve raw facts, perform complex joins, or modify the knowledge graph via SPARQL. Input must be a 'world' ID and a 'query' string. Returns a JSON result object with bindings for SELECT/ASK or a boolean for updates.",
-  inputSchema: executeSparqlInputSchema,
-  outputSchema: executeSparqlOutputSchema,
+  inputSchema: worldsSparqlInputSchema,
+  outputSchema: worldsSparqlOutputSchema,
 };
 
-/** createExecuteSparqlTool instantiates the SPARQL execution tool. */
-export function createExecuteSparqlTool(
+/** createWorldsSparqlTool instantiates the SPARQL execution tool. */
+export function createWorldsSparqlTool(
   { worlds, sources }: CreateToolsOptions,
-): ExecuteSparqlTool {
+): WorldsSparqlTool {
   return tool({
     ...worldsSparqlTool,
     execute: async (input) => {

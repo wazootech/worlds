@@ -1,11 +1,8 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
 import type { CreateToolsOptions } from "#/options.ts";
-import {
-  type WorldsCreateInput,
-  worldsCreateInputSchema,
-  worldsCreateOutputSchema,
-} from "#/tools/create/schema.ts";
+import { worldsCreateInputSchema, worldsCreateOutputSchema } from "./schema.ts";
+import type { WorldsCreateInput } from "./schema.ts";
 
 import type { World } from "@wazoo/worlds-sdk";
 

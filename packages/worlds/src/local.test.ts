@@ -21,7 +21,7 @@ Deno.test("LocalWorlds", async (t) => {
   });
 
   await t.step("get world", async () => {
-    const world = await worlds.get(id);
+    const world = await worlds.get({ world: id });
     assertExists(world);
     assertEquals(world!.label, "Core World");
   });
@@ -32,29 +32,30 @@ Deno.test("LocalWorlds", async (t) => {
   });
 
   await t.step("update world", async () => {
-    await worlds.update(id, {
+    await worlds.update({
+      world: id,
       description: "Updated from Core",
     });
-    const world = await worlds.get(id);
+    const world = await worlds.get({ world: id });
     assertEquals(world!.description, "Updated from Core");
   });
 
   await t.step("sparql query/update", async () => {
     // Insert
-    await worlds.sparql(
-      id,
-      `
+    await worlds.sparql({
+      world: id,
+      query: `
       INSERT DATA { <http://example.org/s> <http://example.org/p> "Core Value" . }
     `,
-    );
+    });
 
     // Query
-    const result = await worlds.sparql(
-      id,
-      `
+    const result = await worlds.sparql({
+      world: id,
+      query: `
       SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }
     `,
-    );
+    });
 
     // Type check if it's select result
     if (result && "results" in result) {
@@ -69,8 +70,8 @@ Deno.test("LocalWorlds", async (t) => {
   });
 
   await t.step("delete world", async () => {
-    await worlds.delete(id);
-    const world = await worlds.get(id);
+    await worlds.delete({ world: id });
+    const world = await worlds.get({ world: id });
     assertEquals(world, null);
   });
 });

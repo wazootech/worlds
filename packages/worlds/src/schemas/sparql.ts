@@ -302,18 +302,57 @@ export const sparqlQuadsResultsSchema: z.ZodType<SparqlQuadsResults> = z
   });
 
 /**
- * ExecuteSparqlOutput represents the result of a SPARQL query or update.
+ * WorldsSparqlInput represents the parameters for executing a SPARQL query or update.
  */
-export type ExecuteSparqlOutput =
+export interface WorldsSparqlInput {
+  /**
+   * world is the ID or slug of the target world.
+   */
+  world: string;
+
+  /**
+   * query is the SPARQL query or update string.
+   */
+  query: string;
+
+  /**
+   * defaultGraphUris is an optional list of default graphs to query.
+   */
+  defaultGraphUris?: string[];
+
+  /**
+   * namedGraphUris is an optional list of named graphs to query.
+   */
+  namedGraphUris?: string[];
+}
+
+/**
+ * worldsSparqlInputSchema is the Zod schema for WorldsSparqlInput.
+ */
+export const worldsSparqlInputSchema: z.ZodType<WorldsSparqlInput> = z.object({
+  world: z.string().describe("The ID or slug of the target world."),
+  query: z.string().describe("The SPARQL query or update string."),
+  defaultGraphUris: z.array(z.string()).optional().describe(
+    "Optional list of default graphs to query.",
+  ),
+  namedGraphUris: z.array(z.string()).optional().describe(
+    "Optional list of named graphs to query.",
+  ),
+});
+
+/**
+ * WorldsSparqlOutput represents the result of a SPARQL query or update.
+ */
+export type WorldsSparqlOutput =
   | SparqlSelectResults
   | SparqlAskResults
   | SparqlQuadsResults
   | null;
 
 /**
- * executeSparqlOutputSchema is the Zod schema for the output of a SPARQL query or update.
+ * worldsSparqlOutputSchema is the Zod schema for the output of a SPARQL query or update.
  */
-export const executeSparqlOutputSchema: z.ZodType<ExecuteSparqlOutput> = z
+export const worldsSparqlOutputSchema: z.ZodType<WorldsSparqlOutput> = z
   .union([
     sparqlSelectResultsSchema,
     sparqlAskResultsSchema,

@@ -1,19 +1,16 @@
 import { STATUS_CODE } from "@std/http/status";
 import { Router } from "@fartlabs/rt";
 import {
-  createWorldParamsSchema,
-  paginationParamsSchema,
-  updateWorldParamsSchema,
-  type WorldsContentType,
-} from "@wazoo/worlds-sdk";
-import { authorizeRequest } from "#/middleware/auth.ts";
-import type { WorldsContext } from "@wazoo/worlds-sdk";
-import {
   ErrorResponse,
   handleETagRequest,
   LocalWorlds,
   negotiateSerialization,
+  worldsCreateInputSchema,
+  worldsListInputSchema,
+  worldsUpdateInputSchema,
 } from "@wazoo/worlds-sdk";
+import type { WorldsContentType, WorldsContext } from "@wazoo/worlds-sdk";
+import { authorizeRequest } from "#/middleware/auth.ts";
 
 export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);
@@ -32,7 +29,7 @@ export default (appContext: WorldsContext) => {
           return ErrorResponse.Unauthorized();
         }
 
-        const world = await worlds.get(worldId);
+        const world = await worlds.get({ world: worldId });
         if (!world) {
           return ErrorResponse.NotFound("World not found");
         }
@@ -74,7 +71,8 @@ export default (appContext: WorldsContext) => {
         }
 
         try {
-          const buffer = await worlds.export(worldId, {
+          const buffer = await worlds.export({
+            world: worldId,
             contentType: serialization.contentType,
           });
           return await handleETagRequest(
@@ -109,7 +107,7 @@ export default (appContext: WorldsContext) => {
           "application/n-quads";
 
         try {
-          await worlds.import(worldId, body, { contentType });
+          await worlds.import({ world: worldId, data: body, contentType });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.BadRequest(
@@ -129,7 +127,7 @@ export default (appContext: WorldsContext) => {
         const url = new URL(ctx.request.url);
         const pageString = url.searchParams.get("page") ?? "1";
         const pageSizeString = url.searchParams.get("pageSize") ?? "20";
-        const paginationResult = paginationParamsSchema.safeParse({
+        const paginationResult = worldsListInputSchema.safeParse({
           page: parseInt(pageString),
           pageSize: parseInt(pageSizeString),
         });
@@ -153,7 +151,7 @@ export default (appContext: WorldsContext) => {
         }
 
         const body = await ctx.request.json();
-        const parseResult = createWorldParamsSchema.safeParse(body);
+        const parseResult = worldsCreateInputSchema.safeParse(body);
         if (!parseResult.success) {
           return ErrorResponse.BadRequest("Invalid parameters");
         }
@@ -188,13 +186,16 @@ export default (appContext: WorldsContext) => {
           return ErrorResponse.BadRequest("Invalid JSON");
         }
 
-        const updateResult = updateWorldParamsSchema.safeParse(body);
+        const updateResult = worldsUpdateInputSchema.safeParse({
+          ...body as object,
+          world: worldId,
+        });
         if (!updateResult.success) {
           return ErrorResponse.BadRequest("Invalid parameters");
         }
 
         try {
-          await worlds.update(worldId, updateResult.data);
+          await worlds.update(updateResult.data);
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.NotFound(
@@ -217,7 +218,7 @@ export default (appContext: WorldsContext) => {
         }
 
         try {
-          await worlds.delete(worldId);
+          await worlds.delete({ world: worldId });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.NotFound(

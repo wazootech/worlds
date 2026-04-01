@@ -6,15 +6,14 @@ import {
   worldsListInputSchema,
   type WorldsListOutput,
   worldsListOutputSchema,
-} from "#/tools/list/schema.ts";
+} from "./schema.ts";
 
 /** list retrieves a list of all datasets (worlds). */
 export async function list(
   worlds: CreateToolsOptions["worlds"],
   input: WorldsListInput,
 ): Promise<WorldsListOutput> {
-  const { page, pageSize } = input;
-  const worldsList = await worlds.list({ page, pageSize });
+  const worldsList = await worlds.list(input);
   return { worlds: worldsList };
 }
 

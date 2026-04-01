@@ -5,7 +5,7 @@ import {
   type WorldsGetInput,
   worldsGetInputSchema,
   worldsGetOutputSchema,
-} from "#/tools/get/schema.ts";
+} from "./schema.ts";
 
 import type { World } from "@wazoo/worlds-sdk";
 
@@ -14,7 +14,7 @@ export async function get(
   worlds: CreateToolsOptions["worlds"],
   input: WorldsGetInput,
 ): Promise<World> {
-  const world = await worlds.get(input.world);
+  const world = await worlds.get(input);
   if (!world) {
     throw new Error("World not found");
   }

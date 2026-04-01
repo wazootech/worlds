@@ -95,7 +95,8 @@ export class WorldsCli {
       );
       return;
     }
-    await this.worlds.update(world, {
+    await this.worlds.update({
+      world,
       slug: parsed.slug,
       label: parsed.label,
       description: parsed.description,
@@ -124,7 +125,7 @@ export class WorldsCli {
       console.error("Usage: worlds delete --world <id>");
       return;
     }
-    await this.worlds.delete(world);
+    await this.worlds.delete({ world });
     console.log(`Deleted world ${world}`);
   }
 
@@ -175,7 +176,7 @@ export class WorldsCli {
       console.error("Usage: worlds get --world <id>");
       return;
     }
-    const worldObj = await this.worlds.get(world);
+    const worldObj = await this.worlds.get({ world });
     console.log(JSON.stringify(worldObj, null, 2));
   }
 
@@ -212,7 +213,9 @@ export class WorldsCli {
       );
       return;
     }
-    const results = await this.worlds.search(world, query, {
+    const results = await this.worlds.search({
+      world,
+      query,
       limit: parsed.limit ? parseInt(parsed.limit as string) : undefined,
       subjects: parsed.subjects,
       predicates: parsed.predicates,
@@ -254,7 +257,7 @@ export class WorldsCli {
       // Not a file, use as query string
     }
 
-    const results = await this.worlds.sparql(world, query);
+    const results = await this.worlds.sparql({ world, query });
     console.log(JSON.stringify(results, null, 2));
   }
 
@@ -284,7 +287,9 @@ export class WorldsCli {
       return;
     }
     const data = await Deno.readFile(path);
-    await this.worlds.import(world, data.buffer as ArrayBuffer, {
+    await this.worlds.import({
+      world,
+      data: data.buffer as ArrayBuffer,
       contentType: parsed["content-type"] as WorldsContentType,
     });
     console.log(`Imported data into world ${world}`);
@@ -314,7 +319,8 @@ export class WorldsCli {
       );
       return;
     }
-    const buffer = await this.worlds.export(world, {
+    const buffer = await this.worlds.export({
+      world,
       contentType: parsed["content-type"] as WorldsContentType,
     });
     await Deno.stdout.write(new Uint8Array(buffer));
@@ -366,7 +372,7 @@ export class WorldsCli {
       return;
     }
 
-    const world = await this.worlds.get(parsed.world);
+    const world = await this.worlds.get({ world: parsed.world });
     if (!world) {
       console.error(`World "${parsed.world}" not found.`);
       return;
@@ -525,15 +531,15 @@ export class WorldsCli {
               // Format call detail for display.
               let callDetail = "";
               switch (call.toolName) {
-                case "executeSparql": {
+                case "worlds_sparql": {
                   const input = callInput as { sparql?: string };
                   const sparql = input.sparql?.trim() || "";
-                  callDetail = `executeSparql(\n${sparql}\n)`;
+                  callDetail = `worlds_sparql(\n${sparql}\n)`;
                   break;
                 }
-                case "searchEntities": {
+                case "worlds_search": {
                   const input = callInput as { query?: string };
-                  callDetail = `searchEntities("${input.query || ""}")`;
+                  callDetail = `worlds_search("${input.query || ""}")`;
                   break;
                 }
                 default: {

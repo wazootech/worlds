@@ -6,15 +6,14 @@ import {
   worldsImportInputSchema,
   type WorldsImportOutput,
   worldsImportOutputSchema,
-} from "#/tools/import/schema.ts";
+} from "./schema.ts";
 
 /** importData ingests RDF data into a world. */
 export async function importData(
   worlds: CreateToolsOptions["worlds"],
   input: WorldsImportInput,
 ): Promise<WorldsImportOutput> {
-  const { world, data, contentType } = input;
-  await worlds.import(world, data, { contentType });
+  await worlds.import(input);
   return { success: true };
 }
 

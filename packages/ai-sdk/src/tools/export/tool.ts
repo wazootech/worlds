@@ -6,15 +6,14 @@ import {
   worldsExportInputSchema,
   type WorldsExportOutput,
   worldsExportOutputSchema,
-} from "#/tools/export/schema.ts";
+} from "./schema.ts";
 
 /** exportData retrieves a world's facts in RDF format. */
 export async function exportData(
   worlds: CreateToolsOptions["worlds"],
   input: WorldsExportInput,
 ): Promise<WorldsExportOutput> {
-  const { world, contentType } = input;
-  const buffer = await worlds.export(world, { contentType });
+  const buffer = await worlds.export(input);
   return { data: new TextDecoder().decode(buffer) };
 }
 

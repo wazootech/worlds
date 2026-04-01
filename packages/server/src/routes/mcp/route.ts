@@ -6,16 +6,16 @@ import { LocalWorlds } from "@wazoo/worlds-sdk";
 import type { SourceInput } from "@wazoo/worlds-ai-sdk/options";
 
 import {
-  executeSparqlInputSchema,
-  executeSparqlOutputSchema,
   sparql,
+  worldsSparqlInputSchema,
+  worldsSparqlOutputSchema,
   worldsSparqlTool,
 } from "@wazoo/worlds-ai-sdk/tools/sparql";
 import {
   search,
-  searchEntitiesInputSchema,
-  searchEntitiesOutputSchema,
-  searchEntitiesTool,
+  worldsSearchInputSchema,
+  worldsSearchOutputSchema,
+  worldsSearchTool,
 } from "@wazoo/worlds-ai-sdk/tools/search";
 import {
   list,
@@ -61,13 +61,13 @@ import {
 } from "@wazoo/worlds-ai-sdk/tools/export";
 import {
   listLogs,
-  listLogsInputSchema,
-  listLogsOutputSchema,
-  logsTool,
+  worldsLogsInputSchema,
+  worldsLogsOutputSchema,
+  worldsLogsTool,
 } from "@wazoo/worlds-ai-sdk/tools/logs";
 
-import type { ExecuteSparqlInput } from "@wazoo/worlds-ai-sdk/tools/sparql/schema";
-import type { SearchEntitiesInput } from "@wazoo/worlds-ai-sdk/tools/search/schema";
+import type { WorldsSparqlInput } from "@wazoo/worlds-ai-sdk/tools/sparql/schema";
+import type { WorldsSearchInput } from "@wazoo/worlds-ai-sdk/tools/search/schema";
 import type { WorldsListInput } from "@wazoo/worlds-ai-sdk/tools/list/schema";
 import type { WorldsGetInput } from "@wazoo/worlds-ai-sdk/tools/get/schema";
 import type { WorldsCreateInput } from "@wazoo/worlds-ai-sdk/tools/create/schema";
@@ -75,7 +75,7 @@ import type { WorldsUpdateInput } from "@wazoo/worlds-ai-sdk/tools/update/schema
 import type { WorldsDeleteInput } from "@wazoo/worlds-ai-sdk/tools/delete/schema";
 import type { WorldsImportInput } from "@wazoo/worlds-ai-sdk/tools/import/schema";
 import type { WorldsExportInput } from "@wazoo/worlds-ai-sdk/tools/export/schema";
-import type { ListLogsInput } from "@wazoo/worlds-ai-sdk/tools/logs/schema";
+import type { WorldsLogsInput } from "@wazoo/worlds-ai-sdk/tools/logs/schema";
 
 /** mcpRouter defines the MCP server route and registers tools. @see https://skills.sh/anthropics/skills/mcp-builder */
 export default (appContext: WorldsContext) => {
@@ -98,12 +98,12 @@ export default (appContext: WorldsContext) => {
     {
       title: "SPARQL",
       description: worldsSparqlTool.description,
-      inputSchema: executeSparqlInputSchema,
-      outputSchema: executeSparqlOutputSchema,
+      inputSchema: worldsSparqlInputSchema,
+      outputSchema: worldsSparqlOutputSchema,
       readOnlyHint: true,
       idempotentHint: true,
     },
-    async (args: ExecuteSparqlInput) => {
+    async (args: WorldsSparqlInput) => {
       try {
         const result = await sparql(worlds, sources, args);
         return {
@@ -385,16 +385,16 @@ export default (appContext: WorldsContext) => {
   );
 
   server.registerTool(
-    searchEntitiesTool.name,
+    worldsSearchTool.name,
     {
       title: "Search",
-      description: searchEntitiesTool.description,
-      inputSchema: searchEntitiesInputSchema,
-      outputSchema: searchEntitiesOutputSchema,
+      description: worldsSearchTool.description,
+      inputSchema: worldsSearchInputSchema,
+      outputSchema: worldsSearchOutputSchema,
       readOnlyHint: true,
       idempotentHint: true,
     },
-    async (args: SearchEntitiesInput) => {
+    async (args: WorldsSearchInput) => {
       try {
         const result = await search(worlds, args);
         return {
@@ -422,16 +422,16 @@ export default (appContext: WorldsContext) => {
   );
 
   server.registerTool(
-    logsTool.name,
+    worldsLogsTool.name,
     {
       title: "Logs",
-      description: logsTool.description,
-      inputSchema: listLogsInputSchema,
-      outputSchema: listLogsOutputSchema,
+      description: worldsLogsTool.description,
+      inputSchema: worldsLogsInputSchema,
+      outputSchema: worldsLogsOutputSchema,
       readOnlyHint: true,
       idempotentHint: true,
     },
-    async (args: ListLogsInput) => {
+    async (args: WorldsLogsInput) => {
       try {
         const result = await listLogs(worlds, args);
         return {

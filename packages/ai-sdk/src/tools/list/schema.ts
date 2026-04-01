@@ -1,13 +1,8 @@
 import { z } from "zod";
-import type { PaginationParams, World } from "@wazoo/worlds-sdk";
-import { paginationParamsSchema, worldSchema } from "@wazoo/worlds-sdk";
+import { type World, worldSchema } from "@wazoo/worlds-sdk";
 
-/** WorldsListInput is the input for listing worlds. */
-export interface WorldsListInput extends PaginationParams {}
-
-/** worldsListInputSchema is the Zod schema for world listing input. */
-export const worldsListInputSchema: z.ZodType<WorldsListInput> =
-  paginationParamsSchema;
+export { worldsListInputSchema } from "@wazoo/worlds-sdk";
+export type { WorldsListInput } from "@wazoo/worlds-sdk";
 
 /** WorldsListOutput is the output for listing worlds. */
 export interface WorldsListOutput {

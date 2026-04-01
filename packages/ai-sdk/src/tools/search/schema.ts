@@ -1,43 +1,18 @@
 import { z } from "zod";
-import type { TripleSearchResult } from "@wazoo/worlds-sdk";
-import { tripleSearchResultSchema } from "@wazoo/worlds-sdk";
+import { worldsSearchOutputSchema as engineWorldsSearchOutputSchema } from "@wazoo/worlds-sdk";
 
-/** SearchEntitiesInput is the input for searching entities. */
-export interface SearchEntitiesInput {
-  world: string;
-  query: string;
-  types?: string[];
-  subjects?: string[];
-  predicates?: string[];
-  limit?: number;
+import type { WorldsSearchInput, WorldsSearchOutput } from "@wazoo/worlds-sdk";
+
+export { worldsSearchInputSchema } from "@wazoo/worlds-sdk";
+export type { WorldsSearchInput, WorldsSearchOutput };
+
+/** WorldsSearchOutputData is the wrapper for search results in the AI SDK. */
+export interface WorldsSearchOutputData {
+  results: WorldsSearchOutput[];
 }
 
-/** searchEntitiesInputSchema is the Zod schema for entity search input. */
-export const searchEntitiesInputSchema: z.ZodType<SearchEntitiesInput> = z
+/** worldsSearchOutputSchema is the Zod schema for search output. */
+export const worldsSearchOutputSchema: z.ZodType<WorldsSearchOutputData> = z
   .object({
-    world: z.string().describe("The world ID to search within"),
-    query: z.string().describe("The search query"),
-    types: z.array(z.string()).optional().describe(
-      "Optional RDF types to filter by",
-    ),
-    subjects: z.array(z.string()).optional().describe(
-      "Optional subjects to filter by",
-    ),
-    predicates: z.array(z.string()).optional().describe(
-      "Optional predicates to filter by",
-    ),
-    limit: z.number().min(1).max(100).default(20).describe(
-      "Maximum number of results",
-    ),
-  });
-
-/** SearchEntitiesOutput is the output for searching entities. */
-export interface SearchEntitiesOutput {
-  results: TripleSearchResult[];
-}
-
-/** searchEntitiesOutputSchema is the Zod schema for entity search output. */
-export const searchEntitiesOutputSchema: z.ZodType<SearchEntitiesOutput> = z
-  .object({
-    results: z.array(tripleSearchResultSchema),
+    results: z.array(engineWorldsSearchOutputSchema),
   });

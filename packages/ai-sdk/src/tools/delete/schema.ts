@@ -1,14 +1,7 @@
 import { z } from "zod";
 
-/** WorldsDeleteInput is the input for deleting a world. */
-export interface WorldsDeleteInput {
-  world: string;
-}
-
-/** worldsDeleteInputSchema is the Zod schema for world deletion input. */
-export const worldsDeleteInputSchema: z.ZodType<WorldsDeleteInput> = z.object({
-  world: z.string().describe("The ID or slug of the world to delete."),
-});
+export { worldsDeleteInputSchema } from "@wazoo/worlds-sdk";
+export type { WorldsDeleteInput } from "@wazoo/worlds-sdk";
 
 /** WorldsDeleteOutput is the output for deleting a world. */
 export interface WorldsDeleteOutput {

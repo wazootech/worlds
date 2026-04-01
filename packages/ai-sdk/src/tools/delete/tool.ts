@@ -6,14 +6,14 @@ import {
   worldsDeleteInputSchema,
   type WorldsDeleteOutput,
   worldsDeleteOutputSchema,
-} from "#/tools/delete/schema.ts";
+} from "./schema.ts";
 
 /** deleteWorld permanently deletes a world and all its data. */
 export async function deleteWorld(
   worlds: CreateToolsOptions["worlds"],
-  { world }: WorldsDeleteInput,
+  input: WorldsDeleteInput,
 ): Promise<WorldsDeleteOutput> {
-  await worlds.delete(world);
+  await worlds.delete(input);
   return { success: true };
 }
 

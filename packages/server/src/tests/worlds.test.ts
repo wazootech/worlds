@@ -31,7 +31,7 @@ Deno.test("Worlds", async (t) => {
   });
 
   await t.step("get world", async () => {
-    const world = await worlds.get(id);
+    const world = await worlds.get({ world: id });
     assert(world !== null);
     assertEquals(world.label, "SDK World");
   });
@@ -62,10 +62,11 @@ Deno.test("Worlds", async (t) => {
   });
 
   await t.step("update world", async () => {
-    await worlds.update(id, {
+    await worlds.update({
+      world: id,
       description: "Updated Description",
     });
-    const world = await worlds.get(id);
+    const world = await worlds.get({ world: id });
     assert(world !== null);
     assertEquals(world.description, "Updated Description");
   });
@@ -76,7 +77,7 @@ Deno.test("Worlds", async (t) => {
         <http://example.org/subject> <http://example.org/predicate> "Update Object" .
       }
     `;
-    const result = await worlds.sparql(id, updateQuery);
+    const result = await worlds.sparql({ world: id, query: updateQuery });
     assertEquals(result, null);
   });
 
@@ -86,19 +87,19 @@ Deno.test("Worlds", async (t) => {
         <http://example.org/subject> <http://example.org/predicate> ?o
       }
     `;
-    const result = await worlds.sparql(
-      id,
-      selectQuery,
-    ) as SparqlSelectResults;
+    const result = await worlds.sparql({
+      world: id,
+      query: selectQuery,
+    }) as SparqlSelectResults;
     assert(result.results.bindings.length > 0);
     assertEquals(result.results.bindings[0].o.value, "Update Object");
   });
 
   await t.step("search world", async () => {
     // Add more diverse data for testing search params
-    await worlds.sparql(
-      id,
-      `
+    await worlds.sparql({
+      world: id,
+      query: `
       INSERT DATA {
         <http://example.org/alice> a <http://example.org/Person> ;
                                     <http://example.org/name> "Alice" ;
@@ -111,19 +112,25 @@ Deno.test("Worlds", async (t) => {
                                   <http://example.org/model> "Tesla" .
       }
     `,
-    );
+    });
 
     // 1. Basic search
-    const results = await worlds.search(id, "Update Object");
+    const results = await worlds.search({ world: id, query: "Update Object" });
     assert(results.length > 0);
     assertEquals(results[0].object, "Update Object");
 
     // 2. Search with limit
-    const limitResults = await worlds.search(id, "", { limit: 1 });
+    const limitResults = await worlds.search({
+      world: id,
+      query: "",
+      limit: 1,
+    });
     assertEquals(limitResults.length, 1);
 
     // 3. Search with subjects filter
-    const subjectResults = await worlds.search(id, "", {
+    const subjectResults = await worlds.search({
+      world: id,
+      query: "",
       subjects: ["http://example.org/alice"],
     });
     assert(subjectResults.length > 0);
@@ -132,7 +139,9 @@ Deno.test("Worlds", async (t) => {
     );
 
     // 4. Search with predicates filter
-    const predicateResults = await worlds.search(id, "", {
+    const predicateResults = await worlds.search({
+      world: id,
+      query: "",
       predicates: ["http://example.org/name"],
     });
     assert(predicateResults.length > 0);
@@ -141,14 +150,18 @@ Deno.test("Worlds", async (t) => {
     );
 
     // 5. Search with types filter
-    const typeResults = await worlds.search(id, "", {
+    const typeResults = await worlds.search({
+      world: id,
+      query: "",
       types: ["http://example.org/Vehicle"],
     });
     assert(typeResults.length > 0);
     assert(typeResults.every((r) => r.subject === "http://example.org/car"));
 
     // 6. Search with combined filters
-    const combinedResults = await worlds.search(id, "Tesla", {
+    const combinedResults = await worlds.search({
+      world: id,
+      query: "Tesla",
       types: ["http://example.org/Vehicle"],
       predicates: ["http://example.org/model"],
     });
@@ -159,12 +172,13 @@ Deno.test("Worlds", async (t) => {
   await t.step("export world", async () => {
     // 1. Add some data if not already there (should be there from previous steps)
     // 2. Export in default format (N-Quads)
-    const nQuadsBuffer = await worlds.export(id);
+    const nQuadsBuffer = await worlds.export({ world: id });
     const nQuads = new TextDecoder().decode(nQuadsBuffer);
     assert(nQuads.includes("http://example.org/subject"));
 
     // 3. Export in Turtle format
-    const turtleBuffer = await worlds.export(id, {
+    const turtleBuffer = await worlds.export({
+      world: id,
       contentType: "text/turtle",
     });
     const turtle = new TextDecoder().decode(turtleBuffer);
@@ -174,9 +188,13 @@ Deno.test("Worlds", async (t) => {
   await t.step("import world", async () => {
     const turtleData =
       '<http://example.org/subject2> <http://example.org/predicate> "Imported Object" .';
-    await worlds.import(id, turtleData, { contentType: "text/turtle" });
+    await worlds.import({
+      world: id,
+      data: turtleData,
+      contentType: "text/turtle",
+    });
 
-    const nQuadsBuffer = await worlds.export(id);
+    const nQuadsBuffer = await worlds.export({ world: id });
     const nQuads = new TextDecoder().decode(nQuadsBuffer);
     assert(nQuads.includes("http://example.org/subject2"));
     assert(nQuads.includes("Imported Object"));
@@ -184,7 +202,7 @@ Deno.test("Worlds", async (t) => {
 
   await t.step("list logs", async () => {
     // There should be some logs from previous operations (create, update, sparql, import)
-    const logs = await worlds.listLogs(id);
+    const logs = await worlds.listLogs({ world: id });
     assert(logs.length > 0);
     assertEquals(logs[0].id, logs[0].id); // Just check it exists and has correct type indirectly by accessing it
     assertExists(logs[0].message);
@@ -193,8 +211,8 @@ Deno.test("Worlds", async (t) => {
   });
 
   await t.step("delete world", async () => {
-    await worlds.delete(id);
-    const world = await worlds.get(id);
+    await worlds.delete({ world: id });
+    const world = await worlds.get({ world: id });
     assertEquals(world, null);
   });
 });

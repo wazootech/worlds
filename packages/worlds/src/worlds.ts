@@ -2,13 +2,21 @@ import type { WorldsOptions } from "./types.ts";
 import { RemoteWorlds } from "./remote.ts";
 import type { WorldsInterface } from "./types.ts";
 import type {
-  CreateWorldParams,
-  ExecuteSparqlOutput,
   Log,
-  TripleSearchResult,
-  UpdateWorldParams,
   World,
   WorldsContentType,
+  WorldsCreateInput,
+  WorldsDeleteInput,
+  WorldsExportInput,
+  WorldsGetInput,
+  WorldsImportInput,
+  WorldsListInput,
+  WorldsLogsInput,
+  WorldsSearchInput,
+  WorldsSearchOutput,
+  WorldsSparqlInput,
+  WorldsSparqlOutput,
+  WorldsUpdateInput,
 } from "./schemas/mod.ts";
 
 /**
@@ -34,118 +42,84 @@ export class Worlds implements WorldsInterface {
 
   /**
    * list paginates all available worlds.
-   * @param options Pagination options.
-   * @returns A list of worlds.
    */
-  public list(options?: {
-    page?: number;
-    pageSize?: number;
-  }): Promise<World[]> {
-    return this.engine.list(options);
+  public list(input?: WorldsListInput): Promise<World[]> {
+    return this.engine.list(input);
   }
 
   /**
    * get fetches a single world by its ID.
    */
-  public get(id: string): Promise<World | null> {
-    return this.engine.get(id);
+  public get(input: WorldsGetInput): Promise<World | null> {
+    return this.engine.get(input);
   }
 
   /**
    * delete permanently removes a world.
    */
-  public delete(id: string): Promise<void> {
-    return this.engine.delete(id);
+  public delete(input: WorldsDeleteInput): Promise<void> {
+    return this.engine.delete(input);
   }
 
   /**
    * sparql executes a SPARQL query or update against a world.
    */
-  public sparql(
-    id: string,
-    query: string,
-    options?: {
-      defaultGraphUris?: string[];
-      namedGraphUris?: string[];
-    },
-  ): Promise<ExecuteSparqlOutput> {
-    return this.engine.sparql(id, query, options);
+  public sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
+    return this.engine.sparql(input);
   }
 
   /**
    * create creates a new isolated world.
    */
-  public create(data: CreateWorldParams): Promise<World> {
-    return this.engine.create(data);
+  public create(input: WorldsCreateInput): Promise<World> {
+    return this.engine.create(input);
   }
 
   /**
    * update updates an existing world's metadata.
    */
-  public update(id: string, data: UpdateWorldParams): Promise<void> {
-    return this.engine.update(id, data);
+  public update(input: WorldsUpdateInput): Promise<void> {
+    return this.engine.update(input);
   }
 
   /**
    * search performs semantic or text search on triples.
    */
-  public search(
-    id: string,
-    query: string,
-    options?: {
-      limit?: number;
-      subjects?: string[];
-      predicates?: string[];
-      types?: string[];
-    },
-  ): Promise<TripleSearchResult[]> {
-    return this.engine.search(id, query, options);
+  public search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
+    return this.engine.search(input);
   }
 
   /**
    * import ingests RDF data into a world.
    */
-  public import(
-    id: string,
-    data: string | ArrayBuffer,
-    options?: {
-      contentType?: WorldsContentType;
-    },
-  ): Promise<void> {
-    return this.engine.import(id, data, options);
+  public import(input: WorldsImportInput): Promise<void> {
+    return this.engine.import(input);
   }
 
   /**
    * export retrieves a world's facts in the specified RDF content type.
    */
-  public export(
-    id: string,
-    options?: { contentType?: WorldsContentType },
-  ): Promise<ArrayBuffer> {
-    return this.engine.export(id, options);
+  public export(input: WorldsExportInput): Promise<ArrayBuffer> {
+    return this.engine.export(input);
   }
 
   /**
    * getServiceDescription retrieves the SPARQL service description.
    */
   public getServiceDescription(
-    id: string,
-    options: { endpointUrl: string; contentType?: WorldsContentType },
+    input: {
+      world: string;
+      endpointUrl: string;
+      contentType?: WorldsContentType;
+    },
   ): Promise<string> {
-    return this.engine.getServiceDescription(id, options);
+    return this.engine.getServiceDescription(input);
   }
 
   /**
    * listLogs retrieves execution and audit logs.
    */
-  public listLogs(
-    id: string,
-    options?: {
-      page?: number;
-      pageSize?: number;
-      level?: string;
-    },
-  ): Promise<Log[]> {
-    return this.engine.listLogs(id, options);
+  public listLogs(input: WorldsLogsInput): Promise<Log[]> {
+    return this.engine.listLogs(input);
   }
 }

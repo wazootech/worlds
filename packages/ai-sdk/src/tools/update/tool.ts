@@ -6,15 +6,14 @@ import {
   worldsUpdateInputSchema,
   type WorldsUpdateOutput,
   worldsUpdateOutputSchema,
-} from "#/tools/update/schema.ts";
+} from "./schema.ts";
 
 /** update updates a world's metadata. */
 export async function update(
   worlds: CreateToolsOptions["worlds"],
   input: WorldsUpdateInput,
 ): Promise<WorldsUpdateOutput> {
-  const { world, ...data } = input;
-  await worlds.update(world, data);
+  await worlds.update(input);
   return { success: true };
 }
 
