@@ -9,8 +9,8 @@ import {
   executeSparqlOutputSchema,
 } from "#/tools/sparql/schema.ts";
 
-/** executeSparql executes a SPARQL query or update against a specific world. */
-export async function executeSparql(
+/** sparql executes a SPARQL query or update against a specific world. */
+export async function sparql(
   worlds: CreateToolsOptions["worlds"],
   sources: CreateToolsOptions["sources"],
   input: ExecuteSparqlInput,
@@ -34,9 +34,9 @@ export async function executeSparql(
 /** ExecuteSparqlTool is a tool for executing SPARQL queries and updates. */
 export type ExecuteSparqlTool = Tool<ExecuteSparqlInput, ExecuteSparqlOutput>;
 
-/** executeSparqlTool defines the configuration for the SPARQL execution tool. */
-export const executeSparqlTool = {
-  name: "worlds_query",
+/** worldsSparqlTool defines the configuration for the SPARQL execution tool. */
+export const worldsSparqlTool = {
+  name: "worlds_sparql",
   description:
     "Executes a SPARQL query or update against a specific world. Use this tool when you need to retrieve raw facts, perform complex joins, or modify the knowledge graph via SPARQL. Input must be a 'world' ID and a 'query' string. Returns a JSON result object with bindings for SELECT/ASK or a boolean for updates.",
   inputSchema: executeSparqlInputSchema,
@@ -48,9 +48,9 @@ export function createExecuteSparqlTool(
   { worlds, sources }: CreateToolsOptions,
 ): ExecuteSparqlTool {
   return tool({
-    ...executeSparqlTool,
+    ...worldsSparqlTool,
     execute: async (input) => {
-      return await executeSparql(worlds, sources, input);
+      return await sparql(worlds, sources, input);
     },
   });
 }

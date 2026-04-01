@@ -7191,7 +7191,8 @@
           "npm:@types/n3@^1.26.1",
           "npm:n3@^1.21.0",
           "npm:ollama-ai-provider@^1.2.0",
-          "npm:rdf-canonize@5"
+          "npm:rdf-canonize@5",
+          "npm:zod@^4.3.6"
         ]
       }
     }

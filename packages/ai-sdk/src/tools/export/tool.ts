@@ -8,14 +8,13 @@ import {
   worldsExportOutputSchema,
 } from "#/tools/export/schema.ts";
 
-/** exportWorld retrieves a world's facts in N-Quads format. */
-export async function exportWorld(
+/** exportData retrieves a world's facts in RDF format. */
+export async function exportData(
   worlds: CreateToolsOptions["worlds"],
   input: WorldsExportInput,
 ): Promise<WorldsExportOutput> {
-  const buffer = await worlds.export(input.world, {
-    contentType: "application/n-quads",
-  });
+  const { world, contentType } = input;
+  const buffer = await worlds.export(world, { contentType });
   return { data: new TextDecoder().decode(buffer) };
 }
 
@@ -24,7 +23,7 @@ export type WorldsExportTool = Tool<WorldsExportInput, WorldsExportOutput>;
 
 /** worldsExportTool defines the configuration for the world export tool. */
 export const worldsExportTool = {
-  name: "export_world",
+  name: "worlds_export",
   description:
     "Retrieves the entire collection of facts from a world in RDF format. Use this tool when you need to back up a dataset or move data between environments. Input must be a 'world' ID. Returns a string containing the world's facts in N-Quads format.",
   inputSchema: worldsExportInputSchema,
@@ -38,7 +37,7 @@ export function createWorldsExportTool(
   return tool({
     ...worldsExportTool,
     execute: async (input) => {
-      return await exportWorld(worlds, input);
+      return await exportData(worlds, input);
     },
   });
 }

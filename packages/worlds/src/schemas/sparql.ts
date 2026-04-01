@@ -161,7 +161,10 @@ export const sparqlSelectResultsSchema: z.ZodType<SparqlSelectResults> = z
     head: z.object({
       vars: z.array(z.string()),
       link: z.array(z.string()).nullable().optional(),
-    }).transform((h) => ({ ...h, link: h.link ?? null })),
+    }).transform((h: { vars: string[]; link?: string[] | null }) => ({
+      ...h,
+      link: h.link ?? null,
+    })),
     results: z.object({
       bindings: z.array(sparqlBindingSchema),
     }),
@@ -196,7 +199,10 @@ export interface SparqlAskResults {
 export const sparqlAskResultsSchema: z.ZodType<SparqlAskResults> = z.object({
   head: z.object({
     link: z.array(z.string()).nullable().optional(),
-  }).transform((h) => ({ ...h, link: h.link ?? null })),
+  }).transform((h: { link?: string[] | null }) => ({
+    ...h,
+    link: h.link ?? null,
+  })),
   boolean: z.boolean(),
   results: z.undefined().optional(),
 });
@@ -285,7 +291,10 @@ export const sparqlQuadsResultsSchema: z.ZodType<SparqlQuadsResults> = z
   .object({
     head: z.object({
       link: z.array(z.string()).nullable().optional(),
-    }).transform((h) => ({ ...h, link: h.link ?? null })),
+    }).transform((h: { link?: string[] | null }) => ({
+      ...h,
+      link: h.link ?? null,
+    })),
     results: z.object({
       quads: z.array(sparqlQuadSchema),
     }),

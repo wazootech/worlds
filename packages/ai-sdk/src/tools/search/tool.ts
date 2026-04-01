@@ -8,8 +8,8 @@ import {
   searchEntitiesOutputSchema,
 } from "#/tools/search/schema.ts";
 
-/** searchEntities performs a semantic or text search for entities within a world. */
-export async function searchEntities(
+/** search performs a semantic or text search for entities within a world. */
+export async function search(
   worlds: CreateToolsOptions["worlds"],
   input: SearchEntitiesInput,
 ): Promise<SearchEntitiesOutput> {
@@ -26,7 +26,7 @@ export type SearchEntitiesTool = Tool<
 
 /** searchEntitiesTool defines the configuration for the entity search tool. */
 export const searchEntitiesTool = {
-  name: "search_entities",
+  name: "worlds_search",
   description:
     "Performs semantic or text search for entities and facts within a specific world. Use this tool when a user asks about an entity by a natural language name or needs to find related information by proximity. Input must be a 'world' ID and a 'query' string. Returns an array of search results including IRIs and relevance scores.",
   inputSchema: searchEntitiesInputSchema,
@@ -40,7 +40,7 @@ export function createSearchEntitiesTool(
   return tool({
     ...searchEntitiesTool,
     execute: async (input) => {
-      return await searchEntities(worlds, input);
+      return await search(worlds, input);
     },
   });
 }

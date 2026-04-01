@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { World } from "@wazoo/worlds-sdk";
 import { worldSchema } from "@wazoo/worlds-sdk";
 
 /** WorldsGetInput is the input for retrieving world metadata. */
@@ -12,5 +13,4 @@ export const worldsGetInputSchema: z.ZodType<WorldsGetInput> = z.object({
 });
 
 /** worldsGetOutputSchema is the Zod schema for world retrieval output. */
-export const worldsGetOutputSchema: z.ZodType<z.infer<typeof worldSchema>> =
-  worldSchema;
+export const worldsGetOutputSchema: z.ZodType<World> = worldSchema;

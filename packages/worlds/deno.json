@@ -26,7 +26,8 @@
     "ollama-ai-provider": "npm:ollama-ai-provider@^1.2.0",
     "rdf-canonize": "npm:rdf-canonize@^5.0.0",
     "@std/encoding": "jsr:@std/encoding@^1.0.5",
-    "n3": "npm:n3@^1.21.0"
+    "n3": "npm:n3@^1.21.0",
+    "zod": "npm:zod@^4.3.6"
   },
   "tasks": {
     "test": "deno test -A"

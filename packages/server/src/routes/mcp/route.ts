@@ -6,65 +6,59 @@ import { LocalWorlds } from "@wazoo/worlds-sdk";
 import type { SourceInput } from "@wazoo/worlds-ai-sdk/options";
 
 import {
-  executeSparql,
   executeSparqlInputSchema,
   executeSparqlOutputSchema,
-  executeSparqlTool,
+  sparql,
+  worldsSparqlTool,
 } from "@wazoo/worlds-ai-sdk/tools/sparql";
 import {
-  searchEntities,
+  search,
   searchEntitiesInputSchema,
   searchEntitiesOutputSchema,
   searchEntitiesTool,
 } from "@wazoo/worlds-ai-sdk/tools/search";
 import {
-  listWorlds,
+  list,
   worldsListInputSchema,
   worldsListOutputSchema,
   worldsListTool,
 } from "@wazoo/worlds-ai-sdk/tools/list";
 import {
-  getWorld,
+  get,
   worldsGetInputSchema,
   worldsGetOutputSchema,
   worldsGetTool,
 } from "@wazoo/worlds-ai-sdk/tools/get";
 import {
-  createWorld,
+  create,
   worldsCreateInputSchema,
   worldsCreateOutputSchema,
   worldsCreateTool,
 } from "@wazoo/worlds-ai-sdk/tools/create";
 import {
-  importWorld,
+  update,
+  worldsUpdateInputSchema,
+  worldsUpdateOutputSchema,
+  worldsUpdateTool,
+} from "@wazoo/worlds-ai-sdk/tools/update";
+import {
+  deleteWorld,
+  worldsDeleteInputSchema,
+  worldsDeleteOutputSchema,
+  worldsDeleteTool,
+} from "@wazoo/worlds-ai-sdk/tools/delete";
+import {
+  importData,
   worldsImportInputSchema,
   worldsImportOutputSchema,
   worldsImportTool,
 } from "@wazoo/worlds-ai-sdk/tools/import";
 import {
-  exportWorld,
+  exportData,
   worldsExportInputSchema,
   worldsExportOutputSchema,
   worldsExportTool,
 } from "@wazoo/worlds-ai-sdk/tools/export";
-// Discover is now accomplished via Search
-import {
-  defaultDisambiguate,
-  disambiguateEntitiesInputSchema,
-  disambiguateEntitiesOutputSchema,
-  disambiguateEntitiesTool,
-} from "@wazoo/worlds-ai-sdk/tools/match";
-import {
-  generateIriInputSchema,
-  generateIriOutputSchema,
-  generateIriTool,
-} from "@wazoo/worlds-ai-sdk/tools/generate";
-import {
-  validateRdf,
-  validateRdfInputSchema,
-  validateRdfOutputSchema,
-  validateRdfTool,
-} from "@wazoo/worlds-ai-sdk/tools/validate";
 import {
   listLogs,
   listLogsInputSchema,
@@ -77,11 +71,10 @@ import type { SearchEntitiesInput } from "@wazoo/worlds-ai-sdk/tools/search/sche
 import type { WorldsListInput } from "@wazoo/worlds-ai-sdk/tools/list/schema";
 import type { WorldsGetInput } from "@wazoo/worlds-ai-sdk/tools/get/schema";
 import type { WorldsCreateInput } from "@wazoo/worlds-ai-sdk/tools/create/schema";
+import type { WorldsUpdateInput } from "@wazoo/worlds-ai-sdk/tools/update/schema";
+import type { WorldsDeleteInput } from "@wazoo/worlds-ai-sdk/tools/delete/schema";
 import type { WorldsImportInput } from "@wazoo/worlds-ai-sdk/tools/import/schema";
 import type { WorldsExportInput } from "@wazoo/worlds-ai-sdk/tools/export/schema";
-import type { DisambiguateEntitiesInput } from "@wazoo/worlds-ai-sdk/tools/match/schema";
-import type { GenerateIriInput } from "@wazoo/worlds-ai-sdk/tools/generate/schema";
-import type { ValidateRdfInput } from "@wazoo/worlds-ai-sdk/tools/validate/schema";
 import type { ListLogsInput } from "@wazoo/worlds-ai-sdk/tools/logs/schema";
 
 /** mcpRouter defines the MCP server route and registers tools. @see https://skills.sh/anthropics/skills/mcp-builder */
@@ -89,8 +82,6 @@ export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);
 
   const sources: SourceInput[] = [];
-  const generateIri = (_ref?: string) =>
-    `https://wazoo.dev/.well-known/genid/${crypto.randomUUID()}`;
 
   const server = new McpServer({
     name: "worlds-server",
@@ -103,10 +94,10 @@ export default (appContext: WorldsContext) => {
   });
 
   server.registerTool(
-    executeSparqlTool.name,
+    worldsSparqlTool.name,
     {
-      title: "Worlds SPARQL Query",
-      description: executeSparqlTool.description,
+      title: "SPARQL",
+      description: worldsSparqlTool.description,
       inputSchema: executeSparqlInputSchema,
       outputSchema: executeSparqlOutputSchema,
       readOnlyHint: true,
@@ -114,7 +105,7 @@ export default (appContext: WorldsContext) => {
     },
     async (args: ExecuteSparqlInput) => {
       try {
-        const result = await executeSparql(worlds, sources, args);
+        const result = await sparql(worlds, sources, args);
         return {
           content: [
             {
@@ -142,7 +133,7 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     worldsListTool.name,
     {
-      title: "List Worlds",
+      title: "List",
       description: worldsListTool.description,
       inputSchema: worldsListInputSchema,
       outputSchema: worldsListOutputSchema,
@@ -151,7 +142,7 @@ export default (appContext: WorldsContext) => {
     },
     async (args: WorldsListInput) => {
       try {
-        const result = await listWorlds(worlds, args);
+        const result = await list(worlds, args);
         return {
           content: [
             {
@@ -179,7 +170,7 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     worldsGetTool.name,
     {
-      title: "Get World",
+      title: "Get",
       description: worldsGetTool.description,
       inputSchema: worldsGetInputSchema,
       outputSchema: worldsGetOutputSchema,
@@ -188,7 +179,7 @@ export default (appContext: WorldsContext) => {
     },
     async (args: WorldsGetInput) => {
       try {
-        const result = await getWorld(worlds, args);
+        const result = await get(worlds, args);
         return {
           content: [
             {
@@ -216,7 +207,7 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     worldsCreateTool.name,
     {
-      title: "Create World",
+      title: "Create",
       description: worldsCreateTool.description,
       inputSchema: worldsCreateInputSchema,
       outputSchema: worldsCreateOutputSchema,
@@ -224,7 +215,7 @@ export default (appContext: WorldsContext) => {
     },
     async (args: WorldsCreateInput) => {
       try {
-        const result = await createWorld(worlds, args);
+        const result = await create(worlds, args);
         return {
           content: [
             {
@@ -250,16 +241,88 @@ export default (appContext: WorldsContext) => {
   );
 
   server.registerTool(
+    worldsUpdateTool.name,
+    {
+      title: "Update",
+      description: worldsUpdateTool.description,
+      inputSchema: worldsUpdateInputSchema,
+      outputSchema: worldsUpdateOutputSchema,
+      idempotentHint: false,
+    },
+    async (args: WorldsUpdateInput) => {
+      try {
+        const result = await update(worlds, args);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Update Error: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            },
+          ],
+        };
+      }
+    },
+  );
+
+  server.registerTool(
+    worldsDeleteTool.name,
+    {
+      title: "Delete",
+      description: worldsDeleteTool.description,
+      inputSchema: worldsDeleteInputSchema,
+      outputSchema: worldsDeleteOutputSchema,
+      idempotentHint: false,
+    },
+    async (args: WorldsDeleteInput) => {
+      try {
+        const result = await deleteWorld(worlds, args);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Delete Error: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            },
+          ],
+        };
+      }
+    },
+  );
+
+  server.registerTool(
     worldsImportTool.name,
     {
-      title: "Import RDF",
+      title: "Import",
       description: worldsImportTool.description,
       inputSchema: worldsImportInputSchema,
       outputSchema: worldsImportOutputSchema,
     },
     async (args: WorldsImportInput) => {
       try {
-        const result = await importWorld(worlds, args);
+        const result = await importData(worlds, args);
         return {
           content: [
             {
@@ -287,7 +350,7 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     worldsExportTool.name,
     {
-      title: "Export RDF",
+      title: "Export",
       description: worldsExportTool.description,
       inputSchema: worldsExportInputSchema,
       outputSchema: worldsExportOutputSchema,
@@ -296,7 +359,7 @@ export default (appContext: WorldsContext) => {
     },
     async (input: WorldsExportInput) => {
       try {
-        const result = await exportWorld(worlds, input);
+        const result = await exportData(worlds, input);
         return {
           content: [
             {
@@ -324,7 +387,7 @@ export default (appContext: WorldsContext) => {
   server.registerTool(
     searchEntitiesTool.name,
     {
-      title: "Search Entities",
+      title: "Search",
       description: searchEntitiesTool.description,
       inputSchema: searchEntitiesInputSchema,
       outputSchema: searchEntitiesOutputSchema,
@@ -333,7 +396,7 @@ export default (appContext: WorldsContext) => {
     },
     async (args: SearchEntitiesInput) => {
       try {
-        const result = await searchEntities(worlds, args);
+        const result = await search(worlds, args);
         return {
           content: [
             {
@@ -359,119 +422,9 @@ export default (appContext: WorldsContext) => {
   );
 
   server.registerTool(
-    disambiguateEntitiesTool.name,
-    {
-      title: "Disambiguate Entities",
-      description: disambiguateEntitiesTool.description,
-      inputSchema: disambiguateEntitiesInputSchema,
-      outputSchema: disambiguateEntitiesOutputSchema,
-      readOnlyHint: true,
-      idempotentHint: true,
-    },
-    (args: DisambiguateEntitiesInput) => {
-      try {
-        const result = defaultDisambiguate(args);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Disambiguation Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
-    generateIriTool.name,
-    {
-      title: "Generate IRI",
-      description: generateIriTool.description,
-      inputSchema: generateIriInputSchema,
-      outputSchema: generateIriOutputSchema,
-      idempotentHint: true,
-    },
-    (args: GenerateIriInput) => {
-      try {
-        const result = { iri: generateIri(args.referenceText) };
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `IRI Generation Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
-    validateRdfTool.name,
-    {
-      title: "Validate RDF",
-      description: validateRdfTool.description,
-      inputSchema: validateRdfInputSchema,
-      outputSchema: validateRdfOutputSchema,
-      readOnlyHint: true,
-      idempotentHint: true,
-    },
-    async (args: ValidateRdfInput) => {
-      try {
-        const result = await validateRdf(args, { worlds, sources });
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Validation Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
     logsTool.name,
     {
-      title: "World Logs",
+      title: "Logs",
       description: logsTool.description,
       inputSchema: listLogsInputSchema,
       outputSchema: listLogsOutputSchema,

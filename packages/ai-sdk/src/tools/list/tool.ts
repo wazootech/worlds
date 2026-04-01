@@ -8,8 +8,8 @@ import {
   worldsListOutputSchema,
 } from "#/tools/list/schema.ts";
 
-/** listWorlds retrieves a list of all datasets (worlds). */
-export async function listWorlds(
+/** list retrieves a list of all datasets (worlds). */
+export async function list(
   worlds: CreateToolsOptions["worlds"],
   input: WorldsListInput,
 ): Promise<WorldsListOutput> {
@@ -23,7 +23,7 @@ export type WorldsListTool = Tool<WorldsListInput, WorldsListOutput>;
 
 /** worldsListTool defines the configuration for the world listing tool. */
 export const worldsListTool = {
-  name: "list_worlds",
+  name: "worlds_list",
   description:
     "Retrieves a list of all datasets (worlds) currently managed by the engine. Use this tool when you need to know which worlds exist or to find a world's ID by its label. Returns an array of world objects.",
   inputSchema: worldsListInputSchema,
@@ -37,7 +37,7 @@ export function createWorldsListTool(
   return tool({
     ...worldsListTool,
     execute: async (input) => {
-      return await listWorlds(worlds, input);
+      return await list(worlds, input);
     },
   });
 }

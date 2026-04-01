@@ -1,21 +1,17 @@
 import { z } from "zod";
-import { worldSchema } from "@wazoo/worlds-sdk";
+import type { PaginationParams, World } from "@wazoo/worlds-sdk";
+import { paginationParamsSchema, worldSchema } from "@wazoo/worlds-sdk";
 
 /** WorldsListInput is the input for listing worlds. */
-export interface WorldsListInput {
-  page?: number;
-  pageSize?: number;
-}
+export interface WorldsListInput extends PaginationParams {}
 
 /** worldsListInputSchema is the Zod schema for world listing input. */
-export const worldsListInputSchema: z.ZodType<WorldsListInput> = z.object({
-  page: z.number().default(1).describe("Page number"),
-  pageSize: z.number().default(20).describe("Page size"),
-});
+export const worldsListInputSchema: z.ZodType<WorldsListInput> =
+  paginationParamsSchema;
 
 /** WorldsListOutput is the output for listing worlds. */
 export interface WorldsListOutput {
-  worlds: z.infer<typeof worldSchema>[];
+  worlds: World[];
 }
 
 /** worldsListOutputSchema is the Zod schema for world listing output. */

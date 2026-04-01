@@ -1,7 +1,6 @@
 import { z } from "zod";
-
-import { tripleSearchResultSchema } from "@wazoo/worlds-sdk";
 import type { TripleSearchResult } from "@wazoo/worlds-sdk";
+import { tripleSearchResultSchema } from "@wazoo/worlds-sdk";
 
 /** SearchEntitiesInput is the input for searching entities. */
 export interface SearchEntitiesInput {

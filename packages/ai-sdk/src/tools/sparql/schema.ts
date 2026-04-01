@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { executeSparqlOutputSchema } from "@wazoo/worlds-sdk";
 import type { ExecuteSparqlOutput } from "@wazoo/worlds-sdk";
+import { executeSparqlOutputSchema } from "@wazoo/worlds-sdk";
 
 /** ExecuteSparqlInput is the input for executing a SPARQL query. */
 export interface ExecuteSparqlInput {

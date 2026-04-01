@@ -1,25 +1,23 @@
 import type { Source } from "@wazoo/worlds-sdk";
 
 import type { ExecuteSparqlTool } from "#/tools/sparql/mod.ts";
-import type { GenerateIriTool } from "#/tools/generate/mod.ts";
 import type { SearchEntitiesTool } from "#/tools/search/mod.ts";
-import type { DisambiguateEntitiesTool } from "#/tools/match/mod.ts";
-import type { ValidateRdfTool } from "#/tools/validate/mod.ts";
 import type { WorldsListTool } from "#/tools/list/mod.ts";
 import type { WorldsGetTool } from "#/tools/get/mod.ts";
 import type { WorldsCreateTool } from "#/tools/create/mod.ts";
+import type { WorldsUpdateTool } from "#/tools/update/mod.ts";
+import type { WorldsDeleteTool } from "#/tools/delete/mod.ts";
 import type { WorldsImportTool } from "#/tools/import/mod.ts";
 import type { WorldsExportTool } from "#/tools/export/mod.ts";
 import type { LogsListTool } from "#/tools/logs/mod.ts";
 
 import { createExecuteSparqlTool } from "#/tools/sparql/mod.ts";
-import { createGenerateIriTool } from "#/tools/generate/mod.ts";
 import { createSearchEntitiesTool } from "#/tools/search/mod.ts";
-import { createDisambiguateEntitiesTool } from "#/tools/match/mod.ts";
-import { createValidateRdfTool } from "#/tools/validate/mod.ts";
 import { createWorldsListTool } from "#/tools/list/mod.ts";
 import { createWorldsGetTool } from "#/tools/get/mod.ts";
 import { createWorldsCreateTool } from "#/tools/create/mod.ts";
+import { createWorldsUpdateTool } from "#/tools/update/mod.ts";
+import { createWorldsDeleteTool } from "#/tools/delete/mod.ts";
 import { createWorldsImportTool } from "#/tools/import/mod.ts";
 import { createWorldsExportTool } from "#/tools/export/mod.ts";
 import { createLogsTool } from "#/tools/logs/mod.ts";
@@ -32,14 +30,13 @@ import type { CreateToolsOptions } from "#/options.ts";
 export function createTools(options: CreateToolsOptions): {
   sparql: ExecuteSparqlTool;
   search: SearchEntitiesTool;
-  match: DisambiguateEntitiesTool;
   list: WorldsListTool;
   get: WorldsGetTool;
   create: WorldsCreateTool;
+  update: WorldsUpdateTool;
+  delete: WorldsDeleteTool;
   import: WorldsImportTool;
   export: WorldsExportTool;
-  generate: GenerateIriTool;
-  validate: ValidateRdfTool;
   logs: LogsListTool;
 } {
   const normalizedSources: Source[] = options.sources.map((s) =>
@@ -55,14 +52,13 @@ export function createTools(options: CreateToolsOptions): {
   return {
     sparql: createExecuteSparqlTool(normalizedOptions),
     search: createSearchEntitiesTool(normalizedOptions),
-    match: createDisambiguateEntitiesTool(normalizedOptions),
     list: createWorldsListTool(normalizedOptions),
     get: createWorldsGetTool(normalizedOptions),
     create: createWorldsCreateTool(normalizedOptions),
+    update: createWorldsUpdateTool(normalizedOptions),
+    delete: createWorldsDeleteTool(normalizedOptions),
     import: createWorldsImportTool(normalizedOptions),
     export: createWorldsExportTool(normalizedOptions),
-    generate: createGenerateIriTool(normalizedOptions),
-    validate: createValidateRdfTool(normalizedOptions),
     logs: createLogsTool(normalizedOptions),
   };
 }

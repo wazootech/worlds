@@ -8,14 +8,13 @@ import {
   worldsImportOutputSchema,
 } from "#/tools/import/schema.ts";
 
-/** importWorld ingests RDF data into a world. */
-export async function importWorld(
+/** importData ingests RDF data into a world. */
+export async function importData(
   worlds: CreateToolsOptions["worlds"],
   input: WorldsImportInput,
 ): Promise<WorldsImportOutput> {
-  await worlds.import(input.world, input.data, {
-    contentType: "application/n-triples",
-  });
+  const { world, data, contentType } = input;
+  await worlds.import(world, data, { contentType });
   return { success: true };
 }
 
@@ -24,7 +23,7 @@ export type WorldsImportTool = Tool<WorldsImportInput, WorldsImportOutput>;
 
 /** worldsImportTool defines the configuration for the world import tool. */
 export const worldsImportTool = {
-  name: "import_world",
+  name: "worlds_import",
   description:
     "Ingests RDF data into an existing world's graph. Use this tool when you have raw Turtle, N-Triples, or N-Quads data to upload. Input must be a 'world' ID and a 'data' string. Returns a success indicator.",
   inputSchema: worldsImportInputSchema,
@@ -38,7 +37,7 @@ export function createWorldsImportTool(
   return tool({
     ...worldsImportTool,
     execute: async (input) => {
-      return await importWorld(worlds, input);
+      return await importData(worlds, input);
     },
   });
 }

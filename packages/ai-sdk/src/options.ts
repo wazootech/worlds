@@ -1,8 +1,6 @@
 import type { Source, WorldsInterface } from "@wazoo/worlds-sdk";
-import type {
-  DisambiguateEntitiesInput,
-  DisambiguateEntitiesOutput,
-} from "./tools/match/mod.ts";
+
+export type { WorldsInterface };
 
 /**
  * SourceInput is a flexible way to specify a data source.
@@ -23,21 +21,4 @@ export interface CreateToolsOptions {
    * sources is the list of sources visible to the tools.
    */
   sources: SourceInput[];
-
-  /**
-   * generateIri generates an IRI for new entities.
-   */
-  generateIri?: () => string | Promise<string>;
-
-  /**
-   * disambiguate maps natural language entities to existing IRIs.
-   */
-  disambiguate?: (
-    input: DisambiguateEntitiesInput,
-  ) => DisambiguateEntitiesOutput | Promise<DisambiguateEntitiesOutput>;
-
-  /**
-   * shacl is the SHACL shapes (Turtle) to use for validation.
-   */
-  shacl?: string;
 }
