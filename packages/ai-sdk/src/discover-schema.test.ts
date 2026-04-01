@@ -1,7 +1,8 @@
 import { assert, assertEquals } from "@std/assert";
 import { createServer } from "@wazoo/worlds-server";
 import { createTestContext, Worlds } from "@wazoo/worlds-sdk";
-import { discoverSchema } from "./discover-schema.ts";
+import { discoverSchema } from "./tools/discover-schema/tool.ts";
+import type { DiscoverSchemaResult } from "./tools/discover-schema/schema.ts";
 
 Deno.test("discoverSchema function - Class and Property Discovery", async () => {
   const appContext = await createTestContext();
@@ -57,7 +58,7 @@ Deno.test("discoverSchema function - Class and Property Discovery", async () => 
   });
 
   assert(result.results.length > 0);
-  const person = result.results.find((r) =>
+  const person = result.results.find((r: DiscoverSchemaResult) =>
     r.iri === "http://example.org/Person"
   );
   assert(person !== undefined);
@@ -70,7 +71,7 @@ Deno.test("discoverSchema function - Class and Property Discovery", async () => 
     source: worldId,
     referenceText: "Alice",
   });
-  const aliceEntry = resultAlice.results.find((r) =>
+  const aliceEntry = resultAlice.results.find((r: DiscoverSchemaResult) =>
     r.iri === "http://example.org/alice"
   );
   assertEquals(
@@ -84,7 +85,7 @@ Deno.test("discoverSchema function - Class and Property Discovery", async () => 
     source: worldId,
     referenceText: "name",
   });
-  const nameProp = result2.results.find((r) =>
+  const nameProp = result2.results.find((r: DiscoverSchemaResult) =>
     r.iri === "http://example.org/name"
   );
   assert(nameProp !== undefined);

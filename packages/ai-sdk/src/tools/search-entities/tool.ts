@@ -1,0 +1,35 @@
+import { tool } from "ai";
+import type { Tool } from "ai";
+import type { CreateToolsOptions } from "../../options.ts";
+import {
+  type SearchEntitiesInput,
+  searchEntitiesInputSchema,
+  type SearchEntitiesOutput,
+  searchEntitiesOutputSchema,
+} from "./schema.ts";
+
+export type SearchEntitiesTool = Tool<
+  SearchEntitiesInput,
+  SearchEntitiesOutput
+>;
+
+export const searchEntitiesTool = {
+  name: "worlds_search",
+  description:
+    "Performs semantic or text search for entities and facts within a specific world. Use this tool when a user asks about an entity by a natural language name or needs to find related information by proximity. Input must be a 'world' ID and a 'query' string. Returns an array of search results including IRIs and relevance scores.",
+  inputSchema: searchEntitiesInputSchema,
+  outputSchema: searchEntitiesOutputSchema,
+};
+
+export function createSearchEntitiesTool(
+  { worlds }: CreateToolsOptions,
+): SearchEntitiesTool {
+  return tool({
+    ...searchEntitiesTool,
+    execute: async (input) => {
+      const { world, query, types, limit = 20 } = input;
+      const results = await worlds.search(world, query, { limit, types });
+      return { results };
+    },
+  });
+}

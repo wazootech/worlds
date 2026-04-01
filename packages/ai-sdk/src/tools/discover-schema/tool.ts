@@ -1,57 +1,16 @@
-import { z } from "zod";
+import { tool } from "ai";
+import type { Tool } from "ai";
 import type { Worlds } from "@wazoo/worlds-sdk";
-import { type EntitySchema, entitySchema } from "./schema.ts";
-
-/**
- * DiscoverSchemaInput is the input to the discoverSchema tool.
- */
-export interface DiscoverSchemaInput {
-  source: string;
-  referenceText: string;
-  limit?: number;
-}
-
-/**
- * discoverSchemaInputSchema is the input schema for the discoverSchema tool.
- */
-export const discoverSchemaInputSchema: z.ZodType<DiscoverSchemaInput> = z
-  .object({
-    source: z.string().describe(
-      "The ID or slug of the schema source to discover concepts from.",
-    ),
-    referenceText: z.string().describe(
-      "A natural language description of the entities or properties to discover (e.g., 'A person with a name').",
-    ),
-    limit: z.number().min(1).max(100).optional().describe(
-      "Maximum number of unique subjects to return (default: 10).",
-    ),
-  });
-
-/**
- * DiscoverSchemaResult is a result of the discoverSchema tool.
- */
-export type DiscoverSchemaResult = EntitySchema;
-
-/**
- * discoverSchemaResultSchema is the schema for the discoverSchema tool.
- */
-export const discoverSchemaResultSchema: z.ZodType<DiscoverSchemaResult> =
-  entitySchema;
-
-/**
- * DiscoverSchemaOutput is the output of the discoverSchema tool.
- */
-export interface DiscoverSchemaOutput {
-  results: DiscoverSchemaResult[];
-}
-
-/**
- * discoverSchemaOutputSchema is the output schema for the discoverSchema tool.
- */
-export const discoverSchemaOutputSchema: z.ZodType<DiscoverSchemaOutput> = z
-  .object({
-    results: z.array(discoverSchemaResultSchema),
-  });
+import type { CreateToolsOptions } from "../../options.ts";
+import {
+  discoverSchemaInputSchema,
+  discoverSchemaOutputSchema,
+} from "./schema.ts";
+import type {
+  DiscoverSchemaInput,
+  DiscoverSchemaOutput,
+  DiscoverSchemaResult,
+} from "./schema.ts";
 
 const terms = {
   rdf: {
@@ -209,4 +168,37 @@ export async function discoverSchema(
   return {
     results,
   };
+}
+
+/**
+ * DiscoverSchemaTool is a tool that discovers RDF classes and properties.
+ */
+export type DiscoverSchemaTool = Tool<
+  DiscoverSchemaInput,
+  DiscoverSchemaOutput
+>;
+
+/**
+ * discoverSchemaTool is a metadata object for the tool that discovers RDF classes and properties.
+ */
+export const discoverSchemaTool = {
+  name: "discover_schema",
+  description:
+    "Retrieves RDF classes and properties available in a world's schema. Use this tool when you need to understand the 'vocabulary' (what classes and properties exist) before inserting or querying data. Input must be a 'source' world ID and 'referenceText' describing what you're looking for. Returns an array of entity schemas.",
+  inputSchema: discoverSchemaInputSchema,
+  outputSchema: discoverSchemaOutputSchema,
+};
+
+/**
+ * createDiscoverSchemaTool creates a tool that discovers RDF classes and properties.
+ */
+export function createDiscoverSchemaTool(
+  options: CreateToolsOptions,
+): DiscoverSchemaTool {
+  return tool({
+    ...discoverSchemaTool,
+    execute: async (input: DiscoverSchemaInput) => {
+      return await discoverSchema(options.worlds, input);
+    },
+  });
 }

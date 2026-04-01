@@ -1,5 +1,5 @@
 import { assert, assertEquals } from "@std/assert";
-import { validateRdf } from "./validate.ts";
+import { validateRdf } from "./tools/validate-rdf/tool.ts";
 
 Deno.test("validateRdf function - Basic Ontology", async () => {
   const ontology = {

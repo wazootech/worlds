@@ -1,17 +1,17 @@
-import type { DiscoverSchemaTool } from "./tools/discover-schema.ts";
-import type { ExecuteSparqlTool } from "./tools/execute-sparql.ts";
-import type { GenerateIriTool } from "./tools/generate-iri.ts";
-import type { SearchEntitiesTool } from "./tools/search-entities.ts";
-import type { DisambiguateEntitiesTool } from "./tools/disambiguate-entities.ts";
-import type { ValidateRdfTool } from "./tools/validate-rdf.ts";
+import type { DiscoverSchemaTool } from "./tools/discover-schema/mod.ts";
+import type { ExecuteSparqlTool } from "./tools/execute-sparql/mod.ts";
+import type { GenerateIriTool } from "./tools/generate-iri/mod.ts";
+import type { SearchEntitiesTool } from "./tools/search-entities/mod.ts";
+import type { DisambiguateEntitiesTool } from "./tools/disambiguate-entities/mod.ts";
+import type { ValidateRdfTool } from "./tools/validate-rdf/mod.ts";
+import { createDiscoverSchemaTool } from "./tools/discover-schema/mod.ts";
+import { createExecuteSparqlTool } from "./tools/execute-sparql/mod.ts";
+import { createGenerateIriTool } from "./tools/generate-iri/mod.ts";
+import { createSearchEntitiesTool } from "./tools/search-entities/mod.ts";
+import { createDisambiguateEntitiesTool } from "./tools/disambiguate-entities/mod.ts";
+import { createValidateRdfTool } from "./tools/validate-rdf/mod.ts";
 import type { CreateToolsOptions } from "./options.ts";
 import type { Source } from "@wazoo/worlds-sdk";
-import { createDiscoverSchemaTool } from "./tools/discover-schema.ts";
-import { createExecuteSparqlTool } from "./tools/execute-sparql.ts";
-import { createGenerateIriTool } from "./tools/generate-iri.ts";
-import { createSearchEntitiesTool } from "./tools/search-entities.ts";
-import { createDisambiguateEntitiesTool } from "./tools/disambiguate-entities.ts";
-import { createValidateRdfTool } from "./tools/validate-rdf.ts";
 
 /**
  * createTools creates a toolset from a CreateToolsOptions.

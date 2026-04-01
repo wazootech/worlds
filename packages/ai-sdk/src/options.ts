@@ -2,7 +2,7 @@ import type { Source, Worlds } from "@wazoo/worlds-sdk";
 import type {
   DisambiguateEntitiesInput,
   DisambiguateEntitiesOutput,
-} from "#/tools/disambiguate-entities.ts";
+} from "./tools/disambiguate-entities/mod.ts";
 
 /**
  * SourceInput is a flexible way to specify a data source.

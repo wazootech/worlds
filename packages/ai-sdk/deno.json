@@ -4,16 +4,28 @@
 
   "exports": {
     ".": "./src/mod.ts",
-    "./discover-schema": "./src/discover-schema.ts",
-    "./schemas/tools": "./src/schemas/tools.ts",
-    "./tool-definitions/execute-sparql": "./src/tool-definitions/execute-sparql.ts",
-    "./tool-definitions/search-entities": "./src/tool-definitions/search-entities.ts",
-    "./tools/discover-schema": "./src/tools/discover-schema.ts",
-    "./tools/execute-sparql": "./src/tools/execute-sparql.ts",
-    "./tools/generate-iri": "./src/tools/generate-iri.ts",
-    "./tools/search-entities": "./src/tools/search-entities.ts",
-    "./tools/disambiguate-entities": "./src/tools/disambiguate-entities.ts",
-    "./tools/validate-rdf": "./src/tools/validate-rdf.ts"
+    "./tools/discover-schema": "./src/tools/discover-schema/mod.ts",
+    "./tools/discover-schema/schema": "./src/tools/discover-schema/schema.ts",
+    "./tools/execute-sparql": "./src/tools/execute-sparql/mod.ts",
+    "./tools/execute-sparql/schema": "./src/tools/execute-sparql/schema.ts",
+    "./tools/generate-iri": "./src/tools/generate-iri/mod.ts",
+    "./tools/generate-iri/schema": "./src/tools/generate-iri/schema.ts",
+    "./tools/search-entities": "./src/tools/search-entities/mod.ts",
+    "./tools/search-entities/schema": "./src/tools/search-entities/schema.ts",
+    "./tools/worlds-list": "./src/tools/worlds-list/mod.ts",
+    "./tools/worlds-list/schema": "./src/tools/worlds-list/schema.ts",
+    "./tools/worlds-get": "./src/tools/worlds-get/mod.ts",
+    "./tools/worlds-get/schema": "./src/tools/worlds-get/schema.ts",
+    "./tools/worlds-create": "./src/tools/worlds-create/mod.ts",
+    "./tools/worlds-create/schema": "./src/tools/worlds-create/schema.ts",
+    "./tools/worlds-import": "./src/tools/worlds-import/mod.ts",
+    "./tools/worlds-import/schema": "./src/tools/worlds-import/schema.ts",
+    "./tools/worlds-export": "./src/tools/worlds-export/mod.ts",
+    "./tools/worlds-export/schema": "./src/tools/worlds-export/schema.ts",
+    "./tools/disambiguate-entities": "./src/tools/disambiguate-entities/mod.ts",
+    "./tools/disambiguate-entities/schema": "./src/tools/disambiguate-entities/schema.ts",
+    "./tools/validate-rdf": "./src/tools/validate-rdf/mod.ts",
+    "./tools/validate-rdf/schema": "./src/tools/validate-rdf/schema.ts"
   },
   "imports": {
     "#/": "./src/"

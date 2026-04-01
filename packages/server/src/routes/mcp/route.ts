@@ -1,36 +1,45 @@
-import { McpServer } from "npm:@modelcontextprotocol/sdk@1.29.0/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
 import { LocalWorlds } from "@wazoo/worlds-sdk";
+
 import {
+  executeSparqlInputSchema,
   executeSparqlTool,
+} from "@wazoo/worlds-ai-sdk/tools/execute-sparql";
+import {
+  searchEntitiesInputSchema,
   searchEntitiesTool,
-  worldsQuerySchema,
-  worldsListSchema,
-  worldsGetSchema,
-  worldsCreateSchema,
-  worldsImportSchema,
-  worldsExportSchema,
-  worldsSearchSchema,
-  executeSparqlToolDefinition,
-  worldsListToolDefinition,
-  worldsGetToolDefinition,
-  worldsCreateToolDefinition,
-  worldsImportToolDefinition,
-  worldsExportToolDefinition,
-  searchEntitiesToolDefinition,
-} from "@wazoo/worlds-ai-sdk";
-import type {
-  WorldsCreateInput,
-  WorldsExportInput,
-  WorldsGetInput,
-  WorldsImportInput,
-  WorldsListInput,
-  WorldsQueryInput,
-  WorldsSearchInput,
-} from "@wazoo/worlds-ai-sdk";
+} from "@wazoo/worlds-ai-sdk/tools/search-entities";
+import {
+  worldsListInputSchema,
+  worldsListTool,
+} from "@wazoo/worlds-ai-sdk/tools/worlds-list";
+import {
+  worldsGetInputSchema,
+  worldsGetTool,
+} from "@wazoo/worlds-ai-sdk/tools/worlds-get";
+import {
+  worldsCreateInputSchema,
+  worldsCreateTool,
+} from "@wazoo/worlds-ai-sdk/tools/worlds-create";
+import {
+  worldsImportInputSchema,
+  worldsImportTool,
+} from "@wazoo/worlds-ai-sdk/tools/worlds-import";
+import {
+  worldsExportInputSchema,
+  worldsExportTool,
+} from "@wazoo/worlds-ai-sdk/tools/worlds-export";
+
+import type { ExecuteSparqlInput } from "@wazoo/worlds-ai-sdk/tools/execute-sparql/schema";
+import type { SearchEntitiesInput } from "@wazoo/worlds-ai-sdk/tools/search-entities/schema";
+import type { WorldsListInput } from "@wazoo/worlds-ai-sdk/tools/worlds-list/schema";
+import type { WorldsGetInput } from "@wazoo/worlds-ai-sdk/tools/worlds-get/schema";
+import type { WorldsCreateInput } from "@wazoo/worlds-ai-sdk/tools/worlds-create/schema";
+import type { WorldsImportInput } from "@wazoo/worlds-ai-sdk/tools/worlds-import/schema";
+import type { WorldsExportInput } from "@wazoo/worlds-ai-sdk/tools/worlds-export/schema";
 
 export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);
@@ -50,10 +59,9 @@ export default (appContext: WorldsContext) => {
     {
       title: "Worlds SPARQL Query",
       description: executeSparqlTool.description,
-      inputSchema: worldsQuerySchema,
-      outputSchema: executeSparqlTool.outputSchema,
+      inputSchema: executeSparqlInputSchema,
     },
-    async (args: WorldsQueryInput) => {
+    async (args: ExecuteSparqlInput) => {
       const result = await worlds.sparql(args.world, args.query);
       return {
         content: [
@@ -67,14 +75,17 @@ export default (appContext: WorldsContext) => {
   );
 
   server.registerTool(
-    "worlds_list",
+    worldsListTool.name,
     {
       title: "List Worlds",
-      description: "List all available worlds",
-      inputSchema: worldsListSchema,
+      description: worldsListTool.description,
+      inputSchema: worldsListInputSchema,
     },
     async (args: WorldsListInput) => {
-      const result = await worlds.list({ page: args.page, pageSize: args.pageSize });
+      const result = await worlds.list({
+        page: args.page,
+        pageSize: args.pageSize,
+      });
       return {
         content: [
           {
@@ -87,11 +98,11 @@ export default (appContext: WorldsContext) => {
   );
 
   server.registerTool(
-    "worlds_get",
+    worldsGetTool.name,
     {
       title: "Get World",
-      description: "Get a world by ID",
-      inputSchema: worldsGetSchema,
+      description: worldsGetTool.description,
+      inputSchema: worldsGetInputSchema,
     },
     async (args: WorldsGetInput) => {
       const worldData = await worlds.get(args.world);
@@ -113,11 +124,11 @@ export default (appContext: WorldsContext) => {
   );
 
   server.registerTool(
-    "worlds_create",
+    worldsCreateTool.name,
     {
       title: "Create World",
-      description: "Create a new world",
-      inputSchema: worldsCreateSchema,
+      description: worldsCreateTool.description,
+      inputSchema: worldsCreateInputSchema,
     },
     async (args: WorldsCreateInput) => {
       const world = await worlds.create(args);
@@ -133,11 +144,11 @@ export default (appContext: WorldsContext) => {
   );
 
   server.registerTool(
-    "worlds_import",
+    worldsImportTool.name,
     {
       title: "Import RDF",
-      description: "Import RDF data into a world",
-      inputSchema: worldsImportSchema,
+      description: worldsImportTool.description,
+      inputSchema: worldsImportInputSchema,
     },
     async (args: WorldsImportInput) => {
       await worlds.import(args.world, args.data, {
@@ -155,11 +166,11 @@ export default (appContext: WorldsContext) => {
   );
 
   server.registerTool(
-    "worlds_export",
+    worldsExportTool.name,
     {
       title: "Export RDF",
-      description: "Export a world as RDF data",
-      inputSchema: worldsExportSchema,
+      description: worldsExportTool.description,
+      inputSchema: worldsExportInputSchema,
     },
     async (args: WorldsExportInput) => {
       const buffer = await worlds.export(args.world, {
@@ -181,9 +192,9 @@ export default (appContext: WorldsContext) => {
     {
       title: "Search Entities",
       description: searchEntitiesTool.description,
-      inputSchema: worldsSearchSchema,
+      inputSchema: searchEntitiesInputSchema,
     },
-    async (args: WorldsSearchInput) => {
+    async (args: SearchEntitiesInput) => {
       const results = await worlds.search(args.world, args.query, {
         limit: args.limit,
         types: args.types,
@@ -203,7 +214,7 @@ export default (appContext: WorldsContext) => {
 
   const mcpRouter = new Router();
 
-  mcpRouter.post("/mcp", async (ctx) => {
+  mcpRouter.post("/mcp", (ctx) => {
     const authorized = authorizeRequest(appContext, ctx.request);
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });
@@ -211,7 +222,7 @@ export default (appContext: WorldsContext) => {
     return server.server.fetch(ctx.request);
   });
 
-  mcpRouter.get("/mcp", async (ctx) => {
+  mcpRouter.get("/mcp", (ctx) => {
     const authorized = authorizeRequest(appContext, ctx.request);
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });

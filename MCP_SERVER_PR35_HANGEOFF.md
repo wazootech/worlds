@@ -2,7 +2,8 @@
 
 ## Summary
 
-Added an MCP server endpoint (`/mcp`) to the existing Worlds server, exposing 7 tools for interacting with Worlds knowledge graphs.
+Added an MCP server endpoint (`/mcp`) to the existing Worlds server, exposing 7
+tools for interacting with Worlds knowledge graphs.
 
 ## What's Working
 
@@ -16,7 +17,8 @@ Added an MCP server endpoint (`/mcp`) to the existing Worlds server, exposing 7 
   - `worlds_import` - Import RDF data
   - `worlds_export` - Export world as RDF
   - `worlds_search` - Search entities
-- ✅ Tool schemas moved from `worlds` to `ai-sdk` package (cleaner dependency flow)
+- ✅ Tool schemas moved from `worlds` to `ai-sdk` package (cleaner dependency
+  flow)
 - ✅ All tests pass: `deno test` → 18 passed (56 steps)
 - ✅ Type checking passes: `deno check` → all packages OK
 
@@ -39,7 +41,8 @@ packages/server/src/routes/mcp/route.ts  # MCP endpoint handler
 
 ### Known Issue: Version Mismatch
 
-The MCP SDK version used (`1.8.0`) is **not the latest**. It was chosen because newer versions don't resolve properly in Deno:
+The MCP SDK version used (`1.8.0`) is **not the latest**. It was chosen because
+newer versions don't resolve properly in Deno:
 
 ```typescript
 // Current (works in Deno)
@@ -50,6 +53,7 @@ import { McpServer } from "@modelcontextprotocol/sdk";
 ```
 
 **Current workaround:**
+
 - Using `@ts-nocheck` in `route.ts` to suppress type mismatches
 - Using older SDK with manual fetch pattern: `server.server.fetch(ctx.request)`
 
@@ -60,10 +64,11 @@ To support the latest MCP clients, the following needs to be done:
 1. **Upgrade MCP SDK to latest version** (v2.x split packages)
    - `@modelcontextprotocol/server` (server implementation)
    - `@modelcontextprotocol/core` (types, protocol)
-   
+
    The SDK has undergone a major version bump with package splitting:
    - v1: Single `@modelcontextprotocol/sdk` package
-   - v2: Split into `@modelcontextprotocol/core`, `@modelcontextprotocol/client`, `@modelcontextprotocol/server`
+   - v2: Split into `@modelcontextprotocol/core`,
+     `@modelcontextprotocol/client`, `@modelcontextprotocol/server`
 
 2. **Fix Deno import resolution**
    - The latest SDK versions have export issues in Deno
@@ -72,7 +77,8 @@ To support the latest MCP clients, the following needs to be done:
 3. **Use proper HTTP transport**
    - Latest SDK uses Streamable HTTP transport pattern
    - Should use: `server.connect(transport)` pattern
-   - Or use the middleware package: `@modelcontextprotocol/hono` or `@modelcontextprotocol/express`
+   - Or use the middleware package: `@modelcontextprotocol/hono` or
+     `@modelcontextprotocol/express`
 
 4. **Update tool registration to latest API**
    - Latest SDK uses `server.registerTool()` (not `.tool()`)

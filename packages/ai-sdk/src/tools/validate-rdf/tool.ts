@@ -1,101 +1,10 @@
+import { tool } from "ai";
 import * as n3 from "n3";
 import { Validator as SHACLValidator } from "shacl-engine";
-import { z } from "zod";
-import { type Ontology, ontologySchema } from "./schema.ts";
-import type { CreateToolsOptions } from "./options.ts";
-
-/**
- * Triple is a simplified representation of an RDF triple.
- */
-export interface Triple {
-  /**
-   * subject is the subject IRI of the triple.
-   */
-  subject: string;
-
-  /**
-   * predicate is the predicate IRI of the triple.
-   */
-  predicate: string;
-
-  /**
-   * object is the object IRI or literal value.
-   */
-  object: string;
-}
-
-/**
- * tripleSchema is the schema for a simplified triple.
- */
-export const tripleSchema: z.ZodType<Triple> = z.object({
-  subject: z.string().describe("The subject IRI."),
-  predicate: z.string().describe("The predicate IRI."),
-  object: z.string().describe("The object IRI or literal value."),
-});
-
-/**
- * ValidateRdfInput is the input to the validateRdf tool.
- */
-export interface ValidateRdfInput {
-  /**
-   * triples is the list of triples to validate.
-   */
-  triples: Triple[];
-
-  /**
-   * ontology is the schema and classes to validate against.
-   */
-  ontology: Ontology;
-
-  /**
-   * source is the optional context source.
-   */
-  source?: string;
-}
-
-/**
- * validateRdfInputSchema is the input schema for the validateRdf tool.
- */
-export const validateRdfInputSchema: z.ZodType<ValidateRdfInput> = z
-  .object({
-    triples: z.array(tripleSchema).describe(
-      "A list of triples to validate.",
-    ),
-    ontology: ontologySchema.describe(
-      "The ontology (allowed classes and properties) to validate against. Usually discovered via the schema discovery tool or provided in the prompt.",
-    ),
-    source: z.string().optional().describe(
-      "The ID or slug of the source this validation is for. If provided, the tool can fetch current subject context for deeper validation.",
-    ),
-  });
-
-/**
- * ValidateRdfOutput is the output of the validateRdf tool.
- */
-export interface ValidateRdfOutput {
-  /**
-   * isValid is true if the RDF conforms to the ontology and SHACL shapes.
-   */
-  isValid: boolean;
-
-  /**
-   * errors contains the list of validation failure messages.
-   */
-  errors: string[];
-}
-
-/**
- * validateRdfOutputSchema is the output schema for the validateRdf tool.
- */
-export const validateRdfOutputSchema: z.ZodType<ValidateRdfOutput> = z
-  .object({
-    isValid: z.boolean().describe(
-      "Whether the triples are valid according to the ontology.",
-    ),
-    errors: z.array(z.string()).describe(
-      "A list of validation errors, if any.",
-    ),
-  });
+import type { Tool } from "ai";
+import type { CreateToolsOptions } from "../../options.ts";
+import { validateRdfInputSchema, validateRdfOutputSchema } from "./schema.ts";
+import type { Triple, ValidateRdfInput, ValidateRdfOutput } from "./schema.ts";
 
 /**
  * validateRdf validates a set of triples against an ontology and optional SHACL shapes.
@@ -199,4 +108,66 @@ export async function validateRdf(
     isValid: errors.length === 0,
     errors,
   };
+}
+
+/**
+ * ValidateRdfTool is a tool that validates RDF data against an ontology.
+ */
+export type ValidateRdfTool = Tool<ValidateRdfInput, ValidateRdfOutput>;
+
+/**
+ * validateRdfTool is a metadata object for the tool that validates RDF data.
+ */
+export const validateRdfTool = {
+  name: "validate_rdf",
+  description:
+    "Checks a set of RDF triples against an allowed ontology (classes and properties) and SHACL shapes. Use this tool before inserting any new data to prevent schema violations or 'invented' predicates. Input must be 'triples' to check and an 'ontology' definition. Returns a validation report with errors if any.",
+  inputSchema: validateRdfInputSchema,
+  outputSchema: validateRdfOutputSchema,
+};
+
+/**
+ * createValidateRdfTool creates a tool that validates RDF data against an ontology.
+ */
+export function createValidateRdfTool(
+  options: CreateToolsOptions,
+): ValidateRdfTool {
+  const { worlds, sources } = options;
+
+  return tool({
+    ...validateRdfTool,
+    execute: async (input: ValidateRdfInput) => {
+      const { source } = input;
+      let contextRdf: Triple[] = [];
+
+      const s = sources.find((s) =>
+        (typeof s === "string" ? s : s.world) === source
+      );
+      const hasSchemaSupport = typeof s === "object" ? s.schema : false;
+
+      if (source && worlds && hasSchemaSupport) {
+        try {
+          const buffer = await worlds.export(source, {
+            contentType: "application/n-triples",
+          });
+          const text = new TextDecoder().decode(buffer);
+          const parser = new n3.Parser({ format: "N-Triples" });
+          const quads = parser.parse(text);
+          // deno-lint-ignore no-explicit-any
+          contextRdf = quads.map((q: any) => ({
+            subject: q.subject.value,
+            predicate: q.predicate.value,
+            object: q.object.value,
+          }));
+        } catch (error) {
+          console.error(
+            "Failed to fetch full world context for validation:",
+            error,
+          );
+        }
+      }
+
+      return await validateRdf(input, options, contextRdf);
+    },
+  });
 }

@@ -5,7 +5,11 @@ import {
   SpriteMaterial,
   TextureLoader,
 } from "three";
-import { flip, rand, randomPointOnSphere } from "@/components/pixel-planet/lib/utils";
+import {
+  flip,
+  rand,
+  randomPointOnSphere,
+} from "@/components/pixel-planet/lib/utils";
 
 export function createStars(count: number): Group {
   const starGroup = new Group();
