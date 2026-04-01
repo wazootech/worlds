@@ -7,75 +7,200 @@ import type { SourceInput } from "@wazoo/worlds-ai-sdk/options";
 
 import {
   sparql,
-  worldsSparqlInputSchema,
-  worldsSparqlOutputSchema,
   worldsSparqlTool,
+  type WorldsSparqlInput,
 } from "@wazoo/worlds-ai-sdk/tools/sparql";
 import {
   search,
-  worldsSearchInputSchema,
-  worldsSearchOutputSchema,
   worldsSearchTool,
+  type WorldsSearchInput,
 } from "@wazoo/worlds-ai-sdk/tools/search";
 import {
   list,
-  worldsListInputSchema,
-  worldsListOutputSchema,
   worldsListTool,
+  type WorldsListInput,
 } from "@wazoo/worlds-ai-sdk/tools/list";
 import {
   get,
-  worldsGetInputSchema,
-  worldsGetOutputSchema,
   worldsGetTool,
+  type WorldsGetInput,
 } from "@wazoo/worlds-ai-sdk/tools/get";
 import {
   create,
-  worldsCreateInputSchema,
-  worldsCreateOutputSchema,
   worldsCreateTool,
+  type WorldsCreateInput,
 } from "@wazoo/worlds-ai-sdk/tools/create";
 import {
   update,
-  worldsUpdateInputSchema,
-  worldsUpdateOutputSchema,
   worldsUpdateTool,
+  type WorldsUpdateInput,
 } from "@wazoo/worlds-ai-sdk/tools/update";
 import {
   deleteWorld,
-  worldsDeleteInputSchema,
-  worldsDeleteOutputSchema,
   worldsDeleteTool,
+  type WorldsDeleteInput,
 } from "@wazoo/worlds-ai-sdk/tools/delete";
 import {
   importData,
-  worldsImportInputSchema,
-  worldsImportOutputSchema,
   worldsImportTool,
+  type WorldsImportInput,
 } from "@wazoo/worlds-ai-sdk/tools/import";
 import {
   exportData,
-  worldsExportInputSchema,
-  worldsExportOutputSchema,
   worldsExportTool,
+  type WorldsExportInput,
 } from "@wazoo/worlds-ai-sdk/tools/export";
 import {
   listLogs,
-  worldsLogsInputSchema,
-  worldsLogsOutputSchema,
   worldsLogsTool,
+  type WorldsLogsInput,
 } from "@wazoo/worlds-ai-sdk/tools/logs";
 
-import type { WorldsSparqlInput } from "@wazoo/worlds-ai-sdk/tools/sparql/schema";
-import type { WorldsSearchInput } from "@wazoo/worlds-ai-sdk/tools/search/schema";
-import type { WorldsListInput } from "@wazoo/worlds-ai-sdk/tools/list/schema";
-import type { WorldsGetInput } from "@wazoo/worlds-ai-sdk/tools/get/schema";
-import type { WorldsCreateInput } from "@wazoo/worlds-ai-sdk/tools/create/schema";
-import type { WorldsUpdateInput } from "@wazoo/worlds-ai-sdk/tools/update/schema";
-import type { WorldsDeleteInput } from "@wazoo/worlds-ai-sdk/tools/delete/schema";
-import type { WorldsImportInput } from "@wazoo/worlds-ai-sdk/tools/import/schema";
-import type { WorldsExportInput } from "@wazoo/worlds-ai-sdk/tools/export/schema";
-import type { WorldsLogsInput } from "@wazoo/worlds-ai-sdk/tools/logs/schema";
+import type { CreateToolsOptions } from "@wazoo/worlds-ai-sdk/options";
+import type { McpServer as McpServerType } from "@modelcontextprotocol/sdk/server/mcp.js";
+
+type McpToolOptions = {
+  name: string;
+  title: string;
+  description: string;
+  inputSchema: unknown;
+  outputSchema: unknown;
+  readOnlyHint?: boolean;
+  idempotentHint?: boolean;
+};
+
+function registerMcpTool(
+  server: McpServerType,
+  options: McpToolOptions,
+  execute: (args: unknown) => Promise<unknown>,
+): void {
+  server.registerTool(
+    options.name,
+    {
+      title: options.title,
+      description: options.description,
+      inputSchema: options.inputSchema,
+      outputSchema: options.outputSchema,
+      readOnlyHint: options.readOnlyHint,
+      idempotentHint: options.idempotentHint,
+    },
+    async (args: unknown) => {
+      try {
+        const result = await execute(args);
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text" as const,
+              text: `${options.title} Error: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            },
+          ],
+        };
+      }
+    },
+  );
+}
+
+type ToolDefinition = {
+  tool: McpToolOptions;
+  fn: (worlds: CreateToolsOptions["worlds"], sources: CreateToolsOptions["sources"], args: unknown) => Promise<unknown>;
+};
+
+const TOOLS: ToolDefinition[] = [
+  {
+    tool: {
+      ...worldsSparqlTool,
+      title: "SPARQL",
+      readOnlyHint: true,
+      idempotentHint: true,
+    },
+    fn: (w, s, a) => sparql(w, s, a as WorldsSparqlInput),
+  },
+  {
+    tool: {
+      ...worldsListTool,
+      title: "List",
+      readOnlyHint: true,
+      idempotentHint: true,
+    },
+    fn: (w, _s, a) => list(w, a as WorldsListInput),
+  },
+  {
+    tool: {
+      ...worldsGetTool,
+      title: "Get",
+      readOnlyHint: true,
+      idempotentHint: true,
+    },
+    fn: (w, _s, a) => get(w, a as WorldsGetInput),
+  },
+  {
+    tool: {
+      ...worldsCreateTool,
+      title: "Create",
+    },
+    fn: (w, _s, a) => create(w, a as WorldsCreateInput),
+  },
+  {
+    tool: {
+      ...worldsUpdateTool,
+      title: "Update",
+    },
+    fn: (w, _s, a) => update(w, a as WorldsUpdateInput),
+  },
+  {
+    tool: {
+      ...worldsDeleteTool,
+      title: "Delete",
+    },
+    fn: (w, _s, a) => deleteWorld(w, a as WorldsDeleteInput),
+  },
+  {
+    tool: {
+      ...worldsImportTool,
+      title: "Import",
+    },
+    fn: (w, _s, a) => importData(w, a as WorldsImportInput),
+  },
+  {
+    tool: {
+      ...worldsExportTool,
+      title: "Export",
+      readOnlyHint: true,
+      idempotentHint: true,
+    },
+    fn: (w, _s, a) => exportData(w, a as WorldsExportInput),
+  },
+  {
+    tool: {
+      ...worldsSearchTool,
+      title: "Search",
+      readOnlyHint: true,
+      idempotentHint: true,
+    },
+    fn: (w, _s, a) => search(w, a as WorldsSearchInput),
+  },
+  {
+    tool: {
+      ...worldsLogsTool,
+      title: "Logs",
+      readOnlyHint: true,
+      idempotentHint: true,
+    },
+    fn: (w, _s, a) => listLogs(w, a as WorldsLogsInput),
+  },
+];
 
 /** mcpRouter defines the MCP server route and registers tools. @see https://skills.sh/anthropics/skills/mcp-builder */
 export default (appContext: WorldsContext) => {
@@ -93,390 +218,24 @@ export default (appContext: WorldsContext) => {
     },
   });
 
-  server.registerTool(
-    worldsSparqlTool.name,
-    {
-      title: "SPARQL",
-      description: worldsSparqlTool.description,
-      inputSchema: worldsSparqlInputSchema,
-      outputSchema: worldsSparqlOutputSchema,
-      readOnlyHint: true,
-      idempotentHint: true,
-    },
-    async (args: WorldsSparqlInput) => {
-      try {
-        const result = await sparql(worlds, sources, args);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `SPARQL Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
-    worldsListTool.name,
-    {
-      title: "List",
-      description: worldsListTool.description,
-      inputSchema: worldsListInputSchema,
-      outputSchema: worldsListOutputSchema,
-      readOnlyHint: true,
-      idempotentHint: true,
-    },
-    async (args: WorldsListInput) => {
-      try {
-        const result = await list(worlds, args);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `List Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
-    worldsGetTool.name,
-    {
-      title: "Get",
-      description: worldsGetTool.description,
-      inputSchema: worldsGetInputSchema,
-      outputSchema: worldsGetOutputSchema,
-      readOnlyHint: true,
-      idempotentHint: true,
-    },
-    async (args: WorldsGetInput) => {
-      try {
-        const result = await get(worlds, args);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Get Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
-    worldsCreateTool.name,
-    {
-      title: "Create",
-      description: worldsCreateTool.description,
-      inputSchema: worldsCreateInputSchema,
-      outputSchema: worldsCreateOutputSchema,
-      idempotentHint: false,
-    },
-    async (args: WorldsCreateInput) => {
-      try {
-        const result = await create(worlds, args);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Create Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
-    worldsUpdateTool.name,
-    {
-      title: "Update",
-      description: worldsUpdateTool.description,
-      inputSchema: worldsUpdateInputSchema,
-      outputSchema: worldsUpdateOutputSchema,
-      idempotentHint: false,
-    },
-    async (args: WorldsUpdateInput) => {
-      try {
-        const result = await update(worlds, args);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Update Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
-    worldsDeleteTool.name,
-    {
-      title: "Delete",
-      description: worldsDeleteTool.description,
-      inputSchema: worldsDeleteInputSchema,
-      outputSchema: worldsDeleteOutputSchema,
-      idempotentHint: false,
-    },
-    async (args: WorldsDeleteInput) => {
-      try {
-        const result = await deleteWorld(worlds, args);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Delete Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
-    worldsImportTool.name,
-    {
-      title: "Import",
-      description: worldsImportTool.description,
-      inputSchema: worldsImportInputSchema,
-      outputSchema: worldsImportOutputSchema,
-    },
-    async (args: WorldsImportInput) => {
-      try {
-        const result = await importData(worlds, args);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Import Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
-    worldsExportTool.name,
-    {
-      title: "Export",
-      description: worldsExportTool.description,
-      inputSchema: worldsExportInputSchema,
-      outputSchema: worldsExportOutputSchema,
-      readOnlyHint: true,
-      idempotentHint: true,
-    },
-    async (input: WorldsExportInput) => {
-      try {
-        const result = await exportData(worlds, input);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Export Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
-    worldsSearchTool.name,
-    {
-      title: "Search",
-      description: worldsSearchTool.description,
-      inputSchema: worldsSearchInputSchema,
-      outputSchema: worldsSearchOutputSchema,
-      readOnlyHint: true,
-      idempotentHint: true,
-    },
-    async (args: WorldsSearchInput) => {
-      try {
-        const result = await search(worlds, args);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Search Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-
-  server.registerTool(
-    worldsLogsTool.name,
-    {
-      title: "Logs",
-      description: worldsLogsTool.description,
-      inputSchema: worldsLogsInputSchema,
-      outputSchema: worldsLogsOutputSchema,
-      readOnlyHint: true,
-      idempotentHint: true,
-    },
-    async (args: WorldsLogsInput) => {
-      try {
-        const result = await listLogs(worlds, args);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Logs Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
+  for (const { tool, fn } of TOOLS) {
+    registerMcpTool(server, tool, (args) => fn(worlds, sources, args));
+  }
 
   const mcpRouter = new Router();
 
-  mcpRouter.post("/mcp", (ctx) => {
-    const authorized = authorizeRequest(appContext, ctx.request);
+  const handleMcpRequest = (request: Request): Response => {
+    const authorized = authorizeRequest(appContext, request);
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });
     }
+    return server.server.fetch(request);
+  };
 
-    return server.server.fetch(ctx.request);
-  });
-
-  mcpRouter.get("/mcp", (ctx) => {
-    const authorized = authorizeRequest(appContext, ctx.request);
-    if (!authorized.admin) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-
-    return server.server.fetch(ctx.request);
-  });
+  mcpRouter.post("/mcp", (ctx) => handleMcpRequest(ctx.request));
+  mcpRouter.get("/mcp", (ctx) => handleMcpRequest(ctx.request));
 
   return mcpRouter;
 };
+
+export type { McpToolOptions };
