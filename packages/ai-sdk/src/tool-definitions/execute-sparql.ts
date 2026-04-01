@@ -1,18 +1,26 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { executeSparqlTool } from "../tool-definitions/execute-sparql.ts";
-import { executeSparqlOutputSchema, isSparqlUpdate } from "../schemas/tools.ts";
+import {
+  executeSparqlOutputSchema,
+  isSparqlUpdate,
+  worldsQuerySchema,
+} from "../schemas/tools.ts";
+import type { ExecuteSparqlOutput } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "#/options.ts";
 
-export type ExecuteSparqlInput = z.infer<typeof executeSparqlTool.inputSchema>;
-export type ExecuteSparqlTool = ReturnType<typeof createExecuteSparqlTool>;
+export const executeSparqlTool = {
+  name: "worlds_query",
+  description: "Query a Worlds knowledge graph using SPARQL",
+  inputSchema: worldsQuerySchema,
+  outputSchema: executeSparqlOutputSchema,
+};
 
 export function createExecuteSparqlTool(
   { worlds, sources }: CreateToolsOptions,
 ) {
   return tool({
     ...executeSparqlTool,
-    execute: async (input: ExecuteSparqlInput) => {
+    execute: async (input) => {
       const { query, world: source } = input;
       const s = sources.find((s) =>
         (typeof s === "string" ? s : s.world) === source

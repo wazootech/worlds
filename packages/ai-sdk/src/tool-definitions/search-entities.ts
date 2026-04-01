@@ -1,18 +1,24 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { searchEntitiesTool } from "../tool-definitions/search-entities.ts";
+import {
+  worldsSearchSchema,
+  worldsSearchOutputSchema,
+} from "../schemas/tools.ts";
 import type { CreateToolsOptions } from "#/options.ts";
 
-export type SearchEntitiesInput = z.infer<typeof searchEntitiesTool.inputSchema>;
-export type SearchEntitiesOutput = z.infer<typeof searchEntitiesTool.outputSchema>;
-export type SearchEntitiesTool = ReturnType<typeof createSearchEntitiesTool>;
+export const searchEntitiesTool = {
+  name: "worlds_search",
+  description: "Search for facts in a Worlds knowledge graph using semantic search",
+  inputSchema: worldsSearchSchema,
+  outputSchema: worldsSearchOutputSchema,
+};
 
 export function createSearchEntitiesTool(
   { worlds }: CreateToolsOptions,
 ) {
   return tool({
     ...searchEntitiesTool,
-    execute: async (input: SearchEntitiesInput) => {
+    execute: async (input) => {
       const { world, query, types, limit = 20 } = input;
       const results = await worlds.search(world, query, {
         limit,
