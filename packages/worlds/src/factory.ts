@@ -201,6 +201,10 @@ export async function createWorldsContext(
     libsql: { database, manager },
     apiKey: config.envs.WORLDS_API_KEY,
     organizationId: config.envs.WORLDS_ORG_ID,
+    async [Symbol.asyncDispose]() {
+      await manager.close();
+      database.close();
+    },
   };
 }
 
@@ -234,5 +238,7 @@ export async function createWorlds(): Promise<Worlds> {
     },
   });
 
-  return new Worlds({ engine: new LocalWorlds(context) });
+  const worlds = new Worlds({ engine: new LocalWorlds(context) });
+  await worlds.init();
+  return worlds;
 }

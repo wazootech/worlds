@@ -46,11 +46,22 @@ const { namedNode, quad } = DataFactory;
  */
 export class LocalWorlds implements WorldsInterface {
   private readonly worldsRepository: WorldsRepository;
-  private readonly kernelWorldInitialized: Promise<void>;
+  private kernelWorldInitialized?: Promise<void>;
+  private isClosed = false;
 
   constructor(private readonly appContext: WorldsContext) {
     this.worldsRepository = new WorldsRepository(appContext.libsql.database);
-    this.kernelWorldInitialized = this.ensureKernelWorld();
+  }
+
+  /**
+   * init initializes the engine and its background tasks.
+   */
+  public async init(): Promise<void> {
+    this.ensureNotClosed();
+    if (!this.kernelWorldInitialized) {
+      this.kernelWorldInitialized = this.ensureKernelWorld();
+    }
+    await this.kernelWorldInitialized;
   }
 
   /**
@@ -114,7 +125,7 @@ export class LocalWorlds implements WorldsInterface {
    * list paginates all available worlds from the system database.
    */
   async list(input?: WorldsListInput): Promise<World[]> {
-    await this.kernelWorldInitialized;
+    await this.ensureInitialized();
     let limit = 20;
     let offset = 0;
 
@@ -141,7 +152,7 @@ export class LocalWorlds implements WorldsInterface {
    * get fetches a single world by its ID or slug.
    */
   async get(input: WorldsGetInput): Promise<World | null> {
-    await this.kernelWorldInitialized;
+    await this.ensureInitialized();
     const world = await this.resolveWorld(input.world);
     if (!world) {
       return null;
@@ -179,7 +190,7 @@ export class LocalWorlds implements WorldsInterface {
    * create creates a new isolated world.
    */
   async create(data: WorldsCreateInput): Promise<World> {
-    await this.kernelWorldInitialized;
+    await this.ensureInitialized();
     const id = ulid();
     const { slug, label, description } = data;
 
@@ -219,7 +230,7 @@ export class LocalWorlds implements WorldsInterface {
    * update updates a world's metadata.
    */
   async update(input: WorldsUpdateInput): Promise<void> {
-    await this.kernelWorldInitialized;
+    await this.ensureInitialized();
     const { world: idOrSlug, ...data } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
@@ -240,7 +251,7 @@ export class LocalWorlds implements WorldsInterface {
    * delete marks a world as deleted.
    */
   async delete(input: WorldsDeleteInput): Promise<void> {
-    await this.kernelWorldInitialized;
+    await this.ensureInitialized();
     const world = await this.resolveWorld(input.world);
     if (!world) {
       throw new Error("World not found");
@@ -255,7 +266,7 @@ export class LocalWorlds implements WorldsInterface {
    * sparql executes a SPARQL query or update against a specific world.
    */
   async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
-    await this.kernelWorldInitialized;
+    await this.ensureInitialized();
     return this._sparql(input);
   }
 
@@ -323,7 +334,7 @@ export class LocalWorlds implements WorldsInterface {
    * search performs semantic/text search on triples using vector embeddings.
    */
   async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
-    await this.kernelWorldInitialized;
+    await this.ensureInitialized();
     const { world: idOrSlug, query, limit, subjects, predicates, types } =
       input;
     const world = await this.resolveWorld(idOrSlug);
@@ -433,7 +444,7 @@ export class LocalWorlds implements WorldsInterface {
    * export retrieves a world's facts in the specified RDF content type.
    */
   async export(input: WorldsExportInput): Promise<ArrayBuffer> {
-    await this.kernelWorldInitialized;
+    await this.ensureInitialized();
     const { world: idOrSlug, contentType } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
@@ -546,7 +557,7 @@ export class LocalWorlds implements WorldsInterface {
    * listLogs retrieves execution and audit logs from the world database.
    */
   async listLogs(input: WorldsLogsInput): Promise<Log[]> {
-    await this.kernelWorldInitialized;
+    await this.ensureInitialized();
     const { world: idOrSlug, page: p, pageSize: ps, level } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
@@ -583,7 +594,36 @@ export class LocalWorlds implements WorldsInterface {
    * close shuts down the engine and all managed database connections.
    */
   async close(): Promise<void> {
-    await this.kernelWorldInitialized;
+    this.isClosed = true;
     await this.appContext.libsql.manager.close();
+    this.appContext.libsql.database.close();
+  }
+
+  /**
+   * [Symbol.asyncDispose] provides support for explicit resource management.
+   */
+  async [Symbol.asyncDispose](): Promise<void> {
+    await this.close();
+  }
+
+  /**
+   * ensureNotClosed throws an error if the engine is closed.
+   */
+  private ensureNotClosed(): void {
+    if (this.isClosed) {
+      throw new Error("Engine is closed");
+    }
+  }
+
+  /**
+   * ensureInitialized ensures that the kernel world is initialized.
+   */
+  private async ensureInitialized(): Promise<void> {
+    this.ensureNotClosed();
+    if (!this.kernelWorldInitialized) {
+      await this.init();
+    } else {
+      await this.kernelWorldInitialized;
+    }
   }
 }

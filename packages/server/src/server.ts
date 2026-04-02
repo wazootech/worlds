@@ -11,11 +11,12 @@ import mcpRouter from "./routes/mcp/route.ts";
 /**
  * createServer creates a server from a WorldsContext.
  */
-export function createServer(
+export async function createServer(
   appContext: WorldsContext,
   worlds?: WorldsInterface,
-): Router {
+): Promise<Router> {
   const engine = worlds ?? new LocalWorlds(appContext);
+  await engine.init();
   const app = new Router();
 
   app.use(worldsRouter(engine, appContext));

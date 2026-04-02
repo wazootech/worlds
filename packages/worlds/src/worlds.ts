@@ -125,4 +125,18 @@ export class Worlds implements WorldsInterface {
   public close(): Promise<void> {
     return this.engine.close();
   }
+
+  /**
+   * init initializes the SDK and its engine.
+   */
+  public init(): Promise<void> {
+    return this.engine.init();
+  }
+
+  /**
+   * [Symbol.asyncDispose] provides support for explicit resource management.
+   */
+  public [Symbol.asyncDispose](): Promise<void> {
+    return this.engine[Symbol.asyncDispose]();
+  }
 }

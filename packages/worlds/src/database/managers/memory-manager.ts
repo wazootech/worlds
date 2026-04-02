@@ -74,4 +74,11 @@ export class MemoryDatabaseManager implements DatabaseManager {
     this.databases.clear();
     return Promise.resolve();
   }
+
+  /**
+   * [Symbol.asyncDispose] provides support for explicit resource management.
+   */
+  async [Symbol.asyncDispose](): Promise<void> {
+    await this.close();
+  }
 }

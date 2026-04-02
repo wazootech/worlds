@@ -47,6 +47,8 @@ const mockWorldsBase: WorldsInterface = {
   getServiceDescription: () => Promise.resolve("{}"),
   listLogs: () => Promise.resolve([]),
   close: () => Promise.resolve(),
+  init: () => Promise.resolve(),
+  [Symbol.asyncDispose]: () => Promise.resolve(),
 };
 
 function createMockWorlds(

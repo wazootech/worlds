@@ -43,4 +43,9 @@ export interface DatabaseManager {
    * close shuts down all managed database connections.
    */
   close(): Promise<void>;
+
+  /**
+   * [Symbol.asyncDispose] provides support for explicit resource management.
+   */
+  [Symbol.asyncDispose](): Promise<void>;
 }

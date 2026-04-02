@@ -80,6 +80,11 @@ export interface WorldsContext {
    * organizationId is the identifier of the organization for this context engine.
    */
   organizationId?: string;
+
+  /**
+   * [Symbol.asyncDispose] provides support for explicit resource management.
+   */
+  [Symbol.asyncDispose](): Promise<void>;
 }
 
 /**
@@ -143,7 +148,17 @@ export interface WorldsInterface {
   listLogs(input: WorldsLogsInput): Promise<Log[]>;
 
   /**
+   * init initializes the engine and its background tasks.
+   */
+  init(): Promise<void>;
+
+  /**
    * close shuts down the engine and all managed database connections.
    */
   close(): Promise<void>;
+
+  /**
+   * [Symbol.asyncDispose] provides support for explicit resource management.
+   */
+  [Symbol.asyncDispose](): Promise<void>;
 }

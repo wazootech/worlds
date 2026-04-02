@@ -368,4 +368,18 @@ export class RemoteWorlds implements WorldsInterface {
   public close(): Promise<void> {
     return Promise.resolve();
   }
+
+  /**
+   * init initializes the SDK client.
+   */
+  public init(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  /**
+   * [Symbol.asyncDispose] provides support for explicit resource management.
+   */
+  public [Symbol.asyncDispose](): Promise<void> {
+    return this.close();
+  }
 }

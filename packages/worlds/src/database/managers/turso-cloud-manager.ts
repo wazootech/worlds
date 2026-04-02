@@ -100,4 +100,11 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
     this.database.close(); // Close the system database too
     return Promise.resolve();
   }
+
+  /**
+   * [Symbol.asyncDispose] provides support for explicit resource management.
+   */
+  async [Symbol.asyncDispose](): Promise<void> {
+    await this.close();
+  }
 }

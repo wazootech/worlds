@@ -32,6 +32,10 @@ export async function createTestContext(): Promise<WorldsContext> {
       manager: databaseManager,
     },
     apiKey: ulid(),
+    async [Symbol.asyncDispose]() {
+      await databaseManager.close();
+      client.close();
+    },
   };
 }
 
