@@ -196,16 +196,19 @@ export async function createWorldsContext(
     );
   }
 
-  return {
+  const context: WorldsContext = {
     embeddings,
     libsql: { database, manager },
     apiKey: config.envs.WORLDS_API_KEY,
     organizationId: config.envs.WORLDS_ORG_ID,
     async [Symbol.asyncDispose]() {
+      await this.engine?.close();
       await manager.close();
       database.close();
     },
   };
+
+  return context;
 }
 
 /**
@@ -239,6 +242,7 @@ export async function createWorlds(): Promise<Worlds> {
   });
 
   const worlds = new Worlds({ engine: new LocalWorlds(context) });
+  context.engine = worlds;
   await worlds.init();
   return worlds;
 }

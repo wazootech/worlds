@@ -1,3 +1,4 @@
+import { KernelRepository } from "@wazoo/worlds-sdk";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
 
 /**
@@ -5,18 +6,25 @@ import type { WorldsContext } from "@wazoo/worlds-sdk";
  */
 export interface AuthorizedRequest {
   admin: boolean;
+  organizationId?: string;
 }
 
 /**
  * authorizeRequest authorizes a request using Bearer token.
- * Accepts only the admin API key.
+ * Validates the token against the Kernel World multitenancy registry.
  */
-export function authorizeRequest(
+export async function authorizeRequest(
   appContext: WorldsContext,
   request: Request,
-): AuthorizedRequest {
+): Promise<AuthorizedRequest> {
+  // If no admin API key is set, the server is in "open" mode (e.g. for local dev)
   if (!appContext.apiKey) {
     return { admin: true };
+  }
+
+  const engine = appContext.engine;
+  if (!engine) {
+    throw new Error("Engine not initialized in context");
   }
 
   const authHeader = request.headers.get("Authorization");
@@ -26,8 +34,17 @@ export function authorizeRequest(
 
   const apiKey = authHeader.slice("Bearer ".length).trim();
 
-  if (apiKey === appContext.apiKey) {
+  // Admin key bypass (if configured in context)
+  if (appContext.apiKey && apiKey === appContext.apiKey) {
     return { admin: true };
+  }
+
+  // Resolve organization via KernelRepository
+  const kernel = new KernelRepository(engine);
+  const organizationId = await kernel.resolveOrganization(apiKey);
+
+  if (organizationId) {
+    return { admin: false, organizationId };
   }
 
   return { admin: false };

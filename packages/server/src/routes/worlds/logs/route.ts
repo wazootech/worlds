@@ -1,12 +1,17 @@
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { ErrorResponse } from "@wazoo/worlds-sdk";
-import type { WorldsContext, WorldsInterface } from "@wazoo/worlds-sdk";
+import type { WorldsContext } from "@wazoo/worlds-sdk";
 
 /**
  * logsRouter creates a router for the World Logs API.
  */
-export default (worlds: WorldsInterface, appContext: WorldsContext) => {
+export default (appContext: WorldsContext) => {
+  const engine = appContext.engine;
+  if (!engine) {
+    throw new Error("Engine not initialized in context");
+  }
+
   return new Router()
     .get(
       "/worlds/:world/logs",
@@ -14,7 +19,10 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
         const worldId = ctx.params?.pathname.groups.world;
         if (!worldId) return ErrorResponse.BadRequest("World ID required");
 
-        const authorized = authorizeRequest(appContext, ctx.request);
+        const authorized = await authorizeRequest(
+          appContext,
+          ctx.request,
+        );
         if (!authorized.admin) return ErrorResponse.Unauthorized();
 
         const url = new URL(ctx.request.url);
@@ -23,7 +31,7 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
         const level = url.searchParams.get("level")?.toLowerCase();
 
         try {
-          const logs = await worlds.listLogs({
+          const logs = await engine.listLogs({
             world: worldId,
             page,
             pageSize,

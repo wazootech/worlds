@@ -1,7 +1,4 @@
 {
-  "compilerOptions": {
-    "lib": ["deno.window", "esnext"]
-  },
   "workspace": [
     "./packages/server",
     "./packages/worlds",

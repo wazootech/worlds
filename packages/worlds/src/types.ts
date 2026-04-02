@@ -82,6 +82,11 @@ export interface WorldsContext {
   organizationId?: string;
 
   /**
+   * engine is the core Worlds engine for this context.
+   */
+  engine?: WorldsInterface;
+
+  /**
    * [Symbol.asyncDispose] provides support for explicit resource management.
    */
   [Symbol.asyncDispose](): Promise<void>;

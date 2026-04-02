@@ -1,19 +1,27 @@
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { ErrorResponse } from "@wazoo/worlds-sdk";
-import type { WorldsContext, WorldsInterface } from "@wazoo/worlds-sdk";
+import type { WorldsContext } from "@wazoo/worlds-sdk";
 
 /**
  * searchRouter creates a router for the World Search API.
  */
-export default (worlds: WorldsInterface, appContext: WorldsContext) => {
+export default (appContext: WorldsContext) => {
+  const engine = appContext.engine;
+  if (!engine) {
+    throw new Error("Engine not initialized in context");
+  }
+
   return new Router().get(
     "/worlds/:world/search",
     async (ctx) => {
       const worldId = ctx.params?.pathname.groups.world;
       if (!worldId) return ErrorResponse.BadRequest("World ID required");
 
-      const authorized = authorizeRequest(appContext, ctx.request);
+      const authorized = await authorizeRequest(
+        appContext,
+        ctx.request,
+      );
       if (!authorized.admin) return ErrorResponse.Unauthorized();
 
       const url = new URL(ctx.request.url);
@@ -24,7 +32,7 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
       const limit = parseInt(url.searchParams.get("limit") ?? "20", 10);
 
       try {
-        const results = await worlds.search({
+        const results = await engine.search({
           world: worldId,
           query,
           limit,

@@ -1,5 +1,5 @@
 import { LocalWorlds } from "@wazoo/worlds-sdk";
-import type { WorldsContext, WorldsInterface } from "@wazoo/worlds-sdk";
+import type { WorldsContext } from "@wazoo/worlds-sdk";
 import { Router } from "@fartlabs/rt";
 
 import worldsRouter from "./routes/worlds/route.ts";
@@ -13,17 +13,19 @@ import mcpRouter from "./routes/mcp/route.ts";
  */
 export async function createServer(
   appContext: WorldsContext,
-  worlds?: WorldsInterface,
 ): Promise<Router> {
-  const engine = worlds ?? new LocalWorlds(appContext);
-  await engine.init();
+  if (!appContext.engine) {
+    appContext.engine = new LocalWorlds(appContext);
+    await appContext.engine.init();
+  }
+
   const app = new Router();
 
-  app.use(worldsRouter(engine, appContext));
-  app.use(sparqlRouter(engine, appContext));
-  app.use(logsRouter(engine, appContext));
-  app.use(searchRouter(engine, appContext));
-  app.use(mcpRouter(engine, appContext));
+  app.use(worldsRouter(appContext));
+  app.use(sparqlRouter(appContext));
+  app.use(logsRouter(appContext));
+  app.use(searchRouter(appContext));
+  app.use(mcpRouter(appContext));
 
   return app;
 }

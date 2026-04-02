@@ -10,8 +10,9 @@ import { createServer } from "../server.ts";
 Deno.test("World routes", async (t) => {
   await using appContext = await createTestContext();
   await using engine = new LocalWorlds(appContext);
+  appContext.engine = engine;
   await engine.init();
-  const server = await createServer(appContext, engine);
+  const server = await createServer(appContext);
 
   // Use the admin API key for setup
   // This shows how to use the server.fetch as a fetcher for the SDK

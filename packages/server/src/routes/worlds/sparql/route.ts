@@ -1,11 +1,7 @@
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { ErrorResponse, negotiateSerialization } from "@wazoo/worlds-sdk";
-import type {
-  WorldsContentType,
-  WorldsContext,
-  WorldsInterface,
-} from "@wazoo/worlds-sdk";
+import type { WorldsContentType, WorldsContext } from "@wazoo/worlds-sdk";
 
 /**
  * parseQuery parses the query and dataset parameters from the request.
@@ -43,13 +39,21 @@ async function parseQuery(request: Request) {
 /**
  * sparqlRouter creates a router for the SPARQL API.
  */
-export default (worlds: WorldsInterface, appContext: WorldsContext) => {
+export default (appContext: WorldsContext) => {
+  const engine = appContext.engine;
+  if (!engine) {
+    throw new Error("Engine not initialized in context");
+  }
+
   return new Router()
     .get("/worlds/:world/sparql", async (ctx) => {
       const worldId = ctx.params?.pathname.groups.world;
       if (!worldId) return ErrorResponse.BadRequest("World ID required");
 
-      const authorized = authorizeRequest(appContext, ctx.request);
+      const authorized = await authorizeRequest(
+        appContext,
+        ctx.request,
+      );
       if (!authorized.admin) return ErrorResponse.Unauthorized();
 
       const { query, defaultGraphUris, namedGraphUris } = await parseQuery(
@@ -58,7 +62,7 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
 
       if (!query) {
         const serialization = negotiateSerialization(ctx.request);
-        const description = await worlds.getServiceDescription({
+        const description = await engine.getServiceDescription({
           world: worldId,
           endpointUrl: ctx.request.url,
           contentType: serialization.contentType as WorldsContentType,
@@ -69,7 +73,7 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
       }
 
       try {
-        const result = await worlds.sparql({
+        const result = await engine.sparql({
           world: worldId,
           query,
           defaultGraphUris,
@@ -88,7 +92,10 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
       const worldId = ctx.params?.pathname.groups.world;
       if (!worldId) return ErrorResponse.BadRequest("World ID required");
 
-      const authorized = authorizeRequest(appContext, ctx.request);
+      const authorized = await authorizeRequest(
+        appContext,
+        ctx.request,
+      );
       if (!authorized.admin) return ErrorResponse.Unauthorized();
 
       const { query, defaultGraphUris, namedGraphUris } = await parseQuery(
@@ -97,7 +104,7 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
       if (!query) return ErrorResponse.BadRequest("Query required");
 
       try {
-        const result = await worlds.sparql({
+        const result = await engine.sparql({
           world: worldId,
           query,
           defaultGraphUris,

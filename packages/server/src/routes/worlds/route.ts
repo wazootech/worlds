@@ -8,17 +8,18 @@ import {
   worldsListInputSchema,
   worldsUpdateInputSchema,
 } from "@wazoo/worlds-sdk";
-import type {
-  WorldsContentType,
-  WorldsContext,
-  WorldsInterface,
-} from "@wazoo/worlds-sdk";
+import type { WorldsContentType, WorldsContext } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
 
 /**
  * worldsRouter creates a router for the Worlds API.
  */
-export default (worlds: WorldsInterface, appContext: WorldsContext) => {
+export default (appContext: WorldsContext) => {
+  const engine = appContext.engine;
+  if (!engine) {
+    throw new Error("Engine not initialized in context");
+  }
+
   return new Router()
     .get(
       "/worlds/:world",
@@ -28,12 +29,15 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = authorizeRequest(appContext, ctx.request);
+        const authorized = await authorizeRequest(
+          appContext,
+          ctx.request,
+        );
         if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
 
-        const world = await worlds.get({ world: worldId });
+        const world = await engine.get({ world: worldId });
         if (!world) {
           return ErrorResponse.NotFound("World not found");
         }
@@ -49,7 +53,10 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = authorizeRequest(appContext, ctx.request);
+        const authorized = await authorizeRequest(
+          appContext,
+          ctx.request,
+        );
         if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
@@ -75,7 +82,7 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
         }
 
         try {
-          const buffer = await worlds.export({
+          const buffer = await engine.export({
             world: worldId,
             contentType: serialization.contentType,
           });
@@ -100,7 +107,10 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = authorizeRequest(appContext, ctx.request);
+        const authorized = await authorizeRequest(
+          appContext,
+          ctx.request,
+        );
         if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
@@ -111,7 +121,7 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
           "application/n-quads";
 
         try {
-          await worlds.import({ world: worldId, data: body, contentType });
+          await engine.import({ world: worldId, data: body, contentType });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.BadRequest(
@@ -123,7 +133,10 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
     .get(
       "/worlds",
       async (ctx) => {
-        const authorized = authorizeRequest(appContext, ctx.request);
+        const authorized = await authorizeRequest(
+          appContext,
+          ctx.request,
+        );
         if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
@@ -141,7 +154,7 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
         }
 
         const { page, pageSize } = paginationResult.data;
-        const results = await worlds.list({ page, pageSize });
+        const results = await engine.list({ page, pageSize });
 
         return await handleETagRequest(ctx.request, Response.json(results));
       },
@@ -149,7 +162,10 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
     .post(
       "/worlds",
       async (ctx) => {
-        const authorized = authorizeRequest(appContext, ctx.request);
+        const authorized = await authorizeRequest(
+          appContext,
+          ctx.request,
+        );
         if (!authorized.admin) {
           return ErrorResponse.Forbidden("Only admins can create worlds");
         }
@@ -161,7 +177,7 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
         }
 
         try {
-          const world = await worlds.create(parseResult.data);
+          const world = await engine.create(parseResult.data);
           return Response.json(world, { status: STATUS_CODE.Created });
         } catch (error) {
           return ErrorResponse.Conflict(
@@ -178,7 +194,10 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = authorizeRequest(appContext, ctx.request);
+        const authorized = await authorizeRequest(
+          appContext,
+          ctx.request,
+        );
         if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
@@ -199,7 +218,7 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
         }
 
         try {
-          await worlds.update(updateResult.data);
+          await engine.update(updateResult.data);
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.NotFound(
@@ -216,13 +235,16 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
           return ErrorResponse.BadRequest("World ID required");
         }
 
-        const authorized = authorizeRequest(appContext, ctx.request);
+        const authorized = await authorizeRequest(
+          appContext,
+          ctx.request,
+        );
         if (!authorized.admin) {
           return ErrorResponse.Unauthorized();
         }
 
         try {
-          await worlds.delete({ world: worldId });
+          await engine.delete({ world: worldId });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.NotFound(

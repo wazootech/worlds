@@ -7,7 +7,6 @@ import type {
   WorldsExportInput,
   WorldsGetInput,
   WorldsImportInput,
-  WorldsInterface,
   WorldsListInput,
   WorldsLogsInput,
   WorldsSearchInput,
@@ -165,11 +164,16 @@ type McpResponse = {
 /**
  * mcpRouter creates a router for the MCP server.
  */
-export default (worlds: WorldsInterface, appContext: WorldsContext) => {
+export default (appContext: WorldsContext) => {
+  const engine = appContext.engine;
+  if (!engine) {
+    throw new Error("Engine not initialized in context");
+  }
+
   const sources: SourceInput[] = [];
 
   const handleMcpRequest = async (request: Request): Promise<Response> => {
-    const authorized = authorizeRequest(appContext, request);
+    const authorized = await authorizeRequest(appContext, request);
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });
     }
@@ -267,7 +271,7 @@ export default (worlds: WorldsInterface, appContext: WorldsContext) => {
           }
 
           try {
-            const result = await definition.fn(worlds, sources, args);
+            const result = await definition.fn(engine, sources, args);
             return Response.json(response({
               content: [
                 {
