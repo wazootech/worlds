@@ -8,6 +8,7 @@ import { initializeWorldDatabase } from "#/database/init.ts";
  */
 export class MemoryDatabaseManager implements DatabaseManager {
   private readonly databases = new Map<string, Client>();
+  private readonly initialized = new Set<string>();
 
   /**
    * constructor initializes the MemoryDatabaseManager.
@@ -21,26 +22,56 @@ export class MemoryDatabaseManager implements DatabaseManager {
    * @returns A managed database connection.
    */
   public async create(id: string): Promise<ManagedDatabase> {
-    const client = createClient({ url: ":memory:" });
-    await initializeWorldDatabase(client, this.dimensions);
-
-    this.databases.set(id, client);
-    return {
-      database: client,
-      url: ":memory:",
-    };
+    return await this.getManagedDatabase(id, ":memory:");
   }
 
-  public get(id: string): Promise<ManagedDatabase> {
-    const client = this.databases.get(id);
-    if (!client) {
-      throw new Error(`Database not found: ${id}`);
+  /**
+   * get returns the LibSQL database for the given id.
+   * @param id The ID of the database.
+   * @returns A managed database connection.
+   */
+  public async get(id: string): Promise<ManagedDatabase> {
+    return await this.getManagedDatabase(id, ":memory:");
+  }
+
+  /**
+   * getManagedDatabase retrieves or creates a managed database connection.
+   * @param id The ID of the database.
+   * @param url The database connection URL.
+   * @returns A managed database connection.
+   */
+  private async getManagedDatabase(
+    id: string,
+    url: string,
+  ): Promise<ManagedDatabase> {
+    const client = this.databases.get(id) ?? createClient({ url });
+    this.databases.set(id, client);
+
+    if (!this.initialized.has(id)) {
+      await initializeWorldDatabase(client, this.dimensions);
+      this.initialized.add(id);
     }
-    return Promise.resolve({ database: client, url: ":memory:" });
+
+    return {
+      database: client,
+      url,
+    };
   }
 
   public delete(id: string): Promise<void> {
     this.databases.delete(id);
+    this.initialized.delete(id);
+    return Promise.resolve();
+  }
+
+  /**
+   * close shuts down all managed in-memory database connections.
+   */
+  public close(): Promise<void> {
+    for (const client of this.databases.values()) {
+      client.close();
+    }
+    this.databases.clear();
     return Promise.resolve();
   }
 }

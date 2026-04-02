@@ -118,4 +118,11 @@ export class Worlds implements WorldsInterface {
   public listLogs(input: WorldsLogsInput): Promise<Log[]> {
     return this.engine.listLogs(input);
   }
+
+  /**
+   * close shuts down the SDK and its engine.
+   */
+  public close(): Promise<void> {
+    return this.engine.close();
+  }
 }

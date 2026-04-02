@@ -11,6 +11,7 @@ import { initializeWorldDatabase } from "#/database/init.ts";
  */
 export class FileDatabaseManager implements DatabaseManager {
   private readonly initialized = new Set<string>();
+  private readonly trackedDatabases = new Map<string, Client>();
 
   /**
    * constructor initializes the FileDatabaseManager.
@@ -52,7 +53,8 @@ export class FileDatabaseManager implements DatabaseManager {
     id: string,
     url: string,
   ): Promise<ManagedDatabase> {
-    const client = createClient({ url });
+    const client = this.trackedDatabases.get(id) ?? createClient({ url });
+    this.trackedDatabases.set(id, client);
 
     if (!this.initialized.has(id)) {
       await initializeWorldDatabase(client, this.dimensions);
@@ -77,5 +79,17 @@ export class FileDatabaseManager implements DatabaseManager {
         throw error;
       }
     }
+  }
+
+  /**
+   * close shuts down all managed file-based database connections.
+   */
+  public close(): Promise<void> {
+    for (const client of this.trackedDatabases.values()) {
+      client.close();
+    }
+    this.trackedDatabases.clear();
+    this.database.close(); // Close the system database too
+    return Promise.resolve();
   }
 }

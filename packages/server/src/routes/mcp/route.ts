@@ -7,13 +7,13 @@ import type {
   WorldsExportInput,
   WorldsGetInput,
   WorldsImportInput,
+  WorldsInterface,
   WorldsListInput,
   WorldsLogsInput,
   WorldsSearchInput,
   WorldsSparqlInput,
   WorldsUpdateInput,
 } from "@wazoo/worlds-sdk";
-import { LocalWorlds } from "@wazoo/worlds-sdk";
 import type {
   CreateToolsOptions,
   SourceInput,
@@ -162,8 +162,10 @@ type McpResponse = {
 };
 
 /** mcpRouter defines the MCP server route and implements JSON-RPC methods. */
-export default (appContext: WorldsContext) => {
-  const worlds = new LocalWorlds(appContext);
+/**
+ * mcpRouter creates a router for the MCP server.
+ */
+export default (worlds: WorldsInterface, appContext: WorldsContext) => {
   const sources: SourceInput[] = [];
 
   const handleMcpRequest = async (request: Request): Promise<Response> => {

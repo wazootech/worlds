@@ -361,4 +361,11 @@ export class RemoteWorlds implements WorldsInterface {
 
     return await response.json();
   }
+
+  /**
+   * close shuts down the SDK client.
+   */
+  public close(): Promise<void> {
+    return Promise.resolve();
+  }
 }

@@ -35,7 +35,12 @@ export interface DatabaseManager {
   get(id: string): Promise<ManagedDatabase>;
 
   /**
-   * delete deletes the LibSQL database for the given id.
+   * delete deletes the LibSQL database for the given identifier.
    */
   delete(id: string): Promise<void>;
+
+  /**
+   * close shuts down all managed database connections.
+   */
+  close(): Promise<void>;
 }

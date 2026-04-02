@@ -75,6 +75,11 @@ export interface WorldsContext {
      */
     manager: DatabaseManager;
   };
+
+  /**
+   * organizationId is the identifier of the organization for this context engine.
+   */
+  organizationId?: string;
 }
 
 /**
@@ -136,4 +141,9 @@ export interface WorldsInterface {
    * listLogs lists the execution/audit logs for a world.
    */
   listLogs(input: WorldsLogsInput): Promise<Log[]>;
+
+  /**
+   * close shuts down the engine and all managed database connections.
+   */
+  close(): Promise<void>;
 }

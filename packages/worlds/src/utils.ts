@@ -32,7 +32,7 @@ export async function parseError(response: Response): Promise<string> {
 export function isSparqlUpdate(query: string): boolean {
   // Normalize the query: remove comments and normalize whitespace
   const normalized = query
-    .replace(/#[^\n]*/g, "") // Remove comments
+    .replace(/(^|\s)#[^\n]*/g, "$1") // Only remove comments that start after whitespace or at start of line
     .replace(/\s+/g, " ") // Normalize whitespace
     .trim()
     .toUpperCase();

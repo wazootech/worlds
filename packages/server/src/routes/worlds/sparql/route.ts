@@ -1,11 +1,10 @@
 import { Router } from "@fartlabs/rt";
-import type { WorldsContentType } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
-import type { WorldsContext } from "@wazoo/worlds-sdk";
-import {
-  ErrorResponse,
-  LocalWorlds,
-  negotiateSerialization,
+import { ErrorResponse, negotiateSerialization } from "@wazoo/worlds-sdk";
+import type {
+  WorldsContentType,
+  WorldsContext,
+  WorldsInterface,
 } from "@wazoo/worlds-sdk";
 
 /**
@@ -41,9 +40,10 @@ async function parseQuery(request: Request) {
   return { query, defaultGraphUris, namedGraphUris };
 }
 
-export default (appContext: WorldsContext) => {
-  const worlds = new LocalWorlds(appContext);
-
+/**
+ * sparqlRouter creates a router for the SPARQL API.
+ */
+export default (worlds: WorldsInterface, appContext: WorldsContext) => {
   return new Router()
     .get("/worlds/:world/sparql", async (ctx) => {
       const worldId = ctx.params?.pathname.groups.world;

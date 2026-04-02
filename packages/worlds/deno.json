@@ -11,6 +11,7 @@
     "./schema/search": "./src/schemas/search.ts",
     "./schema/log": "./src/schemas/log.ts",
     "./schema/source": "./src/schemas/source.ts",
+    "./schema/kernel": "./src/schemas/kernel.ts",
     "./types": "./src/types.ts",
     "./testing": "./src/engine-context.ts"
   },

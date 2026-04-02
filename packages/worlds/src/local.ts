@@ -20,6 +20,7 @@ import type { WorldsInterface } from "./types.ts";
 import type { WorldRow } from "./database/repositories/system/worlds/mod.ts";
 import type { Patch } from "./rdf/patch/mod.ts";
 import type { WorldsContext } from "./types.ts";
+import { KERNEL, KERNEL_WORLD_ID } from "./ontology.ts";
 import type {
   Log,
   World,
@@ -45,15 +46,75 @@ const { namedNode, quad } = DataFactory;
  */
 export class LocalWorlds implements WorldsInterface {
   private readonly worldsRepository: WorldsRepository;
+  private readonly kernelWorldInitialized: Promise<void>;
 
   constructor(private readonly appContext: WorldsContext) {
     this.worldsRepository = new WorldsRepository(appContext.libsql.database);
+    this.kernelWorldInitialized = this.ensureKernelWorld();
+  }
+
+  /**
+   * ensureKernelWorld guarantees the presence of the kernel world and seeds it if necessary.
+   */
+  private async ensureKernelWorld(): Promise<void> {
+    const existing = await this.worldsRepository.getById(KERNEL_WORLD_ID);
+    if (existing) {
+      return;
+    }
+
+    const now = Date.now();
+    try {
+      await this.worldsRepository.insert({
+        id: KERNEL_WORLD_ID,
+        slug: "kernel",
+        label: "Kernel",
+        description: "Worlds platform control plane.",
+        db_hostname: null,
+        db_token: null,
+        created_at: now,
+        updated_at: now,
+        deleted_at: null,
+      });
+
+      await this.appContext.libsql.manager.create(KERNEL_WORLD_ID);
+    } catch (error) {
+      // If another instance already initialized the kernel world, we can safe skip
+      const checkAgain = await this.worldsRepository.getById(KERNEL_WORLD_ID);
+      if (!checkAgain) {
+        throw error;
+      }
+    }
+
+    // Bootstrap if an API key is provided
+    if (this.appContext.apiKey) {
+      const orgId = this.appContext.organizationId ??
+        `${KERNEL.BASE}organizations/root`;
+      const keyId = `${KERNEL.BASE}keys/bootstrap`;
+
+      await this._sparql({
+        world: KERNEL_WORLD_ID,
+        query: `
+          PREFIX worlds: <${KERNEL.NAMESPACE}>
+          INSERT DATA {
+            <${orgId}> a <${KERNEL.Organization}> ;
+              <${KERNEL.hasLabel}> "Root Organization" ;
+              <${KERNEL.createdAt}> ${now} .
+            
+            <${keyId}> a <${KERNEL.ApiKey}> ;
+              <${KERNEL.belongsTo}> <${orgId}> ;
+              <${KERNEL.hasSecret}> "${this.appContext.apiKey}" ;
+              <${KERNEL.createdAt}> ${now} .
+          }
+        `,
+      });
+    }
   }
 
   /**
    * list paginates all available worlds from the system database.
    */
   async list(input?: WorldsListInput): Promise<World[]> {
+    await this.kernelWorldInitialized;
     let limit = 20;
     let offset = 0;
 
@@ -80,6 +141,7 @@ export class LocalWorlds implements WorldsInterface {
    * get fetches a single world by its ID or slug.
    */
   async get(input: WorldsGetInput): Promise<World | null> {
+    await this.kernelWorldInitialized;
     const world = await this.resolveWorld(input.world);
     if (!world) {
       return null;
@@ -117,6 +179,7 @@ export class LocalWorlds implements WorldsInterface {
    * create creates a new isolated world.
    */
   async create(data: WorldsCreateInput): Promise<World> {
+    await this.kernelWorldInitialized;
     const id = ulid();
     const { slug, label, description } = data;
 
@@ -156,6 +219,7 @@ export class LocalWorlds implements WorldsInterface {
    * update updates a world's metadata.
    */
   async update(input: WorldsUpdateInput): Promise<void> {
+    await this.kernelWorldInitialized;
     const { world: idOrSlug, ...data } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
@@ -176,6 +240,7 @@ export class LocalWorlds implements WorldsInterface {
    * delete marks a world as deleted.
    */
   async delete(input: WorldsDeleteInput): Promise<void> {
+    await this.kernelWorldInitialized;
     const world = await this.resolveWorld(input.world);
     if (!world) {
       throw new Error("World not found");
@@ -190,6 +255,14 @@ export class LocalWorlds implements WorldsInterface {
    * sparql executes a SPARQL query or update against a specific world.
    */
   async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
+    await this.kernelWorldInitialized;
+    return this._sparql(input);
+  }
+
+  /**
+   * _sparql is the internal implementation that bypasses the initialization check.
+   */
+  private async _sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
     const { world: idOrSlug, query } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
@@ -250,6 +323,7 @@ export class LocalWorlds implements WorldsInterface {
    * search performs semantic/text search on triples using vector embeddings.
    */
   async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
+    await this.kernelWorldInitialized;
     const { world: idOrSlug, query, limit, subjects, predicates, types } =
       input;
     const world = await this.resolveWorld(idOrSlug);
@@ -290,6 +364,7 @@ export class LocalWorlds implements WorldsInterface {
   }
 
   async import(input: WorldsImportInput): Promise<void> {
+    await this.kernelWorldInitialized;
     const { world: idOrSlug, data, contentType } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
@@ -358,6 +433,7 @@ export class LocalWorlds implements WorldsInterface {
    * export retrieves a world's facts in the specified RDF content type.
    */
   async export(input: WorldsExportInput): Promise<ArrayBuffer> {
+    await this.kernelWorldInitialized;
     const { world: idOrSlug, contentType } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
@@ -470,6 +546,7 @@ export class LocalWorlds implements WorldsInterface {
    * listLogs retrieves execution and audit logs from the world database.
    */
   async listLogs(input: WorldsLogsInput): Promise<Log[]> {
+    await this.kernelWorldInitialized;
     const { world: idOrSlug, page: p, pageSize: ps, level } = input;
     const world = await this.resolveWorld(idOrSlug);
     if (!world) {
@@ -500,5 +577,13 @@ export class LocalWorlds implements WorldsInterface {
       })
     );
     return results;
+  }
+
+  /**
+   * close shuts down the engine and all managed database connections.
+   */
+  async close(): Promise<void> {
+    await this.kernelWorldInitialized;
+    await this.appContext.libsql.manager.close();
   }
 }

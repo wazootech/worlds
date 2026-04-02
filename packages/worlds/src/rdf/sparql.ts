@@ -36,6 +36,8 @@ export class NoopPatchHandler implements PatchHandler {
   }
 }
 
+const queryEngine = new QueryEngine();
+
 /**
  * sparql executes a SPARQL query and returns the result.
  * @param blob The RDF data as a blob.
@@ -54,7 +56,6 @@ export async function sparql(
     store,
   );
 
-  const queryEngine = new QueryEngine();
   const queryType = await queryEngine.query(query, { sources: [proxiedStore] });
 
   // If the query is an update, we need to execute it and then sync the search store.

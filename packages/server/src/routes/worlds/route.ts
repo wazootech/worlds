@@ -3,18 +3,22 @@ import { Router } from "@fartlabs/rt";
 import {
   ErrorResponse,
   handleETagRequest,
-  LocalWorlds,
   negotiateSerialization,
   worldsCreateInputSchema,
   worldsListInputSchema,
   worldsUpdateInputSchema,
 } from "@wazoo/worlds-sdk";
-import type { WorldsContentType, WorldsContext } from "@wazoo/worlds-sdk";
+import type {
+  WorldsContentType,
+  WorldsContext,
+  WorldsInterface,
+} from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
 
-export default (appContext: WorldsContext) => {
-  const worlds = new LocalWorlds(appContext);
-
+/**
+ * worldsRouter creates a router for the Worlds API.
+ */
+export default (worlds: WorldsInterface, appContext: WorldsContext) => {
   return new Router()
     .get(
       "/worlds/:world",

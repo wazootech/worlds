@@ -3,7 +3,6 @@ import type { Client } from "@libsql/client";
 import { createClient } from "@libsql/client";
 import type { DatabaseManager, ManagedDatabase } from "#/database/manager.ts";
 import { WorldsRepository } from "#/database/repositories/system/worlds/mod.ts";
-
 import { initializeWorldDatabase } from "#/database/init.ts";
 
 /**
@@ -13,6 +12,7 @@ export type TursoClient = ReturnType<typeof createTursoClient>;
 
 export class TursoCloudDatabaseManager implements DatabaseManager {
   private readonly initialized = new Set<string>();
+  private readonly trackedDatabases = new Map<string, Client>();
 
   /**
    * constructor initializes the TursoCloudDatabaseManager.
@@ -67,10 +67,11 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
     url: string,
     authToken: string,
   ): Promise<ManagedDatabase> {
-    const client = createClient({
+    const client = this.trackedDatabases.get(id) ?? createClient({
       url: `libsql://${url}`,
       authToken,
     });
+    this.trackedDatabases.set(id, client);
 
     if (!this.initialized.has(id)) {
       await initializeWorldDatabase(client, this.dimensions);
@@ -86,5 +87,17 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
 
   public async delete(id: string): Promise<void> {
     await this.client.databases.delete(id);
+  }
+
+  /**
+   * close shuts down all managed Turso database connections.
+   */
+  public close(): Promise<void> {
+    for (const client of this.trackedDatabases.values()) {
+      client.close();
+    }
+    this.trackedDatabases.clear();
+    this.database.close(); // Close the system database too
+    return Promise.resolve();
   }
 }

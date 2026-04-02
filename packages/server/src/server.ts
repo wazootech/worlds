@@ -1,4 +1,5 @@
-import type { WorldsContext } from "@wazoo/worlds-sdk";
+import { LocalWorlds } from "@wazoo/worlds-sdk";
+import type { WorldsContext, WorldsInterface } from "@wazoo/worlds-sdk";
 import { Router } from "@fartlabs/rt";
 
 import worldsRouter from "./routes/worlds/route.ts";
@@ -7,22 +8,21 @@ import logsRouter from "./routes/worlds/logs/route.ts";
 import searchRouter from "./routes/worlds/search/route.ts";
 import mcpRouter from "./routes/mcp/route.ts";
 
-const routes = [
-  worldsRouter,
-  sparqlRouter,
-  logsRouter,
-  searchRouter,
-  mcpRouter,
-];
-
 /**
  * createServer creates a server from a WorldsContext.
  */
-export function createServer(appContext: WorldsContext): Router {
+export function createServer(
+  appContext: WorldsContext,
+  worlds?: WorldsInterface,
+): Router {
+  const engine = worlds ?? new LocalWorlds(appContext);
   const app = new Router();
-  for (const router of routes) {
-    app.use(router(appContext));
-  }
+
+  app.use(worldsRouter(engine, appContext));
+  app.use(sparqlRouter(engine, appContext));
+  app.use(logsRouter(engine, appContext));
+  app.use(searchRouter(engine, appContext));
+  app.use(mcpRouter(engine, appContext));
 
   return app;
 }

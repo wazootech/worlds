@@ -77,6 +77,11 @@ export interface WorldsContextConfig {
      * WORLDS_BASE_DIR is the base directory for local file-based databases.
      */
     WORLDS_BASE_DIR?: string;
+
+    /**
+     * WORLDS_ORG_ID is the unique identifier of the organization for this context engine.
+     */
+    WORLDS_ORG_ID?: string;
   };
 }
 
@@ -195,6 +200,7 @@ export async function createWorldsContext(
     embeddings,
     libsql: { database, manager },
     apiKey: config.envs.WORLDS_API_KEY,
+    organizationId: config.envs.WORLDS_ORG_ID,
   };
 }
 
@@ -224,6 +230,7 @@ export async function createWorlds(): Promise<Worlds> {
       ),
       OLLAMA_BASE_URL: Deno.env.get("OLLAMA_BASE_URL"),
       OLLAMA_EMBEDDINGS_MODEL: Deno.env.get("OLLAMA_EMBEDDINGS_MODEL"),
+      WORLDS_ORG_ID: Deno.env.get("WORLDS_ORG_ID"),
     },
   });
 
