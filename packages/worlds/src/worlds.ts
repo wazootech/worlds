@@ -4,7 +4,6 @@ import type { WorldsInterface } from "./types.ts";
 import type {
   Log,
   World,
-  WorldsContentType,
   WorldsCreateInput,
   WorldsDeleteInput,
   WorldsExportInput,
@@ -14,6 +13,7 @@ import type {
   WorldsLogsInput,
   WorldsSearchInput,
   WorldsSearchOutput,
+  WorldsServiceDescriptionInput,
   WorldsSparqlInput,
   WorldsSparqlOutput,
   WorldsUpdateInput,
@@ -107,11 +107,7 @@ export class Worlds implements WorldsInterface {
    * getServiceDescription retrieves the SPARQL service description.
    */
   public getServiceDescription(
-    input: {
-      world: string;
-      endpointUrl: string;
-      contentType?: WorldsContentType;
-    },
+    input: WorldsServiceDescriptionInput,
   ): Promise<string> {
     return this.engine.getServiceDescription(input);
   }

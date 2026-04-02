@@ -2,7 +2,6 @@ import type { WorldsOptions } from "./types.ts";
 import type {
   Log,
   World,
-  WorldsContentType,
   WorldsCreateInput,
   WorldsDeleteInput,
   WorldsExportInput,
@@ -12,6 +11,7 @@ import type {
   WorldsLogsInput,
   WorldsSearchInput,
   WorldsSearchOutput,
+  WorldsServiceDescriptionInput,
   WorldsSparqlInput,
   WorldsSparqlOutput,
   WorldsUpdateInput,
@@ -301,11 +301,9 @@ export class RemoteWorlds implements WorldsInterface {
   /**
    * getServiceDescription retrieves the SPARQL service description.
    */
-  public async getServiceDescription(input: {
-    world: string;
-    endpointUrl: string;
-    contentType?: WorldsContentType;
-  }): Promise<string> {
+  public async getServiceDescription(
+    input: WorldsServiceDescriptionInput,
+  ): Promise<string> {
     const { world: idOrSlug, endpointUrl: _endpointUrl, contentType } = input;
     const url = new URL(
       `${this.options.baseUrl}/worlds/${idOrSlug}/sparql`,

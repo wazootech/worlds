@@ -341,6 +341,58 @@ export const worldsSparqlInputSchema: z.ZodType<WorldsSparqlInput> = z.object({
 });
 
 /**
+ * WorldsContentType represents the supported RDF serialization content types.
+ */
+export type WorldsContentType =
+  | "text/turtle"
+  | "application/n-quads"
+  | "application/n-triples"
+  | "text/n3";
+
+/**
+ * worldsContentTypeSchema is the Zod schema for WorldsContentType.
+ */
+export const worldsContentTypeSchema: z.ZodType<WorldsContentType> = z.enum([
+  "text/turtle",
+  "application/n-quads",
+  "application/n-triples",
+  "text/n3",
+]);
+
+/**
+ * WorldsServiceDescriptionInput represents the parameters for retrieving a SPARQL service description.
+ */
+export interface WorldsServiceDescriptionInput {
+  /**
+   * world is the ID or slug of the target world.
+   */
+  world: string;
+
+  /**
+   * endpointUrl is the URL of the SPARQL endpoint.
+   */
+  endpointUrl: string;
+
+  /**
+   * contentType is the optional RDF serialization content type.
+   */
+  contentType?: WorldsContentType;
+}
+
+/**
+ * worldsServiceDescriptionInputSchema is the Zod schema for WorldsServiceDescriptionInput.
+ */
+export const worldsServiceDescriptionInputSchema: z.ZodType<
+  WorldsServiceDescriptionInput
+> = z.object({
+  world: z.string().describe("The ID or slug of the target world."),
+  endpointUrl: z.string().url().describe("The URL of the SPARQL endpoint."),
+  contentType: worldsContentTypeSchema.optional().describe(
+    "Optional RDF serialization content type.",
+  ),
+});
+
+/**
  * WorldsSparqlOutput represents the result of a SPARQL query or update.
  */
 export type WorldsSparqlOutput =
@@ -359,22 +411,3 @@ export const worldsSparqlOutputSchema: z.ZodType<WorldsSparqlOutput> = z
     sparqlQuadsResultsSchema,
     z.literal(null),
   ]);
-
-/**
- * WorldsContentType represents the supported RDF serialization content types.
- */
-export type WorldsContentType =
-  | "text/turtle"
-  | "application/n-quads"
-  | "application/n-triples"
-  | "text/n3";
-
-/**
- * worldsContentTypeSchema is the Zod schema for WorldsContentType.
- */
-export const worldsContentTypeSchema: z.ZodType<WorldsContentType> = z.enum([
-  "text/turtle",
-  "application/n-quads",
-  "application/n-triples",
-  "text/n3",
-]);

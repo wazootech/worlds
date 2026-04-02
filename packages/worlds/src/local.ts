@@ -23,7 +23,6 @@ import type { WorldsContext } from "./types.ts";
 import type {
   Log,
   World,
-  WorldsContentType,
   WorldsCreateInput,
   WorldsDeleteInput,
   WorldsExportInput,
@@ -33,6 +32,7 @@ import type {
   WorldsLogsInput,
   WorldsSearchInput,
   WorldsSearchOutput,
+  WorldsServiceDescriptionInput,
   WorldsSparqlInput,
   WorldsSparqlOutput,
   WorldsUpdateInput,
@@ -403,13 +403,7 @@ export class LocalWorlds implements WorldsInterface {
   /**
    * getServiceDescription retrieves the SPARQL service description.
    */
-  getServiceDescription(
-    input: {
-      world: string;
-      endpointUrl: string;
-      contentType?: WorldsContentType;
-    },
-  ): Promise<string> {
+  getServiceDescription(input: WorldsServiceDescriptionInput): Promise<string> {
     const { endpointUrl, contentType } = input;
     const serialization = contentType
       ? getSerializationByContentType(contentType)
