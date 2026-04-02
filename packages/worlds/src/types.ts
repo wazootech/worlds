@@ -2,13 +2,21 @@ import type { Client } from "@libsql/client";
 import type { Embeddings } from "#/embeddings/embeddings.ts";
 import type { DatabaseManager } from "#/database/manager.ts";
 import type {
-  CreateWorldParams,
-  ExecuteSparqlOutput,
   Log,
-  TripleSearchResult,
-  UpdateWorldParams,
   World,
   WorldsContentType,
+  WorldsCreateInput,
+  WorldsDeleteInput,
+  WorldsExportInput,
+  WorldsGetInput,
+  WorldsImportInput,
+  WorldsListInput,
+  WorldsLogsInput,
+  WorldsSearchInput,
+  WorldsSearchOutput,
+  WorldsSparqlInput,
+  WorldsSparqlOutput,
+  WorldsUpdateInput,
 } from "./schemas/mod.ts";
 
 /**
@@ -77,95 +85,61 @@ export interface WorldsInterface {
   /**
    * list paginates all available worlds.
    */
-  list(options?: {
-    limit?: number;
-    offset?: number;
-    page?: number; // Convenience
-    pageSize?: number; // Convenience
-  }): Promise<World[]>;
+  list(input?: WorldsListInput): Promise<World[]>;
 
   /**
    * get fetches a single world by its ID or slug.
    */
-  get(idOrSlug: string): Promise<World | null>;
+  get(input: WorldsGetInput): Promise<World | null>;
 
   /**
    * create creates a new world.
    */
-  create(params: CreateWorldParams): Promise<World>;
+  create(input: WorldsCreateInput): Promise<World>;
 
   /**
    * update updates an existing world.
    */
-  update(idOrSlug: string, params: UpdateWorldParams): Promise<void>;
+  update(input: WorldsUpdateInput): Promise<void>;
 
   /**
    * delete deletes a world.
    */
-  delete(idOrSlug: string): Promise<void>;
+  delete(input: WorldsDeleteInput): Promise<void>;
 
   /**
    * sparql executes a SPARQL query or update against a world.
    */
-  sparql(
-    idOrSlug: string,
-    query: string,
-    options?: {
-      defaultGraphUris?: string[];
-      namedGraphUris?: string[];
-    },
-  ): Promise<ExecuteSparqlOutput>;
+  sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput>;
 
   /**
    * search performs semantic/text search on triples in a world.
    */
-  search(
-    idOrSlug: string,
-    query: string,
-    options?: {
-      limit?: number;
-      subjects?: string[];
-      predicates?: string[];
-      types?: string[];
-    },
-  ): Promise<TripleSearchResult[]>;
+  search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]>;
 
   /**
    * import imports RDF data into a world.
    */
-  import(
-    idOrSlug: string,
-    data: string | ArrayBuffer,
-    options?: {
-      contentType?: WorldsContentType;
-    },
-  ): Promise<void>;
+  import(input: WorldsImportInput): Promise<void>;
 
   /**
    * export exports a world in the specified RDF content type.
    */
-  export(
-    idOrSlug: string,
-    options?: { contentType?: WorldsContentType },
-  ): Promise<ArrayBuffer>;
+  export(input: WorldsExportInput): Promise<ArrayBuffer>;
 
   /**
    * getServiceDescription gets the SPARQL service description.
    */
   getServiceDescription(
-    idOrSlug: string,
-    options: { endpointUrl: string; contentType?: WorldsContentType },
+    input: {
+      world: string;
+      endpointUrl: string;
+      contentType?: WorldsContentType;
+    },
   ): Promise<string>;
 
   /**
    * listLogs lists the execution/audit logs for a world.
    */
-  listLogs(
-    idOrSlug: string,
-    options?: {
-      page?: number;
-      pageSize?: number;
-      level?: string;
-    },
-  ): Promise<Log[]>;
+  listLogs(input: WorldsLogsInput): Promise<Log[]>;
 }

@@ -3,10 +3,10 @@ import type { PatchHandler } from "./patch/mod.ts";
 import { connectSearchStoreToN3Store } from "./patch/mod.ts";
 import { generateBlobFromN3Store, generateN3StoreFromBlob } from "./n3.ts";
 import type {
-  ExecuteSparqlOutput,
   SparqlBinding,
   SparqlQuad,
   SparqlValue,
+  WorldsSparqlOutput,
 } from "#/schemas/mod.ts";
 
 /**
@@ -47,7 +47,7 @@ export async function sparql(
   blob: Blob,
   query: string,
   handler: PatchHandler = new NoopPatchHandler(),
-): Promise<{ blob: Blob; result: ExecuteSparqlOutput }> {
+): Promise<{ blob: Blob; result: WorldsSparqlOutput }> {
   const store = await generateN3StoreFromBlob(blob);
   const { store: proxiedStore, sync } = connectSearchStoreToN3Store(
     handler,
@@ -85,7 +85,7 @@ export async function sparql(
 }
 
 // deno-lint-ignore no-explicit-any
-async function handleBindings(queryType: any): Promise<ExecuteSparqlOutput> {
+async function handleBindings(queryType: any): Promise<WorldsSparqlOutput> {
   const bindingsStream = await queryType.execute();
   // deno-lint-ignore no-explicit-any
   const vars = (await queryType.metadata()).variables.map((v: any) => v.value);
@@ -115,7 +115,7 @@ async function handleBindings(queryType: any): Promise<ExecuteSparqlOutput> {
 }
 
 // deno-lint-ignore no-explicit-any
-async function handleBoolean(queryType: any): Promise<ExecuteSparqlOutput> {
+async function handleBoolean(queryType: any): Promise<WorldsSparqlOutput> {
   const booleanResult = await queryType.execute();
   return {
     head: { link: null },
@@ -124,7 +124,7 @@ async function handleBoolean(queryType: any): Promise<ExecuteSparqlOutput> {
 }
 
 // deno-lint-ignore no-explicit-any
-async function handleQuads(queryType: any): Promise<ExecuteSparqlOutput> {
+async function handleQuads(queryType: any): Promise<WorldsSparqlOutput> {
   const quadsStream = await queryType.execute();
   const quads = await new Promise<SparqlQuad[]>((resolve, reject) => {
     const q: SparqlQuad[] = [];

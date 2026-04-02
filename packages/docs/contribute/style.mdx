@@ -116,8 +116,23 @@ flavor (such as the memory metaphor) is essential for intuition.
 
 ### Imports
 
+- **Import grouping**: Group by module source path (e.g., `ai`,
+  `@wazoo/worlds-sdk`).
 - **Import separation**: Mandate separate `import type` and `import`
-  declarations.
+  declarations per source.
+- **Import ordering**: When importing from the same path, the `import type`
+  declaration must appear immediately BEFORE the `import` (value) declaration.
+  - _Good:_
+    ```typescript
+    import type { Tool } from "ai";
+    import { tool } from "ai";
+    import type { World } from "@wazoo/worlds-sdk";
+    import { LocalWorlds } from "@wazoo/worlds-sdk";
+    ```
+  - _Bad:_
+    ```typescript
+    import { type World, LocalWorlds } from "@wazoo/worlds-sdk";
+    ```
 - **Tree-shaking optimization**: Use the most specific module entry points
   (e.g., `import { ulid } from "@std/ulid/ulid"`).
 - **Import path strategy**: Use aliases (`#/`, `@/`) for cross-package imports.

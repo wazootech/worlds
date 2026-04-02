@@ -5,12 +5,14 @@ import worldsRouter from "./routes/worlds/route.ts";
 import sparqlRouter from "./routes/worlds/sparql/route.ts";
 import logsRouter from "./routes/worlds/logs/route.ts";
 import searchRouter from "./routes/worlds/search/route.ts";
+import mcpRouter from "./routes/mcp/route.ts";
 
 const routes = [
   worldsRouter,
   sparqlRouter,
   logsRouter,
   searchRouter,
+  mcpRouter,
 ];
 
 /**

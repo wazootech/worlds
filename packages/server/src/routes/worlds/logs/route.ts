@@ -22,10 +22,11 @@ export default (appContext: WorldsContext) => {
         const level = url.searchParams.get("level")?.toLowerCase();
 
         try {
-          const logs = await worlds.listLogs(worldId, {
+          const logs = await worlds.listLogs({
+            world: worldId,
             page,
             pageSize,
-            level,
+            level: level ?? undefined,
           });
           return Response.json(logs);
         } catch (error) {

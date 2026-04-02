@@ -19,7 +19,7 @@ const serverContext: WorldsContext = await createWorldsContext({
   },
 });
 
-const app: Router = await createServer(serverContext);
+const app: Router = createServer(serverContext);
 
 export default {
   fetch: (request: Request) => app.fetch(request),

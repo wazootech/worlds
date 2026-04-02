@@ -58,7 +58,8 @@ export default (appContext: WorldsContext) => {
 
       if (!query) {
         const serialization = negotiateSerialization(ctx.request);
-        const description = await worlds.getServiceDescription(worldId, {
+        const description = await worlds.getServiceDescription({
+          world: worldId,
           endpointUrl: ctx.request.url,
           contentType: serialization.contentType as WorldsContentType,
         });
@@ -68,7 +69,9 @@ export default (appContext: WorldsContext) => {
       }
 
       try {
-        const result = await worlds.sparql(worldId, query, {
+        const result = await worlds.sparql({
+          world: worldId,
+          query,
           defaultGraphUris,
           namedGraphUris,
         });
@@ -94,7 +97,9 @@ export default (appContext: WorldsContext) => {
       if (!query) return ErrorResponse.BadRequest("Query required");
 
       try {
-        const result = await worlds.sparql(worldId, query, {
+        const result = await worlds.sparql({
+          world: worldId,
+          query,
           defaultGraphUris,
           namedGraphUris,
         });

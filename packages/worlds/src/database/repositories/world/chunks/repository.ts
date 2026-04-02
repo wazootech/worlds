@@ -1,7 +1,7 @@
 import type { Client } from "@libsql/client";
 import type { WorldsContext } from "#/types.ts";
 import { searchChunks, upsertChunks } from "./queries.sql.ts";
-import type { TripleSearchResult } from "#/schemas/mod.ts";
+import type { WorldsSearchOutput } from "#/schemas/mod.ts";
 import type { WorldRow } from "#/database/repositories/system/worlds/schema.ts";
 import type { WorldsRepository } from "#/database/repositories/system/worlds/mod.ts";
 import {
@@ -98,7 +98,7 @@ export class ChunksSearchRepository {
    * @param params The search parameters.
    * @returns An array of search results with scores.
    */
-  async search(params: SearchParams): Promise<TripleSearchResult[]> {
+  async search(params: SearchParams): Promise<WorldsSearchOutput[]> {
     const {
       query,
       worldId,
@@ -162,7 +162,7 @@ export class ChunksSearchRepository {
         args,
       });
 
-      const results: TripleSearchResult[] = (
+      const results: WorldsSearchOutput[] = (
         result.rows as unknown as SearchRow[]
       ).map((untrustedRow) => {
         const row = searchRowSchema.parse(untrustedRow);

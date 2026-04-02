@@ -54,9 +54,9 @@ export const worldSchema: z.ZodType<World> = z.object({
 });
 
 /**
- * CreateWorldParams represents the parameters for creating a world.
+ * WorldsCreateInput represents the parameters for creating a world.
  */
-export interface CreateWorldParams {
+export interface WorldsCreateInput {
   /**
    * slug is the URL-friendly name for the new world.
    */
@@ -74,18 +74,23 @@ export interface CreateWorldParams {
 }
 
 /**
- * createWorldParamsSchema is the Zod schema for CreateWorldParams.
+ * worldsCreateInputSchema is the Zod schema for WorldsCreateInput.
  */
-export const createWorldParamsSchema: z.ZodType<CreateWorldParams> = z.object({
+export const worldsCreateInputSchema: z.ZodType<WorldsCreateInput> = z.object({
   slug: z.string(),
   label: z.string(),
   description: z.string().nullable().optional(),
 });
 
 /**
- * UpdateWorldParams represents the parameters for updating a world.
+ * WorldsUpdateInput represents the parameters for updating a world.
  */
-export interface UpdateWorldParams {
+export interface WorldsUpdateInput {
+  /**
+   * world is the ID or slug of the world to update.
+   */
+  world: string;
+
   /**
    * slug is the updated URL-friendly name.
    */
@@ -103,10 +108,45 @@ export interface UpdateWorldParams {
 }
 
 /**
- * updateWorldParamsSchema is the Zod schema for UpdateWorldParams.
+ * worldsUpdateInputSchema is the Zod schema for WorldsUpdateInput.
  */
-export const updateWorldParamsSchema: z.ZodType<UpdateWorldParams> = z.object({
+export const worldsUpdateInputSchema: z.ZodType<WorldsUpdateInput> = z.object({
+  world: z.string().describe("The ID or slug of the world to update."),
   slug: z.string().optional(),
   label: z.string().optional(),
   description: z.string().nullable().optional(),
+});
+
+/**
+ * WorldsGetInput represents the parameters for retrieving a world.
+ */
+export interface WorldsGetInput {
+  /**
+   * world is the ID or slug of the world to retrieve.
+   */
+  world: string;
+}
+
+/**
+ * worldsGetInputSchema is the Zod schema for WorldsGetInput.
+ */
+export const worldsGetInputSchema: z.ZodType<WorldsGetInput> = z.object({
+  world: z.string().describe("The ID or slug of the world to retrieve."),
+});
+
+/**
+ * WorldsDeleteInput represents the parameters for deleting a world.
+ */
+export interface WorldsDeleteInput {
+  /**
+   * world is the ID or slug of the world to delete.
+   */
+  world: string;
+}
+
+/**
+ * worldsDeleteInputSchema is the Zod schema for WorldsDeleteInput.
+ */
+export const worldsDeleteInputSchema: z.ZodType<WorldsDeleteInput> = z.object({
+  world: z.string().describe("The ID or slug of the world to delete."),
 });

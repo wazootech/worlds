@@ -3,14 +3,16 @@
  * @module
  */
 
-export * from "./options.ts";
-export * from "./schema.ts";
-export * from "./utils.ts";
-export * from "./validate.ts";
-export * from "./discover-schema.ts";
-export * from "./tools/discover-schema.ts";
-export * from "./tools/execute-sparql.ts";
-export * from "./tools/generate-iri.ts";
-export * from "./tools/search-entities.ts";
-export * from "./tools/disambiguate-entities.ts";
-export * from "./tools/validate-rdf.ts";
+export * from "./types.ts";
+export * from "./factory.ts";
+
+export * from "./tools/sparql.ts";
+export * from "./tools/search.ts";
+export * from "./tools/list.ts";
+export * from "./tools/get.ts";
+export * from "./tools/create.ts";
+export * from "./tools/update.ts";
+export * from "./tools/delete.ts";
+export * from "./tools/import.ts";
+export * from "./tools/export.ts";
+export * from "./tools/logs.ts";

@@ -23,11 +23,13 @@ export default (appContext: WorldsContext) => {
       const limit = parseInt(url.searchParams.get("limit") ?? "20", 10);
 
       try {
-        const results = await worlds.search(worldId, query, {
+        const results = await worlds.search({
+          world: worldId,
+          query,
           limit,
-          subjects,
-          predicates,
-          types,
+          subjects: subjects.length > 0 ? subjects : undefined,
+          predicates: predicates.length > 0 ? predicates : undefined,
+          types: types.length > 0 ? types : undefined,
         });
         return Response.json(results);
       } catch (error) {
