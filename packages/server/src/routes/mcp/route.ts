@@ -1,4 +1,3 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type {
@@ -39,7 +38,6 @@ import {
   worldsExportTool,
 } from "@wazoo/worlds-ai-sdk/tools/export";
 import { listLogs, worldsLogsTool } from "@wazoo/worlds-ai-sdk/tools/logs";
-import type { McpServer as McpServerType } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 type McpToolOptions = {
   name: string;
@@ -50,49 +48,6 @@ type McpToolOptions = {
   readOnlyHint?: boolean;
   idempotentHint?: boolean;
 };
-
-function registerMcpTool(
-  server: McpServerType,
-  options: McpToolOptions,
-  execute: (args: unknown) => Promise<unknown>,
-): void {
-  server.registerTool(
-    options.name,
-    {
-      title: options.title,
-      description: options.description,
-      inputSchema: options.inputSchema,
-      outputSchema: options.outputSchema,
-      readOnlyHint: options.readOnlyHint,
-      idempotentHint: options.idempotentHint,
-    },
-    async (args: unknown) => {
-      try {
-        const result = await execute(args);
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text" as const,
-              text: `${options.title} Error: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            },
-          ],
-        };
-      }
-    },
-  );
-}
 
 type ToolDefinition = {
   tool: McpToolOptions;
@@ -188,38 +143,167 @@ const TOOLS: ToolDefinition[] = [
   },
 ];
 
-/** mcpRouter defines the MCP server route and registers tools. @see https://skills.sh/anthropics/skills/mcp-builder */
+type McpRequest = {
+  jsonrpc: "2.0";
+  id?: string | number | null;
+  method: string;
+  params?: Record<string, unknown>;
+};
+
+type McpResponse = {
+  jsonrpc: "2.0";
+  id: string | number | null;
+  result?: unknown;
+  error?: {
+    code: number;
+    message: string;
+    data?: unknown;
+  };
+};
+
+/** mcpRouter defines the MCP server route and implements JSON-RPC methods. */
 export default (appContext: WorldsContext) => {
   const worlds = new LocalWorlds(appContext);
-
   const sources: SourceInput[] = [];
 
-  const server = new McpServer({
-    name: "worlds-server",
-    version: "0.0.1",
-  }, {
-    capabilities: {
-      tools: {},
-      resources: {},
-    },
-  });
-
-  for (const { tool, fn } of TOOLS) {
-    registerMcpTool(server, tool, (args) => fn(worlds, sources, args));
-  }
-
-  const mcpRouter = new Router();
-
-  const handleMcpRequest = (request: Request): Response => {
+  const handleMcpRequest = async (request: Request): Promise<Response> => {
     const authorized = authorizeRequest(appContext, request);
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });
     }
-    return server.server.fetch(request);
+
+    // Spec compliance: Streamable HTTP requires the client to send the protocol version header
+    // after initialization. For the first 'initialize' request, it might not be present yet.
+    const protocolVersionHeader = request.headers.get("mcp-protocol-version");
+
+    let mcpReq: McpRequest;
+    try {
+      mcpReq = await request.json();
+    } catch {
+      return new Response("Invalid JSON", { status: 400 });
+    }
+
+    const { method, params, id = null } = mcpReq;
+
+    // Validate protocol version header for all methods besides initialize
+    if (
+      method !== "initialize" && protocolVersionHeader &&
+      protocolVersionHeader !== "2024-11-05"
+    ) {
+      return Response.json({
+        jsonrpc: "2.0",
+        id,
+        error: {
+          code: -32603,
+          message:
+            `Unsupported protocol version in header: ${protocolVersionHeader}`,
+        },
+      });
+    }
+
+    const response = (
+      result?: unknown,
+      error?: McpResponse["error"],
+    ): McpResponse => ({
+      jsonrpc: "2.0",
+      id,
+      ...(result !== undefined ? { result } : {}),
+      ...(error ? { error } : {}),
+    });
+
+    try {
+      switch (method) {
+        case "initialize": {
+          const clientVersion = params?.protocolVersion as string;
+          if (clientVersion && clientVersion !== "2024-11-05") {
+            // Basic version negotiation: we only support the current stable version
+            return Response.json(response(undefined, {
+              code: -32603,
+              message: `Unsupported protocol version: ${clientVersion}`,
+            }));
+          }
+
+          return Response.json(response({
+            protocolVersion: "2024-11-05",
+            capabilities: {
+              tools: {},
+            },
+            serverInfo: {
+              name: "worlds-server",
+              version: "0.0.1",
+            },
+          }));
+        }
+
+        case "notifications/initialized":
+          // Client acknowledgement of initialization. No response required for notifications.
+          return new Response(null, { status: 204 });
+
+        case "ping":
+          // Mandatory utility method: must return an empty result.
+          return Response.json(response({}));
+
+        case "tools/list":
+          return Response.json(response({
+            tools: TOOLS.map(({ tool }) => ({
+              name: tool.name,
+              description: tool.description,
+              inputSchema: tool.inputSchema,
+            })),
+          }));
+
+        case "tools/call": {
+          const name = params?.name as string;
+          const args = params?.arguments as unknown;
+          const definition = TOOLS.find((t) => t.tool.name === name);
+
+          if (!definition) {
+            return Response.json(response(undefined, {
+              code: -32601,
+              message: `Tool not found: ${name}`,
+            }));
+          }
+
+          try {
+            const result = await definition.fn(worlds, sources, args);
+            return Response.json(response({
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(result, null, 2),
+                },
+              ],
+            }));
+          } catch (error) {
+            return Response.json(response({
+              isError: true,
+              content: [
+                {
+                  type: "text",
+                  text: error instanceof Error ? error.message : String(error),
+                },
+              ],
+            }));
+          }
+        }
+
+        default:
+          return Response.json(response(undefined, {
+            code: -32601,
+            message: `Method not found: ${method}`,
+          }));
+      }
+    } catch (error) {
+      return Response.json(response(undefined, {
+        code: -32603,
+        message: error instanceof Error ? error.message : String(error),
+      }));
+    }
   };
 
+  const mcpRouter = new Router();
   mcpRouter.post("/mcp", (ctx) => handleMcpRequest(ctx.request));
-  mcpRouter.get("/mcp", (ctx) => handleMcpRequest(ctx.request));
+  mcpRouter.get("/mcp", () => new Response("MCP Lite is up", { status: 200 }));
 
   return mcpRouter;
 };
