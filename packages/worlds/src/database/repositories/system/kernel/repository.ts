@@ -15,11 +15,11 @@ export class KernelRepository {
   constructor(private readonly worlds: WorldsInterface) {}
 
   /**
-   * resolveOrganization find the organization ID linked to the provided API key.
+   * resolveNamespace find the namespace ID linked to the provided API key.
    * @param apiKey The API key secret to resolve.
-   * @returns The Organization ID or null if not found.
+   * @returns The Namespace ID or null if not found.
    */
-  async resolveOrganization(apiKey: string): Promise<string | null> {
+  async resolveNamespace(apiKey: string): Promise<string | null> {
     const result = await this.worlds.sparql({
       world: KERNEL_WORLD_ID,
       query: `
@@ -51,20 +51,20 @@ export class KernelRepository {
   }
 
   /**
-   * isWorldAuthorized verifies if a world belongs to an organization.
+   * isWorldAuthorized verifies if a world belongs to a namespace.
    * @param worldId The world ID to check.
-   * @param organizationId The organization ID to verify against.
+   * @param namespaceId The namespace ID to verify against.
    */
   async isWorldAuthorized(
     worldId: string,
-    organizationId: string,
+    namespaceId: string,
   ): Promise<boolean> {
     const result = await this.worlds.sparql({
       world: KERNEL_WORLD_ID,
       query: `
         ASK {
           ?world a <${KERNEL.World}> ;
-                 <${KERNEL.belongsTo}> <${organizationId}> .
+                 <${KERNEL.belongsTo}> <${namespaceId}> .
           FILTER(STR(?world) = "${worldId}" || STR(?world) = "${KERNEL.BASE}worlds/${worldId}")
         }
       `,

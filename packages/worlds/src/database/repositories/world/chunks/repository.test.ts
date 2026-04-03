@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
 
-import { createTestContext, createTestOrganization } from "#/engine-context.ts";
+import { createTestContext, createTestNamespace } from "#/engine-context.ts";
 import { TriplesRepository } from "#/database/repositories/world/triples/mod.ts";
 import { WorldsRepository } from "#/database/repositories/system/worlds/mod.ts";
 import { ChunksRepository } from "#/database/repositories/world/chunks/mod.ts";
@@ -16,14 +16,16 @@ Deno.test("ChunksSearchRepository", async (t) => {
   );
 
   try {
-    await createTestOrganization(testContext, {
+    const { id: namespaceId } = await createTestNamespace(testContext, {
       plan: "free",
     });
+    testContext.namespaceId = namespaceId;
 
     const worldId = ulid();
     const now = Date.now();
     await worldsRepository.insert({
       id: worldId,
+      namespace_id: namespaceId,
       slug: "test-world",
       label: "Test World",
       description: "Test Description",

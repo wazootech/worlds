@@ -1,94 +1,95 @@
 import { z } from "zod";
 
 /**
- * kernelOrganizationSchema is the Zod schema for a kernel organization.
+ * KernelNamespace represents a namespace in the kernel.
  */
-export const kernelOrganizationSchema: z.ZodObject<{
-  id: z.ZodString;
-  slug: z.ZodString;
-  label: z.ZodString;
-}> = z.object({
+export interface KernelNamespace {
   /**
-   * id is the unique IRI of the organization.
+   * id is the unique IRI of the namespace.
    */
-  id: z.string().url(),
+  id: string;
 
   /**
    * slug is the URL-friendly name.
    */
-  slug: z.string(),
+  slug: string;
 
   /**
    * label is the human-readable name.
    */
+  label: string;
+}
+
+/**
+ * kernelNamespaceSchema is the Zod schema for KernelNamespace.
+ */
+export const kernelNamespaceSchema: z.ZodType<KernelNamespace> = z.object({
+  id: z.string().url(),
+  slug: z.string(),
   label: z.string(),
 });
 
 /**
- * KernelOrganization is the type for a kernel organization.
+ * KernelApiKey represents an API key in the kernel.
  */
-export type KernelOrganization = z.infer<typeof kernelOrganizationSchema>;
-
-/**
- * kernelApiKeySchema is the Zod schema for a kernel API key.
- */
-export const kernelApiKeySchema: z.ZodObject<{
-  id: z.ZodString;
-  orgId: z.ZodString;
-  secret: z.ZodString;
-}> = z.object({
+export interface KernelApiKey {
   /**
    * id is the unique IRI of the key.
    */
-  id: z.string().url(),
+  id: string;
 
   /**
-   * orgId is the IRI of the organization this key belongs to.
+   * namespaceId is the IRI of the namespace this key belongs to.
    */
-  orgId: z.string().url(),
+  namespaceId: string;
 
   /**
    * secret is the raw Bearer token value.
    */
+  secret: string;
+}
+
+/**
+ * kernelApiKeySchema is the Zod schema for KernelApiKey.
+ */
+export const kernelApiKeySchema: z.ZodType<KernelApiKey> = z.object({
+  id: z.string().url(),
+  namespaceId: z.string().url(),
   secret: z.string(),
 });
 
 /**
- * KernelApiKey is the type for a kernel API key.
+ * KernelWorldRegistry represents a world registry entry in the kernel.
  */
-export type KernelApiKey = z.infer<typeof kernelApiKeySchema>;
-
-/**
- * kernelWorldRegistrySchema is the Zod schema for a kernel world registry entry.
- */
-export const kernelWorldRegistrySchema: z.ZodObject<{
-  id: z.ZodString;
-  orgId: z.ZodString;
-  slug: z.ZodString;
-  label: z.ZodString;
-}> = z.object({
+export interface KernelWorldRegistry {
   /**
    * id is the unique ULID of the world.
    */
-  id: z.string(),
+  id: string;
 
   /**
-   * orgId is the IRI of the organization that owns this world.
+   * namespaceId is the IRI of the namespace that owns this world.
    */
-  orgId: z.string().url(),
+  namespaceId: string;
 
   /**
    * slug is the URL-friendly name.
    */
-  slug: z.string(),
+  slug: string;
 
   /**
    * label is the human-readable name.
    */
-  label: z.string(),
-});
+  label: string;
+}
 
 /**
- * KernelWorldRegistry is the type for a kernel world registry entry.
+ * kernelWorldRegistrySchema is the Zod schema for KernelWorldRegistry.
  */
-export type KernelWorldRegistry = z.infer<typeof kernelWorldRegistrySchema>;
+export const kernelWorldRegistrySchema: z.ZodType<KernelWorldRegistry> = z
+  .object({
+    id: z.string(),
+    namespaceId: z.string().url(),
+    slug: z.string(),
+    label: z.string(),
+  });

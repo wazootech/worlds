@@ -6,11 +6,11 @@ import type { SparqlSelectResults } from "./schemas/mod.ts";
 
 Deno.test("LocalWorlds Kernel", async (t) => {
   const apiKey = "test-api-key";
-  const orgId = "https://wazoo.dev/kernel/organizations/test-org";
+  const namespaceId = "https://wazoo.dev/kernel/namespaces/test-ns";
 
   await using appContext = await createTestContext();
   appContext.apiKey = apiKey;
-  appContext.organizationId = orgId;
+  appContext.namespaceId = namespaceId;
 
   await using worlds = new LocalWorlds(appContext);
   await worlds.init();
@@ -28,17 +28,17 @@ Deno.test("LocalWorlds Kernel", async (t) => {
       world: KERNEL_WORLD_ID,
       query: `
         PREFIX worlds: <${KERNEL.NAMESPACE}>
-        SELECT ?org ?key WHERE {
-          ?org a <${KERNEL.Organization}> .
+        SELECT ?ns ?key WHERE {
+          ?ns a <${KERNEL.Namespace}> .
           ?key a <${KERNEL.ApiKey}> ;
-               <${KERNEL.belongsTo}> ?org ;
+               <${KERNEL.belongsTo}> ?ns ;
                <${KERNEL.hasSecret}> "${apiKey}" .
         }
       `,
     }) as SparqlSelectResults;
 
     assertExists(result.results.bindings[0]);
-    assertEquals(result.results.bindings[0].org.value, orgId);
+    assertEquals(result.results.bindings[0].ns.value, namespaceId);
   });
 
   await t.step("kernel world is protected from normal listings", async () => {
@@ -46,7 +46,7 @@ Deno.test("LocalWorlds Kernel", async (t) => {
     await worlds.create({ slug: "normal-world", label: "Normal" });
 
     const list = await worlds.list();
-    // Kernel world should be in the list for now (Phase 3 will add scoping)
-    assertExists(list.find((w) => w.id === KERNEL_WORLD_ID));
+    // Kernel world should NOT be in the list for a non-root namespace
+    assertEquals(list.find((w) => w.id === KERNEL_WORLD_ID), undefined);
   });
 });

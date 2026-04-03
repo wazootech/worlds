@@ -2,8 +2,9 @@ import { assert, assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
 import {
   createTestContext,
-  createTestOrganization,
+  createTestNamespace,
   LocalWorlds,
+  ROOT_NAMESPACE_ID,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
 import createRoute from "./route.ts";
@@ -18,11 +19,12 @@ Deno.test("World Search API routes", async (t) => {
   const app = createRoute(testContext);
 
   await t.step("GET /worlds/:world/search (Admin)", async () => {
-    const { apiKey } = await createTestOrganization(testContext);
+    const { id: _namespaceId, apiKey } = await createTestNamespace(testContext);
     const worldId = ulid();
     const now = Date.now();
     await worldsRepository.insert({
       id: worldId,
+      namespace_id: ROOT_NAMESPACE_ID,
       slug: "search-world-" + worldId,
       label: "Search World",
       description: "A world for searching",

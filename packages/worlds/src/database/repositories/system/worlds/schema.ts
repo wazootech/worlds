@@ -6,6 +6,7 @@ import { z } from "zod";
  */
 const worldTableShape = z.object({
   id: z.string(),
+  namespace_id: z.string(),
   slug: z.string(),
   label: z.string(),
   description: z.string().nullable(),
@@ -26,6 +27,11 @@ export interface WorldTable {
    * id is the unique identifier for the world.
    */
   id: string;
+
+  /**
+   * organization_id is the identifier of the organization that owns the world.
+   */
+  namespace_id: string;
 
   /**
    * slug is the URL-friendly name for the world.

@@ -1,6 +1,7 @@
 -- worldsTable initializes the worlds table.
 CREATE TABLE IF NOT EXISTS worlds (
   id TEXT PRIMARY KEY NOT NULL,
+  namespace_id TEXT NOT NULL,
   slug TEXT NOT NULL,
   label TEXT NOT NULL,
   description TEXT,
@@ -9,12 +10,33 @@ CREATE TABLE IF NOT EXISTS worlds (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
-  UNIQUE(slug)
+  UNIQUE(slug, namespace_id)
 );
 
 -- selectWorldById is a query that finds a world by ID
 SELECT
   id,
+  namespace_id,
+  slug,
+  label,
+  description,
+  db_hostname,
+  db_token,
+  created_at,
+  updated_at,
+  deleted_at
+FROM
+  worlds
+WHERE
+  id = ?
+  AND namespace_id = ?
+  AND deleted_at IS NULL;
+
+-- selectWorldByIdInternal is a query that finds a world by ID without namespace scoping.
+-- Use this ONLY for internal system operations where the ID has already been validated.
+SELECT
+  id,
+  namespace_id,
   slug,
   label,
   description,
@@ -32,6 +54,7 @@ WHERE
 -- selectWorldBySlug is a query that finds a world by slug.
 SELECT
   id,
+  namespace_id,
   slug,
   label,
   description,
@@ -44,11 +67,13 @@ FROM
   worlds
 WHERE
   slug = ?
+  AND namespace_id = ?
   AND deleted_at IS NULL;
 
--- selectAllWorlds is a query that finds worlds without organization filtering.
+-- selectAllWorlds is a query that finds worlds for a specific namespace.
 SELECT
   id,
+  namespace_id,
   slug,
   label,
   description,
@@ -60,7 +85,8 @@ SELECT
 FROM
   worlds
 WHERE
-  deleted_at IS NULL
+  namespace_id = ?
+  AND deleted_at IS NULL
 ORDER BY
   created_at DESC
 LIMIT
@@ -70,6 +96,7 @@ LIMIT
 INSERT INTO
   worlds (
     id,
+    namespace_id,
     slug,
     label,
     description,
@@ -80,7 +107,7 @@ INSERT INTO
     deleted_at
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?);
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- updateWorld is a query that updates world fields
 -- (used in PUT /worlds/:world).
@@ -95,11 +122,13 @@ SET
   db_token = ?,
   deleted_at = ?
 WHERE
-  id = ?;
+  id = ?
+  AND namespace_id = ?;
 
 -- deleteWorld is a query that deletes a world
 -- (used in DELETE /worlds/:world).
 DELETE FROM
   worlds
 WHERE
-  id = ?;
+  id = ?
+  AND namespace_id = ?;

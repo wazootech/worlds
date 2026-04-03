@@ -17,7 +17,7 @@ export const KERNEL = {
   /**
    * Classes
    */
-  Organization: "https://schema.wazoo.dev/kernel#Organization",
+  Namespace: "https://schema.wazoo.dev/kernel#Namespace",
   User: "https://schema.wazoo.dev/kernel#User",
   ApiKey: "https://schema.wazoo.dev/kernel#ApiKey",
   World: "https://schema.wazoo.dev/kernel#World",
@@ -25,8 +25,8 @@ export const KERNEL = {
   /**
    * Properties
    */
-  belongsTo: "https://schema.wazoo.dev/kernel#belongsTo", // (World/ApiKey) -> Organization
-  hasMember: "https://schema.wazoo.dev/kernel#hasMember", // Organization -> User
+  belongsTo: "https://schema.wazoo.dev/kernel#belongsTo", // (World/ApiKey) -> Namespace
+  hasMember: "https://schema.wazoo.dev/kernel#hasMember", // Namespace -> User
   hasSecret: "https://schema.wazoo.dev/kernel#hasSecret", // ApiKey -> String
   hasSlug: "https://schema.wazoo.dev/kernel#hasSlug", // World -> String
   hasLabel: "https://schema.wazoo.dev/kernel#hasLabel", // Any -> String
@@ -37,4 +37,9 @@ export const KERNEL = {
 /**
  * KERNEL_WORLD_ID is the reserved ULID for the platform control plane world.
  */
-export const KERNEL_WORLD_ID = "00000000000000000000000000";
+export const KERNEL_WORLD_ID: string = "00000000000000000000000000";
+
+/**
+ * ROOT_NAMESPACE_ID is the default namespace ID for the platform root.
+ */
+export const ROOT_NAMESPACE_ID: string = `${KERNEL.BASE}namespaces/root`;

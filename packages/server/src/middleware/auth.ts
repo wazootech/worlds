@@ -6,7 +6,7 @@ import type { WorldsContext } from "@wazoo/worlds-sdk";
  */
 export interface AuthorizedRequest {
   admin: boolean;
-  organizationId?: string;
+  namespaceId?: string;
 }
 
 /**
@@ -39,12 +39,12 @@ export async function authorizeRequest(
     return { admin: true };
   }
 
-  // Resolve organization via KernelRepository
+  // Resolve namespace via KernelRepository
   const kernel = new KernelRepository(engine);
-  const organizationId = await kernel.resolveOrganization(apiKey);
+  const namespaceId = await kernel.resolveNamespace(apiKey);
 
-  if (organizationId) {
-    return { admin: false, organizationId };
+  if (namespaceId) {
+    return { admin: false, namespaceId };
   }
 
   return { admin: false };

@@ -8,6 +8,7 @@ import type {
   SparqlValue,
   WorldsSparqlOutput,
 } from "#/schemas/mod.ts";
+import { KERNEL } from "#/ontology.ts";
 
 /**
  * DatasetParams are the parameters for a SPARQL query.
@@ -56,7 +57,10 @@ export async function sparql(
     store,
   );
 
-  const queryType = await queryEngine.query(query, { sources: [proxiedStore] });
+  const queryType = await queryEngine.query(query, {
+    sources: [proxiedStore],
+    baseIRI: KERNEL.BASE,
+  });
 
   // If the query is an update, we need to execute it and then sync the search store.
   if (queryType.resultType === "void") {

@@ -2,8 +2,9 @@ import { assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
 import {
   createTestContext,
-  createTestOrganization,
+  createTestNamespace,
   LocalWorlds,
+  ROOT_NAMESPACE_ID,
   type WorldsContext,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
@@ -21,11 +22,14 @@ Deno.test("Worlds API routes", async (t) => {
   await t.step(
     "GET /worlds/:world returns world metadata (Admin)",
     async () => {
-      const { apiKey } = await createTestOrganization(testContext);
+      const { id: _namespaceId, apiKey } = await createTestNamespace(
+        testContext,
+      );
       const worldId = ulid();
       const now = Date.now();
       await worldsRepository.insert({
         id: worldId,
+        namespace_id: ROOT_NAMESPACE_ID,
         slug: "test-world-" + worldId,
         label: "Test World",
         description: "Test Description",
@@ -53,7 +57,7 @@ Deno.test("Worlds API routes", async (t) => {
   );
 
   await t.step("POST /worlds creates a new world (Admin Only)", async () => {
-    const { apiKey } = await createTestOrganization(testContext);
+    const { apiKey } = await createTestNamespace(testContext);
 
     const slug = ("new-world-" + ulid()).toLowerCase();
     const req = new Request("http://localhost/worlds", {
@@ -78,11 +82,14 @@ Deno.test("Worlds API routes", async (t) => {
   await t.step(
     "GET /worlds/:world/export - Content Negotiation (Turtle)",
     async () => {
-      const { apiKey } = await createTestOrganization(testContext);
+      const { id: _namespaceId, apiKey } = await createTestNamespace(
+        testContext,
+      );
       const worldId = ulid();
       const now = Date.now();
       await worldsRepository.insert({
         id: worldId,
+        namespace_id: ROOT_NAMESPACE_ID,
         slug: "export-world-" + worldId,
         label: "Export World",
         description: null,
@@ -126,6 +133,7 @@ Deno.test("Worlds API routes", async (t) => {
       );
       await unprotectedWorldsRepository.insert({
         id: worldId,
+        namespace_id: ROOT_NAMESPACE_ID,
         slug: "unprotected-world-" + worldId,
         label: "Unprotected World",
         description: null,

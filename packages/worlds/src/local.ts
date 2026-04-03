@@ -20,7 +20,7 @@ import type { WorldsInterface } from "./types.ts";
 import type { WorldRow } from "./database/repositories/system/worlds/mod.ts";
 import type { Patch } from "./rdf/patch/mod.ts";
 import type { WorldsContext } from "./types.ts";
-import { KERNEL, KERNEL_WORLD_ID } from "./ontology.ts";
+import { KERNEL, KERNEL_WORLD_ID, ROOT_NAMESPACE_ID } from "./ontology.ts";
 import type {
   Log,
   World,
@@ -68,7 +68,10 @@ export class LocalWorlds implements WorldsInterface {
    * ensureKernelWorld guarantees the presence of the kernel world and seeds it if necessary.
    */
   private async ensureKernelWorld(): Promise<void> {
-    const existing = await this.worldsRepository.getById(KERNEL_WORLD_ID);
+    const existing = await this.worldsRepository.getById(
+      KERNEL_WORLD_ID,
+      ROOT_NAMESPACE_ID,
+    );
     if (existing) {
       return;
     }
@@ -77,6 +80,7 @@ export class LocalWorlds implements WorldsInterface {
     try {
       await this.worldsRepository.insert({
         id: KERNEL_WORLD_ID,
+        namespace_id: ROOT_NAMESPACE_ID,
         slug: "kernel",
         label: "Kernel",
         description: "Worlds platform control plane.",
@@ -90,7 +94,10 @@ export class LocalWorlds implements WorldsInterface {
       await this.appContext.libsql.manager.create(KERNEL_WORLD_ID);
     } catch (error) {
       // If another instance already initialized the kernel world, we can safe skip
-      const checkAgain = await this.worldsRepository.getById(KERNEL_WORLD_ID);
+      const checkAgain = await this.worldsRepository.getById(
+        KERNEL_WORLD_ID,
+        ROOT_NAMESPACE_ID,
+      );
       if (!checkAgain) {
         throw error;
       }
@@ -98,8 +105,7 @@ export class LocalWorlds implements WorldsInterface {
 
     // Bootstrap if an API key is provided
     if (this.appContext.apiKey) {
-      const orgId = this.appContext.organizationId ??
-        `${KERNEL.BASE}organizations/root`;
+      const namespaceId = this.appContext.namespaceId ?? ROOT_NAMESPACE_ID;
       const keyId = `${KERNEL.BASE}keys/bootstrap`;
 
       await this._sparql({
@@ -107,12 +113,12 @@ export class LocalWorlds implements WorldsInterface {
         query: `
           PREFIX worlds: <${KERNEL.NAMESPACE}>
           INSERT DATA {
-            <${orgId}> a <${KERNEL.Organization}> ;
-              <${KERNEL.hasLabel}> "Root Organization" ;
+            <${namespaceId}> a <${KERNEL.Namespace}> ;
+              <${KERNEL.hasLabel}> "Root Namespace" ;
               <${KERNEL.createdAt}> ${now} .
             
             <${keyId}> a <${KERNEL.ApiKey}> ;
-              <${KERNEL.belongsTo}> <${orgId}> ;
+              <${KERNEL.belongsTo}> <${namespaceId}> ;
               <${KERNEL.hasSecret}> "${this.appContext.apiKey}" ;
               <${KERNEL.createdAt}> ${now} .
           }
@@ -134,7 +140,8 @@ export class LocalWorlds implements WorldsInterface {
       offset = (input.page - 1) * input.pageSize;
     }
 
-    const rows = await this.worldsRepository.list(limit, offset);
+    const namespaceId = this.appContext.namespaceId ?? ROOT_NAMESPACE_ID;
+    const rows = await this.worldsRepository.list(namespaceId, limit, offset);
     return rows.map((world) =>
       worldSchema.parse({
         id: world.id,
@@ -170,15 +177,31 @@ export class LocalWorlds implements WorldsInterface {
   }
 
   /**
-   * resolveWorld finds a world record by its ID or slug.
+   * resolveWorld finds a world record by its ID or slug for the current organization.
    */
   private async resolveWorld(idOrSlug: string): Promise<WorldRow | null> {
-    const worldById = await this.worldsRepository.getById(idOrSlug);
+    const namespaceId = this.appContext.namespaceId ?? ROOT_NAMESPACE_ID;
+
+    // Special case for Kernel World which resides in the Root Namespace
+    if (idOrSlug === KERNEL_WORLD_ID || idOrSlug === "kernel") {
+      return this.worldsRepository.getById(
+        KERNEL_WORLD_ID,
+        ROOT_NAMESPACE_ID,
+      );
+    }
+
+    const worldById = await this.worldsRepository.getById(
+      idOrSlug,
+      namespaceId,
+    );
     if (worldById && worldById.deleted_at === null) {
       return worldById;
     }
 
-    const worldBySlug = await this.worldsRepository.getBySlug(idOrSlug);
+    const worldBySlug = await this.worldsRepository.getBySlug(
+      idOrSlug,
+      namespaceId,
+    );
     if (worldBySlug && worldBySlug.deleted_at === null) {
       return worldBySlug;
     }
@@ -194,7 +217,11 @@ export class LocalWorlds implements WorldsInterface {
     const id = ulid();
     const { slug, label, description } = data;
 
-    const existingBySlug = await this.worldsRepository.getBySlug(slug);
+    const namespaceId = this.appContext.namespaceId ?? ROOT_NAMESPACE_ID;
+    const existingBySlug = await this.worldsRepository.getBySlug(
+      slug,
+      namespaceId,
+    );
     if (existingBySlug) {
       throw new Error("World slug already exists");
     }
@@ -202,6 +229,7 @@ export class LocalWorlds implements WorldsInterface {
     const now = Date.now();
     const worldRow = {
       id,
+      namespace_id: namespaceId,
       slug,
       label,
       description: description ?? null,
@@ -237,7 +265,8 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error("World not found");
     }
 
-    await this.worldsRepository.update(world.id, {
+    const namespaceId = this.appContext.namespaceId ?? ROOT_NAMESPACE_ID;
+    await this.worldsRepository.update(world.id, namespaceId, {
       slug: data.slug ?? world.slug,
       label: data.label ?? world.label,
       description: data.description !== undefined
@@ -257,7 +286,8 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error("World not found");
     }
 
-    await this.worldsRepository.update(world.id, {
+    const namespaceId = this.appContext.namespaceId ?? ROOT_NAMESPACE_ID;
+    await this.worldsRepository.update(world.id, namespaceId, {
       deleted_at: Date.now(),
     });
   }
@@ -301,8 +331,11 @@ export class LocalWorlds implements WorldsInterface {
       await patchHandler.commit();
 
       const updatedAt = Date.now();
+      const namespaceId = this.appContext.namespaceId ?? ROOT_NAMESPACE_ID;
       await blobsRepository.set(newData, updatedAt);
-      await this.worldsRepository.update(world.id, { updated_at: updatedAt });
+      await this.worldsRepository.update(world.id, namespaceId, {
+        updated_at: updatedAt,
+      });
 
       const logsRepository = new LogsRepository(managedWorld.database);
       await logsRepository.add({
@@ -409,6 +442,7 @@ export class LocalWorlds implements WorldsInterface {
           const managed = await this.appContext.libsql.manager.get(world.id);
           const blobsRepository = new BlobsRepository(managed.database);
           const now = Date.now();
+          const namespaceId = this.appContext.namespaceId ?? ROOT_NAMESPACE_ID;
 
           await handlePatch(
             managed.database,
@@ -420,7 +454,9 @@ export class LocalWorlds implements WorldsInterface {
           );
 
           await blobsRepository.set(new TextEncoder().encode(result), now);
-          await this.worldsRepository.update(world.id, { updated_at: now });
+          await this.worldsRepository.update(world.id, namespaceId, {
+            updated_at: now,
+          });
 
           const logsRepository = new LogsRepository(managed.database);
           await logsRepository.add({

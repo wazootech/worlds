@@ -2,8 +2,9 @@ import { assert, assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
 import {
   createTestContext,
-  createTestOrganization,
+  createTestNamespace,
   LocalWorlds,
+  ROOT_NAMESPACE_ID,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
 import createRoute from "./route.ts";
@@ -19,11 +20,14 @@ Deno.test("SPARQL API routes", async (t) => {
   await t.step(
     "GET /worlds/:world/sparql (Admin)",
     async () => {
-      const { apiKey } = await createTestOrganization(testContext);
+      const { id: _namespaceId, apiKey } = await createTestNamespace(
+        testContext,
+      );
       const worldId = ulid();
       const now = Date.now();
       await worldsRepository.insert({
         id: worldId,
+        namespace_id: ROOT_NAMESPACE_ID,
         slug: "sparql-world-" + worldId,
         label: "SPARQL World",
         description: null,
@@ -52,11 +56,14 @@ Deno.test("SPARQL API routes", async (t) => {
   await t.step(
     "GET /worlds/:world/sparql - Service Description",
     async () => {
-      const { apiKey } = await createTestOrganization(testContext);
+      const { id: _namespaceId, apiKey } = await createTestNamespace(
+        testContext,
+      );
       const worldId = ulid();
       const now = Date.now();
       await worldsRepository.insert({
         id: worldId,
+        namespace_id: ROOT_NAMESPACE_ID,
         slug: "sd-world-" + worldId,
         label: "SD World",
         description: null,
@@ -106,11 +113,14 @@ Deno.test("SPARQL API routes", async (t) => {
   await t.step(
     "GET /worlds/:world/sparql - Service Description (N-Triples)",
     async () => {
-      const { apiKey } = await createTestOrganization(testContext);
+      const { id: _namespaceId, apiKey } = await createTestNamespace(
+        testContext,
+      );
       const worldId = ulid();
       const now = Date.now();
       await worldsRepository.insert({
         id: worldId,
+        namespace_id: ROOT_NAMESPACE_ID,
         slug: "nt-world-" + worldId,
         label: "NT World",
         description: null,
@@ -154,11 +164,14 @@ Deno.test("SPARQL API routes", async (t) => {
   await t.step(
     "GET /worlds/:world/sparql - Weighted Content Negotiation",
     async () => {
-      const { apiKey } = await createTestOrganization(testContext);
+      const { id: _namespaceId, apiKey } = await createTestNamespace(
+        testContext,
+      );
       const worldId = ulid();
       const now = Date.now();
       await worldsRepository.insert({
         id: worldId,
+        namespace_id: ROOT_NAMESPACE_ID,
         slug: "post-sd-world-" + worldId,
         label: "Weighted World",
         description: null,

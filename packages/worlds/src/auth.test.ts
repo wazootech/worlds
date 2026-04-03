@@ -12,10 +12,10 @@ Deno.test("KernelRepository & Auth Middleware", async (t) => {
 
   const repo = new KernelRepository(worlds);
 
-  await t.step("resolveOrganization finds organizations", async () => {
+  await t.step("resolveNamespace finds namespaces", async () => {
     // The admin key is seeded by LocalWorlds.init()
-    const orgId = await repo.resolveOrganization(appContext.apiKey!);
-    assertEquals(typeof orgId, "string");
+    const namespaceId = await repo.resolveNamespace(appContext.apiKey!);
+    assertEquals(typeof namespaceId, "string");
   });
 
   await t.step("authorizeRequest validates keys", async () => {
@@ -32,6 +32,6 @@ Deno.test("KernelRepository & Auth Middleware", async (t) => {
     });
     const auth = await authorizeRequest(appContext, req);
     assertEquals(auth.admin, false);
-    assertEquals(auth.organizationId, undefined);
+    assertEquals(auth.namespaceId, undefined);
   });
 });

@@ -44,7 +44,7 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
    */
   public async get(id: string): Promise<ManagedDatabase> {
     const worldsRepository = new WorldsRepository(this.database);
-    const world = await worldsRepository.getById(id);
+    const world = await worldsRepository.getByIdInternal(id);
 
     let url = "";
     let authToken = "";

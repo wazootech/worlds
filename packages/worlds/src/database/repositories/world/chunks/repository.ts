@@ -4,6 +4,7 @@ import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { WorldsSearchOutput } from "#/schemas/mod.ts";
 import type { WorldRow } from "#/database/repositories/system/worlds/schema.ts";
 import type { WorldsRepository } from "#/database/repositories/system/worlds/mod.ts";
+import { ROOT_NAMESPACE_ID } from "#/ontology.ts";
 import {
   type ChunkTableUpsert,
   type SearchRow,
@@ -116,7 +117,8 @@ export class ChunksSearchRepository {
     // Procure world record if not provided
     let world = params.world;
     if (!world && worldId) {
-      world = await this.worlds.getById(worldId) ?? undefined;
+      const namespaceId = this.ctx.namespaceId ?? ROOT_NAMESPACE_ID;
+      world = await this.worlds.getById(worldId, namespaceId) ?? undefined;
     }
 
     if (!this.ctx.libsql.manager) {
