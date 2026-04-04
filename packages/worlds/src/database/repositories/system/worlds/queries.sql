@@ -1,6 +1,5 @@
 -- worldsTable initializes the worlds table.
 CREATE TABLE IF NOT EXISTS worlds (
-  id TEXT PRIMARY KEY NOT NULL,
   namespace_id TEXT NOT NULL,
   slug TEXT NOT NULL,
   label TEXT NOT NULL,
@@ -10,50 +9,11 @@ CREATE TABLE IF NOT EXISTS worlds (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
-  UNIQUE(slug, namespace_id)
+  PRIMARY KEY (namespace_id, slug)
 );
-
--- selectWorldById is a query that finds a world by ID
-SELECT
-  id,
-  namespace_id,
-  slug,
-  label,
-  description,
-  db_hostname,
-  db_token,
-  created_at,
-  updated_at,
-  deleted_at
-FROM
-  worlds
-WHERE
-  id = ?
-  AND namespace_id = ?
-  AND deleted_at IS NULL;
-
--- selectWorldByIdInternal is a query that finds a world by ID without namespace scoping.
--- Use this ONLY for internal system operations where the ID has already been validated.
-SELECT
-  id,
-  namespace_id,
-  slug,
-  label,
-  description,
-  db_hostname,
-  db_token,
-  created_at,
-  updated_at,
-  deleted_at
-FROM
-  worlds
-WHERE
-  id = ?
-  AND deleted_at IS NULL;
 
 -- selectWorldBySlug is a query that finds a world by slug.
 SELECT
-  id,
   namespace_id,
   slug,
   label,
@@ -70,9 +30,26 @@ WHERE
   AND namespace_id = ?
   AND deleted_at IS NULL;
 
+-- selectWorldBySlugInternal is a query that finds a world by slug without namespace scoping.
+-- Use this ONLY for internal system operations where the slug has already been validated.
+SELECT
+  namespace_id,
+  slug,
+  label,
+  description,
+  db_hostname,
+  db_token,
+  created_at,
+  updated_at,
+  deleted_at
+FROM
+  worlds
+WHERE
+  slug = ?
+  AND deleted_at IS NULL;
+
 -- selectAllWorlds is a query that finds worlds for a specific namespace.
 SELECT
-  id,
   namespace_id,
   slug,
   label,
@@ -95,7 +72,6 @@ LIMIT
 -- insertWorld is a query that inserts a new world (used in POST /worlds).
 INSERT INTO
   worlds (
-    id,
     namespace_id,
     slug,
     label,
@@ -107,14 +83,13 @@ INSERT INTO
     deleted_at
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+  (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- updateWorld is a query that updates world fields
 -- (used in PUT /worlds/:world).
 UPDATE
   worlds
 SET
-  slug = ?,
   label = ?,
   description = ?,
   updated_at = ?,
@@ -122,7 +97,7 @@ SET
   db_token = ?,
   deleted_at = ?
 WHERE
-  id = ?
+  slug = ?
   AND namespace_id = ?;
 
 -- deleteWorld is a query that deletes a world
@@ -130,5 +105,5 @@ WHERE
 DELETE FROM
   worlds
 WHERE
-  id = ?
+  slug = ?
   AND namespace_id = ?;

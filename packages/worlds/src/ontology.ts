@@ -1,45 +1,45 @@
 /**
- * KERNEL is the core ontology for the Worlds platform control plane.
- * These URIs are used in the reserved Kernel World (ID 0...0) to manage
+ * REGISTRY is the core ontology for the Worlds platform control plane.
+ * These URIs are used in the reserved Registry World (slug "registry") to manage
  * multitenancy, identity, and world registries.
  */
-export const KERNEL = {
+export const REGISTRY = {
   /**
-   * NAMESPACE is the base URI for the kernel ontology.
+   * NAMESPACE is the base URI for the registry ontology.
    */
-  NAMESPACE: "https://schema.wazoo.dev/kernel#",
+  NAMESPACE: "https://schema.wazoo.dev/registry#",
 
   /**
-   * BASE is the base URI for kernel entities.
+   * BASE is the base URI for registry entities.
    */
-  BASE: "https://wazoo.dev/kernel/",
+  BASE: "https://wazoo.dev/registry/",
 
   /**
    * Classes
    */
-  Namespace: "https://schema.wazoo.dev/kernel#Namespace",
-  User: "https://schema.wazoo.dev/kernel#User",
-  ApiKey: "https://schema.wazoo.dev/kernel#ApiKey",
-  World: "https://schema.wazoo.dev/kernel#World",
+  Namespace: "https://schema.wazoo.dev/registry#Namespace",
+  User: "https://schema.wazoo.dev/registry#User",
+  ApiKey: "https://schema.wazoo.dev/registry#ApiKey",
+  World: "https://schema.wazoo.dev/registry#World",
 
   /**
    * Properties
    */
-  belongsTo: "https://schema.wazoo.dev/kernel#belongsTo", // (World/ApiKey) -> Namespace
-  hasMember: "https://schema.wazoo.dev/kernel#hasMember", // Namespace -> User
-  hasSecret: "https://schema.wazoo.dev/kernel#hasSecret", // ApiKey -> String
-  hasSlug: "https://schema.wazoo.dev/kernel#hasSlug", // World -> String
-  hasLabel: "https://schema.wazoo.dev/kernel#hasLabel", // Any -> String
-  hasDescription: "https://schema.wazoo.dev/kernel#hasDescription", // Any -> String
-  createdAt: "https://schema.wazoo.dev/kernel#createdAt", // Any -> Number (timestamp)
+  belongsTo: "https://schema.wazoo.dev/registry#belongsTo", // (World/ApiKey) -> Namespace
+  hasMember: "https://schema.wazoo.dev/registry#hasMember", // Namespace -> User
+  hasSecret: "https://schema.wazoo.dev/registry#hasSecret", // ApiKey -> String
+  hasSlug: "https://schema.wazoo.dev/registry#hasSlug", // World -> String
+  hasLabel: "https://schema.wazoo.dev/registry#hasLabel", // Any -> String
+  hasDescription: "https://schema.wazoo.dev/registry#hasDescription", // Any -> String
+  createdAt: "https://schema.wazoo.dev/registry#createdAt", // Any -> Number (timestamp)
 } as const;
 
 /**
- * KERNEL_WORLD_ID is the reserved ULID for the platform control plane world.
+ * REGISTRY_WORLD_ID is the reserved identifier for the platform registry world.
  */
-export const KERNEL_WORLD_ID: string = "00000000000000000000000000";
+export const REGISTRY_WORLD_ID: string = "registry";
 
 /**
- * ROOT_NAMESPACE_ID is the default namespace ID for the platform root.
+ * REGISTRY_NAMESPACE_ID is the default namespace ID for the platform registry.
  */
-export const ROOT_NAMESPACE_ID: string = `${KERNEL.BASE}namespaces/root`;
+export const REGISTRY_NAMESPACE_ID: string = "https://wazoo.dev/registry";

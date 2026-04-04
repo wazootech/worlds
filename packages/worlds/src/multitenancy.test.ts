@@ -1,25 +1,26 @@
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals } from "@std/assert";
 import { LocalWorlds } from "./local.ts";
 import { createTestContext } from "./engine-context.ts";
-import { KERNEL, KERNEL_WORLD_ID } from "./ontology.ts";
+import { REGISTRY, REGISTRY_WORLD_ID } from "./ontology.ts";
+import type { SparqlSelectResults } from "./schemas/mod.ts";
 
 Deno.test("Multi-tenant Isolation", async (t) => {
   await using appContext = await createTestContext();
 
-  // Seed two namespaces in the kernel world
+  // Seed two namespaces in the registry world
   {
     const engine = new LocalWorlds(appContext);
     await engine.init();
 
     await engine.sparql({
-      world: KERNEL_WORLD_ID,
+      world: REGISTRY_WORLD_ID,
       query: `
-        PREFIX worlds: <${KERNEL.NAMESPACE}>
+        PREFIX registry: <${REGISTRY.NAMESPACE}>
         INSERT DATA {
-          <https://wazoo.dev/kernel/namespaces/ns-a> a <${KERNEL.Namespace}> ;
-            <${KERNEL.hasLabel}> "NS A" .
-          <https://wazoo.dev/kernel/namespaces/ns-b> a <${KERNEL.Namespace}> ;
-            <${KERNEL.hasLabel}> "NS B" .
+          <https://wazoo.dev/registry/namespaces/ns-a> a <${REGISTRY.Namespace}> ;
+            <${REGISTRY.hasLabel}> "NS A" .
+          <https://wazoo.dev/registry/namespaces/ns-b> a <${REGISTRY.Namespace}> ;
+            <${REGISTRY.hasLabel}> "NS B" .
         }
       `,
     });
@@ -28,7 +29,7 @@ Deno.test("Multi-tenant Isolation", async (t) => {
   // Create context for NS A
   const ctxA = {
     ...appContext,
-    namespaceId: "https://wazoo.dev/kernel/namespaces/ns-a",
+    namespaceId: "https://wazoo.dev/registry/namespaces/ns-a",
   };
   await using worldsA = new LocalWorlds(ctxA);
   await worldsA.init();
@@ -36,52 +37,81 @@ Deno.test("Multi-tenant Isolation", async (t) => {
   // Create context for NS B
   const ctxB = {
     ...appContext,
-    namespaceId: "https://wazoo.dev/kernel/namespaces/ns-b",
+    namespaceId: "https://wazoo.dev/registry/namespaces/ns-b",
   };
   await using worldsB = new LocalWorlds(ctxB);
   await worldsB.init();
 
-  let worldAId: string;
+  const sharedSlug = "shared-slug";
 
   await t.step("NS A can create and see its own world", async () => {
     const worldA = await worldsA.create({
-      slug: "shared-slug",
+      slug: sharedSlug,
       label: "World A",
     });
-    worldAId = worldA.id;
+    assertEquals(worldA.id, sharedSlug);
 
     const list = await worldsA.list();
-    assertEquals(list.some((w) => w.id === worldAId), true);
+    assertEquals(list.some((w) => w.id === sharedSlug), true);
   });
 
   await t.step("NS B cannot see NS A's world in list", async () => {
+    // Before B creates anything, its list should be empty
     const list = await worldsB.list();
-    assertEquals(list.some((w) => w.id === worldAId), false);
+    assertEquals(list.some((w) => w.id === sharedSlug), false);
   });
 
-  await t.step("NS B cannot get NS A's world by ID", async () => {
-    const world = await worldsB.get({ world: worldAId });
+  await t.step("NS B cannot get NS A's world by slug", async () => {
+    const world = await worldsB.get({ world: sharedSlug });
     assertEquals(world, null);
   });
 
   await t.step("NS B can use the same slug in its own scope", async () => {
     const worldB = await worldsB.create({
-      slug: "shared-slug",
+      slug: sharedSlug,
       label: "World B",
     });
-    assertEquals(worldB.slug, "shared-slug");
-    assertEquals(worldB.id !== worldAId, true);
+    assertEquals(worldB.slug, sharedSlug);
+    assertEquals(worldB.id, sharedSlug);
+
+    // Verify B sees its own version
+    const world = await worldsB.get({ world: sharedSlug });
+    assertEquals(world?.label, "World B");
+
+    // Verify A still sees its own version
+    const worldA = await worldsA.get({ world: sharedSlug });
+    assertEquals(worldA?.label, "World A");
   });
 
-  await t.step("NS B cannot perform SPARQL on NS A's world", async () => {
-    await assertRejects(
-      () =>
-        worldsB.sparql({
-          world: worldAId,
-          query: "SELECT * WHERE { ?s ?p ?o }",
-        }),
-      Error,
-      "World not found",
-    );
+  await t.step("Data isolation between worlds with same slug", async () => {
+    // Insert into A
+    await worldsA.sparql({
+      world: sharedSlug,
+      query:
+        `INSERT DATA { <http://example.org/s> <http://example.org/p> "Value A" . }`,
+    });
+
+    // Insert into B
+    await worldsB.sparql({
+      world: sharedSlug,
+      query:
+        `INSERT DATA { <http://example.org/s> <http://example.org/p> "Value B" . }`,
+    });
+
+    // Check A
+    const resA = await worldsA.sparql({
+      world: sharedSlug,
+      query:
+        `SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }`,
+    }) as SparqlSelectResults;
+    assertEquals(resA.results.bindings[0].o.value, "Value A");
+
+    // Check B
+    const resB = await worldsB.sparql({
+      world: sharedSlug,
+      query:
+        `SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }`,
+    }) as SparqlSelectResults;
+    assertEquals(resB.results.bindings[0].o.value, "Value B");
   });
 });

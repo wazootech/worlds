@@ -2,10 +2,8 @@ import { z } from "zod";
 
 /**
  * worldTableSchema is the Zod schema for the worlds database table.
- * This represents the raw database row structure including the blob.
  */
 const worldTableShape = z.object({
-  id: z.string(),
   namespace_id: z.string(),
   slug: z.string(),
   label: z.string(),
@@ -24,17 +22,12 @@ export const worldTableSchema: z.ZodType<WorldTable> = worldTableShape;
  */
 export interface WorldTable {
   /**
-   * id is the unique identifier for the world.
-   */
-  id: string;
-
-  /**
-   * organization_id is the identifier of the organization that owns the world.
+   * namespace_id is the identifier of the namespace that owns the world.
    */
   namespace_id: string;
 
   /**
-   * slug is the URL-friendly name for the world.
+   * slug is the unique identifier (within a namespace) for the world.
    */
   slug: string;
 
@@ -76,12 +69,11 @@ export interface WorldTable {
 
 /**
  * worldRowSchema is the Zod schema for a world record as returned by the SELECT queries.
- * This omits the potentially large blob field for performance.
  */
 export const worldRowSchema: z.ZodType<WorldRow> = worldTableSchema;
 
 /**
- * WorldRow represents a world record without the blob field.
+ * WorldRow represents a world record.
  */
 export type WorldRow = WorldTable;
 
@@ -103,7 +95,8 @@ export const worldTableUpdateSchema: z.ZodType<
   WorldTableUpdate
 > = worldTableShape
   .omit({
-    id: true,
+    namespace_id: true,
+    slug: true,
     created_at: true,
   })
   .partial();
@@ -112,5 +105,5 @@ export const worldTableUpdateSchema: z.ZodType<
  * WorldTableUpdate represents the data needed to update a world.
  */
 export type WorldTableUpdate = Partial<
-  Omit<WorldTable, "id" | "created_at">
+  Omit<WorldTable, "namespace_id" | "slug" | "created_at">
 >;

@@ -5,7 +5,7 @@ import {
   createTestNamespace,
   LocalWorlds,
   LogsRepository,
-  ROOT_NAMESPACE_ID,
+  REGISTRY_NAMESPACE_ID,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
 import createRoute from "./route.ts";
@@ -20,13 +20,12 @@ Deno.test("World Logs API routes", async (t) => {
   const app = createRoute(testContext);
 
   await t.step("GET /worlds/:world/logs (Admin)", async () => {
-    const { id: _namespaceId, apiKey } = await createTestNamespace(testContext);
-    const worldId = ulid();
+    const { apiKey } = await createTestNamespace(testContext);
+    const worldSlug = "logs-world-" + ulid();
     const now = Date.now();
     await worldsRepository.insert({
-      id: worldId,
-      namespace_id: ROOT_NAMESPACE_ID,
-      slug: "logs-world-" + worldId,
+      namespace_id: REGISTRY_NAMESPACE_ID,
+      slug: worldSlug,
       label: "Logs World",
       description: null,
       db_hostname: null,
@@ -35,20 +34,23 @@ Deno.test("World Logs API routes", async (t) => {
       updated_at: now,
       deleted_at: null,
     });
-    await testContext.libsql.manager.create(worldId);
+    await testContext.libsql.manager.create(REGISTRY_NAMESPACE_ID, worldSlug);
 
-    const worldManaged = await testContext.libsql.manager.get(worldId);
+    const worldManaged = await testContext.libsql.manager.get(
+      REGISTRY_NAMESPACE_ID,
+      worldSlug,
+    );
     const logsRepository = new LogsRepository(worldManaged.database);
     await logsRepository.add({
       id: ulid(),
-      world_id: worldId,
+      world_id: worldSlug,
       message: "test log",
       level: "info",
       timestamp: Date.now(),
     });
 
     const resp = await app.fetch(
-      new Request(`http://localhost/worlds/${worldId}/logs`, {
+      new Request(`http://localhost/worlds/${worldSlug}/logs`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${apiKey}`,

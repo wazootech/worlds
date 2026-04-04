@@ -27,17 +27,17 @@ export interface DatabaseManager {
   /**
    * create creates a new LibSQL database and returns its client and info.
    */
-  create(id: string): Promise<ManagedDatabase>;
+  create(namespaceId: string, slug: string): Promise<ManagedDatabase>;
 
   /**
-   * get returns the LibSQL database for the given id, using provided info if available.
+   * get returns the LibSQL database for the given namespace and slug.
    */
-  get(id: string): Promise<ManagedDatabase>;
+  get(namespaceId: string, slug: string): Promise<ManagedDatabase>;
 
   /**
-   * delete deletes the LibSQL database for the given identifier.
+   * delete deletes the LibSQL database for the given namespace and slug.
    */
-  delete(id: string): Promise<void>;
+  delete(namespaceId: string, slug: string): Promise<void>;
 
   /**
    * close shuts down all managed database connections.

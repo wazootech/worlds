@@ -2,28 +2,27 @@ import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { ErrorResponse } from "@wazoo/worlds-sdk";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
+import { getNamespacedEngine } from "#/utils/engine.ts";
 
 /**
  * searchRouter creates a router for the World Search API.
  */
 export default (appContext: WorldsContext) => {
-  const engine = appContext.engine;
-  if (!engine) {
-    throw new Error("Engine not initialized in context");
-  }
-
   return new Router().get(
     "/worlds/:world/search",
     async (ctx) => {
-      const worldId = ctx.params?.pathname.groups.world;
-      if (!worldId) return ErrorResponse.BadRequest("World ID required");
+      const slug = ctx.params?.pathname.groups.world;
+      if (!slug) return ErrorResponse.BadRequest("World slug required");
 
       const authorized = await authorizeRequest(
         appContext,
         ctx.request,
       );
-      if (!authorized.admin) return ErrorResponse.Unauthorized();
+      if (!authorized.admin && !authorized.namespaceId) {
+        return ErrorResponse.Unauthorized();
+      }
 
+      const engine = getNamespacedEngine(appContext, authorized.namespaceId);
       const url = new URL(ctx.request.url);
       const query = url.searchParams.get("query") ?? "";
       const subjects = url.searchParams.getAll("subjects");
@@ -33,7 +32,7 @@ export default (appContext: WorldsContext) => {
 
       try {
         const results = await engine.search({
-          world: worldId,
+          world: slug,
           query,
           limit,
           subjects: subjects.length > 0 ? subjects : undefined,

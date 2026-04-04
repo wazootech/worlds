@@ -18,38 +18,42 @@ export class MemoryDatabaseManager implements DatabaseManager {
 
   /**
    * create provisions a new in-memory database.
-   * @param id The ID of the database to create.
-   * @returns A managed database connection.
    */
-  public async create(id: string): Promise<ManagedDatabase> {
-    return await this.getManagedDatabase(id, ":memory:");
+  public async create(
+    namespaceId: string,
+    slug: string,
+  ): Promise<ManagedDatabase> {
+    return await this.getManagedDatabase(namespaceId, slug, ":memory:");
   }
 
   /**
-   * get returns the LibSQL database for the given id.
-   * @param id The ID of the database.
-   * @returns A managed database connection.
+   * get returns the LibSQL database for the given namespace and slug.
    */
-  public async get(id: string): Promise<ManagedDatabase> {
-    return await this.getManagedDatabase(id, ":memory:");
+  public async get(
+    namespaceId: string,
+    slug: string,
+  ): Promise<ManagedDatabase> {
+    return await this.getManagedDatabase(namespaceId, slug, ":memory:");
   }
 
   /**
    * getManagedDatabase retrieves or creates a managed database connection.
-   * @param id The ID of the database.
-   * @param url The database connection URL.
-   * @returns A managed database connection.
    */
   private async getManagedDatabase(
-    id: string,
+    namespaceId: string,
+    slug: string,
     url: string,
   ): Promise<ManagedDatabase> {
-    const client = this.databases.get(id) ?? createClient({ url });
-    this.databases.set(id, client);
+    const key = `${namespaceId}:${slug}`;
+    const client = this.databases.get(key) ?? createClient({ url });
+    this.databases.set(key, client);
 
-    if (!this.initialized.has(id)) {
+    if (!this.initialized.has(key)) {
+      await client.execute("PRAGMA foreign_keys = ON;");
       await initializeWorldDatabase(client, this.dimensions);
-      this.initialized.add(id);
+      this.initialized.add(key);
+    } else {
+      await client.execute("PRAGMA foreign_keys = ON;");
     }
 
     return {
@@ -58,9 +62,10 @@ export class MemoryDatabaseManager implements DatabaseManager {
     };
   }
 
-  public delete(id: string): Promise<void> {
-    this.databases.delete(id);
-    this.initialized.delete(id);
+  public delete(namespaceId: string, slug: string): Promise<void> {
+    const key = `${namespaceId}:${slug}`;
+    this.databases.delete(key);
+    this.initialized.delete(key);
     return Promise.resolve();
   }
 

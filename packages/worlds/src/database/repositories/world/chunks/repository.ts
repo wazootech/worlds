@@ -4,7 +4,7 @@ import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { WorldsSearchOutput } from "#/schemas/mod.ts";
 import type { WorldRow } from "#/database/repositories/system/worlds/schema.ts";
 import type { WorldsRepository } from "#/database/repositories/system/worlds/mod.ts";
-import { ROOT_NAMESPACE_ID } from "#/ontology.ts";
+import { REGISTRY_NAMESPACE_ID } from "#/ontology.ts";
 import {
   type ChunkTableUpsert,
   type SearchRow,
@@ -50,9 +50,9 @@ export interface SearchParams {
   query: string;
 
   /**
-   * worldId is the ID of the world to search within.
+   * worldSlug is the slug of the world to search within.
    */
-  worldId?: string;
+  worldSlug?: string;
 
   /**
    * world is the optional pre-fetched world record.
@@ -102,12 +102,14 @@ export class ChunksSearchRepository {
   async search(params: SearchParams): Promise<WorldsSearchOutput[]> {
     const {
       query,
-      worldId,
+      worldSlug,
       subjects,
       predicates,
       types,
       limit = 10,
     } = params;
+
+    const namespaceId = this.ctx.namespaceId ?? REGISTRY_NAMESPACE_ID;
 
     // Generate Embeddings
     const vector = query
@@ -116,9 +118,8 @@ export class ChunksSearchRepository {
 
     // Procure world record if not provided
     let world = params.world;
-    if (!world && worldId) {
-      const namespaceId = this.ctx.namespaceId ?? ROOT_NAMESPACE_ID;
-      world = await this.worlds.getById(worldId, namespaceId) ?? undefined;
+    if (!world && worldSlug) {
+      world = await this.worlds.get(worldSlug, namespaceId) ?? undefined;
     }
 
     if (!this.ctx.libsql.manager) {
@@ -131,7 +132,10 @@ export class ChunksSearchRepository {
 
     // Search across the target world
     try {
-      const managed = await this.ctx.libsql.manager.get(world.id);
+      const managed = await this.ctx.libsql.manager.get(
+        namespaceId,
+        world.slug,
+      );
 
       const subjectsParam = subjects && subjects.length > 0
         ? JSON.stringify(subjects)
@@ -175,7 +179,7 @@ export class ChunksSearchRepository {
           vecRank: row.vec_rank,
           ftsRank: row.fts_rank,
           score: row.combined_rank,
-          worldId: world.id,
+          worldId: world.slug,
         };
       });
 
@@ -184,7 +188,7 @@ export class ChunksSearchRepository {
         .sort((a, b) => b.score - a.score)
         .slice(0, limit);
     } catch (error) {
-      console.error(`Search error for world ${world.id}:`, error);
+      console.error(`Search error for world ${world.slug}:`, error);
       return [];
     }
   }

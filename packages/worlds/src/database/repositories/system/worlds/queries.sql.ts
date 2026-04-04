@@ -4,49 +4,43 @@
  * worldsTable initializes the worlds table.
  */
 export const worldsTable =
-  "CREATE TABLE IF NOT EXISTS worlds (\r\n  id TEXT PRIMARY KEY NOT NULL,\r\n  namespace_id TEXT NOT NULL,\r\n  slug TEXT NOT NULL,\r\n  label TEXT NOT NULL,\r\n  description TEXT,\r\n  db_hostname TEXT,\r\n  db_token TEXT,\r\n  created_at INTEGER NOT NULL,\r\n  updated_at INTEGER NOT NULL,\r\n  deleted_at INTEGER,\r\n  UNIQUE(slug, namespace_id)\r\n);";
-
-/**
- * selectWorldById is a query that finds a world by ID
- */
-export const selectWorldById =
-  "SELECT\r\n  id,\r\n  namespace_id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  id = ?\r\n  AND namespace_id = ?\r\n  AND deleted_at IS NULL;";
-
-/**
- * selectWorldByIdInternal is a query that finds a world by ID without namespace scoping.
- * Use this ONLY for internal system operations where the ID has already been validated.
- */
-export const selectWorldByIdInternal =
-  "SELECT\r\n  id,\r\n  namespace_id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  id = ?\r\n  AND deleted_at IS NULL;";
+  "CREATE TABLE IF NOT EXISTS worlds (\n  namespace_id TEXT NOT NULL,\n  slug TEXT NOT NULL,\n  label TEXT NOT NULL,\n  description TEXT,\n  db_hostname TEXT,\n  db_token TEXT,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  deleted_at INTEGER,\n  PRIMARY KEY (namespace_id, slug)\n);";
 
 /**
  * selectWorldBySlug is a query that finds a world by slug.
  */
 export const selectWorldBySlug =
-  "SELECT\r\n  id,\r\n  namespace_id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  slug = ?\r\n  AND namespace_id = ?\r\n  AND deleted_at IS NULL;";
+  "SELECT\n  namespace_id,\n  slug,\n  label,\n  description,\n  db_hostname,\n  db_token,\n  created_at,\n  updated_at,\n  deleted_at\nFROM\n  worlds\nWHERE\n  slug = ?\n  AND namespace_id = ?\n  AND deleted_at IS NULL;";
+
+/**
+ * selectWorldBySlugInternal is a query that finds a world by slug without namespace scoping.
+ * Use this ONLY for internal system operations where the slug has already been validated.
+ */
+export const selectWorldBySlugInternal =
+  "SELECT\n  namespace_id,\n  slug,\n  label,\n  description,\n  db_hostname,\n  db_token,\n  created_at,\n  updated_at,\n  deleted_at\nFROM\n  worlds\nWHERE\n  slug = ?\n  AND deleted_at IS NULL;";
 
 /**
  * selectAllWorlds is a query that finds worlds for a specific namespace.
  */
 export const selectAllWorlds =
-  "SELECT\r\n  id,\r\n  namespace_id,\r\n  slug,\r\n  label,\r\n  description,\r\n  db_hostname,\r\n  db_token,\r\n  created_at,\r\n  updated_at,\r\n  deleted_at\r\nFROM\r\n  worlds\r\nWHERE\r\n  namespace_id = ?\r\n  AND deleted_at IS NULL\r\nORDER BY\r\n  created_at DESC\r\nLIMIT\r\n  ? OFFSET ?;";
+  "SELECT\n  namespace_id,\n  slug,\n  label,\n  description,\n  db_hostname,\n  db_token,\n  created_at,\n  updated_at,\n  deleted_at\nFROM\n  worlds\nWHERE\n  namespace_id = ?\n  AND deleted_at IS NULL\nORDER BY\n  created_at DESC\nLIMIT\n  ? OFFSET ?;";
 
 /**
  * insertWorld is a query that inserts a new world (used in POST /worlds).
  */
 export const insertWorld =
-  "INSERT INTO\r\n  worlds (\r\n    id,\r\n    namespace_id,\r\n    slug,\r\n    label,\r\n    description,\r\n    db_hostname,\r\n    db_token,\r\n    created_at,\r\n    updated_at,\r\n    deleted_at\r\n  )\r\nVALUES\r\n  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+  "INSERT INTO\n  worlds (\n    namespace_id,\n    slug,\n    label,\n    description,\n    db_hostname,\n    db_token,\n    created_at,\n    updated_at,\n    deleted_at\n  )\nVALUES\n  (?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
 /**
  * updateWorld is a query that updates world fields
  * (used in PUT /worlds/:world).
  */
 export const updateWorld =
-  "UPDATE\r\n  worlds\r\nSET\r\n  slug = ?,\r\n  label = ?,\r\n  description = ?,\r\n  updated_at = ?,\r\n  db_hostname = ?,\r\n  db_token = ?,\r\n  deleted_at = ?\r\nWHERE\r\n  id = ?\r\n  AND namespace_id = ?;";
+  "UPDATE\n  worlds\nSET\n  label = ?,\n  description = ?,\n  updated_at = ?,\n  db_hostname = ?,\n  db_token = ?,\n  deleted_at = ?\nWHERE\n  slug = ?\n  AND namespace_id = ?;";
 
 /**
  * deleteWorld is a query that deletes a world
  * (used in DELETE /worlds/:world).
  */
 export const deleteWorld =
-  "DELETE FROM\r\n  worlds\r\nWHERE\r\n  id = ?\r\n  AND namespace_id = ?;";
+  "DELETE FROM\n  worlds\nWHERE\n  slug = ?\n  AND namespace_id = ?;";

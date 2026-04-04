@@ -27,24 +27,45 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
   ) {}
 
   /**
-   * create provisions a new Turso database.
-   * @param id The ID of the database to create.
-   * @returns A managed database connection.
+   * getStorageKey generates a Turso-safe identifier for a world.
    */
-  public async create(id: string): Promise<ManagedDatabase> {
-    const database = await this.client.databases.create(id);
-    const token = await this.client.databases.createToken(id);
-    return this.getManagedDatabase(id, database.hostname, token.jwt);
+  private async getStorageKey(
+    namespaceId: string,
+    slug: string,
+  ): Promise<string> {
+    const raw = `${namespaceId}:${slug}`;
+    const encoder = new TextEncoder();
+    const data = encoder.encode(raw);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    // Turso DB names must start with a letter and contain only alphanumeric/hyphens.
+    // A hex string is safe as long as it doesn't start with a number (we can prefix it).
+    return "w" + hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  /**
+   * create provisions a new Turso database.
+   */
+  public async create(
+    namespaceId: string,
+    slug: string,
+  ): Promise<ManagedDatabase> {
+    const key = await this.getStorageKey(namespaceId, slug);
+    const database = await this.client.databases.create(key);
+    const token = await this.client.databases.createToken(key);
+    return this.getManagedDatabase(key, database.hostname, token.jwt);
   }
 
   /**
    * get retrieves an existing Turso database connection.
-   * @param id The ID of the database to retrieve.
-   * @returns A managed database connection.
    */
-  public async get(id: string): Promise<ManagedDatabase> {
+  public async get(
+    namespaceId: string,
+    slug: string,
+  ): Promise<ManagedDatabase> {
+    const key = await this.getStorageKey(namespaceId, slug);
     const worldsRepository = new WorldsRepository(this.database);
-    const world = await worldsRepository.getByIdInternal(id);
+    const world = await worldsRepository.get(slug, namespaceId);
 
     let url = "";
     let authToken = "";
@@ -53,29 +74,29 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
       url = world.db_hostname;
       authToken = world.db_token;
     } else {
-      const database = await this.client.databases.get(id);
-      const token = await this.client.databases.createToken(id);
+      const database = await this.client.databases.get(key);
+      const token = await this.client.databases.createToken(key);
       url = database.hostname;
       authToken = token.jwt;
     }
 
-    return this.getManagedDatabase(id, url, authToken);
+    return this.getManagedDatabase(key, url, authToken);
   }
 
   private async getManagedDatabase(
-    id: string,
+    key: string,
     url: string,
     authToken: string,
   ): Promise<ManagedDatabase> {
-    const client = this.trackedDatabases.get(id) ?? createClient({
+    const client = this.trackedDatabases.get(key) ?? createClient({
       url: `libsql://${url}`,
       authToken,
     });
-    this.trackedDatabases.set(id, client);
+    this.trackedDatabases.set(key, client);
 
-    if (!this.initialized.has(id)) {
+    if (!this.initialized.has(key)) {
       await initializeWorldDatabase(client, this.dimensions);
-      this.initialized.add(id);
+      this.initialized.add(key);
     }
 
     return {
@@ -85,8 +106,9 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
     };
   }
 
-  public async delete(id: string): Promise<void> {
-    await this.client.databases.delete(id);
+  public async delete(namespaceId: string, slug: string): Promise<void> {
+    const key = await this.getStorageKey(namespaceId, slug);
+    await this.client.databases.delete(key);
   }
 
   /**

@@ -1,16 +1,16 @@
 import { assertEquals } from "@std/assert";
 import { LocalWorlds } from "./local.ts";
-import { KernelRepository } from "./database/repositories/system/kernel/repository.ts";
+import { RegistryRepository } from "./database/repositories/system/registry/repository.ts";
 import { authorizeRequest } from "../../server/src/middleware/auth.ts";
 import { createTestContext } from "./engine-context.ts";
 
-Deno.test("KernelRepository & Auth Middleware", async (t) => {
+Deno.test("RegistryRepository & Auth Middleware", async (t) => {
   await using appContext = await createTestContext();
   await using worlds = new LocalWorlds(appContext);
   appContext.engine = worlds;
   await worlds.init();
 
-  const repo = new KernelRepository(worlds);
+  const repo = new RegistryRepository(worlds);
 
   await t.step("resolveNamespace finds namespaces", async () => {
     // The admin key is seeded by LocalWorlds.init()

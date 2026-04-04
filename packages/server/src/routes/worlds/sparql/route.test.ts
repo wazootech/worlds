@@ -4,7 +4,7 @@ import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  ROOT_NAMESPACE_ID,
+  REGISTRY_NAMESPACE_ID,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
 import createRoute from "./route.ts";
@@ -20,15 +20,14 @@ Deno.test("SPARQL API routes", async (t) => {
   await t.step(
     "GET /worlds/:world/sparql (Admin)",
     async () => {
-      const { id: _namespaceId, apiKey } = await createTestNamespace(
+      const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const worldId = ulid();
+      const slug = "sparql-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        id: worldId,
-        namespace_id: ROOT_NAMESPACE_ID,
-        slug: "sparql-world-" + worldId,
+        namespace_id: REGISTRY_NAMESPACE_ID,
+        slug,
         label: "SPARQL World",
         description: null,
         db_hostname: null,
@@ -37,10 +36,10 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(worldId);
+      await testContext.libsql.manager.create(REGISTRY_NAMESPACE_ID, slug);
 
       const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${worldId}/sparql`, {
+        new Request(`http://localhost/worlds/${slug}/sparql`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
@@ -56,15 +55,14 @@ Deno.test("SPARQL API routes", async (t) => {
   await t.step(
     "GET /worlds/:world/sparql - Service Description",
     async () => {
-      const { id: _namespaceId, apiKey } = await createTestNamespace(
+      const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const worldId = ulid();
+      const slug = "sd-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        id: worldId,
-        namespace_id: ROOT_NAMESPACE_ID,
-        slug: "sd-world-" + worldId,
+        namespace_id: REGISTRY_NAMESPACE_ID,
+        slug,
         label: "SD World",
         description: null,
         db_hostname: null,
@@ -73,11 +71,11 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(worldId);
+      await testContext.libsql.manager.create(REGISTRY_NAMESPACE_ID, slug);
 
       // Request without query parameter should return Service Description
       const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${worldId}/sparql`, {
+        new Request(`http://localhost/worlds/${slug}/sparql`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
@@ -113,15 +111,14 @@ Deno.test("SPARQL API routes", async (t) => {
   await t.step(
     "GET /worlds/:world/sparql - Service Description (N-Triples)",
     async () => {
-      const { id: _namespaceId, apiKey } = await createTestNamespace(
+      const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const worldId = ulid();
+      const slug = "nt-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        id: worldId,
-        namespace_id: ROOT_NAMESPACE_ID,
-        slug: "nt-world-" + worldId,
+        namespace_id: REGISTRY_NAMESPACE_ID,
+        slug,
         label: "NT World",
         description: null,
         db_hostname: null,
@@ -130,11 +127,11 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(worldId);
+      await testContext.libsql.manager.create(REGISTRY_NAMESPACE_ID, slug);
 
       // Request with N-Triples Accept header
       const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${worldId}/sparql`, {
+        new Request(`http://localhost/worlds/${slug}/sparql`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
@@ -164,15 +161,14 @@ Deno.test("SPARQL API routes", async (t) => {
   await t.step(
     "GET /worlds/:world/sparql - Weighted Content Negotiation",
     async () => {
-      const { id: _namespaceId, apiKey } = await createTestNamespace(
+      const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const worldId = ulid();
+      const slug = "post-sd-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        id: worldId,
-        namespace_id: ROOT_NAMESPACE_ID,
-        slug: "post-sd-world-" + worldId,
+        namespace_id: REGISTRY_NAMESPACE_ID,
+        slug,
         label: "Weighted World",
         description: null,
         db_hostname: null,
@@ -181,11 +177,11 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(worldId);
+      await testContext.libsql.manager.create(REGISTRY_NAMESPACE_ID, slug);
 
       // Request with weighted Accept header: prefer NTriples over Turtle
       const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${worldId}/sparql`, {
+        new Request(`http://localhost/worlds/${slug}/sparql`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${apiKey}`,

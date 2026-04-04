@@ -2,6 +2,7 @@ import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { ErrorResponse, negotiateSerialization } from "@wazoo/worlds-sdk";
 import type { WorldsContentType, WorldsContext } from "@wazoo/worlds-sdk";
+import { getNamespacedEngine } from "#/utils/engine.ts";
 
 /**
  * parseQuery parses the query and dataset parameters from the request.
@@ -40,22 +41,20 @@ async function parseQuery(request: Request) {
  * sparqlRouter creates a router for the SPARQL API.
  */
 export default (appContext: WorldsContext) => {
-  const engine = appContext.engine;
-  if (!engine) {
-    throw new Error("Engine not initialized in context");
-  }
-
   return new Router()
     .get("/worlds/:world/sparql", async (ctx) => {
-      const worldId = ctx.params?.pathname.groups.world;
-      if (!worldId) return ErrorResponse.BadRequest("World ID required");
+      const slug = ctx.params?.pathname.groups.world;
+      if (!slug) return ErrorResponse.BadRequest("World slug required");
 
       const authorized = await authorizeRequest(
         appContext,
         ctx.request,
       );
-      if (!authorized.admin) return ErrorResponse.Unauthorized();
+      if (!authorized.admin && !authorized.namespaceId) {
+        return ErrorResponse.Unauthorized();
+      }
 
+      const engine = getNamespacedEngine(appContext, authorized.namespaceId);
       const { query, defaultGraphUris, namedGraphUris } = await parseQuery(
         ctx.request,
       );
@@ -63,7 +62,7 @@ export default (appContext: WorldsContext) => {
       if (!query) {
         const serialization = negotiateSerialization(ctx.request);
         const description = await engine.getServiceDescription({
-          world: worldId,
+          world: slug,
           endpointUrl: ctx.request.url,
           contentType: serialization.contentType as WorldsContentType,
         });
@@ -74,7 +73,7 @@ export default (appContext: WorldsContext) => {
 
       try {
         const result = await engine.sparql({
-          world: worldId,
+          world: slug,
           query,
           defaultGraphUris,
           namedGraphUris,
@@ -89,15 +88,18 @@ export default (appContext: WorldsContext) => {
       }
     })
     .post("/worlds/:world/sparql", async (ctx) => {
-      const worldId = ctx.params?.pathname.groups.world;
-      if (!worldId) return ErrorResponse.BadRequest("World ID required");
+      const slug = ctx.params?.pathname.groups.world;
+      if (!slug) return ErrorResponse.BadRequest("World slug required");
 
       const authorized = await authorizeRequest(
         appContext,
         ctx.request,
       );
-      if (!authorized.admin) return ErrorResponse.Unauthorized();
+      if (!authorized.admin && !authorized.namespaceId) {
+        return ErrorResponse.Unauthorized();
+      }
 
+      const engine = getNamespacedEngine(appContext, authorized.namespaceId);
       const { query, defaultGraphUris, namedGraphUris } = await parseQuery(
         ctx.request,
       );
@@ -105,7 +107,7 @@ export default (appContext: WorldsContext) => {
 
       try {
         const result = await engine.sparql({
-          world: worldId,
+          world: slug,
           query,
           defaultGraphUris,
           namedGraphUris,

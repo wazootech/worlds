@@ -4,7 +4,7 @@ import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  ROOT_NAMESPACE_ID,
+  REGISTRY_NAMESPACE_ID,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
 import createRoute from "./route.ts";
@@ -19,13 +19,12 @@ Deno.test("World Search API routes", async (t) => {
   const app = createRoute(testContext);
 
   await t.step("GET /worlds/:world/search (Admin)", async () => {
-    const { id: _namespaceId, apiKey } = await createTestNamespace(testContext);
-    const worldId = ulid();
+    const { apiKey } = await createTestNamespace(testContext);
+    const slug = "search-world-" + ulid();
     const now = Date.now();
     await worldsRepository.insert({
-      id: worldId,
-      namespace_id: ROOT_NAMESPACE_ID,
-      slug: "search-world-" + worldId,
+      namespace_id: REGISTRY_NAMESPACE_ID,
+      slug,
       label: "Search World",
       description: "A world for searching",
       db_hostname: null,
@@ -34,10 +33,10 @@ Deno.test("World Search API routes", async (t) => {
       updated_at: now,
       deleted_at: null,
     });
-    await testContext.libsql.manager.create(worldId);
+    await testContext.libsql.manager.create(REGISTRY_NAMESPACE_ID, slug);
 
     const resp = await app.fetch(
-      new Request(`http://localhost/worlds/${worldId}/search?query=test`, {
+      new Request(`http://localhost/worlds/${slug}/search?query=test`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${apiKey}`,

@@ -10,34 +10,31 @@ import {
 } from "@wazoo/worlds-sdk";
 import type { WorldsContentType, WorldsContext } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
+import { getNamespacedEngine } from "#/utils/engine.ts";
 
 /**
  * worldsRouter creates a router for the Worlds API.
  */
 export default (appContext: WorldsContext) => {
-  const engine = appContext.engine;
-  if (!engine) {
-    throw new Error("Engine not initialized in context");
-  }
-
   return new Router()
     .get(
       "/worlds/:world",
       async (ctx) => {
-        const worldId = ctx.params?.pathname.groups.world;
-        if (!worldId) {
-          return ErrorResponse.BadRequest("World ID required");
+        const slug = ctx.params?.pathname.groups.world;
+        if (!slug) {
+          return ErrorResponse.BadRequest("World slug required");
         }
 
         const authorized = await authorizeRequest(
           appContext,
           ctx.request,
         );
-        if (!authorized.admin) {
+        if (!authorized.admin && !authorized.namespaceId) {
           return ErrorResponse.Unauthorized();
         }
 
-        const world = await engine.get({ world: worldId });
+        const engine = getNamespacedEngine(appContext, authorized.namespaceId);
+        const world = await engine.get({ world: slug });
         if (!world) {
           return ErrorResponse.NotFound("World not found");
         }
@@ -48,16 +45,16 @@ export default (appContext: WorldsContext) => {
     .get(
       "/worlds/:world/export",
       async (ctx) => {
-        const worldId = ctx.params?.pathname.groups.world;
-        if (!worldId) {
-          return ErrorResponse.BadRequest("World ID required");
+        const slug = ctx.params?.pathname.groups.world;
+        if (!slug) {
+          return ErrorResponse.BadRequest("World slug required");
         }
 
         const authorized = await authorizeRequest(
           appContext,
           ctx.request,
         );
-        if (!authorized.admin) {
+        if (!authorized.admin && !authorized.namespaceId) {
           return ErrorResponse.Unauthorized();
         }
 
@@ -82,8 +79,12 @@ export default (appContext: WorldsContext) => {
         }
 
         try {
+          const engine = getNamespacedEngine(
+            appContext,
+            authorized.namespaceId,
+          );
           const buffer = await engine.export({
-            world: worldId,
+            world: slug,
             contentType: serialization.contentType,
           });
           return await handleETagRequest(
@@ -102,16 +103,16 @@ export default (appContext: WorldsContext) => {
     .post(
       "/worlds/:world/import",
       async (ctx) => {
-        const worldId = ctx.params?.pathname.groups.world;
-        if (!worldId) {
-          return ErrorResponse.BadRequest("World ID required");
+        const slug = ctx.params?.pathname.groups.world;
+        if (!slug) {
+          return ErrorResponse.BadRequest("World slug required");
         }
 
         const authorized = await authorizeRequest(
           appContext,
           ctx.request,
         );
-        if (!authorized.admin) {
+        if (!authorized.admin && !authorized.namespaceId) {
           return ErrorResponse.Unauthorized();
         }
 
@@ -121,7 +122,11 @@ export default (appContext: WorldsContext) => {
           "application/n-quads";
 
         try {
-          await engine.import({ world: worldId, data: body, contentType });
+          const engine = getNamespacedEngine(
+            appContext,
+            authorized.namespaceId,
+          );
+          await engine.import({ world: slug, data: body, contentType });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.BadRequest(
@@ -137,7 +142,7 @@ export default (appContext: WorldsContext) => {
           appContext,
           ctx.request,
         );
-        if (!authorized.admin) {
+        if (!authorized.admin && !authorized.namespaceId) {
           return ErrorResponse.Unauthorized();
         }
 
@@ -154,6 +159,7 @@ export default (appContext: WorldsContext) => {
         }
 
         const { page, pageSize } = paginationResult.data;
+        const engine = getNamespacedEngine(appContext, authorized.namespaceId);
         const results = await engine.list({ page, pageSize });
 
         return await handleETagRequest(ctx.request, Response.json(results));
@@ -166,8 +172,9 @@ export default (appContext: WorldsContext) => {
           appContext,
           ctx.request,
         );
-        if (!authorized.admin) {
-          return ErrorResponse.Forbidden("Only admins can create worlds");
+        // Only admins or users with a namespace can create worlds (in their namespace)
+        if (!authorized.admin && !authorized.namespaceId) {
+          return ErrorResponse.Forbidden("Forbidden");
         }
 
         const body = await ctx.request.json();
@@ -177,6 +184,10 @@ export default (appContext: WorldsContext) => {
         }
 
         try {
+          const engine = getNamespacedEngine(
+            appContext,
+            authorized.namespaceId,
+          );
           const world = await engine.create(parseResult.data);
           return Response.json(world, { status: STATUS_CODE.Created });
         } catch (error) {
@@ -189,16 +200,16 @@ export default (appContext: WorldsContext) => {
     .put(
       "/worlds/:world",
       async (ctx) => {
-        const worldId = ctx.params?.pathname.groups.world;
-        if (!worldId) {
-          return ErrorResponse.BadRequest("World ID required");
+        const slug = ctx.params?.pathname.groups.world;
+        if (!slug) {
+          return ErrorResponse.BadRequest("World slug required");
         }
 
         const authorized = await authorizeRequest(
           appContext,
           ctx.request,
         );
-        if (!authorized.admin) {
+        if (!authorized.admin && !authorized.namespaceId) {
           return ErrorResponse.Unauthorized();
         }
 
@@ -211,13 +222,17 @@ export default (appContext: WorldsContext) => {
 
         const updateResult = worldsUpdateInputSchema.safeParse({
           ...body as object,
-          world: worldId,
+          world: slug,
         });
         if (!updateResult.success) {
           return ErrorResponse.BadRequest("Invalid parameters");
         }
 
         try {
+          const engine = getNamespacedEngine(
+            appContext,
+            authorized.namespaceId,
+          );
           await engine.update(updateResult.data);
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
@@ -230,21 +245,25 @@ export default (appContext: WorldsContext) => {
     .delete(
       "/worlds/:world",
       async (ctx) => {
-        const worldId = ctx.params?.pathname.groups.world;
-        if (!worldId) {
-          return ErrorResponse.BadRequest("World ID required");
+        const slug = ctx.params?.pathname.groups.world;
+        if (!slug) {
+          return ErrorResponse.BadRequest("World slug required");
         }
 
         const authorized = await authorizeRequest(
           appContext,
           ctx.request,
         );
-        if (!authorized.admin) {
+        if (!authorized.admin && !authorized.namespaceId) {
           return ErrorResponse.Unauthorized();
         }
 
         try {
-          await engine.delete({ world: worldId });
+          const engine = getNamespacedEngine(
+            appContext,
+            authorized.namespaceId,
+          );
+          await engine.delete({ world: slug });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.NotFound(

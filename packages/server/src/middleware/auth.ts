@@ -1,4 +1,4 @@
-import { KernelRepository } from "@wazoo/worlds-sdk";
+import { RegistryRepository } from "@wazoo/worlds-sdk";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
 
 /**
@@ -11,7 +11,7 @@ export interface AuthorizedRequest {
 
 /**
  * authorizeRequest authorizes a request using Bearer token.
- * Validates the token against the Kernel World multitenancy registry.
+ * Validates the token against the Registry World multitenancy registry.
  */
 export async function authorizeRequest(
   appContext: WorldsContext,
@@ -39,9 +39,9 @@ export async function authorizeRequest(
     return { admin: true };
   }
 
-  // Resolve namespace via KernelRepository
-  const kernel = new KernelRepository(engine);
-  const namespaceId = await kernel.resolveNamespace(apiKey);
+  // Resolve namespace via RegistryRepository
+  const registry = new RegistryRepository(engine);
+  const namespaceId = await registry.resolveNamespace(apiKey);
 
   if (namespaceId) {
     return { admin: false, namespaceId };

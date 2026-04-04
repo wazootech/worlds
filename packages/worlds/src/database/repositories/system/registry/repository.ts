@@ -1,16 +1,16 @@
-import { KERNEL, KERNEL_WORLD_ID } from "#/ontology.ts";
+import { REGISTRY, REGISTRY_WORLD_ID } from "#/ontology.ts";
 import type { WorldsInterface } from "#/types.ts";
 import type { SparqlAskResults, SparqlBinding } from "#/schemas/sparql.ts";
 
 /**
- * KernelRepository handles platform-level multitenancy metadata.
- * It queries the reserved Kernel World to resolve API keys and
+ * RegistryRepository handles platform-level multitenancy metadata.
+ * It queries the reserved Registry World to resolve API keys and
  * verify organization ownership.
  */
-export class KernelRepository {
+export class RegistryRepository {
   /**
-   * constructor initializes the KernelRepository with the Kernel World engine.
-   * @param kernel The Kernel World engine instance.
+   * constructor initializes the RegistryRepository with the Registry World engine.
+   * @param worlds The Registry World engine instance.
    */
   constructor(private readonly worlds: WorldsInterface) {}
 
@@ -21,12 +21,12 @@ export class KernelRepository {
    */
   async resolveNamespace(apiKey: string): Promise<string | null> {
     const result = await this.worlds.sparql({
-      world: KERNEL_WORLD_ID,
+      world: REGISTRY_WORLD_ID,
       query: `
         SELECT ?org WHERE {
-          ?key a <${KERNEL.ApiKey}> ;
-               <${KERNEL.hasSecret}> "${apiKey}" ;
-               <${KERNEL.belongsTo}> ?org .
+          ?key a <${REGISTRY.ApiKey}> ;
+               <${REGISTRY.hasSecret}> "${apiKey}" ;
+               <${REGISTRY.belongsTo}> ?org .
         }
         LIMIT 1
       `,
@@ -52,7 +52,7 @@ export class KernelRepository {
 
   /**
    * isWorldAuthorized verifies if a world belongs to a namespace.
-   * @param worldId The world ID to check.
+   * @param worldId The world slug (ID) to check.
    * @param namespaceId The namespace ID to verify against.
    */
   async isWorldAuthorized(
@@ -60,12 +60,12 @@ export class KernelRepository {
     namespaceId: string,
   ): Promise<boolean> {
     const result = await this.worlds.sparql({
-      world: KERNEL_WORLD_ID,
+      world: REGISTRY_WORLD_ID,
       query: `
         ASK {
-          ?world a <${KERNEL.World}> ;
-                 <${KERNEL.belongsTo}> <${namespaceId}> .
-          FILTER(STR(?world) = "${worldId}" || STR(?world) = "${KERNEL.BASE}worlds/${worldId}")
+          ?world a <${REGISTRY.World}> ;
+                 <${REGISTRY.belongsTo}> <${namespaceId}> .
+          FILTER(STR(?world) = "${worldId}" || STR(?world) = "${REGISTRY.BASE}worlds/${worldId}")
         }
       `,
     });

@@ -1,5 +1,4 @@
 import { assertEquals } from "@std/assert";
-import { ulid } from "@std/ulid/ulid";
 
 import { createTestContext, createTestNamespace } from "#/engine-context.ts";
 import { TriplesRepository } from "#/database/repositories/world/triples/mod.ts";
@@ -21,12 +20,11 @@ Deno.test("ChunksSearchRepository", async (t) => {
     });
     testContext.namespaceId = namespaceId;
 
-    const worldId = ulid();
+    const slug = "test-world";
     const now = Date.now();
     await worldsRepository.insert({
-      id: worldId,
       namespace_id: namespaceId,
-      slug: "test-world",
+      slug,
       label: "Test World",
       description: "Test Description",
       db_hostname: null,
@@ -35,15 +33,18 @@ Deno.test("ChunksSearchRepository", async (t) => {
       updated_at: now,
       deleted_at: null,
     });
-    await testContext.libsql.manager.create(worldId);
+    await testContext.libsql.manager.create(namespaceId, slug);
 
-    const worldManaged = await testContext.libsql.manager.get(worldId);
+    const worldManaged = await testContext.libsql.manager.get(
+      namespaceId,
+      slug,
+    );
     const triplesRepository = new TriplesRepository(worldManaged.database);
 
     await t.step("search with no results", async () => {
       const results = await chunksSearchRepository.search({
         query: "nonexistent",
-        worldId,
+        worldSlug: slug,
       });
       assertEquals(results.length, 0);
     });
@@ -70,7 +71,7 @@ Deno.test("ChunksSearchRepository", async (t) => {
 
       const results = await chunksSearchRepository.search({
         query: "apples",
-        worldId,
+        worldSlug: slug,
       });
 
       assertEquals(results.length, 1);

@@ -97,7 +97,6 @@ export class WorldsCli {
     }
     await this.worlds.update({
       world,
-      slug: parsed.slug,
       label: parsed.label,
       description: parsed.description,
     });

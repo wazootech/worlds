@@ -4,7 +4,7 @@ import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  ROOT_NAMESPACE_ID,
+  REGISTRY_NAMESPACE_ID,
   type WorldsContext,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
@@ -22,15 +22,14 @@ Deno.test("Worlds API routes", async (t) => {
   await t.step(
     "GET /worlds/:world returns world metadata (Admin)",
     async () => {
-      const { id: _namespaceId, apiKey } = await createTestNamespace(
+      const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const worldId = ulid();
+      const slug = "test-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        id: worldId,
-        namespace_id: ROOT_NAMESPACE_ID,
-        slug: "test-world-" + worldId,
+        namespace_id: REGISTRY_NAMESPACE_ID,
+        slug,
         label: "Test World",
         description: "Test Description",
         db_hostname: null,
@@ -39,10 +38,10 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(worldId);
+      await testContext.libsql.manager.create(REGISTRY_NAMESPACE_ID, slug);
 
       const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${worldId}`, {
+        new Request(`http://localhost/worlds/${slug}`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
@@ -53,6 +52,7 @@ Deno.test("Worlds API routes", async (t) => {
       assertEquals(resp.status, 200);
       const world = await resp.json();
       assertEquals(world.label, "Test World");
+      assertEquals(world.id, slug);
     },
   );
 
@@ -77,20 +77,20 @@ Deno.test("Worlds API routes", async (t) => {
 
     const world = await res.json();
     assertEquals(world.label, "New World");
+    assertEquals(world.id, slug);
   });
 
   await t.step(
     "GET /worlds/:world/export - Content Negotiation (Turtle)",
     async () => {
-      const { id: _namespaceId, apiKey } = await createTestNamespace(
+      const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const worldId = ulid();
+      const slug = "export-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        id: worldId,
-        namespace_id: ROOT_NAMESPACE_ID,
-        slug: "export-world-" + worldId,
+        namespace_id: REGISTRY_NAMESPACE_ID,
+        slug,
         label: "Export World",
         description: null,
         db_hostname: null,
@@ -99,11 +99,11 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(worldId);
+      await testContext.libsql.manager.create(REGISTRY_NAMESPACE_ID, slug);
 
       // Request with Turtle Accept header
       const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${worldId}/export`, {
+        new Request(`http://localhost/worlds/${slug}/export`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
@@ -126,15 +126,14 @@ Deno.test("Worlds API routes", async (t) => {
 
       unprotectedContext.apiKey = undefined;
       const unprotectedApp = createRoute(unprotectedContext);
-      const worldId = ulid();
+      const slug = "unprotected-world-" + ulid();
       const now = Date.now();
       const unprotectedWorldsRepository = new WorldsRepository(
         unprotectedContext.libsql.database,
       );
       await unprotectedWorldsRepository.insert({
-        id: worldId,
-        namespace_id: ROOT_NAMESPACE_ID,
-        slug: "unprotected-world-" + worldId,
+        namespace_id: REGISTRY_NAMESPACE_ID,
+        slug,
         label: "Unprotected World",
         description: null,
         db_hostname: null,
@@ -143,10 +142,13 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await unprotectedContext.libsql.manager.create(worldId);
+      await unprotectedContext.libsql.manager.create(
+        REGISTRY_NAMESPACE_ID,
+        slug,
+      );
 
       const resp = await unprotectedApp.fetch(
-        new Request(`http://localhost/worlds/${worldId}`, {
+        new Request(`http://localhost/worlds/${slug}`, {
           method: "GET",
         }),
       );
@@ -154,6 +156,7 @@ Deno.test("Worlds API routes", async (t) => {
       assertEquals(resp.status, 200);
       const world = await resp.json();
       assertEquals(world.label, "Unprotected World");
+      assertEquals(world.id, slug);
     },
   );
 });

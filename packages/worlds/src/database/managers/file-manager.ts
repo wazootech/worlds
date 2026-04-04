@@ -3,7 +3,6 @@ import type { Client } from "@libsql/client";
 import { createClient } from "@libsql/client";
 import type { DatabaseManager, ManagedDatabase } from "#/database/manager.ts";
 import { WorldsRepository } from "#/database/repositories/system/worlds/mod.ts";
-
 import { initializeWorldDatabase } from "#/database/init.ts";
 
 /**
@@ -26,39 +25,63 @@ export class FileDatabaseManager implements DatabaseManager {
   ) {}
 
   /**
-   * create provisions a new file-based database.
-   * @param id The ID of the database to create.
-   * @returns A managed database connection.
+   * getStorageKey generates a filesystem-safe identifier for a world.
    */
-  public async create(id: string): Promise<ManagedDatabase> {
-    const path = join(this.baseDir, `${id}.db`);
-    await Deno.mkdir(this.baseDir, { recursive: true });
-    return this.getManagedDatabase(id, `file:${path}`);
+  private async getStorageKey(
+    namespaceId: string,
+    slug: string,
+  ): Promise<string> {
+    const raw = `${namespaceId}:${slug}`;
+    const encoder = new TextEncoder();
+    const data = encoder.encode(raw);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
-  public async get(id: string): Promise<ManagedDatabase> {
+  /**
+   * create provisions a new file-based database.
+   */
+  public async create(
+    namespaceId: string,
+    slug: string,
+  ): Promise<ManagedDatabase> {
+    const key = await this.getStorageKey(namespaceId, slug);
+    const path = join(this.baseDir, `${key}.db`);
+    await Deno.mkdir(this.baseDir, { recursive: true });
+    return this.getManagedDatabase(key, `file:${path}`);
+  }
+
+  /**
+   * get retrieves an existing file-based database.
+   */
+  public async get(
+    namespaceId: string,
+    slug: string,
+  ): Promise<ManagedDatabase> {
+    const key = await this.getStorageKey(namespaceId, slug);
     const worldsRepository = new WorldsRepository(this.database);
-    const world = await worldsRepository.getByIdInternal(id);
+    const world = await worldsRepository.get(slug, namespaceId);
     let url = world?.db_hostname;
 
     if (!url) {
-      const path = join(this.baseDir, `${id}.db`);
+      const path = join(this.baseDir, `${key}.db`);
       url = `file:${path}`;
     }
 
-    return this.getManagedDatabase(id, url);
+    return this.getManagedDatabase(key, url);
   }
 
   private async getManagedDatabase(
-    id: string,
+    key: string,
     url: string,
   ): Promise<ManagedDatabase> {
-    const client = this.trackedDatabases.get(id) ?? createClient({ url });
-    this.trackedDatabases.set(id, client);
+    const client = this.trackedDatabases.get(key) ?? createClient({ url });
+    this.trackedDatabases.set(key, client);
 
-    if (!this.initialized.has(id)) {
+    if (!this.initialized.has(key)) {
       await initializeWorldDatabase(client, this.dimensions);
-      this.initialized.add(id);
+      this.initialized.add(key);
     }
 
     return {
@@ -67,8 +90,9 @@ export class FileDatabaseManager implements DatabaseManager {
     };
   }
 
-  public async delete(id: string): Promise<void> {
-    const path = join(this.baseDir, `${id}.db`);
+  public async delete(namespaceId: string, slug: string): Promise<void> {
+    const key = await this.getStorageKey(namespaceId, slug);
+    const path = join(this.baseDir, `${key}.db`);
     try {
       await Deno.remove(path);
       // Also try to remove -wal and -shm files if they exist
