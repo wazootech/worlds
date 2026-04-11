@@ -146,6 +146,7 @@ export async function sparqlBlob(
 // deno-lint-ignore no-explicit-any
 async function handleBindings(queryType: any): Promise<WorldsSparqlOutput> {
   const bindingsStream = await queryType.execute();
+  // deno-lint-ignore no-explicit-any
   const vars = (await queryType.metadata()).variables.map((v: any) => v.value);
   const bindings = await new Promise<SparqlBinding[]>((resolve, reject) => {
     const b: SparqlBinding[] = [];
@@ -182,7 +183,6 @@ async function handleBindings(queryType: any): Promise<WorldsSparqlOutput> {
     const cleanup = () => {
       bindingsStream.off("data", onData);
       bindingsStream.off("end", onEnd);
-      // deno-lint-ignore no-explicit-any
       bindingsStream.off("error", onError);
     };
 
@@ -251,7 +251,6 @@ async function handleQuads(queryType: any): Promise<WorldsSparqlOutput> {
     const cleanup = () => {
       quadsStream.off("data", onData);
       quadsStream.off("end", onEnd);
-      // deno-lint-ignore no-explicit-any
       quadsStream.off("error", onError);
     };
 
