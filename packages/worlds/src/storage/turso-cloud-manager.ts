@@ -1,7 +1,7 @@
 import type { createClient as createTursoClient } from "@tursodatabase/api";
 import type { Client } from "@libsql/client";
 import { createClient } from "@libsql/client";
-import type { DatabaseManager, ManagedDatabase } from "#/storage/manager.ts";
+import type { DatabaseManager, ManagedDatabase, WorldOptions } from "#/storage/manager.ts";
 import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
 
@@ -29,11 +29,8 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
   /**
    * getStorageKey generates a Turso-safe identifier for a world.
    */
-  private async getStorageKey(
-    namespaceId: string,
-    slug: string,
-  ): Promise<string> {
-    const raw = `${namespaceId}:${slug}`;
+  private async getStorageKey(options: WorldOptions): Promise<string> {
+    const raw = `${options.namespace ?? ""}:${options.slug}`;
     const encoder = new TextEncoder();
     const data = encoder.encode(raw);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
@@ -46,11 +43,8 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
   /**
    * create provisions a new Turso database.
    */
-  public async create(
-    namespaceId: string,
-    slug: string,
-  ): Promise<ManagedDatabase> {
-    const key = await this.getStorageKey(namespaceId, slug);
+  public async create(options: WorldOptions): Promise<ManagedDatabase> {
+    const key = await this.getStorageKey(options);
     const database = await this.client.databases.create(key);
     const token = await this.client.databases.createToken(key);
     return this.getManagedDatabase(key, database.hostname, token.jwt);
@@ -59,13 +53,10 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
   /**
    * get retrieves an existing Turso database connection.
    */
-  public async get(
-    namespaceId: string,
-    slug: string,
-  ): Promise<ManagedDatabase> {
-    const key = await this.getStorageKey(namespaceId, slug);
+  public async get(options: WorldOptions): Promise<ManagedDatabase> {
+    const key = await this.getStorageKey(options);
     const worldsRepository = new WorldsRepository(this.database);
-    const world = await worldsRepository.get(slug, namespaceId);
+    const world = await worldsRepository.get(options.slug, options.namespace);
 
     let url = "";
     let authToken = "";
@@ -106,8 +97,8 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
     };
   }
 
-  public async delete(namespaceId: string, slug: string): Promise<void> {
-    const key = await this.getStorageKey(namespaceId, slug);
+  public async delete(options: WorldOptions): Promise<void> {
+    const key = await this.getStorageKey(options);
     await this.client.databases.delete(key);
   }
 

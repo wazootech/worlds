@@ -1,5 +1,5 @@
 import { type Client, createClient } from "@libsql/client";
-import type { DatabaseManager, ManagedDatabase } from "#/storage/manager.ts";
+import type { DatabaseManager, ManagedDatabase, WorldOptions } from "#/storage/manager.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
 
 /**
@@ -19,32 +19,25 @@ export class MemoryDatabaseManager implements DatabaseManager {
   /**
    * create provisions a new in-memory database.
    */
-  public async create(
-    namespaceId: string,
-    slug: string,
-  ): Promise<ManagedDatabase> {
-    return await this.getManagedDatabase(namespaceId, slug, ":memory:");
+  public async create(options: WorldOptions): Promise<ManagedDatabase> {
+    return await this.getManagedDatabase(options, ":memory:");
   }
 
   /**
    * get returns the LibSQL database for the given namespace and slug.
    */
-  public async get(
-    namespaceId: string,
-    slug: string,
-  ): Promise<ManagedDatabase> {
-    return await this.getManagedDatabase(namespaceId, slug, ":memory:");
+  public async get(options: WorldOptions): Promise<ManagedDatabase> {
+    return await this.getManagedDatabase(options, ":memory:");
   }
 
   /**
    * getManagedDatabase retrieves or creates a managed database connection.
    */
   private async getManagedDatabase(
-    namespaceId: string,
-    slug: string,
+    options: WorldOptions,
     url: string,
   ): Promise<ManagedDatabase> {
-    const key = `${namespaceId}:${slug}`;
+    const key = `${options.namespace ?? ""}:${options.slug}`;
     const client = this.databases.get(key) ?? createClient({ url });
     this.databases.set(key, client);
 
@@ -62,8 +55,8 @@ export class MemoryDatabaseManager implements DatabaseManager {
     };
   }
 
-  public delete(namespaceId: string, slug: string): Promise<void> {
-    const key = `${namespaceId}:${slug}`;
+  public delete(options: WorldOptions): Promise<void> {
+    const key = `${options.namespace ?? ""}:${options.slug}`;
     this.databases.delete(key);
     this.initialized.delete(key);
     return Promise.resolve();

@@ -73,20 +73,25 @@ export class WorldsRepository {
 
   /**
    * list retrieves a paginated list of worlds for a specific namespace.
-   * @param namespace The namespace ID.
+   * @param namespace The namespace ID (optional - if not provided, lists all worlds).
    * @param limit The maximum number of worlds to return.
    * @param offset The number of worlds to skip.
    * @returns An array of world rows.
    */
   async list(
-    namespace: string,
+    namespace: string | undefined,
     limit: number,
     offset: number,
   ): Promise<WorldRow[]> {
-    const result = await this.db.execute({
-      sql: selectAllWorlds,
-      args: [namespace, limit, offset],
-    });
+    const result = namespace
+      ? await this.db.execute({
+          sql: selectAllWorlds,
+          args: [namespace, limit, offset],
+        })
+      : await this.db.execute({
+          sql: `SELECT * FROM worlds ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+          args: [limit, offset],
+        });
     return (result.rows as Record<string, unknown>[]).map((row) => ({
       namespace_id: row.namespace_id as string,
       slug: row.slug as string,

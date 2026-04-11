@@ -21,23 +21,38 @@ export interface ManagedDatabase {
 }
 
 /**
+ * WorldOptions contains options for world database operations.
+ */
+export interface WorldOptions {
+  /**
+   * slug is the world identifier.
+   */
+  slug: string;
+
+  /**
+   * namespace is the optional namespace (uses internal lookup if not provided).
+   */
+  namespace?: string;
+}
+
+/**
  * DatabaseManager manages LibSQL databases.
  */
 export interface DatabaseManager {
   /**
    * create creates a new LibSQL database and returns its client and info.
    */
-  create(namespaceId: string, slug: string): Promise<ManagedDatabase>;
+  create(options: WorldOptions): Promise<ManagedDatabase>;
 
   /**
    * get returns the LibSQL database for the given namespace and slug.
    */
-  get(namespaceId: string, slug: string): Promise<ManagedDatabase>;
+  get(options: WorldOptions): Promise<ManagedDatabase>;
 
   /**
    * delete deletes the LibSQL database for the given namespace and slug.
    */
-  delete(namespaceId: string, slug: string): Promise<void>;
+  delete(options: WorldOptions): Promise<void>;
 
   /**
    * close shuts down all managed database connections.
