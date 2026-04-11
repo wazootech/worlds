@@ -15,6 +15,7 @@ import {
 import { worldSchema, worldsSparqlOutputSchema } from "#/schemas/mod.ts";
 import type { WorldsInterface } from "#/core/types.ts";
 import type { Patch } from "#/rdf/patch/mod.ts";
+import type { WorldOptions } from "#/storage/manager.ts";
 import type { WorldsContext } from "#/core/types.ts";
 import {
   WORLDS,
@@ -54,17 +55,14 @@ export class LocalWorlds implements WorldsInterface {
   }
 
   private async getStore(
-    namespace: string,
-    slug: string,
+    options: WorldOptions,
   ): Promise<Store> {
-    const cacheKey = `${namespace}:${slug}`;
+    const { slug, namespace } = options;
+    const cacheKey = `${namespace ?? "default"}:${slug}`;
     let store = this.storeCache.get(cacheKey);
 
     if (!store) {
-const managed = await this.appContext.libsql.manager.get({
-        namespace,
-        slug,
-      });
+      const managed = await this.appContext.libsql.manager.get(options);
       store = await loadStore(managed.database);
       this.storeCache.set(cacheKey, store);
     }
@@ -72,8 +70,9 @@ const managed = await this.appContext.libsql.manager.get({
     return store;
   }
 
-  private invalidateStore(namespace: string, slug: string): void {
-    const cacheKey = `${namespace}:${slug}`;
+  private invalidateStore(options: WorldOptions): void {
+    const { slug, namespace } = options;
+    const cacheKey = `${namespace ?? "default"}:${slug}`;
     this.storeCache.delete(cacheKey);
   }
 
@@ -111,7 +110,7 @@ const managed = await this.appContext.libsql.manager.get({
     const now = Date.now();
     try {
       await this.worldsRepository.insert({
-        namespace_id: undefined as string | undefined,
+        namespace_id: "",
         slug: WORLDS_WORLD_ID,
         label: "Registry",
         description: "Worlds platform registry and control plane.",
@@ -128,7 +127,6 @@ const managed = await this.appContext.libsql.manager.get({
     } catch (error) {
       const checkAgain = await this.worldsRepository.get(
         WORLDS_WORLD_ID,
-        undefined as string | undefined,
       );
       if (!checkAgain) {
         throw error;
@@ -136,7 +134,7 @@ const managed = await this.appContext.libsql.manager.get({
     }
 
     if (this.appContext.apiKey) {
-      const namespace = undefined ?? undefined as string | undefined;
+      const namespace = undefined;
       const keyId = `${WORLDS.BASE}keys/bootstrap`;
 
       await this._sparql({
@@ -171,8 +169,7 @@ const managed = await this.appContext.libsql.manager.get({
       offset = (input.page - 1) * input.pageSize;
     }
 
-    const namespace = undefined ?? undefined as string | undefined;
-    const rows = await this.worldsRepository.list(namespace, limit, offset);
+    const rows = await this.worldsRepository.list(undefined, limit, offset);
     return rows.map((world) =>
       worldSchema.parse({
         id: world.slug,
@@ -288,7 +285,7 @@ const managed = await this.appContext.libsql.manager.get({
       throw new Error("World not found");
     }
 
-    this.invalidateStore(namespace ?? "", input.slug);
+    this.invalidateStore({ slug: input.slug, namespace });
     await this.worldsRepository.update(input.slug, namespace, {
       deleted_at: Date.now(),
     });
@@ -307,22 +304,17 @@ const managed = await this.appContext.libsql.manager.get({
    */
   private async _sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
     const { world: slug, query } = input;
-    const namespace = slug === WORLDS_WORLD_ID
-      ? undefined as string | undefined
-      : (undefined ?? undefined as string | undefined);
+    const namespace = slug === WORLDS_WORLD_ID ? undefined : undefined;
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error(`World not found: ${slug} in namespace ${namespace}`);
     }
 
-    const managed = await this.appContext.libsql.manager.get({
-      namespace,
-      slug,
-    });
+    const managed = await this.appContext.libsql.manager.get({ namespace, slug });
     const patchHandler = new TriplesPatchHandler(managed.database);
     const batchHandler = new BatchPatchHandler(patchHandler);
 
-    const store = await this.getStore(namespace, slug);
+    const store = await this.getStore({ slug, namespace });
     const { result } = await sparql(store, query, batchHandler);
 
     const isUpdate = await isSparqlUpdate(query);
@@ -339,7 +331,7 @@ const managed = await this.appContext.libsql.manager.get({
         }],
       );
 
-      this.invalidateStore(namespace, slug);
+      this.invalidateStore({ slug, namespace });
 
       await this.worldsRepository.update(slug, namespace, {
         updated_at: Date.now(),
@@ -357,9 +349,7 @@ const managed = await this.appContext.libsql.manager.get({
   async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
     await this.ensureInitialized();
     const { world: slug, query, limit, subjects, predicates, types } = input;
-    const namespace = slug === WORLDS_WORLD_ID
-      ? undefined as string | undefined
-      : (undefined ?? undefined as string | undefined);
+    const namespace = slug === WORLDS_WORLD_ID ? undefined : undefined;
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error("World not found");
@@ -384,9 +374,7 @@ const managed = await this.appContext.libsql.manager.get({
   async import(input: WorldsImportInput): Promise<void> {
     await this.registryWorldInitialized;
     const { world: slug, data, contentType } = input;
-    const namespace = slug === WORLDS_WORLD_ID
-      ? undefined as string | undefined
-      : (undefined ?? undefined as string | undefined);
+    const namespace = slug === WORLDS_WORLD_ID ? undefined : undefined;
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error("World not found");
@@ -421,7 +409,7 @@ const managed = await this.appContext.libsql.manager.get({
       }],
     );
 
-    this.invalidateStore(namespace, slug);
+    this.invalidateStore({ slug, namespace });
     await this.worldsRepository.update(slug, namespace, {
       updated_at: now,
     });
@@ -433,9 +421,7 @@ const managed = await this.appContext.libsql.manager.get({
   async export(input: WorldsExportInput): Promise<ArrayBuffer> {
     await this.ensureInitialized();
     const { world: slug, contentType } = input;
-    const namespace = slug === WORLDS_WORLD_ID
-      ? undefined as string | undefined
-      : (undefined ?? undefined as string | undefined);
+    const namespace = slug === WORLDS_WORLD_ID ? undefined : undefined;
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error(`World not found: ${slug} in namespace ${namespace}`);
@@ -448,7 +434,7 @@ const managed = await this.appContext.libsql.manager.get({
       throw new Error(`Unsupported content type: ${contentType}`);
     }
 
-    const store = await this.getStore(namespace, slug);
+    const store = await this.getStore({ slug, namespace });
     const quads = store.getQuads(null, null, null, null);
 
     if (serialization.format === DEFAULT_SERIALIZATION.format) {
