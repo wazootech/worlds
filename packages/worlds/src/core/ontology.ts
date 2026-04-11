@@ -5,33 +5,36 @@
  */
 export const WORLDS = {
   /**
-   * NAMESPACE is the base URI for the registry ontology.
+   * NAMESPACE is the base URI for the worlds ontology.
    */
-  NAMESPACE: "https://schema.wazoo.dev/registry#",
+  NAMESPACE: "https://schema.wazoo.dev/worlds#",
 
   /**
-   * BASE is the base URI for registry entities.
+   * BASE is the base URI for worlds entities.
    */
-  BASE: "https://wazoo.dev/registry/",
+  BASE: "https://wazoo.dev/worlds/",
 
   /**
    * Classes
    */
-  Namespace: "https://schema.wazoo.dev/registry#Namespace",
-  User: "https://schema.wazoo.dev/registry#User",
-  ApiKey: "https://schema.wazoo.dev/registry#ApiKey",
-  World: "https://schema.wazoo.dev/registry#World",
+  Namespace: "https://schema.wazoo.dev/worlds#Namespace",
+  User: "https://schema.wazoo.dev/worlds#User",
+  ApiKey: "https://schema.wazoo.dev/worlds#ApiKey",
+  World: "https://schema.wazoo.dev/worlds#World",
+  Chunk: "https://schema.wazoo.dev/worlds#Chunk",
 
   /**
    * Properties
    */
-  belongsTo: "https://schema.wazoo.dev/registry#belongsTo", // (World/ApiKey) -> Namespace
-  hasMember: "https://schema.wazoo.dev/registry#hasMember", // Namespace -> User
-  hasSecret: "https://schema.wazoo.dev/registry#hasSecret", // ApiKey -> String
-  hasSlug: "https://schema.wazoo.dev/registry#hasSlug", // World -> String
-  hasLabel: "https://schema.wazoo.dev/registry#hasLabel", // Any -> String
-  hasDescription: "https://schema.wazoo.dev/registry#hasDescription", // Any -> String
-  createdAt: "https://schema.wazoo.dev/registry#createdAt", // Any -> Number (timestamp)
+  belongsTo: "https://schema.wazoo.dev/worlds#belongsTo", // (World/ApiKey/Chunk) -> Namespace
+  hasMember: "https://schema.wazoo.dev/worlds#hasMember", // Namespace -> User
+  hasSecret: "https://schema.wazoo.dev/worlds#hasSecret", // ApiKey -> String
+  hasSlug: "https://schema.wazoo.dev/worlds#hasSlug", // World -> String
+  hasLabel: "https://schema.wazoo.dev/worlds#hasLabel", // Any -> String
+  hasDescription: "https://schema.wazoo.dev/worlds#hasDescription", // Any -> String
+  hasContent: "https://schema.wazoo.dev/worlds#hasContent", // Chunk -> String
+  hasEmbedding: "https://schema.wazoo.dev/worlds#hasEmbedding", // Chunk -> String (vector as JSON)
+  createdAt: "https://schema.wazoo.dev/worlds#createdAt", // Any -> Number (timestamp)
 } as const;
 
 /**
