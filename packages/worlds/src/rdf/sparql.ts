@@ -171,6 +171,7 @@ async function handleBindings(queryType: any): Promise<WorldsSparqlOutput> {
       resolve(b);
     };
 
+    // deno-lint-ignore no-explicit-any
     const onError = (err: any) => {
       if (finished) return;
       finished = true;
@@ -181,6 +182,7 @@ async function handleBindings(queryType: any): Promise<WorldsSparqlOutput> {
     const cleanup = () => {
       bindingsStream.off("data", onData);
       bindingsStream.off("end", onEnd);
+      // deno-lint-ignore no-explicit-any
       bindingsStream.off("error", onError);
     };
 
@@ -238,6 +240,7 @@ async function handleQuads(queryType: any): Promise<WorldsSparqlOutput> {
       resolve(q);
     };
 
+    // deno-lint-ignore no-explicit-any
     const onError = (err: any) => {
       if (finished) return;
       finished = true;
@@ -248,6 +251,7 @@ async function handleQuads(queryType: any): Promise<WorldsSparqlOutput> {
     const cleanup = () => {
       quadsStream.off("data", onData);
       quadsStream.off("end", onEnd);
+      // deno-lint-ignore no-explicit-any
       quadsStream.off("error", onError);
     };
 
