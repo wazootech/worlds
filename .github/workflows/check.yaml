@@ -8,7 +8,7 @@ name: Check
       - main
 jobs:
   check:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Configure Git (LF-friendly checkout)
         run: git config --global core.autocrlf false
