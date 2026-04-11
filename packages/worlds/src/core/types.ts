@@ -75,6 +75,11 @@ export interface WorldsContext {
   };
 
   /**
+   * namespace is the default namespace for this context.
+   */
+  namespace?: string;
+
+  /**
    * engine is the core Worlds engine for this context.
    */
   engine?: WorldsInterface;
@@ -155,4 +160,3 @@ export interface WorldsInterface {
    */
   [Symbol.asyncDispose](): Promise<void>;
 }
-

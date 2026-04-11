@@ -4,7 +4,7 @@ import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  WORLDS_NAMESPACE_ID,
+  WORLDS_WORLD_NAMESPACE,
   type WorldsContext,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
@@ -28,7 +28,7 @@ Deno.test("Worlds API routes", async (t) => {
       const slug = "test-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: WORLDS_NAMESPACE_ID,
+        namespace_id: WORLDS_WORLD_NAMESPACE,
         slug,
         label: "Test World",
         description: "Test Description",
@@ -38,7 +38,7 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(WORLDS_NAMESPACE_ID, slug);
+      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
 
       const resp = await app.fetch(
         new Request(`http://localhost/worlds/${slug}`, {
@@ -52,7 +52,7 @@ Deno.test("Worlds API routes", async (t) => {
       assertEquals(resp.status, 200);
       const world = await resp.json();
       assertEquals(world.label, "Test World");
-      assertEquals(world.id, slug);
+      assertEquals(world.slug, slug);
     },
   );
 
@@ -77,7 +77,7 @@ Deno.test("Worlds API routes", async (t) => {
 
     const world = await res.json();
     assertEquals(world.label, "New World");
-    assertEquals(world.id, slug);
+    assertEquals(world.slug, slug);
   });
 
   await t.step(
@@ -89,7 +89,7 @@ Deno.test("Worlds API routes", async (t) => {
       const slug = "export-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: WORLDS_NAMESPACE_ID,
+        namespace_id: WORLDS_WORLD_NAMESPACE,
         slug,
         label: "Export World",
         description: null,
@@ -99,7 +99,7 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(WORLDS_NAMESPACE_ID, slug);
+      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
 
       // Request with Turtle Accept header
       const resp = await app.fetch(
@@ -132,7 +132,7 @@ Deno.test("Worlds API routes", async (t) => {
         unprotectedContext.libsql.database,
       );
       await unprotectedWorldsRepository.insert({
-        namespace_id: WORLDS_NAMESPACE_ID,
+        namespace_id: WORLDS_WORLD_NAMESPACE,
         slug,
         label: "Unprotected World",
         description: null,
@@ -142,10 +142,10 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await unprotectedContext.libsql.manager.create(
-        WORLDS_NAMESPACE_ID,
+      await unprotectedContext.libsql.manager.create({
+        namespace: WORLDS_WORLD_NAMESPACE,
         slug,
-      );
+      });
 
       const resp = await unprotectedApp.fetch(
         new Request(`http://localhost/worlds/${slug}`, {
@@ -156,7 +156,7 @@ Deno.test("Worlds API routes", async (t) => {
       assertEquals(resp.status, 200);
       const world = await resp.json();
       assertEquals(world.label, "Unprotected World");
-      assertEquals(world.id, slug);
+      assertEquals(world.slug, slug);
     },
   );
 });

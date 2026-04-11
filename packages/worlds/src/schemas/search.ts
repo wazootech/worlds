@@ -60,9 +60,9 @@ export const worldsSearchOutputSchema: z.ZodType<WorldsSearchOutput> = z.object(
  */
 export interface WorldsSearchInput {
   /**
-   * world is the ID or slug of the target world.
+   * slug is the slug of the target world.
    */
-  world: string;
+  slug: string;
 
   /**
    * query is the search query string.
@@ -94,7 +94,7 @@ export interface WorldsSearchInput {
  * worldsSearchInputSchema is the Zod schema for WorldsSearchInput.
  */
 export const worldsSearchInputSchema: z.ZodType<WorldsSearchInput> = z.object({
-  world: z.string().describe("The ID or slug of the target world."),
+  slug: z.string().describe("The slug of the target world."),
   query: z.string().describe("The search query string."),
   limit: z.number().int().positive().optional().describe(
     "Maximum number of results to return.",

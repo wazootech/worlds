@@ -20,7 +20,7 @@ import type { WorldsContext } from "#/core/types.ts";
 import {
   DEFAULT_NAMESPACE,
   WORLDS,
-  WORLDS_WORLD_ID,
+  WORLDS_WORLD_SLUG,
 } from "#/core/ontology.ts";
 import type {
   World,
@@ -100,7 +100,7 @@ export class LocalWorlds implements WorldsInterface {
    * ensureRegistryWorld guarantees the presence of the registry world and seeds it if necessary.
    */
   private async ensureRegistryWorld(): Promise<void> {
-    const existing = await this.worldsRepository.get(WORLDS_WORLD_ID, undefined);
+    const existing = await this.worldsRepository.get(WORLDS_WORLD_SLUG, undefined);
     if (existing) {
       return;
     }
@@ -109,7 +109,7 @@ export class LocalWorlds implements WorldsInterface {
     try {
       await this.worldsRepository.insert({
         namespace_id: DEFAULT_NAMESPACE,
-        slug: WORLDS_WORLD_ID,
+        slug: WORLDS_WORLD_SLUG,
         label: "Registry",
         description: "Worlds platform registry and control plane.",
         db_hostname: null,
@@ -120,11 +120,11 @@ export class LocalWorlds implements WorldsInterface {
       });
 
       await this.appContext.libsql.manager.create({
-        slug: WORLDS_WORLD_ID,
+        slug: WORLDS_WORLD_SLUG,
       });
     } catch (error) {
       const checkAgain = await this.worldsRepository.get(
-        WORLDS_WORLD_ID,
+        WORLDS_WORLD_SLUG,
       );
       if (!checkAgain) {
         throw error;
@@ -132,11 +132,11 @@ export class LocalWorlds implements WorldsInterface {
     }
 
     if (this.appContext.apiKey) {
-      const namespace = undefined;
+      const namespace = `${WORLDS.BASE}namespaces/default`;
       const keyId = `${WORLDS.BASE}keys/bootstrap`;
 
       await this._sparql({
-        world: WORLDS_WORLD_ID,
+        slug: WORLDS_WORLD_SLUG,
         query: `
           PREFIX registry: <${WORLDS.NAMESPACE}>
           INSERT DATA {
@@ -167,16 +167,22 @@ export class LocalWorlds implements WorldsInterface {
       offset = (input.page - 1) * input.pageSize;
     }
 
-    const rows = await this.worldsRepository.list(undefined, limit, offset);
-    return rows.map((world) =>
+    const rows = await this.worldsRepository.list(
+      this.appContext.namespace,
+      limit,
+      offset,
+    );
+    return rows
+      .filter((w) => w.slug !== WORLDS_WORLD_SLUG || this.appContext.namespace !== undefined)
+      .map((world) =>
       worldSchema.parse({
-        id: world.slug,
         slug: world.slug,
-        label: world.label,
-        description: world.description,
+        namespace: world.namespace_id,
+        label: world.label ?? undefined,
+        description: world.description ?? undefined,
         createdAt: world.created_at,
         updatedAt: world.updated_at,
-        deletedAt: world.deleted_at,
+        deletedAt: world.deleted_at ?? undefined,
       })
     );
   }
@@ -186,22 +192,22 @@ export class LocalWorlds implements WorldsInterface {
    */
   async get(input: WorldsGetInput): Promise<World | null> {
     await this.ensureInitialized();
-    const namespace = input.slug === WORLDS_WORLD_ID
+    const namespace = input.slug === WORLDS_WORLD_SLUG
       ? undefined
-      : undefined;
+      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
     const world = await this.worldsRepository.get(input.slug, namespace);
     if (!world || world.deleted_at !== null) {
       return null;
     }
 
     return worldSchema.parse({
-      id: world.slug,
       slug: world.slug,
-      label: world.label,
-      description: world.description,
+      namespace: world.namespace_id,
+      label: world.label ?? undefined,
+      description: world.description ?? undefined,
       createdAt: world.created_at,
       updatedAt: world.updated_at,
-      deletedAt: world.deleted_at,
+      deletedAt: world.deleted_at ?? undefined,
     });
   }
 
@@ -212,7 +218,7 @@ export class LocalWorlds implements WorldsInterface {
     await this.ensureInitialized();
     const { slug, namespace: inputNamespace, label, description } = data;
 
-    const namespace = inputNamespace ?? undefined;
+    const namespace = inputNamespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE;
     const existingBySlug = await this.worldsRepository.get(
       slug,
       namespace,
@@ -239,13 +245,13 @@ export class LocalWorlds implements WorldsInterface {
     await this.appContext.libsql.manager.create({ slug, namespace });
 
     return worldSchema.parse({
-      world: slug,
+      slug,
       namespace,
       label: worldRow.label,
-      description: worldRow.description,
+      description: worldRow.description ?? undefined,
       createdAt: worldRow.created_at,
       updatedAt: worldRow.updated_at,
-      deletedAt: worldRow.deleted_at,
+      deletedAt: worldRow.deleted_at ?? undefined,
     });
   }
 
@@ -255,7 +261,7 @@ export class LocalWorlds implements WorldsInterface {
   async update(input: WorldsUpdateInput): Promise<void> {
     await this.ensureInitialized();
     const { slug, namespace: inputNamespace, ...data } = input;
-    const namespace = inputNamespace ?? undefined;
+    const namespace = inputNamespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE;
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error("World not found");
@@ -275,9 +281,9 @@ export class LocalWorlds implements WorldsInterface {
    */
   async delete(input: WorldsDeleteInput): Promise<void> {
     await this.ensureInitialized();
-    const namespace = input.slug === WORLDS_WORLD_ID
+    const namespace = input.slug === WORLDS_WORLD_SLUG
       ? undefined
-      : undefined;
+      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
     const world = await this.worldsRepository.get(input.slug, namespace);
     if (!world) {
       throw new Error("World not found");
@@ -301,10 +307,12 @@ export class LocalWorlds implements WorldsInterface {
    * _sparql is the internal implementation that bypasses the initialization check.
    */
   private async _sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
-    const { world: slug, query } = input;
-    const namespace = slug === WORLDS_WORLD_ID ? undefined : undefined;
-    const world = await this.worldsRepository.get(slug, namespace);
-    if (!world) {
+    const { slug, query } = input;
+    const namespace = slug === WORLDS_WORLD_SLUG
+      ? undefined
+      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
+    const worldRow = await this.worldsRepository.get(slug, namespace);
+    if (!worldRow) {
       throw new Error(`World not found: ${slug} in namespace ${namespace}`);
     }
 
@@ -319,15 +327,18 @@ export class LocalWorlds implements WorldsInterface {
     if (isUpdate) {
       await batchHandler.commit();
 
+
       // Also run handlePatch to create chunks from the updated store
       await handlePatch(
         managed.database,
         this.appContext.embeddings,
-        [{
-          insertions: store.getQuads(null, null, null, null),
-          deletions: [],
-        }],
-      );
+        batchHandler.patches,
+
+
+      ); // close handlePatch
+
+
+
 
       this.invalidateStore({ slug, namespace });
 
@@ -346,8 +357,10 @@ export class LocalWorlds implements WorldsInterface {
    */
   async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
     await this.ensureInitialized();
-    const { world: slug, query, limit, subjects, predicates, types } = input;
-    const namespace = slug === WORLDS_WORLD_ID ? undefined : undefined;
+    const { slug, query, limit, subjects, predicates, types } = input;
+    const namespace = slug === WORLDS_WORLD_SLUG
+      ? undefined
+      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error("World not found");
@@ -371,8 +384,10 @@ export class LocalWorlds implements WorldsInterface {
 
   async import(input: WorldsImportInput): Promise<void> {
     await this.registryWorldInitialized;
-    const { world: slug, data, contentType } = input;
-    const namespace = slug === WORLDS_WORLD_ID ? undefined : undefined;
+    const { slug, data, contentType } = input;
+    const namespace = slug === WORLDS_WORLD_SLUG
+      ? undefined
+      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error("World not found");
@@ -418,8 +433,10 @@ export class LocalWorlds implements WorldsInterface {
    */
   async export(input: WorldsExportInput): Promise<ArrayBuffer> {
     await this.ensureInitialized();
-    const { world: slug, contentType } = input;
-    const namespace = slug === WORLDS_WORLD_ID ? undefined : undefined;
+    const { slug, contentType } = input;
+    const namespace = slug === WORLDS_WORLD_SLUG
+      ? undefined
+      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error(`World not found: ${slug} in namespace ${namespace}`);

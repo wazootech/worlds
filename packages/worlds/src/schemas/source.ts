@@ -1,13 +1,13 @@
 import { z } from "zod";
 
 /**
- * Source represents a data source world by ID or slug.
+ * Source represents a data source world by slug.
  */
 export interface Source {
   /**
-   * world is the ID or slug of the source world.
+   * slug is the slug of the source world.
    */
-  world: string;
+  slug: string;
 
   /**
    * write indicates if write access is enabled for this source.
@@ -24,7 +24,7 @@ export interface Source {
  * sourceSchema is the Zod schema for Source.
  */
 export const sourceSchema: z.ZodType<Source> = z.object({
-  world: z.string().describe("The ID or slug of the source world."),
+  slug: z.string().describe("The slug of the source world."),
   write: z.boolean().optional().describe("Whether write access is enabled."),
   schema: z.boolean().optional().describe(
     "Whether this source should be treated as a schema source.",
@@ -84,9 +84,9 @@ import { type WorldsContentType, worldsContentTypeSchema } from "./sparql.ts";
  */
 export interface WorldsImportInput {
   /**
-   * world is the ID or slug of the target world.
+   * slug is the slug of the target world.
    */
-  world: string;
+  slug: string;
 
   /**
    * data is the RDF data to import (string or Buffer).
@@ -103,7 +103,7 @@ export interface WorldsImportInput {
  * worldsImportInputSchema is the Zod schema for WorldsImportInput.
  */
 export const worldsImportInputSchema: z.ZodType<WorldsImportInput> = z.object({
-  world: z.string().describe("The ID or slug of the target world."),
+  slug: z.string().describe("The slug of the target world."),
   data: z.union([z.string(), z.instanceof(ArrayBuffer)]).describe(
     "The RDF data to import.",
   ),
@@ -117,9 +117,9 @@ export const worldsImportInputSchema: z.ZodType<WorldsImportInput> = z.object({
  */
 export interface WorldsExportInput {
   /**
-   * world is the ID or slug of the target world.
+   * slug is the slug of the target world.
    */
-  world: string;
+  slug: string;
 
   /**
    * contentType is the requested RDF content type.
@@ -131,7 +131,7 @@ export interface WorldsExportInput {
  * worldsExportInputSchema is the Zod schema for WorldsExportInput.
  */
 export const worldsExportInputSchema: z.ZodType<WorldsExportInput> = z.object({
-  world: z.string().describe("The ID or slug of the target world."),
+  slug: z.string().describe("The slug of the target world."),
   contentType: worldsContentTypeSchema.optional().describe(
     "The requested RDF content type.",
   ),

@@ -32,7 +32,8 @@ export default (appContext: WorldsContext) => {
 
       try {
         const results = await engine.search({
-          world: slug,
+          slug,
+          namespace: authorized.namespaceId,
           query,
           limit,
           subjects: subjects.length > 0 ? subjects : undefined,

@@ -8,7 +8,7 @@ Deno.test("LocalWorlds", async (t) => {
   await using worlds = new LocalWorlds(appContext);
   await worlds.init();
 
-  let id: string;
+  let slug: string;
 
   await t.step("create world", async () => {
     const world = await worlds.create({
@@ -16,49 +16,46 @@ Deno.test("LocalWorlds", async (t) => {
       label: "Core World",
       description: "Test World from Core",
     });
-    assertExists(world.id);
+    assertExists(world.slug);
     assertEquals(world.label, "Core World");
-    id = world.id;
+    slug = world.slug;
   });
 
   await t.step("get world", async () => {
-    const world = await worlds.get({ world: id });
+    const world = await worlds.get({ slug });
     assertExists(world);
     assertEquals(world!.label, "Core World");
   });
 
   await t.step("list worlds", async () => {
     const list = await worlds.list({ page: 1, pageSize: 10 });
-    assertExists(list.find((w) => w.id === id));
+    assertExists(list.find((world) => world.slug === slug));
   });
 
   await t.step("update world", async () => {
     await worlds.update({
-      world: id,
+      slug,
       description: "Updated from Core",
     });
-    const world = await worlds.get({ world: id });
+    const world = await worlds.get({ slug });
     assertEquals(world!.description, "Updated from Core");
   });
 
   await t.step("sparql query/update", async () => {
-    // Insert
     await worlds.sparql({
-      world: id,
+      slug,
       query: `
       INSERT DATA { <http://example.org/s> <http://example.org/p> "Core Value" . }
     `,
     });
 
-    // Query
     const result = await worlds.sparql({
-      world: id,
+      slug,
       query: `
       SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }
     `,
     });
 
-    // Type check if it's select result
     if (result && "results" in result) {
       const selectResult = result as SparqlSelectResults;
       assertEquals(
@@ -71,8 +68,8 @@ Deno.test("LocalWorlds", async (t) => {
   });
 
   await t.step("delete world", async () => {
-    await worlds.delete({ world: id });
-    const world = await worlds.get({ world: id });
+    await worlds.delete({ slug });
+    const world = await worlds.get({ slug });
     assertEquals(world, null);
   });
 });

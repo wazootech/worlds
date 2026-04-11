@@ -4,7 +4,7 @@ import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  WORLDS_NAMESPACE_ID,
+  WORLDS_WORLD_NAMESPACE,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
 import createRoute from "./route.ts";
@@ -23,7 +23,7 @@ Deno.test("World Search API routes", async (t) => {
     const slug = "search-world-" + ulid();
     const now = Date.now();
     await worldsRepository.insert({
-      namespace_id: WORLDS_NAMESPACE_ID,
+      namespace_id: WORLDS_WORLD_NAMESPACE,
       slug,
       label: "Search World",
       description: "A world for searching",
@@ -33,7 +33,7 @@ Deno.test("World Search API routes", async (t) => {
       updated_at: now,
       deleted_at: null,
     });
-    await testContext.libsql.manager.create(WORLDS_NAMESPACE_ID, slug);
+    await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
 
     const resp = await app.fetch(
       new Request(`http://localhost/worlds/${slug}/search?query=test`, {

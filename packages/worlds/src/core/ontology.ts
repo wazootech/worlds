@@ -38,16 +38,16 @@ export const WORLDS = {
 } as const;
 
 /**
- * WORLDS_WORLD_ID is the reserved identifier for the platform worlds world.
+ * WORLDS_WORLD_SLUG is the reserved identifier for the platform worlds world.
  */
-export const WORLDS_WORLD_ID: string = Deno.env.get("WORLDS_WORLD_ID") ??
+export const WORLDS_WORLD_SLUG: string = Deno.env.get("WORLDS_WORLD_SLUG") ??
   "worlds";
 
 /**
- * WORLDS_NAMESPACE_ID is the default namespace ID for the platform worlds.
+ * WORLDS_WORLD_NAMESPACE is the default namespace for the platform worlds.
  */
-export const WORLDS_NAMESPACE_ID: string =
-  Deno.env.get("WORLDS_NAMESPACE_ID") ?? "https://wazoo.dev/worlds";
+export const WORLDS_WORLD_NAMESPACE: string =
+  Deno.env.get("WORLDS_WORLD_NAMESPACE") ?? "https://wazoo.dev/worlds";
 
 /**
  * DEFAULT_NAMESPACE is used when no namespace is specified.

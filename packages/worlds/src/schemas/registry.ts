@@ -73,9 +73,9 @@ export interface RegistryWorldEntry {
   namespace: string;
 
   /**
-   * world is the URL-friendly name.
+   * slug is the URL-friendly name.
    */
-  world: string;
+  slug: string;
 
   /**
    * label is the human-readable name.
@@ -90,7 +90,7 @@ export const registryWorldEntrySchema: z.ZodType<RegistryWorldEntry> = z
   .object({
     id: z.string(),
     namespace: z.string().url(),
-    world: z.string(),
+    slug: z.string(),
     label: z.string(),
   });
 

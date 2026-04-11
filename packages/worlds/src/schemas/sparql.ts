@@ -306,9 +306,9 @@ export const sparqlQuadsResultsSchema: z.ZodType<SparqlQuadsResults> = z
  */
 export interface WorldsSparqlInput {
   /**
-   * world is the ID or slug of the target world.
+   * slug is the slug of the target world.
    */
-  world: string;
+  slug: string;
 
   /**
    * query is the SPARQL query or update string.
@@ -330,7 +330,7 @@ export interface WorldsSparqlInput {
  * worldsSparqlInputSchema is the Zod schema for WorldsSparqlInput.
  */
 export const worldsSparqlInputSchema: z.ZodType<WorldsSparqlInput> = z.object({
-  world: z.string().describe("The ID or slug of the target world."),
+  slug: z.string().describe("The slug of the target world."),
   query: z.string().describe("The SPARQL query or update string."),
   defaultGraphUris: z.array(z.string()).optional().describe(
     "Optional list of default graphs to query.",
@@ -364,9 +364,9 @@ export const worldsContentTypeSchema: z.ZodType<WorldsContentType> = z.enum([
  */
 export interface WorldsServiceDescriptionInput {
   /**
-   * world is the ID or slug of the target world.
+   * slug is the slug of the target world.
    */
-  world: string;
+  slug: string;
 
   /**
    * endpointUrl is the URL of the SPARQL endpoint.
@@ -385,7 +385,7 @@ export interface WorldsServiceDescriptionInput {
 export const worldsServiceDescriptionInputSchema: z.ZodType<
   WorldsServiceDescriptionInput
 > = z.object({
-  world: z.string().describe("The ID or slug of the target world."),
+  slug: z.string().describe("The slug of the target world."),
   endpointUrl: z.string().url().describe("The URL of the SPARQL endpoint."),
   contentType: worldsContentTypeSchema.optional().describe(
     "Optional RDF serialization content type.",

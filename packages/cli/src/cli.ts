@@ -77,30 +77,30 @@ export class WorldsCli {
   public async update(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["world", "label", "description", "slug"],
-      alias: { w: "world", l: "label", d: "description", s: "slug", h: "help" },
+      string: ["slug", "label", "description"],
+      alias: { s: "slug", l: "label", d: "description", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds update --world <id> [--slug <slug>] [--label <label>] [--description <desc>]",
+        "Usage: worlds update --slug <slug> [--label <label>] [--description <desc>]",
       );
       return;
     }
-    const world = parsed.world as string;
-    if (!world) {
+    const slug = parsed.slug as string;
+    if (!slug) {
       console.error(
-        "Usage: worlds update --world <id> [--slug <slug>] [--label <label>] [--description <desc>]",
+        "Usage: worlds update --slug <slug> [--label <label>] [--description <desc>]",
       );
       return;
     }
     await this.worlds.update({
-      world,
+      slug,
       label: parsed.label,
       description: parsed.description,
     });
-    console.log(`Updated world ${world}`);
+    console.log(`Updated world ${slug}`);
   }
 
   /**
@@ -109,23 +109,24 @@ export class WorldsCli {
   public async delete(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["world"],
-      alias: { w: "world", h: "help" },
+      string: ["slug"],
+      alias: { s: "slug", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
-      console.log("Usage: worlds delete --world <id>");
+      console.log("Usage: worlds delete --slug <slug>");
       return;
     }
 
-    const world = parsed.world as string;
-    if (!world) {
-      console.error("Usage: worlds delete --world <id>");
+    const slug = parsed.slug as string;
+    if (!slug) {
+      console.error("Usage: worlds delete --slug <slug>");
       return;
     }
-    await this.worlds.delete({ world });
-    console.log(`Deleted world ${world}`);
+
+    await this.worlds.delete({ slug });
+    console.log(`Deleted world ${slug}`);
   }
 
   /**
@@ -175,7 +176,7 @@ export class WorldsCli {
       console.error("Usage: worlds get --world <id>");
       return;
     }
-    const worldObj = await this.worlds.get({ world });
+    const worldObj = await this.worlds.get({ slug: world });
     console.log(JSON.stringify(worldObj, null, 2));
   }
 
@@ -213,7 +214,7 @@ export class WorldsCli {
       return;
     }
     const results = await this.worlds.search({
-      world,
+      slug: world,
       query,
       limit: parsed.limit ? parseInt(parsed.limit as string) : undefined,
       subjects: parsed.subjects,
@@ -256,7 +257,7 @@ export class WorldsCli {
       // Not a file, use as query string
     }
 
-    const results = await this.worlds.sparql({ world, query });
+    const results = await this.worlds.sparql({ slug: world, query });
     console.log(JSON.stringify(results, null, 2));
   }
 
@@ -287,7 +288,7 @@ export class WorldsCli {
     }
     const data = await Deno.readFile(path);
     await this.worlds.import({
-      world,
+      slug: world,
       data: data.buffer as ArrayBuffer,
       contentType: parsed["content-type"] as WorldsContentType,
     });
@@ -319,7 +320,7 @@ export class WorldsCli {
       return;
     }
     const buffer = await this.worlds.export({
-      world,
+      slug: world,
       contentType: parsed["content-type"] as WorldsContentType,
     });
     await Deno.stdout.write(new Uint8Array(buffer));
@@ -371,7 +372,7 @@ export class WorldsCli {
       return;
     }
 
-    const world = await this.worlds.get({ world: parsed.world });
+    const world = await this.worlds.get({ slug: parsed.world });
     if (!world) {
       console.error(`World "${parsed.world}" not found.`);
       return;
@@ -394,7 +395,7 @@ export class WorldsCli {
     const tools = createTools({
       worlds: this.worlds,
       sources: [
-        { world: parsed.world, write: parsed.write ?? false },
+        { slug: parsed.world, write: parsed.write ?? false },
       ],
     });
 
@@ -622,4 +623,3 @@ export class WorldsCli {
     }
   }
 }
-

@@ -3,18 +3,13 @@ import type { WorldsContext } from "@wazoo/worlds-sdk";
 
 /**
  * getNamespacedEngine returns a Worlds engine scoped to the given namespace.
+ * Since namespace is now per-operation, this returns the existing engine.
  */
 export function getNamespacedEngine(
   appContext: WorldsContext,
-  namespaceId?: string,
+  _namespaceId?: string,
 ) {
-  if (!namespaceId || namespaceId === appContext.namespaceId) {
-    return appContext.engine!;
-  }
-
-  // Use a new engine instance for the specific namespace.
-  // Context cloning ensures we don't pollute the global app context.
-  return new LocalWorlds({ ...appContext, namespaceId });
+  return appContext.engine!;
 }
 
 

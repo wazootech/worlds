@@ -67,13 +67,13 @@ export function parseSources(sources: Array<string | Source>): Source[] {
   const seen = new Set<string>();
   return sources.map((source) => {
     const parsed: Source = typeof source === "string"
-      ? { world: source }
+      ? { slug: source }
       : source;
-    if (seen.has(parsed.world)) {
-      throw new Error(`Duplicate source: ${parsed.world}`);
+    if (seen.has(parsed.slug)) {
+      throw new Error(`Duplicate source: ${parsed.slug}`);
     }
 
-    seen.add(parsed.world);
+    seen.add(parsed.slug);
     return parsed;
   });
 }

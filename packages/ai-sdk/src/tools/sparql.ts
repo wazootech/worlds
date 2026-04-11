@@ -20,9 +20,9 @@ export async function sparql(
   sources: SourceInput[],
   input: WorldsSparqlInput,
 ): Promise<WorldsSparqlOutput> {
-  const { query, world: source } = input;
-  const s = sources.find((s) =>
-    (typeof s === "string" ? s : s.world) === source
+  const { query, slug: source } = input;
+  const s = sources.find((src) =>
+    (typeof src === "string" ? src : src.slug) === source
   );
   const isWritable = typeof s === "object" ? s.write : false;
 
@@ -50,7 +50,7 @@ export const worldsSparqlTool: WorldsTool<
 > = {
   name: "worlds_sparql",
   description:
-    "Executes a SPARQL query or update against a specific world. Use this tool when you need to retrieve raw facts, perform complex joins, or modify the knowledge graph via SPARQL. Input must be a 'world' ID and a 'query' string. Returns a JSON result object with bindings for SELECT/ASK or a boolean for updates.",
+    "Executes a SPARQL query or update against a specific world. Use this tool when you need to retrieve raw facts, perform complex joins, or modify the knowledge graph via SPARQL. Input must be a 'slug' and a 'query' string. Returns a JSON result object with bindings for SELECT/ASK or a boolean for updates.",
   inputSchema: worldsSparqlInputSchema,
   outputSchema: worldsSparqlOutputSchema,
   isWrite: true,

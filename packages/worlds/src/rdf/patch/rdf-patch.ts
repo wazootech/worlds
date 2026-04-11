@@ -26,8 +26,7 @@ export async function handlePatch(
     for (const patch of patches) {
       if (patch.deletions) {
         for (const q of patch.deletions) {
-          const skolemizedStr = await skolemizeQuad(q);
-          const tripleId = await hash(skolemizedStr);
+          const tripleId = await skolemizeQuad(q);
 
           await triplesRepository.delete(tripleId);
         }
@@ -39,7 +38,7 @@ export async function handlePatch(
           const isFtsEligible = (q.object.termType === "Literal") &&
             (q.object.value.length > 0);
 
-          const tripleId = await hash(quadId);
+          const tripleId = quadId;
 
           const subject = q.subject.value;
           const predicate = q.predicate.value;
@@ -56,6 +55,9 @@ export async function handlePatch(
             }
           }
 
+          if (isFtsEligible) {
+
+          }
           await triplesRepository.upsert({
             id: tripleId,
             subject,

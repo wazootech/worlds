@@ -79,9 +79,9 @@ export interface WorldsContextConfig {
     WORLDS_BASE_DIR?: string;
 
     /**
-     * WORLDS_NAMESPACE_ID is the unique identifier of the namespace for this context engine.
+     * WORLDS_WORLD_NAMESPACE is the unique identifier of the namespace for this context engine.
      */
-    WORLDS_NAMESPACE_ID?: string;
+    WORLDS_WORLD_NAMESPACE?: string;
   };
 }
 
@@ -200,6 +200,7 @@ export async function createWorldsContext(
     embeddings,
     libsql: { database, manager },
     apiKey: config.envs.WORLDS_API_KEY,
+    namespace: config.envs.WORLDS_WORLD_NAMESPACE,
     async [Symbol.asyncDispose]() {
       await this.engine?.close();
       await manager.close();
@@ -236,7 +237,7 @@ export async function createWorlds(): Promise<Worlds> {
       ),
       OLLAMA_BASE_URL: Deno.env.get("OLLAMA_BASE_URL"),
       OLLAMA_EMBEDDINGS_MODEL: Deno.env.get("OLLAMA_EMBEDDINGS_MODEL"),
-      WORLDS_NAMESPACE_ID: Deno.env.get("WORLDS_NAMESPACE_ID"),
+      WORLDS_WORLD_NAMESPACE: Deno.env.get("WORLDS_WORLD_NAMESPACE"),
     },
   });
 

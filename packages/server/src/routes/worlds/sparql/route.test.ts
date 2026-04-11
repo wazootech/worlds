@@ -4,7 +4,7 @@ import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  WORLDS_NAMESPACE_ID,
+  WORLDS_WORLD_NAMESPACE,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
 import createRoute from "./route.ts";
@@ -26,7 +26,7 @@ Deno.test("SPARQL API routes", async (t) => {
       const slug = "sparql-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: WORLDS_NAMESPACE_ID,
+        namespace_id: WORLDS_WORLD_NAMESPACE,
         slug,
         label: "SPARQL World",
         description: null,
@@ -36,7 +36,7 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(WORLDS_NAMESPACE_ID, slug);
+      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
 
       const resp = await app.fetch(
         new Request(`http://localhost/worlds/${slug}/sparql`, {
@@ -61,7 +61,7 @@ Deno.test("SPARQL API routes", async (t) => {
       const slug = "sd-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: WORLDS_NAMESPACE_ID,
+        namespace_id: WORLDS_WORLD_NAMESPACE,
         slug,
         label: "SD World",
         description: null,
@@ -71,7 +71,7 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(WORLDS_NAMESPACE_ID, slug);
+      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
 
       // Request without query parameter should return Service Description
       const resp = await app.fetch(
@@ -117,7 +117,7 @@ Deno.test("SPARQL API routes", async (t) => {
       const slug = "nt-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: WORLDS_NAMESPACE_ID,
+        namespace_id: WORLDS_WORLD_NAMESPACE,
         slug,
         label: "NT World",
         description: null,
@@ -127,7 +127,7 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(WORLDS_NAMESPACE_ID, slug);
+      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
 
       // Request with N-Triples Accept header
       const resp = await app.fetch(
@@ -167,7 +167,7 @@ Deno.test("SPARQL API routes", async (t) => {
       const slug = "post-sd-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: WORLDS_NAMESPACE_ID,
+        namespace_id: WORLDS_WORLD_NAMESPACE,
         slug,
         label: "Weighted World",
         description: null,
@@ -177,7 +177,7 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(WORLDS_NAMESPACE_ID, slug);
+      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
 
       // Request with weighted Accept header: prefer NTriples over Turtle
       const resp = await app.fetch(

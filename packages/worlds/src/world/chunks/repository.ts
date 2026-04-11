@@ -4,7 +4,7 @@ import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { WorldsSearchOutput } from "#/schemas/mod.ts";
 import type { WorldRow } from "#/plugins/registry/worlds.schema.ts";
 import type { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
-import { WORLDS_NAMESPACE_ID } from "#/core/ontology.ts";
+import { WORLDS, WORLDS_WORLD_NAMESPACE, WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
 import {
   type ChunkTableUpsert,
   type SearchRow,
@@ -75,6 +75,11 @@ export interface SearchParams {
   types?: string[];
 
   /**
+   * namespace is the optional namespace ID to search within.
+   */
+  namespace?: string;
+
+  /**
    * limit is the maximum number of results to return.
    */
   limit?: number;
@@ -106,10 +111,11 @@ export class ChunksSearchRepository {
       subjects,
       predicates,
       types,
+      namespace: inputNamespace,
       limit = 10,
     } = params;
 
-    const namespaceId = undefined;
+    const namespace = inputNamespace ?? this.ctx.namespace;
 
     // Generate Embeddings
     const vector = query
@@ -119,7 +125,7 @@ export class ChunksSearchRepository {
     // Procure world record if not provided
     let world = params.world;
     if (!world && worldSlug) {
-      world = await this.worlds.get(worldSlug, namespaceId) ?? undefined;
+      world = await this.worlds.get(worldSlug, namespace) ?? undefined;
     }
 
     if (!this.ctx.libsql.manager) {
@@ -134,6 +140,7 @@ export class ChunksSearchRepository {
     try {
       const managed = await this.ctx.libsql.manager.get({
         slug: world.slug,
+        namespace: world.namespace_id,
       });
 
       const subjectsParam = subjects && subjects.length > 0

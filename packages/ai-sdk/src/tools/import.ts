@@ -46,7 +46,7 @@ export const worldsImportTool: WorldsTool<
 > = {
   name: "worlds_import",
   description:
-    "Ingests RDF data into an existing world's graph. Use this tool when you have raw Turtle, N-Triples, or N-Quads data to upload. Input must be a 'world' ID and a 'data' string. Returns a success indicator.",
+    "Ingests RDF data into an existing world's graph. Use this tool when you have raw Turtle, N-Triples, or N-Quads data to upload. Input must be a 'slug' and a 'data' string. Returns a success indicator.",
   inputSchema: worldsImportInputSchema,
   outputSchema: worldsImportOutputSchema,
   isWrite: true,

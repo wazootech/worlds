@@ -156,9 +156,9 @@ export class RemoteWorlds implements WorldsInterface {
    * sparql executes a SPARQL query or update against a world.
    */
   public async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
-    const { world: idOrSlug, query, defaultGraphUris, namedGraphUris } = input;
+    const { slug, query, defaultGraphUris, namedGraphUris } = input;
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${idOrSlug}/sparql`,
+      `${this.options.baseUrl}/worlds/${slug}/sparql`,
     );
 
     if (defaultGraphUris) {
@@ -201,10 +201,10 @@ export class RemoteWorlds implements WorldsInterface {
    * search performs semantic/text search on a world using vector embeddings.
    */
   public async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
-    const { world: idOrSlug, query, limit, subjects, predicates, types } =
+    const { slug, query, limit, subjects, predicates, types } =
       input;
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${idOrSlug}/search`,
+      `${this.options.baseUrl}/worlds/${slug}/search`,
     );
 
     url.searchParams.set("query", query);
@@ -248,9 +248,9 @@ export class RemoteWorlds implements WorldsInterface {
    * import ingests RDF data into a world.
    */
   public async import(input: WorldsImportInput): Promise<void> {
-    const { world: idOrSlug, data, contentType } = input;
+    const { slug, data, contentType } = input;
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${idOrSlug}/import`,
+      `${this.options.baseUrl}/worlds/${slug}/import`,
     );
 
     const type = contentType ?? "application/n-quads";
@@ -274,9 +274,9 @@ export class RemoteWorlds implements WorldsInterface {
    * export exports a world in the specified RDF content type.
    */
   public async export(input: WorldsExportInput): Promise<ArrayBuffer> {
-    const { world: idOrSlug, contentType } = input;
+    const { slug, contentType } = input;
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${idOrSlug}/export`,
+      `${this.options.baseUrl}/worlds/${slug}/export`,
     );
     if (contentType) {
       url.searchParams.set("contentType", contentType);
@@ -302,9 +302,9 @@ export class RemoteWorlds implements WorldsInterface {
   public async getServiceDescription(
     input: WorldsServiceDescriptionInput,
   ): Promise<string> {
-    const { world: idOrSlug, endpointUrl: _endpointUrl, contentType } = input;
+    const { slug, endpointUrl: _endpointUrl, contentType } = input;
     const url = new URL(
-      `${this.options.baseUrl}/worlds/${idOrSlug}/sparql`,
+      `${this.options.baseUrl}/worlds/${slug}/sparql`,
     );
     if (contentType) {
       url.searchParams.set("contentType", contentType);

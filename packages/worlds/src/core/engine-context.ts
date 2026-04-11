@@ -4,7 +4,7 @@ import { initializeDatabase } from "#/storage/init.ts";
 import { MemoryDatabaseManager } from "#/storage/memory-manager.ts";
 import type { Embeddings } from "#/embeddings/embeddings.ts";
 import type { WorldsContext } from "#/core/types.ts";
-import { WORLDS } from "#/core/ontology.ts";
+import { WORLDS, WORLDS_WORLD_NAMESPACE } from "#/core/ontology.ts";
 
 /**
  * createTestContext creates a test application context with an in-memory
@@ -33,6 +33,7 @@ export async function createTestContext(): Promise<WorldsContext> {
       manager: databaseManager,
     },
     apiKey: ulid(),
+    namespace: WORLDS_WORLD_NAMESPACE,
     async [Symbol.asyncDispose]() {
       await databaseManager.close();
       client.close();

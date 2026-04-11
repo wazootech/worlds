@@ -1,4 +1,4 @@
-import { WORLDS, WORLDS_WORLD_ID } from "#/core/ontology.ts";
+import { WORLDS, WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
 import type { WorldsInterface } from "#/core/types.ts";
 import type { WorldsPlugin } from "../interface.ts";
 
@@ -21,7 +21,7 @@ export class ChunksPlugin implements WorldsPlugin {
    */
   async initialize(worlds: WorldsInterface): Promise<void> {
     await worlds.sparql({
-      world: WORLDS_WORLD_ID,
+      slug: WORLDS_WORLD_SLUG,
       query: `
         PREFIX worlds: <${WORLDS.NAMESPACE}>
         INSERT DATA {

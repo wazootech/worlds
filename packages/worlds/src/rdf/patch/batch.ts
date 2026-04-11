@@ -4,7 +4,7 @@ import type { Patch, PatchHandler } from "./types.ts";
  * BatchPatchHandler batches patches and only applies a batch sequence when commit is called.
  */
 export class BatchPatchHandler implements PatchHandler {
-  private patches: Patch[] = [];
+  public readonly patches: Patch[] = [];
 
   /**
    * constructor initializes the BatchPatchHandler.

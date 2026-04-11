@@ -34,7 +34,7 @@ export default (appContext: WorldsContext) => {
         }
 
         const engine = getNamespacedEngine(appContext, authorized.namespaceId);
-        const world = await engine.get({ world: slug });
+        const world = await engine.get({ slug, namespace: authorized.namespaceId });
         if (!world) {
           return ErrorResponse.NotFound("World not found");
         }
@@ -84,7 +84,8 @@ export default (appContext: WorldsContext) => {
             authorized.namespaceId,
           );
           const buffer = await engine.export({
-            world: slug,
+            slug: slug,
+            namespace: authorized.namespaceId,
             contentType: serialization.contentType,
           });
           return await handleETagRequest(
@@ -126,7 +127,12 @@ export default (appContext: WorldsContext) => {
             appContext,
             authorized.namespaceId,
           );
-          await engine.import({ world: slug, data: body, contentType });
+          await engine.import({
+            slug: slug,
+            namespace: authorized.namespaceId,
+            data: body,
+            contentType,
+          });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.BadRequest(
@@ -160,7 +166,11 @@ export default (appContext: WorldsContext) => {
 
         const { page, pageSize } = paginationResult.data;
         const engine = getNamespacedEngine(appContext, authorized.namespaceId);
-        const results = await engine.list({ page, pageSize });
+        const results = await engine.list({
+          page,
+          pageSize,
+          namespace: authorized.namespaceId,
+        });
 
         return await handleETagRequest(ctx.request, Response.json(results));
       },
@@ -188,7 +198,10 @@ export default (appContext: WorldsContext) => {
             appContext,
             authorized.namespaceId,
           );
-          const world = await engine.create(parseResult.data);
+          const world = await engine.create({
+            ...parseResult.data,
+            namespace: authorized.namespaceId,
+          });
           return Response.json(world, { status: STATUS_CODE.Created });
         } catch (error) {
           return ErrorResponse.Conflict(
@@ -222,7 +235,8 @@ export default (appContext: WorldsContext) => {
 
         const updateResult = worldsUpdateInputSchema.safeParse({
           ...body as object,
-          world: slug,
+          slug: slug,
+          namespace: authorized.namespaceId,
         });
         if (!updateResult.success) {
           return ErrorResponse.BadRequest("Invalid parameters");
@@ -263,7 +277,7 @@ export default (appContext: WorldsContext) => {
             appContext,
             authorized.namespaceId,
           );
-          await engine.delete({ world: slug });
+          await engine.delete({ slug, namespace: authorized.namespaceId });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.NotFound(

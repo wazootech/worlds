@@ -63,7 +63,8 @@ export default (appContext: WorldsContext) => {
       if (!query) {
         const serialization = negotiateSerialization(ctx.request);
         const description = await engine.getServiceDescription({
-          world: slug,
+          slug,
+          namespace: authorized.namespaceId,
           endpointUrl: ctx.request.url,
           contentType: serialization.contentType as WorldsContentType,
         });
@@ -74,10 +75,11 @@ export default (appContext: WorldsContext) => {
 
       try {
         const result = await engine.sparql({
-          world: slug,
-          query,
-          defaultGraphUris,
-          namedGraphUris,
+          slug: slug,
+          namespace: authorized.namespaceId,
+          query: query,
+          defaultGraphUris: defaultGraphUris,
+          namedGraphUris: namedGraphUris,
         });
         return Response.json(result, {
           headers: { "Content-Type": "application/sparql-results+json" },
@@ -108,10 +110,11 @@ export default (appContext: WorldsContext) => {
 
       try {
         const result = await engine.sparql({
-          world: slug,
-          query,
-          defaultGraphUris,
-          namedGraphUris,
+          slug: slug,
+          namespace: authorized.namespaceId,
+          query: query,
+          defaultGraphUris: defaultGraphUris,
+          namedGraphUris: namedGraphUris,
         });
         if (result === null) return new Response(null, { status: 204 });
         return Response.json(result, {

@@ -1,4 +1,4 @@
-import { WORLDS, WORLDS_WORLD_ID } from "#/core/ontology.ts";
+import { WORLDS, WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
 import type { WorldsInterface } from "#/core/types.ts";
 import type { SparqlAskResults, SparqlBinding } from "#/schemas/sparql.ts";
 
@@ -21,7 +21,7 @@ export class RegistryRepository {
    */
   async resolveNamespace(apiKey: string): Promise<string | null> {
     const result = await this.worlds.sparql({
-      world: WORLDS_WORLD_ID,
+      slug: WORLDS_WORLD_SLUG,
       query: `
         SELECT ?org WHERE {
           ?key a <${WORLDS.ApiKey}> ;
@@ -60,7 +60,7 @@ export class RegistryRepository {
     namespaceId: string,
   ): Promise<boolean> {
     const result = await this.worlds.sparql({
-      world: WORLDS_WORLD_ID,
+      slug: WORLDS_WORLD_SLUG,
       query: `
         ASK {
           ?world a <${WORLDS.World}> ;
