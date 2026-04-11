@@ -12,6 +12,13 @@ import type {
 import { WORLDS } from "#/core/ontology.ts";
 
 /**
+ * queryEngine is a shared instance of the Comunica QueryEngine.
+ * Using a singleton avoids the high overhead of instantiation per call
+ * and prevents resource leaks/dangling timers in test environments.
+ */
+const queryEngine = new QueryEngine();
+
+/**
  * DatasetParams are the parameters for a SPARQL query.
  */
 export interface DatasetParams {
@@ -51,7 +58,6 @@ export async function sparql(
   query: string,
   handler: PatchHandler = new NoopPatchHandler(),
 ): Promise<{ store: Store; result: WorldsSparqlOutput }> {
-  const queryEngine = new QueryEngine();
   const { store: proxiedStore, sync } = connectSearchStoreToN3Store(
     handler,
     store,
@@ -99,7 +105,6 @@ export async function sparqlBlob(
   query: string,
   handler: PatchHandler = new NoopPatchHandler(),
 ): Promise<{ blob: Blob; result: WorldsSparqlOutput }> {
-  const queryEngine = new QueryEngine();
   const store = await generateN3StoreFromBlob(blob);
   const { store: proxiedStore, sync } = connectSearchStoreToN3Store(
     handler,
