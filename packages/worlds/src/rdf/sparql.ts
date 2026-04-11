@@ -18,6 +18,16 @@ import { WORLDS } from "#/core/ontology.ts";
  */
 const queryEngine = new QueryEngine();
 
+// Diagnostic listener for "uncaught errors" in CI
+if (Deno.env.get("GITHUB_ACTIONS")) {
+  globalThis.addEventListener("unhandledrejection", (e) => {
+    console.error("DIAGNOSTIC: Unhandled Rejection:", e.reason);
+  });
+  globalThis.addEventListener("error", (e) => {
+    console.error("DIAGNOSTIC: Uncaught Error:", e.error);
+  });
+}
+
 /**
  * DatasetParams are the parameters for a SPARQL query.
  */
