@@ -8,4 +8,3 @@ export const createCamera = (
 ): PerspectiveCamera => {
   return new PerspectiveCamera(fov, aspect, near, far);
 };
-

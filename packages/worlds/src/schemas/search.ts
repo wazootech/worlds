@@ -35,9 +35,9 @@ export interface WorldsSearchOutput {
   score: number;
 
   /**
-   * worldId is the ID of the world the triple belongs to.
+   * slug is the slug of the world the triple belongs to.
    */
-  worldId?: string;
+  slug?: string;
 }
 
 /**
@@ -51,7 +51,7 @@ export const worldsSearchOutputSchema: z.ZodType<WorldsSearchOutput> = z.object(
     vecRank: z.number().nullable(),
     ftsRank: z.number().nullable(),
     score: z.number(),
-    worldId: z.string().optional(),
+    slug: z.string().optional(),
   },
 );
 
@@ -109,4 +109,3 @@ export const worldsSearchInputSchema: z.ZodType<WorldsSearchInput> = z.object({
     "Optional list of type URIs to filter by.",
   ),
 });
-

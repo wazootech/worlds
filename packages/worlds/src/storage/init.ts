@@ -1,6 +1,9 @@
 import type { Client } from "@libsql/client";
 import { worldsTable } from "#/plugins/registry/worlds.queries.sql.ts";
-import { triplesGraphIndex, triplesTable } from "#/world/triples/queries.sql.ts";
+import {
+  triplesGraphIndex,
+  triplesTable,
+} from "#/world/triples/queries.sql.ts";
 
 import {
   chunksFtsDeleteTrigger,

@@ -67,4 +67,3 @@ Deno.test("isSparqlUpdate - Query with Prologue (Read-only)", async (t) => {
     assert(!isSparqlUpdate(query));
   });
 });
-

@@ -246,4 +246,3 @@ export async function createWorlds(): Promise<Worlds> {
   await worlds.init();
   return worlds;
 }
-

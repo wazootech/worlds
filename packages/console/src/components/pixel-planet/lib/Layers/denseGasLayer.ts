@@ -206,4 +206,3 @@ export function createDenseGasPlanet(
 
   return ringLayer;
 }
-

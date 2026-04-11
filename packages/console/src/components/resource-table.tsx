@@ -160,4 +160,3 @@ export function ResourceTable<T extends { id: string | number }>({
     </div>
   );
 }
-

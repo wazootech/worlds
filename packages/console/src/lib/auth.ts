@@ -181,4 +181,3 @@ async function getGuestAuth(): Promise<LocalWithAuthResult | null> {
 
   return null;
 }
-

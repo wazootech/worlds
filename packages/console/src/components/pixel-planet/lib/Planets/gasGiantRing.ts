@@ -21,4 +21,3 @@ export const createGasGiantRing = (options?: PlanetOptions): Group => {
 
   return gasGiantGroup;
 };
-

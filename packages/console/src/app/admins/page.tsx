@@ -95,4 +95,3 @@ export default async function AdminsPage({
     </div>
   );
 }
-

@@ -15,4 +15,3 @@ export function createWebGlRenderer(): WebGLRenderer {
 export function createGroup(): Group {
   return new Group();
 }
-

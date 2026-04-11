@@ -18,9 +18,9 @@ import { getNamespacedEngine } from "#/utils/engine.ts";
 export default (appContext: WorldsContext) => {
   return new Router()
     .get(
-      "/worlds/:world",
+      "/worlds/:slug",
       async (ctx) => {
-        const slug = ctx.params?.pathname.groups.world;
+        const slug = ctx.params?.pathname.groups.slug;
         if (!slug) {
           return ErrorResponse.BadRequest("World slug required");
         }
@@ -34,7 +34,10 @@ export default (appContext: WorldsContext) => {
         }
 
         const engine = getNamespacedEngine(appContext, authorized.namespaceId);
-        const world = await engine.get({ slug, namespace: authorized.namespaceId });
+        const world = await engine.get({
+          slug,
+          namespace: authorized.namespaceId,
+        });
         if (!world) {
           return ErrorResponse.NotFound("World not found");
         }
@@ -43,9 +46,9 @@ export default (appContext: WorldsContext) => {
       },
     )
     .get(
-      "/worlds/:world/export",
+      "/worlds/:slug/export",
       async (ctx) => {
-        const slug = ctx.params?.pathname.groups.world;
+        const slug = ctx.params?.pathname.groups.slug;
         if (!slug) {
           return ErrorResponse.BadRequest("World slug required");
         }
@@ -102,9 +105,9 @@ export default (appContext: WorldsContext) => {
       },
     )
     .post(
-      "/worlds/:world/import",
+      "/worlds/:slug/import",
       async (ctx) => {
-        const slug = ctx.params?.pathname.groups.world;
+        const slug = ctx.params?.pathname.groups.slug;
         if (!slug) {
           return ErrorResponse.BadRequest("World slug required");
         }
@@ -211,9 +214,9 @@ export default (appContext: WorldsContext) => {
       },
     )
     .put(
-      "/worlds/:world",
+      "/worlds/:slug",
       async (ctx) => {
-        const slug = ctx.params?.pathname.groups.world;
+        const slug = ctx.params?.pathname.groups.slug;
         if (!slug) {
           return ErrorResponse.BadRequest("World slug required");
         }
@@ -257,9 +260,9 @@ export default (appContext: WorldsContext) => {
       },
     )
     .delete(
-      "/worlds/:world",
+      "/worlds/:slug",
       async (ctx) => {
-        const slug = ctx.params?.pathname.groups.world;
+        const slug = ctx.params?.pathname.groups.slug;
         if (!slug) {
           return ErrorResponse.BadRequest("World slug required");
         }
@@ -287,5 +290,3 @@ export default (appContext: WorldsContext) => {
       },
     );
 };
-
-

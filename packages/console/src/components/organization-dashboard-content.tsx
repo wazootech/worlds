@@ -66,4 +66,3 @@ export function OrganizationDashboardContent({
     </main>
   );
 }
-

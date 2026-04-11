@@ -34,15 +34,15 @@ export function WorldSettingsContent() {
             </div>
             <div className="bg-stone-50 dark:bg-stone-950/50 px-6 py-4 border-t border-stone-200 dark:border-stone-800">
               <p className="text-xs text-stone-500 dark:text-stone-400">
-                Internal World ID: <code className="font-mono">{world.id}</code>
+                Internal World ID:{" "}
+                <code className="font-mono">{world.slug}</code>
               </p>
             </div>
           </div>
 
-          <DeleteWorldSection worldId={world.id} worldName={world.label} />
+          <DeleteWorldSection worldId={world.slug} worldName={world.label} />
         </div>
       </div>
     </main>
   );
 }
-

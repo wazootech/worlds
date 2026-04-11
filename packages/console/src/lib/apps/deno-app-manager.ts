@@ -116,4 +116,3 @@ export class DenoAppManager implements AppManager {
     await this.client.apps.delete(appId);
   }
 }
-

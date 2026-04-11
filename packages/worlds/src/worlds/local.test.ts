@@ -73,4 +73,3 @@ Deno.test("LocalWorlds", async (t) => {
     assertEquals(world, null);
   });
 });
-

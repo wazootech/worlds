@@ -44,5 +44,5 @@ export type TripleTableUpsert = TripleTable;
 /**
  * tripleTableUpsertSchema is the Zod schema for inserting or replacing a triple.
  */
-export const tripleTableUpsertSchema: z.ZodType<TripleTableUpsert> = tripleTableSchema;
-
+export const tripleTableUpsertSchema: z.ZodType<TripleTableUpsert> =
+  tripleTableSchema;

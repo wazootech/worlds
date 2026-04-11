@@ -64,4 +64,3 @@ export const createAtmosphereLayer = (): Mesh => {
 
   return atmosphereLayer;
 };
-

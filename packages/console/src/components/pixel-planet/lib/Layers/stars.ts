@@ -69,4 +69,3 @@ export function createStars(count: number): Group {
   }
   return starGroup;
 }
-

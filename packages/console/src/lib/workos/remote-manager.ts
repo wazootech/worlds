@@ -163,4 +163,3 @@ export class RemoteWorkOSManager implements WorkOSManager {
     };
   }
 }
-

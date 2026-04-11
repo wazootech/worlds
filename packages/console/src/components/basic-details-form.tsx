@@ -92,4 +92,3 @@ export function BasicDetailsForm({
     </form>
   );
 }
-

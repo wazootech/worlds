@@ -134,4 +134,3 @@ export function createCraterLayer(
 
   return craterLayer;
 }
-

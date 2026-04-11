@@ -77,4 +77,3 @@ export class RegistryRepository {
     return (result as SparqlAskResults).boolean === true;
   }
 }
-

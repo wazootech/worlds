@@ -28,4 +28,3 @@ export * from "#/world/chunks/repository.ts";
 export * from "#/rdf/core/serialization.ts";
 export * from "#/rdf/patch/mod.ts";
 export * from "#/embeddings/mod.ts";
-

@@ -107,4 +107,3 @@ export const worldTableUpdateSchema: z.ZodType<
 export type WorldTableUpdate = Partial<
   Omit<WorldTable, "namespace_id" | "slug" | "created_at">
 >;
-

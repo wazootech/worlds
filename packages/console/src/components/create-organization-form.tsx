@@ -138,4 +138,3 @@ export function CreateOrganizationForm() {
     </div>
   );
 }
-

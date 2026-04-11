@@ -26,7 +26,7 @@ export async function generateMetadata(props: {
     if (!organization) return { title: "World" };
 
     const worlds = getWorldsByOrgMetadata(organization);
-    const world = await worlds.get(worldSlug);
+    const world = await worlds.get({ slug: worldSlug });
     if (!world) return { title: "World" };
 
     return {
@@ -81,7 +81,7 @@ export default async function WorldLayout({
   try {
     const worlds = getWorldsByOrgMetadata(organization);
     const [worldData, worldsData] = await Promise.all([
-      worlds.get(worldId),
+      worlds.get({ slug: worldId }),
       worlds.list({ page: 1, pageSize: 100 }),
     ]);
     world = worldData;
@@ -98,10 +98,9 @@ export default async function WorldLayout({
 
   // Canonical redirect
   if (
-    (organizationId === organization.id &&
-      organization.slug &&
-      organization.slug !== organization.id) ||
-    (worldId === world.id && world.slug && world.slug !== world.id)
+    organizationId === organization.id &&
+    organization.slug &&
+    organization.slug !== organization.id
   ) {
     redirect(`/${organization.slug}/${world.slug}`);
   }
@@ -144,8 +143,8 @@ const worlds = new Worlds({
   apiKey: "${apiKey}"
 });
 
-// Resolve a world by its ID or slug.
-const world = await worlds.get("${worldIdSnippet}");
+// Resolve a world by its slug.
+const world = await worlds.get({ slug: "${worldIdSnippet}" });
 console.log("Connected to world:", world.label);`;
 
   const maskedApiKey =
@@ -160,8 +159,8 @@ const worlds = new Worlds({
   apiKey: "${maskedApiKey}"
 });
 
-// Resolve a world by its ID or slug.
-const world = await worlds.get("${worldIdSnippet}");
+// Resolve a world by its slug.
+const world = await worlds.get({ slug: "${worldIdSnippet}" });
 console.log("Connected to world:", world.label);`;
 
   const maskedCodeSnippetHtml = await codeToHtml(maskedCodeSnippet, {

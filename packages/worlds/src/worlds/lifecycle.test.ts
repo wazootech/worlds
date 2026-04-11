@@ -45,4 +45,3 @@ Deno.test("LocalWorlds Lifecycle", async (t) => {
     );
   });
 });
-

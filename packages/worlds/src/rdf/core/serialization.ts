@@ -1,4 +1,3 @@
-
 /**
  * Serialization represents a supported RDF serialization format.
  */
@@ -35,7 +34,6 @@ export const SERIALIZATIONS: Record<string, Serialization> = {
  */
 export const DEFAULT_SERIALIZATION = SERIALIZATIONS["text/turtle"];
 
-
 /**
  * getSerializationByContentType returns the serialization for a given content type.
  */
@@ -47,5 +45,3 @@ export function getSerializationByContentType(
       contentType.includes(s.contentType)
     );
 }
-
-

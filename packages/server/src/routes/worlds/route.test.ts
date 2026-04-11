@@ -38,7 +38,10 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
+      await testContext.libsql.manager.create({
+        namespace: WORLDS_WORLD_NAMESPACE,
+        slug,
+      });
 
       const resp = await app.fetch(
         new Request(`http://localhost/worlds/${slug}`, {
@@ -99,7 +102,10 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
+      await testContext.libsql.manager.create({
+        namespace: WORLDS_WORLD_NAMESPACE,
+        slug,
+      });
 
       // Request with Turtle Accept header
       const resp = await app.fetch(
@@ -160,5 +166,3 @@ Deno.test("Worlds API routes", async (t) => {
     },
   );
 });
-
-

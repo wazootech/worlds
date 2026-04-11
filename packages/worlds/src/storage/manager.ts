@@ -64,4 +64,3 @@ export interface DatabaseManager {
    */
   [Symbol.asyncDispose](): Promise<void>;
 }
-

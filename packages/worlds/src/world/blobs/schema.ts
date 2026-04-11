@@ -34,4 +34,3 @@ export const blobSchema: z.ZodType<BlobRow> = blobShape;
  * BlobTableInsert represents the data needed to insert/upsert a blob.
  */
 export type BlobTableInsert = BlobRow;
-

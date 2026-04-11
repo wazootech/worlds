@@ -208,12 +208,9 @@ Deno.test("World routes", async (t) => {
     assert(nQuads.includes("Imported Object"));
   });
 
-
   await t.step("delete world", async () => {
     await worlds.delete({ slug: slug });
     const world = await worlds.get({ slug: slug });
     assertEquals(world, null);
   });
 });
-
-

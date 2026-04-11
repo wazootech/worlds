@@ -8,7 +8,11 @@ import {
   selectWorldBySlugInternal,
   updateWorld,
 } from "./worlds.queries.sql.ts";
-import type { WorldRow, WorldTableInsert, WorldTableUpdate } from "./worlds.schema.ts";
+import type {
+  WorldRow,
+  WorldTableInsert,
+  WorldTableUpdate,
+} from "./worlds.schema.ts";
 
 /**
  * WorldsRepository handles the persistence of world metadata in the system database.
@@ -86,13 +90,13 @@ export class WorldsRepository {
   ): Promise<WorldRow[]> {
     const result = namespaceId
       ? await this.db.execute({
-          sql: selectAllWorlds,
-          args: [namespaceId, limit, offset],
-        })
+        sql: selectAllWorlds,
+        args: [namespaceId, limit, offset],
+      })
       : await this.db.execute({
-          sql: `SELECT * FROM worlds ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-          args: [limit, offset],
-        });
+        sql: `SELECT * FROM worlds ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        args: [limit, offset],
+      });
     return (result.rows as Record<string, unknown>[]).map((row) => ({
       namespace_id: row.namespace_id as string,
       slug: row.slug as string,
@@ -166,4 +170,3 @@ export class WorldsRepository {
     await this.db.execute({ sql: deleteWorld, args: [slug, ns] });
   }
 }
-

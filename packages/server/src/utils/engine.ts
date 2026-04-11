@@ -1,4 +1,3 @@
-import { LocalWorlds } from "@wazoo/worlds-sdk";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
 
 /**
@@ -11,5 +10,3 @@ export function getNamespacedEngine(
 ) {
   return appContext.engine!;
 }
-
-

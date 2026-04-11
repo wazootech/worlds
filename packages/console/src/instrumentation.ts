@@ -35,4 +35,3 @@ export async function register() {
   // Register shutdown hooks from within the Node-only module
   appManager.registerShutdownHooks();
 }
-

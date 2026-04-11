@@ -321,4 +321,3 @@ export class LocalWorkOSManager implements WorkOSManager {
 }
 
 export const localWorkOSManager = new LocalWorkOSManager();
-

@@ -43,8 +43,8 @@ async function parseQuery(request: Request) {
  */
 export default (appContext: WorldsContext) => {
   return new Router()
-    .get("/worlds/:world/sparql", async (ctx) => {
-      const slug = ctx.params?.pathname.groups.world;
+    .get("/worlds/:slug/sparql", async (ctx) => {
+      const slug = ctx.params?.pathname.groups.slug;
       if (!slug) return ErrorResponse.BadRequest("World slug required");
 
       const authorized = await authorizeRequest(
@@ -90,8 +90,8 @@ export default (appContext: WorldsContext) => {
         );
       }
     })
-    .post("/worlds/:world/sparql", async (ctx) => {
-      const slug = ctx.params?.pathname.groups.world;
+    .post("/worlds/:slug/sparql", async (ctx) => {
+      const slug = ctx.params?.pathname.groups.slug;
       if (!slug) return ErrorResponse.BadRequest("World slug required");
 
       const authorized = await authorizeRequest(
@@ -127,5 +127,3 @@ export default (appContext: WorldsContext) => {
       }
     });
 };
-
-

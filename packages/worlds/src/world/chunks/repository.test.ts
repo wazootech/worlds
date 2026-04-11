@@ -1,6 +1,9 @@
 import { assertEquals } from "@std/assert";
 
-import { createTestContext, createTestNamespace } from "#/core/engine-context.ts";
+import {
+  createTestContext,
+  createTestNamespace,
+} from "#/core/engine-context.ts";
 import { TriplesRepository } from "#/world/triples/repository.ts";
 import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
 import { ChunksRepository } from "#/world/chunks/repository.ts";
@@ -81,4 +84,3 @@ Deno.test("ChunksSearchRepository", async (t) => {
   await testContext.libsql.manager.close();
   testContext.libsql.database.close();
 });
-

@@ -53,4 +53,3 @@ export async function GET() {
   // Redirect to the new org's dashboard
   redirect(`/${org.slug}`);
 }
-

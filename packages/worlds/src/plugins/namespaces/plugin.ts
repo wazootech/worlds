@@ -1,5 +1,4 @@
-import { WORLDS, WORLDS_WORLD_NAMESPACE, WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
-import type { Client } from "@libsql/client";
+import { WORLDS, WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
 import type { WorldsInterface } from "#/core/types.ts";
 import type { WorldsPlugin } from "../interface.ts";
 

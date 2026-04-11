@@ -22,6 +22,7 @@ export const WORLDS = {
   ApiKey: "https://schema.wazoo.dev/worlds#ApiKey",
   World: "https://schema.wazoo.dev/worlds#World",
   Chunk: "https://schema.wazoo.dev/worlds#Chunk",
+  LogEntry: "https://schema.wazoo.dev/worlds#LogEntry",
 
   /**
    * Properties
@@ -34,6 +35,9 @@ export const WORLDS = {
   hasDescription: "https://schema.wazoo.dev/worlds#hasDescription", // Any -> String
   hasContent: "https://schema.wazoo.dev/worlds#hasContent", // Chunk -> String
   hasEmbedding: "https://schema.wazoo.dev/worlds#hasEmbedding", // Chunk -> String (vector as JSON)
+  hasLevel: "https://schema.wazoo.dev/worlds#hasLevel", // LogEntry -> String
+  hasMessage: "https://schema.wazoo.dev/worlds#hasMessage", // LogEntry -> String
+  hasMetadata: "https://schema.wazoo.dev/worlds#hasMetadata", // LogEntry -> String (JSON)
   createdAt: "https://schema.wazoo.dev/worlds#createdAt", // Any -> Number (timestamp)
 } as const;
 
@@ -54,4 +58,3 @@ export const WORLDS_WORLD_NAMESPACE: string =
  * Mirrors the RDF default graph concept.
  */
 export const DEFAULT_NAMESPACE = "_";
-

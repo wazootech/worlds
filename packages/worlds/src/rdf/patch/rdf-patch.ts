@@ -52,12 +52,10 @@ export async function handlePatch(
             try {
               vector = await embeddings.embed(object);
             } catch (_error) {
+              // Ignore embedding errors for now
             }
           }
 
-          if (isFtsEligible) {
-
-          }
           await triplesRepository.upsert({
             id: tripleId,
             subject,
@@ -81,6 +79,7 @@ export async function handlePatch(
                 try {
                   chunkVector = await embeddings.embed(chunkText);
                 } catch (_error) {
+                  // Ignore embedding errors for chunking
                 }
               }
 
@@ -111,5 +110,3 @@ async function hash(msg: string): Promise<string> {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
-
-

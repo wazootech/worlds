@@ -68,5 +68,3 @@ Deno.test("handleETagRequest utility", async (t) => {
     assertEquals(result.headers.get("etag"), null);
   });
 });
-
-

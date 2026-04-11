@@ -19,4 +19,3 @@ export async function GET(request: Request) {
   const signInUrl = await getSignInUrl();
   redirect(signInUrl);
 }
-

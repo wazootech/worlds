@@ -53,4 +53,3 @@ export function formatSparqlResultsForCopy(
   // Fallback to JSON
   return JSON.stringify(results, null, 2);
 }
-

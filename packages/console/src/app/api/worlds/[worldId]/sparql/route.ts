@@ -40,12 +40,12 @@ export async function POST(
   const body = await req.text();
 
   try {
-    // Resolve world to ensure we have the actual ID for sub-resource call
-    const world = await worlds.get(worldId);
+    // Resolve world
+    const world = await worlds.get({ slug: worldId });
     if (!world) {
       return NextResponse.json({ error: "World not found" }, { status: 404 });
     }
-    const result = await worlds.sparql(world.id, body);
+    const result = await worlds.sparql({ slug: world.slug, query: body });
     console.log("SPARQL Result:", result);
     return NextResponse.json(result);
   } catch (error) {

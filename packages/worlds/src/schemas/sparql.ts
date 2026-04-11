@@ -311,6 +311,11 @@ export interface WorldsSparqlInput {
   slug: string;
 
   /**
+   * namespace is the optional namespace of the target world.
+   */
+  namespace?: string;
+
+  /**
    * query is the SPARQL query or update string.
    */
   query: string;
@@ -331,6 +336,9 @@ export interface WorldsSparqlInput {
  */
 export const worldsSparqlInputSchema: z.ZodType<WorldsSparqlInput> = z.object({
   slug: z.string().describe("The slug of the target world."),
+  namespace: z.string().optional().describe(
+    "The optional namespace of the target world.",
+  ),
   query: z.string().describe("The SPARQL query or update string."),
   defaultGraphUris: z.array(z.string()).optional().describe(
     "Optional list of default graphs to query.",
@@ -411,4 +419,3 @@ export const worldsSparqlOutputSchema: z.ZodType<WorldsSparqlOutput> = z
     sparqlQuadsResultsSchema,
     z.literal(null),
   ]);
-

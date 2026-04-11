@@ -183,4 +183,3 @@ export function createlandMassLayer(
 
   return landMassLayer;
 }
-

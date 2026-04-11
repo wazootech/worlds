@@ -35,4 +35,3 @@ export const createNoAtmospherePlanet = (options?: PlanetOptions): Group => {
 
   return noAtmospherePlanet;
 };
-

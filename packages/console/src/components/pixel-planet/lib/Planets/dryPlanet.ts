@@ -174,4 +174,3 @@ export function createDryPlanet(options?: PlanetOptions): Group {
   const basePlanet = new Mesh(planetGeometry, planetMaterial);
   return new Group().add(basePlanet);
 }
-

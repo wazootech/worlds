@@ -36,5 +36,3 @@ export async function handleETagRequest(
   response.headers.set("etag", etag);
   return response;
 }
-
-

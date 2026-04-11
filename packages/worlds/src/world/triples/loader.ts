@@ -1,5 +1,5 @@
 import type { Client } from "@libsql/client";
-import { DataFactory, Store, type Quad } from "n3";
+import { DataFactory, type Quad, Store } from "n3";
 import { skolemizeQuad } from "#/rdf/patch/skolem.ts";
 import { TriplesRepository } from "./repository.ts";
 import type { PatchHandler } from "#/rdf/patch/types.ts";
@@ -21,7 +21,9 @@ export class TriplesPatchHandler implements PatchHandler {
     this.repository = new TriplesRepository(db);
   }
 
-  async patch(patches: { insertions: Quad[]; deletions: Quad[] }[]): Promise<void> {
+  async patch(
+    patches: { insertions: Quad[]; deletions: Quad[] }[],
+  ): Promise<void> {
     for (const patch of patches) {
       for (const quad of patch.deletions) {
         const id = await skolemizeQuad(quad);
@@ -65,7 +67,7 @@ export async function loadStore(db: Client): Promise<Store> {
   if (triples.length > MAX_TRIPLES) {
     throw new Error(
       `World exceeds recommended max of ${MAX_TRIPLES} triples (found ${triples.length}). ` +
-      `Lazy loading for large worlds is not yet supported.`,
+        `Lazy loading for large worlds is not yet supported.`,
     );
   }
 

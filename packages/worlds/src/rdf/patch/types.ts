@@ -34,5 +34,3 @@ export interface PatchHandlerSync {
    */
   patch(patches: Patch[]): void;
 }
-
-

@@ -44,12 +44,12 @@ export async function POST(
     const body = await request.text();
     const query = body;
 
-    // Resolve world to ensure we have the actual ID for sub-resource call
-    const world = await worlds.get(worldId);
+    // Resolve world
+    const world = await worlds.get({ slug: worldId });
     if (!world) {
       return NextResponse.json({ error: "World not found" }, { status: 404 });
     }
-    const results = await worlds.search(world.id, query);
+    const results = await worlds.search({ slug: world.slug, query });
 
     return NextResponse.json(results);
   } catch (error) {

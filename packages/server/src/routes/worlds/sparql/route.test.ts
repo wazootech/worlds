@@ -36,7 +36,10 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
+      await testContext.libsql.manager.create({
+        namespace: WORLDS_WORLD_NAMESPACE,
+        slug,
+      });
 
       const resp = await app.fetch(
         new Request(`http://localhost/worlds/${slug}/sparql`, {
@@ -71,7 +74,10 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
+      await testContext.libsql.manager.create({
+        namespace: WORLDS_WORLD_NAMESPACE,
+        slug,
+      });
 
       // Request without query parameter should return Service Description
       const resp = await app.fetch(
@@ -127,7 +133,10 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
+      await testContext.libsql.manager.create({
+        namespace: WORLDS_WORLD_NAMESPACE,
+        slug,
+      });
 
       // Request with N-Triples Accept header
       const resp = await app.fetch(
@@ -177,7 +186,10 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({ namespace: WORLDS_WORLD_NAMESPACE, slug });
+      await testContext.libsql.manager.create({
+        namespace: WORLDS_WORLD_NAMESPACE,
+        slug,
+      });
 
       // Request with weighted Accept header: prefer NTriples over Turtle
       const resp = await app.fetch(
@@ -195,5 +207,3 @@ Deno.test("SPARQL API routes", async (t) => {
     },
   );
 });
-
-

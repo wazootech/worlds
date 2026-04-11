@@ -34,4 +34,3 @@ export function useWorld() {
   }
   return context;
 }
-

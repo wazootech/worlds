@@ -34,4 +34,3 @@ export interface SourceOptions {
    */
   default?: boolean;
 }
-

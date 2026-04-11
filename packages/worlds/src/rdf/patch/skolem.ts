@@ -23,5 +23,3 @@ export async function canonizeQuad(quad: Quad): Promise<string> {
     format: "application/n-quads",
   });
 }
-
-

@@ -57,4 +57,3 @@ export const createIcePlanet = (options?: PlanetOptions): Group => {
 
   return icePlanet;
 };
-

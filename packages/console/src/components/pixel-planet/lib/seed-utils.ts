@@ -15,4 +15,3 @@ export function getSeedFromId(id: string): number {
 
   return min5Digit + (Math.abs(hash) % range);
 }
-

@@ -112,4 +112,3 @@ Deno.test("Multi-tenant Isolation", async (t) => {
     assertEquals(resB.results.bindings[0].o.value, "Value B");
   });
 });
-

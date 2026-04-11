@@ -9,6 +9,8 @@ import {
   teardownOrganization,
 } from "@/lib/platform";
 import { getWorldsByOrgMetadata } from "@/lib/worlds";
+import type { Log } from "@wazoo/worlds-sdk";
+import { WORLDS } from "@wazoo/worlds-sdk";
 
 function getActiveOrgId(user: WorkOSUser) {
   return user.metadata?.activeOrganizationId as string | undefined;
@@ -39,13 +41,17 @@ export async function updateWorld(
   if (!organization) throw new Error("Organization not found");
   const worlds = getWorldsByOrgMetadata(organization);
 
-  // Resolve world to ensure we have the actual ID for mutation
-  const world = await worlds.get(worldId);
+  // Resolve world to ensure we have it
+  const world = await worlds.get({ slug: worldId });
   if (!world) {
     throw new Error("World not found");
   }
 
-  await worlds.update(world.id, updates);
+  await worlds.update({
+    slug: world.slug,
+    label: updates.label,
+    description: updates.description,
+  });
 
   if (organization) {
     const finalWorldSlug = updates.slug ?? world.slug;
@@ -72,13 +78,13 @@ export async function deleteWorld(organizationId: string, worldId: string) {
   if (!organization) throw new Error("Organization not found");
   const worlds = getWorldsByOrgMetadata(organization);
 
-  // Resolve world to ensure we have the actual ID for mutation
-  const world = await worlds.get(worldId);
+  // Resolve world
+  const world = await worlds.get({ slug: worldId });
   if (!world) {
     throw new Error("World not found");
   }
 
-  await worlds.delete(world.id);
+  await worlds.delete({ slug: world.slug });
   // Re-fetch organization to ensure we have the slug (since we might have just used ID above? No, we have the object)
   if (organization) {
     if (!organization.slug) throw new Error("Organization is missing a slug");
@@ -165,7 +171,7 @@ export async function createWorld(
       slug,
     });
 
-    console.log("World created successfully:", world.id);
+    console.log("World created successfully:", world.slug);
 
     // Artificial delay to allow for eventual consistency in DB
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -173,7 +179,7 @@ export async function createWorld(
     revalidatePath(`/${organization.id}`);
     revalidatePath(`/${organization.slug}`);
 
-    return { success: true, worldId: world.id, slug: world.slug };
+    return { success: true, worldId: world.slug, slug: world.slug };
   } catch (error) {
     console.error("Failed to create world:", error);
     return {
@@ -209,9 +215,9 @@ export async function deleteOrganization(organizationId: string) {
     });
     for (const world of worldsList) {
       try {
-        await worlds.delete(world.id);
+        await worlds.delete({ slug: world.slug });
       } catch (e) {
-        console.error(`Failed to cleanup world ${world.id}:`, e);
+        console.error(`Failed to cleanup world ${world.slug}:`, e);
       }
     }
   } catch (error) {
@@ -415,18 +421,85 @@ export async function executeSparqlQuery(worldId: string, query: string) {
     if (!organization) throw new Error("Organization not found");
     const worlds = getWorldsByOrgMetadata(organization);
 
-    // Resolve world to ensure we have the actual ID for sub-resource call
-    const world = await worlds.get(worldId);
+    // Resolve world
+    const world = await worlds.get({ slug: worldId });
     if (!world) {
       throw new Error("World not found");
     }
-    const results = await worlds.sparql(world.id, query);
+    const results = await worlds.sparql({ slug: world.slug, query });
     return { success: true, results };
   } catch (error) {
     console.error("Failed to execute SPARQL query:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to execute query",
+    };
+  }
+}
+
+/**
+ * listWorldLogs lists logs for a world with pagination and level filtering.
+ */
+export async function listWorldLogs(
+  worldId: string,
+  page?: number,
+  pageSize?: number,
+  level?: string,
+) {
+  const { user } = await withAuth();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    const workos = await getWorkOS();
+    const activeOrgId = await getActiveOrgId(user);
+    if (!activeOrgId) throw new Error("No active organization");
+    const organization = await workos.getOrganization(activeOrgId);
+    if (!organization) throw new Error("Organization not found");
+    const worlds = getWorldsByOrgMetadata(organization);
+
+    // Resolve world
+    const world = await worlds.get({ slug: worldId });
+    if (!world) {
+      throw new Error("World not found");
+    }
+
+    const query = `
+      PREFIX worlds: <${WORLDS.NAMESPACE}>
+      SELECT ?level ?message ?timestamp ?metadata WHERE {
+        ?log a worlds:LogEntry ;
+             worlds:hasLevel ?level ;
+             worlds:hasMessage ?message ;
+             worlds:createdAt ?timestamp .
+        OPTIONAL { ?log worlds:hasMetadata ?metadata }
+        ${level && level !== "all" ? `FILTER(?level = "${level}")` : ""}
+      } ORDER BY DESC(?timestamp) LIMIT ${pageSize ?? 50} OFFSET ${((page ?? 1) - 1) * (pageSize ?? 50)}
+    `;
+
+    const result = await worlds.sparql({ slug: world.slug, query });
+
+    // Map SPARQL results to Log format
+    const logs: Log[] = [];
+    if (result && "results" in result && result.results.bindings) {
+      for (const binding of result.results.bindings) {
+        logs.push({
+          level: binding.level?.value ?? "info",
+          message: binding.message?.value ?? "",
+          timestamp: Number(binding.timestamp?.value ?? Date.now()),
+          metadata: binding.metadata
+            ? JSON.parse(binding.metadata.value)
+            : undefined,
+        });
+      }
+    }
+
+    return { success: true, logs };
+  } catch (error) {
+    console.error("Failed to list world logs:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to list logs",
     };
   }
 }
@@ -452,12 +525,18 @@ export async function searchTriples(
     if (!organization) throw new Error("Organization not found");
     const worlds = getWorldsByOrgMetadata(organization);
 
-    // Resolve world to ensure we have the actual ID for sub-resource call
-    const world = await worlds.get(worldId);
+    // Resolve world
+    const world = await worlds.get({ slug: worldId });
     if (!world) {
       throw new Error("World not found");
     }
-    const results = await worlds.search(world.id, query, options);
+    const results = await worlds.search({
+      slug: world.slug,
+      query,
+      limit: options?.limit,
+      subjects: options?.subjects,
+      predicates: options?.predicates,
+    });
     return { success: true, results };
   } catch (error) {
     console.error("Failed to search triples:", error);
@@ -467,7 +546,6 @@ export async function searchTriples(
     };
   }
 }
-
 
 /**
  * pingEndpointAction pings an endpoint to check if it is alive.
@@ -496,4 +574,3 @@ export async function pingEndpointAction(url: string): Promise<boolean> {
     return false;
   }
 }
-

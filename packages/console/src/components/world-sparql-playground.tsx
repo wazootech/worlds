@@ -105,4 +105,3 @@ export function WorldSparqlPlayground({ worldId }: { worldId: string }) {
     </div>
   );
 }
-

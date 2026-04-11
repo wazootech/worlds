@@ -107,5 +107,3 @@ export function connectSearchStoreToN3Store(
     },
   };
 }
-
-

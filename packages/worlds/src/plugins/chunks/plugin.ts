@@ -5,7 +5,7 @@ import type { WorldsPlugin } from "../interface.ts";
 /**
  * ChunksPlugin makes chunk entities queryable via SPARQL.
  * This is an opt-in plugin that injects chunk triples into the WORLDS world.
- * 
+ *
  * Usage:
  * ```typescript
  * const chunksPlugin = new ChunksPlugin();

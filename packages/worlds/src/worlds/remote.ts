@@ -201,8 +201,7 @@ export class RemoteWorlds implements WorldsInterface {
    * search performs semantic/text search on a world using vector embeddings.
    */
   public async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
-    const { slug, query, limit, subjects, predicates, types } =
-      input;
+    const { slug, query, limit, subjects, predicates, types } = input;
     const url = new URL(
       `${this.options.baseUrl}/worlds/${slug}/search`,
     );
@@ -346,4 +345,3 @@ export class RemoteWorlds implements WorldsInterface {
     return this.close();
   }
 }
-

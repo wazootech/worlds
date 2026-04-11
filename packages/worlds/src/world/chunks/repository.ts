@@ -4,7 +4,6 @@ import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { WorldsSearchOutput } from "#/schemas/mod.ts";
 import type { WorldRow } from "#/plugins/registry/worlds.schema.ts";
 import type { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
-import { WORLDS, WORLDS_WORLD_NAMESPACE, WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
 import {
   type ChunkTableUpsert,
   type SearchRow,
@@ -185,7 +184,7 @@ export class ChunksSearchRepository {
           vecRank: row.vec_rank,
           ftsRank: row.fts_rank,
           score: row.combined_rank,
-          worldId: world.slug,
+          slug: world.slug,
         };
       });
 
@@ -199,4 +198,3 @@ export class ChunksSearchRepository {
     }
   }
 }
-

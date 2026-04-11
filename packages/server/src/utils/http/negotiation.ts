@@ -1,8 +1,5 @@
 import { accepts } from "@std/http/negotiation";
-import {
-  SERIALIZATIONS,
-  type Serialization,
-} from "@wazoo/worlds-sdk";
+import { type Serialization, SERIALIZATIONS } from "@wazoo/worlds-sdk";
 
 /**
  * negotiateSerialization selects the best RDF serialization for the request.
@@ -26,7 +23,6 @@ export function negotiateSerialization(
     );
   }
 
-  return (SERIALIZATIONS as any)[defaultContentType] || SERIALIZATIONS["text/turtle"];
+  return SERIALIZATIONS[defaultContentType] ||
+    SERIALIZATIONS["text/turtle"];
 }
-
-

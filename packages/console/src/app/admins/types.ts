@@ -6,4 +6,3 @@ export type WorkOSUser = {
   metadata?: Record<string, unknown> | null;
   createdAt?: string | null;
 };
-

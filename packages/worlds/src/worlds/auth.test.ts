@@ -35,4 +35,3 @@ Deno.test("RegistryRepository & Auth Middleware", async (t) => {
     assertEquals(auth.namespaceId, undefined);
   });
 });
-

@@ -313,4 +313,3 @@ export function createNebulaLayer(): Mesh {
 
   return plane;
 }
-

@@ -77,4 +77,3 @@ export function parseSources(sources: Array<string | Source>): Source[] {
     return parsed;
   });
 }
-

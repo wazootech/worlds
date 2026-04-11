@@ -14,7 +14,6 @@ import {
 } from "#/rdf/core/serialization.ts";
 import { worldSchema, worldsSparqlOutputSchema } from "#/schemas/mod.ts";
 import type { WorldsInterface } from "#/core/types.ts";
-import type { Patch } from "#/rdf/patch/mod.ts";
 import type { WorldOptions } from "#/storage/manager.ts";
 import type { WorldsContext } from "#/core/types.ts";
 import {
@@ -100,7 +99,10 @@ export class LocalWorlds implements WorldsInterface {
    * ensureRegistryWorld guarantees the presence of the registry world and seeds it if necessary.
    */
   private async ensureRegistryWorld(): Promise<void> {
-    const existing = await this.worldsRepository.get(WORLDS_WORLD_SLUG, undefined);
+    const existing = await this.worldsRepository.get(
+      WORLDS_WORLD_SLUG,
+      undefined,
+    );
     if (existing) {
       return;
     }
@@ -132,7 +134,7 @@ export class LocalWorlds implements WorldsInterface {
     }
 
     if (this.appContext.apiKey) {
-      const namespace = `${WORLDS.BASE}namespaces/default`;
+      const namespace = `${WORLDS.BASE}namespaces/_`;
       const keyId = `${WORLDS.BASE}keys/bootstrap`;
 
       await this._sparql({
@@ -173,18 +175,20 @@ export class LocalWorlds implements WorldsInterface {
       offset,
     );
     return rows
-      .filter((w) => w.slug !== WORLDS_WORLD_SLUG || this.appContext.namespace !== undefined)
+      .filter((w) =>
+        w.slug !== WORLDS_WORLD_SLUG || this.appContext.namespace !== undefined
+      )
       .map((world) =>
-      worldSchema.parse({
-        slug: world.slug,
-        namespace: world.namespace_id,
-        label: world.label ?? undefined,
-        description: world.description ?? undefined,
-        createdAt: world.created_at,
-        updatedAt: world.updated_at,
-        deletedAt: world.deleted_at ?? undefined,
-      })
-    );
+        worldSchema.parse({
+          slug: world.slug,
+          namespace: world.namespace_id,
+          label: world.label ?? undefined,
+          description: world.description ?? undefined,
+          createdAt: world.created_at,
+          updatedAt: world.updated_at,
+          deletedAt: world.deleted_at ?? undefined,
+        })
+      );
   }
 
   /**
@@ -218,7 +222,8 @@ export class LocalWorlds implements WorldsInterface {
     await this.ensureInitialized();
     const { slug, namespace: inputNamespace, label, description } = data;
 
-    const namespace = inputNamespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE;
+    const namespace = inputNamespace ?? this.appContext.namespace ??
+      DEFAULT_NAMESPACE;
     const existingBySlug = await this.worldsRepository.get(
       slug,
       namespace,
@@ -261,7 +266,8 @@ export class LocalWorlds implements WorldsInterface {
   async update(input: WorldsUpdateInput): Promise<void> {
     await this.ensureInitialized();
     const { slug, namespace: inputNamespace, ...data } = input;
-    const namespace = inputNamespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE;
+    const namespace = inputNamespace ?? this.appContext.namespace ??
+      DEFAULT_NAMESPACE;
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error("World not found");
@@ -316,7 +322,10 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error(`World not found: ${slug} in namespace ${namespace}`);
     }
 
-    const managed = await this.appContext.libsql.manager.get({ namespace, slug });
+    const managed = await this.appContext.libsql.manager.get({
+      namespace,
+      slug,
+    });
     const patchHandler = new TriplesPatchHandler(managed.database);
     const batchHandler = new BatchPatchHandler(patchHandler);
 
@@ -327,18 +336,12 @@ export class LocalWorlds implements WorldsInterface {
     if (isUpdate) {
       await batchHandler.commit();
 
-
       // Also run handlePatch to create chunks from the updated store
       await handlePatch(
         managed.database,
         this.appContext.embeddings,
         batchHandler.patches,
-
-
       ); // close handlePatch
-
-
-
 
       this.invalidateStore({ slug, namespace });
 
@@ -573,4 +576,3 @@ export class LocalWorlds implements WorldsInterface {
     }
   }
 }
-

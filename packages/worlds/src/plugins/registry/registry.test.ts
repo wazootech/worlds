@@ -42,7 +42,9 @@ Deno.test("LocalWorlds Registry", async (t) => {
     await worlds.create({ slug: "normal-world", label: "Normal" });
 
     const list = await worlds.list();
-    assertEquals(list.find((world) => world.slug === WORLDS_WORLD_SLUG), undefined);
+    assertEquals(
+      list.find((world) => world.slug === WORLDS_WORLD_SLUG),
+      undefined,
+    );
   });
 });
-

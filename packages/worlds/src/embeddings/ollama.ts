@@ -42,4 +42,3 @@ export class OllamaEmbeddings implements Embeddings {
     return embedding;
   }
 }
-

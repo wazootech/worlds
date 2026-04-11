@@ -19,7 +19,6 @@ import { deleteWorld, worldsDeleteTool } from "./tools/delete.ts";
 import { importWorld, worldsImportTool } from "./tools/import.ts";
 import { exportWorld, worldsExportTool } from "./tools/export.ts";
 
-
 function createMockWorld(overrides?: Partial<World>): World {
   const now = Date.now();
   return {
@@ -348,6 +347,3 @@ Deno.test("export tool", async (t) => {
     assertExists(worldsExportTool.outputSchema);
   });
 });
-
-
-

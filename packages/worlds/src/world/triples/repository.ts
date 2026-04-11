@@ -57,4 +57,3 @@ export class TriplesRepository {
     return result.rows as unknown as TripleTableUpsert[];
   }
 }
-

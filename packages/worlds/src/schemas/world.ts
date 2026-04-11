@@ -169,4 +169,3 @@ export const worldsDeleteInputSchema: z.ZodType<WorldsDeleteInput> = z.object({
   slug: z.string().describe("The slug to delete."),
   namespace: z.string().optional(),
 });
-

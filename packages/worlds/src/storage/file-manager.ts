@@ -1,7 +1,11 @@
 import { join } from "@std/path";
 import type { Client } from "@libsql/client";
 import { createClient } from "@libsql/client";
-import type { DatabaseManager, ManagedDatabase, WorldOptions } from "#/storage/manager.ts";
+import type {
+  DatabaseManager,
+  ManagedDatabase,
+  WorldOptions,
+} from "#/storage/manager.ts";
 
 import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
@@ -116,4 +120,3 @@ export class FileDatabaseManager implements DatabaseManager {
     await this.close();
   }
 }
-

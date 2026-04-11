@@ -1,5 +1,9 @@
 import { type Client, createClient } from "@libsql/client";
-import type { DatabaseManager, ManagedDatabase, WorldOptions } from "#/storage/manager.ts";
+import type {
+  DatabaseManager,
+  ManagedDatabase,
+  WorldOptions,
+} from "#/storage/manager.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
 
 /**
@@ -80,4 +84,3 @@ export class MemoryDatabaseManager implements DatabaseManager {
     await this.close();
   }
 }
-

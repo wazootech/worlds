@@ -53,4 +53,3 @@ export function createTestNamespace(
   // Return the admin API key for authentication, as namespace keys are no longer valid
   return Promise.resolve({ id, apiKey: context.apiKey });
 }
-

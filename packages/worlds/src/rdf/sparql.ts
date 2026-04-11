@@ -1,5 +1,5 @@
 import { QueryEngine } from "@comunica/query-sparql-rdfjs-lite";
-import { Store } from "n3";
+import type { Store } from "n3";
 import type { PatchHandler } from "./patch/mod.ts";
 import { connectSearchStoreToN3Store } from "./patch/mod.ts";
 import { generateBlobFromN3Store, generateN3StoreFromBlob } from "./n3.ts";
@@ -234,5 +234,3 @@ function toSparqlValue(term: any): SparqlValue {
     return val;
   }
 }
-
-

@@ -22,4 +22,3 @@ export const itemTypeRowSchema: z.ZodType<ItemTypeRow> = z.object({
   subject: z.string(),
   type: z.string(),
 });
-

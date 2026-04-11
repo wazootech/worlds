@@ -131,4 +131,3 @@ export class Worlds implements WorldsInterface {
     return this.engine[Symbol.asyncDispose]();
   }
 }
-

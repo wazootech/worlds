@@ -9,9 +9,9 @@ import { getNamespacedEngine } from "#/utils/engine.ts";
  */
 export default (appContext: WorldsContext) => {
   return new Router().get(
-    "/worlds/:world/search",
+    "/worlds/:slug/search",
     async (ctx) => {
-      const slug = ctx.params?.pathname.groups.world;
+      const slug = ctx.params?.pathname.groups.slug;
       if (!slug) return ErrorResponse.BadRequest("World slug required");
 
       const authorized = await authorizeRequest(
@@ -49,5 +49,3 @@ export default (appContext: WorldsContext) => {
     },
   );
 };
-
-

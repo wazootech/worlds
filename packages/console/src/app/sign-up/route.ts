@@ -5,4 +5,3 @@ export async function GET() {
   const signUpUrl = await getSignUpUrl();
   redirect(signUpUrl);
 }
-
