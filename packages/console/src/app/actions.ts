@@ -9,8 +9,25 @@ import {
   teardownOrganization,
 } from "@/lib/platform";
 import { getWorldsByOrgMetadata } from "@/lib/worlds";
-import type { Log } from "@wazoo/worlds-sdk";
-import { WORLDS } from "@wazoo/worlds-sdk";
+import type { Log, SparqlSelectResults, SparqlValue } from "@wazoo/worlds-sdk";
+
+/** Ontology namespace IRI (matches server; inlined until console uses published slug/namespace SDK). */
+const WORLDS_ONTOLOGY_NAMESPACE = "https://schema.wazoo.dev/worlds#";
+
+function sparqlTermToString(term: SparqlValue | undefined): string {
+  if (!term) return "";
+  if (term.type === "literal" || term.type === "uri" || term.type === "bnode") {
+    return term.value;
+  }
+  return "";
+}
+
+function parseLogLevel(raw: string): Log["level"] {
+  if (raw === "info" || raw === "warn" || raw === "error" || raw === "debug") {
+    return raw;
+  }
+  return "info";
+}
 
 function getActiveOrgId(user: WorkOSUser) {
   return user.metadata?.activeOrganizationId as string | undefined;
@@ -42,13 +59,13 @@ export async function updateWorld(
   const worlds = getWorldsByOrgMetadata(organization);
 
   // Resolve world to ensure we have it
-  const world = await worlds.get({ slug: worldId });
+  const world = await worlds.get(worldId);
   if (!world) {
     throw new Error("World not found");
   }
 
-  await worlds.update({
-    slug: world.slug,
+  await worlds.update(world.id, {
+    slug: updates.slug,
     label: updates.label,
     description: updates.description,
   });
@@ -79,12 +96,12 @@ export async function deleteWorld(organizationId: string, worldId: string) {
   const worlds = getWorldsByOrgMetadata(organization);
 
   // Resolve world
-  const world = await worlds.get({ slug: worldId });
+  const world = await worlds.get(worldId);
   if (!world) {
     throw new Error("World not found");
   }
 
-  await worlds.delete({ slug: world.slug });
+  await worlds.delete(world.id);
   // Re-fetch organization to ensure we have the slug (since we might have just used ID above? No, we have the object)
   if (organization) {
     if (!organization.slug) throw new Error("Organization is missing a slug");
@@ -215,7 +232,7 @@ export async function deleteOrganization(organizationId: string) {
     });
     for (const world of worldsList) {
       try {
-        await worlds.delete({ slug: world.slug });
+        await worlds.delete(world.id);
       } catch (e) {
         console.error(`Failed to cleanup world ${world.slug}:`, e);
       }
@@ -422,11 +439,11 @@ export async function executeSparqlQuery(worldId: string, query: string) {
     const worlds = getWorldsByOrgMetadata(organization);
 
     // Resolve world
-    const world = await worlds.get({ slug: worldId });
+    const world = await worlds.get(worldId);
     if (!world) {
       throw new Error("World not found");
     }
-    const results = await worlds.sparql({ slug: world.slug, query });
+    const results = await worlds.sparql(world.id, query);
     return { success: true, results };
   } catch (error) {
     console.error("Failed to execute SPARQL query:", error);
@@ -460,13 +477,13 @@ export async function listWorldLogs(
     const worlds = getWorldsByOrgMetadata(organization);
 
     // Resolve world
-    const world = await worlds.get({ slug: worldId });
+    const world = await worlds.get(worldId);
     if (!world) {
       throw new Error("World not found");
     }
 
     const query = `
-      PREFIX worlds: <${WORLDS.NAMESPACE}>
+      PREFIX worlds: <${WORLDS_ONTOLOGY_NAMESPACE}>
       SELECT ?level ?message ?timestamp ?metadata WHERE {
         ?log a worlds:LogEntry ;
              worlds:hasLevel ?level ;
@@ -477,19 +494,25 @@ export async function listWorldLogs(
       } ORDER BY DESC(?timestamp) LIMIT ${pageSize ?? 50} OFFSET ${((page ?? 1) - 1) * (pageSize ?? 50)}
     `;
 
-    const result = await worlds.sparql({ slug: world.slug, query });
+    const result = await worlds.sparql(world.id, query);
 
-    // Map SPARQL results to Log format
     const logs: Log[] = [];
-    if (result && "results" in result && result.results.bindings) {
-      for (const binding of result.results.bindings) {
+    const select = result as SparqlSelectResults | null;
+    if (select?.results?.bindings) {
+      let i = 0;
+      for (const binding of select.results.bindings) {
+        const metadataRaw = sparqlTermToString(binding.metadata);
         logs.push({
-          level: binding.level?.value ?? "info",
-          message: binding.message?.value ?? "",
-          timestamp: Number(binding.timestamp?.value ?? Date.now()),
-          metadata: binding.metadata
-            ? JSON.parse(binding.metadata.value)
-            : undefined,
+          id: `${world.id}-${sparqlTermToString(binding.timestamp)}-${i++}`,
+          worldId: world.id,
+          level: parseLogLevel(sparqlTermToString(binding.level)),
+          message: sparqlTermToString(binding.message),
+          timestamp: Number(
+            sparqlTermToString(binding.timestamp) || Date.now(),
+          ),
+          metadata: metadataRaw
+            ? (JSON.parse(metadataRaw) as Record<string, unknown>)
+            : null,
         });
       }
     }
@@ -526,13 +549,11 @@ export async function searchTriples(
     const worlds = getWorldsByOrgMetadata(organization);
 
     // Resolve world
-    const world = await worlds.get({ slug: worldId });
+    const world = await worlds.get(worldId);
     if (!world) {
       throw new Error("World not found");
     }
-    const results = await worlds.search({
-      slug: world.slug,
-      query,
+    const results = await worlds.search(world.id, query, {
       limit: options?.limit,
       subjects: options?.subjects,
       predicates: options?.predicates,

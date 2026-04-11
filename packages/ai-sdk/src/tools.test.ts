@@ -102,7 +102,7 @@ Deno.test("sparql tool", async (t) => {
     await assertRejects(
       () =>
         sparql(createMockWorlds(), sources as never, {
-          world: "test-world",
+          slug: "test-world",
           query: "INSERT DATA { <http://s> <http://p> <http://o> }",
         }),
       Error,
@@ -321,7 +321,7 @@ Deno.test("export tool", async (t) => {
     const mockWorlds = createMockWorlds({
       export: () => Promise.resolve(new TextEncoder().encode(mockData).buffer),
     });
-    const result = await exportWorld(mockWorlds, { world: "test-world" });
+    const result = await exportWorld(mockWorlds, { slug: "test-world" });
     assertEquals(result.data.includes("http://example.org/s"), true);
   });
 

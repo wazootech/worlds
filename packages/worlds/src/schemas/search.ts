@@ -65,6 +65,11 @@ export interface WorldsSearchInput {
   slug: string;
 
   /**
+   * namespace is the optional namespace of the target world.
+   */
+  namespace?: string;
+
+  /**
    * query is the search query string.
    */
   query: string;
@@ -95,6 +100,9 @@ export interface WorldsSearchInput {
  */
 export const worldsSearchInputSchema: z.ZodType<WorldsSearchInput> = z.object({
   slug: z.string().describe("The slug of the target world."),
+  namespace: z.string().optional().describe(
+    "The optional namespace of the target world.",
+  ),
   query: z.string().describe("The search query string."),
   limit: z.number().int().positive().optional().describe(
     "Maximum number of results to return.",

@@ -377,6 +377,11 @@ export interface WorldsServiceDescriptionInput {
   slug: string;
 
   /**
+   * namespace is the optional namespace of the target world.
+   */
+  namespace?: string;
+
+  /**
    * endpointUrl is the URL of the SPARQL endpoint.
    */
   endpointUrl: string;
@@ -394,6 +399,9 @@ export const worldsServiceDescriptionInputSchema: z.ZodType<
   WorldsServiceDescriptionInput
 > = z.object({
   slug: z.string().describe("The slug of the target world."),
+  namespace: z.string().optional().describe(
+    "The optional namespace of the target world.",
+  ),
   endpointUrl: z.string().url().describe("The URL of the SPARQL endpoint."),
   contentType: worldsContentTypeSchema.optional().describe(
     "Optional RDF serialization content type.",

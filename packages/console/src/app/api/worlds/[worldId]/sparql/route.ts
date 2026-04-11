@@ -41,11 +41,11 @@ export async function POST(
 
   try {
     // Resolve world
-    const world = await worlds.get({ slug: worldId });
+    const world = await worlds.get(worldId);
     if (!world) {
       return NextResponse.json({ error: "World not found" }, { status: 404 });
     }
-    const result = await worlds.sparql({ slug: world.slug, query: body });
+    const result = await worlds.sparql(world.id, body);
     console.log("SPARQL Result:", result);
     return NextResponse.json(result);
   } catch (error) {

@@ -20,7 +20,7 @@ Deno.test("LocalWorlds Registry", async (t) => {
   });
 
   await t.step("registry world bootstrapping with API key", async () => {
-    const namespace = "https://wazoo.dev/worlds/namespaces/default";
+    const namespace = "https://wazoo.dev/worlds/namespaces/_";
     const result = await worlds.sparql({
       slug: WORLDS_WORLD_SLUG,
       query: `

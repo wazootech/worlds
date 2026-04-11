@@ -169,8 +169,9 @@ export class LocalWorlds implements WorldsInterface {
       offset = (input.page - 1) * input.pageSize;
     }
 
+    const namespace = input?.namespace ?? this.appContext.namespace;
     const rows = await this.worldsRepository.list(
-      this.appContext.namespace,
+      namespace,
       limit,
       offset,
     );

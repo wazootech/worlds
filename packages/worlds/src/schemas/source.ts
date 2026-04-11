@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { type WorldsContentType, worldsContentTypeSchema } from "./sparql.ts";
 
 /**
  * Source represents a data source world by slug.
@@ -60,6 +61,11 @@ export const errorResponseDataSchema: z.ZodType<ErrorResponseData> = z.object({
  */
 export interface WorldsListInput {
   /**
+   * namespace is the optional namespace to list worlds within.
+   */
+  namespace?: string;
+
+  /**
    * page is the 1-indexed page number to fetch.
    */
   page?: number;
@@ -74,10 +80,10 @@ export interface WorldsListInput {
  * worldsListInputSchema is the Zod schema for WorldsListInput.
  */
 export const worldsListInputSchema: z.ZodType<WorldsListInput> = z.object({
+  namespace: z.string().optional(),
   page: z.number().int().positive().optional(),
   pageSize: z.number().int().positive().optional(),
 });
-import { type WorldsContentType, worldsContentTypeSchema } from "./sparql.ts";
 
 /**
  * WorldsImportInput represents the parameters for importing data into a world.
@@ -87,6 +93,11 @@ export interface WorldsImportInput {
    * slug is the slug of the target world.
    */
   slug: string;
+
+  /**
+   * namespace is the optional namespace of the target world.
+   */
+  namespace?: string;
 
   /**
    * data is the RDF data to import (string or Buffer).
@@ -104,6 +115,9 @@ export interface WorldsImportInput {
  */
 export const worldsImportInputSchema: z.ZodType<WorldsImportInput> = z.object({
   slug: z.string().describe("The slug of the target world."),
+  namespace: z.string().optional().describe(
+    "The optional namespace of the target world.",
+  ),
   data: z.union([z.string(), z.instanceof(ArrayBuffer)]).describe(
     "The RDF data to import.",
   ),
@@ -122,6 +136,11 @@ export interface WorldsExportInput {
   slug: string;
 
   /**
+   * namespace is the optional namespace of the target world.
+   */
+  namespace?: string;
+
+  /**
    * contentType is the requested RDF content type.
    */
   contentType?: WorldsContentType;
@@ -132,6 +151,9 @@ export interface WorldsExportInput {
  */
 export const worldsExportInputSchema: z.ZodType<WorldsExportInput> = z.object({
   slug: z.string().describe("The slug of the target world."),
+  namespace: z.string().optional().describe(
+    "The optional namespace of the target world.",
+  ),
   contentType: worldsContentTypeSchema.optional().describe(
     "The requested RDF content type.",
   ),

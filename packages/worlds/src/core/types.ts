@@ -136,7 +136,7 @@ export interface WorldsInterface {
   import(input: WorldsImportInput): Promise<void>;
 
   /**
-   * export exports a world in the specified RDF content type.
+   * export exports a world in the requested RDF content type.
    */
   export(input: WorldsExportInput): Promise<ArrayBuffer>;
 

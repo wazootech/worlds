@@ -45,11 +45,11 @@ export async function POST(
     const query = body;
 
     // Resolve world
-    const world = await worlds.get({ slug: worldId });
+    const world = await worlds.get(worldId);
     if (!world) {
       return NextResponse.json({ error: "World not found" }, { status: 404 });
     }
-    const results = await worlds.search({ slug: world.slug, query });
+    const results = await worlds.search(world.id, query);
 
     return NextResponse.json(results);
   } catch (error) {

@@ -32,5 +32,5 @@ export const logSchema: z.ZodType<Log> = z.object({
   level: z.string(),
   message: z.string(),
   timestamp: z.number(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
