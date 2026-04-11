@@ -178,3 +178,4 @@ export function WorldTripleSearch({ worldId }: { worldId: string }) {
     </div>
   );
 }
+

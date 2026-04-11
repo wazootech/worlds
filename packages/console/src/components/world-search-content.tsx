@@ -11,3 +11,4 @@ export function WorldSearchContent() {
     </div>
   );
 }
+

@@ -111,3 +111,4 @@ export function SuggestedQueries({
     </div>
   );
 }
+

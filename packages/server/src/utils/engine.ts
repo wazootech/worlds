@@ -16,3 +16,5 @@ export function getNamespacedEngine(
   // Context cloning ensures we don't pollute the global app context.
   return new LocalWorlds({ ...appContext, namespaceId });
 }
+
+

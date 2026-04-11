@@ -42,3 +42,4 @@ export class OpenRouterEmbeddings implements Embeddings {
     return embedding;
   }
 }
+

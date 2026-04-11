@@ -20,3 +20,4 @@ export const Border = (): Mesh => {
   const mesh = new Mesh(planetGeometry, material);
   return mesh;
 };
+

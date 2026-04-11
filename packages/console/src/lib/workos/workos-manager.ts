@@ -93,3 +93,4 @@ export interface WorkOSManager {
     userId: string;
   }): Promise<{ data: { organizationId: string }[] }>;
 }
+

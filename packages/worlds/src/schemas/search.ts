@@ -109,3 +109,4 @@ export const worldsSearchInputSchema: z.ZodType<WorldsSearchInput> = z.object({
     "Optional list of type URIs to filter by.",
   ),
 });
+

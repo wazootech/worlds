@@ -3,8 +3,8 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import type { Patch } from "./types.ts";
 import { skolemizeQuad } from "./skolem.ts";
 import type { Embeddings } from "#/embeddings/embeddings.ts";
-import { TriplesRepository } from "#/database/repositories/world/triples/mod.ts";
-import { ChunksRepository } from "#/database/repositories/world/chunks/mod.ts";
+import { TriplesRepository } from "#/world/triples/repository.ts";
+import { ChunksRepository } from "#/world/chunks/repository.ts";
 
 /**
  * handlePatch handles RDF patches by upserting and deleting triples and chunks.
@@ -112,3 +112,5 @@ async function hash(msg: string): Promise<string> {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+
+

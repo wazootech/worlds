@@ -3,17 +3,16 @@
   "version": "0.0.1",
   "exports": {
     ".": "./src/mod.ts",
-    "./engine": "./src/local.ts",
-    "./remote": "./src/remote.ts",
+    "./engine": "./src/worlds/local.ts",
+    "./remote": "./src/worlds/remote.ts",
     "./schema": "./src/schemas/mod.ts",
     "./schema/world": "./src/schemas/world.ts",
     "./schema/sparql": "./src/schemas/sparql.ts",
     "./schema/search": "./src/schemas/search.ts",
-
     "./schema/source": "./src/schemas/source.ts",
     "./schema/registry": "./src/schemas/registry.ts",
-    "./types": "./src/types.ts",
-    "./testing": "./src/engine-context.ts"
+    "./types": "./src/core/types.ts",
+    "./testing": "./src/core/engine-context.ts"
   },
   "imports": {
     "#/": "./src/",

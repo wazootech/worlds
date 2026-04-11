@@ -298,13 +298,12 @@ graph TD
     API --> SERVER
 ```
 
-### Repository layout
-
 The server follows a modular layout organized by service and resource:
 
-- `lib/`: Shared logic for RDF/SPARQL handling, database management, and
-  embeddings.
-- `middleware/`: Authentication guards.
+- `storage/`: Resource managers for database instrumentations and bootstrap logic.
+- `plugins/`: Feature extensions and internally managed worlds (like the Registry).
+- `world/`: Core data access repositories for world-scoped knowledge.
+- `middleware/`: Authentication guards and request interceptors.
 - `routes/`: Implementation of the v1 API endpoints.
 
 ## Request flow
@@ -461,3 +460,4 @@ The Worlds API integrates symbolic precision with the statistical power of large
 language models. By reifying facts and aligning state through human feedback,
 the platform provides a deterministic substrate for intentional agency in
 high-stakes contexts.
+

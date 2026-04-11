@@ -86,29 +86,6 @@ components:
           type: string
           nullable: true
 
-    Log:
-      type: object
-      properties:
-        id:
-          type: string
-        worldId:
-          type: string
-        timestamp:
-          type: number
-        level:
-          type: string
-          enum: [info, warn, error, debug]
-        message:
-          type: string
-        metadata:
-          type: object
-          nullable: true
-      required:
-        - id
-        - worldId
-        - timestamp
-        - level
-        - message
 
     TripleSearchResult:
       type: object
@@ -474,44 +451,6 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  /worlds/{world}/logs:
-    get:
-      summary: List world logs
-      parameters:
-        - name: world
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: pageSize
-          in: query
-          schema:
-            type: integer
-            maximum: 100
-            default: 20
-        - name: level
-          in: query
-          schema:
-            type: string
-            enum: [info, warn, error, debug]
-      responses:
-        "200":
-          description: A list of logs
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Log"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
 
   /worlds/{world}/search:
     get:

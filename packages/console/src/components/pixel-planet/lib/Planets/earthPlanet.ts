@@ -54,3 +54,4 @@ export const createEarthPlanet = (options?: PlanetOptions): Group => {
   earth.add(basePlanet, landmass, clouds, atmosphere);
   return earth;
 };
+

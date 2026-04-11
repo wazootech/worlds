@@ -8,7 +8,7 @@ import type {
   SparqlValue,
   WorldsSparqlOutput,
 } from "#/schemas/mod.ts";
-import { REGISTRY } from "#/ontology.ts";
+import { REGISTRY } from "#/core/ontology.ts";
 
 /**
  * DatasetParams are the parameters for a SPARQL query.
@@ -185,3 +185,5 @@ function toSparqlValue(term: any): SparqlValue {
     return val;
   }
 }
+
+

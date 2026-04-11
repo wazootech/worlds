@@ -189,3 +189,4 @@ export const createAsteroid = (options?: PlanetOptions): Group => {
 
   return new Group().add(asteroid);
 };
+

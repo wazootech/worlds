@@ -76,3 +76,4 @@ export function LiveEndpointStatus({ url }: { url: string }) {
     </div>
   );
 }
+

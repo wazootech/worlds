@@ -15,3 +15,4 @@ export interface Embeddings {
    */
   dimensions: number;
 }
+

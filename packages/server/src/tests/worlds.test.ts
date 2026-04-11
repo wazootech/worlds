@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
 import {
   createTestContext,
   LocalWorlds,
@@ -216,3 +216,5 @@ Deno.test("World routes", async (t) => {
     assertEquals(world, null);
   });
 });
+
+

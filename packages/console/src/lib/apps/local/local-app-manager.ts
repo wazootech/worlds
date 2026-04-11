@@ -183,3 +183,4 @@ export class LocalAppManager implements AppManager {
  * localAppManager is a singleton instance of the LocalAppManager.
  */
 export const localAppManager = new LocalAppManager();
+

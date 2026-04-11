@@ -411,3 +411,4 @@ export const worldsSparqlOutputSchema: z.ZodType<WorldsSparqlOutput> = z
     sparqlQuadsResultsSchema,
     z.literal(null),
   ]);
+

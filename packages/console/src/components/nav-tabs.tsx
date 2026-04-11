@@ -64,3 +64,4 @@ export function NavTabs({ tabs }: { tabs: NavTab[] }) {
     </div>
   );
 }
+

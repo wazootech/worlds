@@ -144,3 +144,4 @@ export interface WorldsDeleteInput {
 export const worldsDeleteInputSchema: z.ZodType<WorldsDeleteInput> = z.object({
   world: z.string().describe("The slug of the world to delete."),
 });
+

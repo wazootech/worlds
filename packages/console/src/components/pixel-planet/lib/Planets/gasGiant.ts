@@ -43,3 +43,4 @@ export const createGasGiant = (options?: PlanetOptions): Group => {
 
   return gasGiantGroup;
 };
+

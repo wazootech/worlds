@@ -7,3 +7,4 @@ export * from "./world.ts";
 export * from "./sparql.ts";
 export * from "./source.ts";
 export * from "./registry.ts";
+

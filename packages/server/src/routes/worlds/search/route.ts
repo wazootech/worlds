@@ -1,6 +1,6 @@
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
-import { ErrorResponse } from "@wazoo/worlds-sdk";
+import { ErrorResponse } from "#/utils/errors/errors.ts";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
 import { getNamespacedEngine } from "#/utils/engine.ts";
 
@@ -48,3 +48,5 @@ export default (appContext: WorldsContext) => {
     },
   );
 };
+
+

@@ -62,3 +62,4 @@ export function AccountSettingsContent({ user }: { user: WorkOSUser | null }) {
     </main>
   );
 }
+

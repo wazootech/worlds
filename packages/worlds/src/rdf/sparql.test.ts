@@ -59,3 +59,5 @@ Deno.test("SPARQL Layer", async (t) => {
     assertEquals((result as any).results.bindings[0].s.value, "http://a");
   });
 });
+
+

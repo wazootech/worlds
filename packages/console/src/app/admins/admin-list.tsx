@@ -270,3 +270,4 @@ function AdminActions({ user }: { user: WorkOSUser }) {
     </div>
   );
 }
+

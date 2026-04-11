@@ -63,3 +63,4 @@ export const createLavaPlanet = (options?: PlanetOptions): Group => {
   planetGroup.add(riverLayer);
   return planetGroup;
 };
+

@@ -93,3 +93,4 @@ export const registryWorldEntrySchema: z.ZodType<RegistryWorldEntry> = z
     slug: z.string(),
     label: z.string(),
   });
+
