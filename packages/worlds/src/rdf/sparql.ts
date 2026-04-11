@@ -18,7 +18,6 @@ import { WORLDS } from "#/core/ontology.ts";
  */
 const queryEngine = new QueryEngine();
 
-
 /**
  * DatasetParams are the parameters for a SPARQL query.
  */
