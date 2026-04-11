@@ -1,4 +1,5 @@
 import { WORLDS, WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
+import { escapeSparqlLiteral, escapeSparqlUri } from "#/core/utils.ts";
 import type { WorldsInterface } from "#/core/types.ts";
 import type { SparqlAskResults, SparqlBinding } from "#/schemas/sparql.ts";
 
@@ -21,11 +22,11 @@ export class RegistryRepository {
    */
   async resolveNamespace(apiKey: string): Promise<string | null> {
     const result = await this.worlds.sparql({
-      slug: WORLDS_WORLD_SLUG,
+      sources: [WORLDS_WORLD_SLUG],
       query: `
         SELECT ?org WHERE {
           ?key a <${WORLDS.ApiKey}> ;
-               <${WORLDS.hasSecret}> "${apiKey}" ;
+               <${WORLDS.hasSecret}> "${escapeSparqlLiteral(apiKey)}" ;
                <${WORLDS.belongsTo}> ?org .
         }
         LIMIT 1
@@ -60,12 +61,12 @@ export class RegistryRepository {
     namespaceId: string,
   ): Promise<boolean> {
     const result = await this.worlds.sparql({
-      slug: WORLDS_WORLD_SLUG,
+      sources: [WORLDS_WORLD_SLUG],
       query: `
         ASK {
           ?world a <${WORLDS.World}> ;
-                 <${WORLDS.belongsTo}> <${namespaceId}> .
-          FILTER(STR(?world) = "${worldId}" || STR(?world) = "${WORLDS.BASE}worlds/${worldId}")
+                 <${WORLDS.belongsTo}> <${escapeSparqlUri(namespaceId)}> .
+          FILTER(STR(?world) = "${escapeSparqlLiteral(worldId)}" || STR(?world) = "${WORLDS.BASE}worlds/${escapeSparqlLiteral(worldId)}")
         }
       `,
     });

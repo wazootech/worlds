@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { type World, worldSchema } from "./world.ts";
+import { type WorldSource, worldSourceSchema } from "./source.ts";
 
 /**
  * WorldsSearchOutput represents a search result from the TripleSearch service.
@@ -35,9 +37,9 @@ export interface WorldsSearchOutput {
   score: number;
 
   /**
-   * slug is the slug of the world the triple belongs to.
+   * world is the metadata of the world the triple belongs to.
    */
-  slug?: string;
+  world: World;
 }
 
 /**
@@ -51,7 +53,7 @@ export const worldsSearchOutputSchema: z.ZodType<WorldsSearchOutput> = z.object(
     vecRank: z.number().nullable(),
     ftsRank: z.number().nullable(),
     score: z.number(),
-    slug: z.string().optional(),
+    world: worldSchema,
   },
 );
 
@@ -60,9 +62,9 @@ export const worldsSearchOutputSchema: z.ZodType<WorldsSearchOutput> = z.object(
  */
 export interface WorldsSearchInput {
   /**
-   * slug is the slug of the target world.
+   * sources is the optional list of target worlds.
    */
-  slug: string;
+  sources?: WorldSource[];
 
   /**
    * namespace is the optional namespace of the target world.
@@ -99,7 +101,9 @@ export interface WorldsSearchInput {
  * worldsSearchInputSchema is the Zod schema for WorldsSearchInput.
  */
 export const worldsSearchInputSchema: z.ZodType<WorldsSearchInput> = z.object({
-  slug: z.string().describe("The slug of the target world."),
+  sources: z.array(worldSourceSchema).optional().describe(
+    "The list of target worlds.",
+  ),
   namespace: z.string().optional().describe(
     "The optional namespace of the target world.",
   ),

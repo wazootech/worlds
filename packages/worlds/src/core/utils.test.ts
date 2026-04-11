@@ -67,3 +67,19 @@ Deno.test("isSparqlUpdate - Query with Prologue (Read-only)", async (t) => {
     assert(!isSparqlUpdate(query));
   });
 });
+
+import { escapeSparqlLiteral, escapeSparqlUri } from "#/core/utils.ts";
+import { assertEquals } from "@std/assert";
+
+Deno.test("escapeSparqlLiteral - Escaping", () => {
+  assertEquals(escapeSparqlLiteral("abc"), "abc");
+  assertEquals(escapeSparqlLiteral('a"b'), 'a\\"b');
+  assertEquals(escapeSparqlLiteral("a\\b"), "a\\\\b");
+  assertEquals(escapeSparqlLiteral('a\\"b'), 'a\\\\\\"b');
+});
+
+Deno.test("escapeSparqlUri - Escaping", () => {
+  assertEquals(escapeSparqlUri("http://example.org/"), "http://example.org/");
+  assertEquals(escapeSparqlUri("http://example.org/>"), "http://example.org/\\>");
+  assertEquals(escapeSparqlUri("a\\b"), "a\\\\b");
+});

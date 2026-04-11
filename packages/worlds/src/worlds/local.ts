@@ -7,7 +7,13 @@ import { TriplesPatchHandler } from "#/world/triples/loader.ts";
 
 import { BatchPatchHandler, handlePatch } from "#/rdf/patch/mod.ts";
 import { sparql } from "#/rdf/sparql.ts";
-import { isSparqlUpdate } from "#/core/utils.ts";
+import {
+  escapeSparqlLiteral,
+  escapeSparqlUri,
+  isSparqlUpdate,
+  parseSourceName,
+  resolveSource,
+} from "#/core/utils.ts";
 import {
   DEFAULT_SERIALIZATION,
   getSerializationByContentType,
@@ -138,7 +144,7 @@ export class LocalWorlds implements WorldsInterface {
       const keyId = `${WORLDS.BASE}keys/bootstrap`;
 
       await this._sparql({
-        slug: WORLDS_WORLD_SLUG,
+        sources: [WORLDS_WORLD_SLUG],
         query: `
           PREFIX registry: <${WORLDS.NAMESPACE}>
           INSERT DATA {
@@ -197,10 +203,11 @@ export class LocalWorlds implements WorldsInterface {
    */
   async get(input: WorldsGetInput): Promise<World | null> {
     await this.ensureInitialized();
-    const namespace = input.slug === WORLDS_WORLD_SLUG
-      ? undefined
-      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
-    const world = await this.worldsRepository.get(input.slug, namespace);
+    const { slug, namespace } = resolveSource(
+      input.source,
+      this.appContext.namespace,
+    );
+    const world = await this.worldsRepository.get(slug, namespace);
     if (!world || world.deleted_at !== null) {
       return null;
     }
@@ -266,18 +273,20 @@ export class LocalWorlds implements WorldsInterface {
    */
   async update(input: WorldsUpdateInput): Promise<void> {
     await this.ensureInitialized();
-    const { slug, namespace: inputNamespace, ...data } = input;
-    const namespace = inputNamespace ?? this.appContext.namespace ??
-      DEFAULT_NAMESPACE;
+    const { source, label, description } = input;
+    const { slug, namespace } = resolveSource(
+      source,
+      this.appContext.namespace,
+    );
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error("World not found");
     }
 
     await this.worldsRepository.update(slug, namespace, {
-      label: data.label ?? world.label,
-      description: data.description !== undefined
-        ? data.description
+      label: label ?? world.label,
+      description: description !== undefined
+        ? description
         : world.description,
       updated_at: Date.now(),
     });
@@ -288,16 +297,17 @@ export class LocalWorlds implements WorldsInterface {
    */
   async delete(input: WorldsDeleteInput): Promise<void> {
     await this.ensureInitialized();
-    const namespace = input.slug === WORLDS_WORLD_SLUG
-      ? undefined
-      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
-    const world = await this.worldsRepository.get(input.slug, namespace);
+    const { slug, namespace } = resolveSource(
+      input.source,
+      this.appContext.namespace,
+    );
+    const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error("World not found");
     }
 
-    this.invalidateStore({ slug: input.slug, namespace });
-    await this.worldsRepository.update(input.slug, namespace, {
+    this.invalidateStore({ slug, namespace });
+    await this.worldsRepository.update(slug, namespace, {
       deleted_at: Date.now(),
     });
   }
@@ -311,48 +321,42 @@ export class LocalWorlds implements WorldsInterface {
   }
 
   /**
-   * _sparql is the internal implementation that bypasses the initialization check.
+   * _sparql executes a SPARQL query or update against one or more worlds.
    */
   private async _sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
-    const { slug, query } = input;
-    const namespace = slug === WORLDS_WORLD_SLUG
-      ? undefined
-      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
-    const worldRow = await this.worldsRepository.get(slug, namespace);
-    if (!worldRow) {
-      throw new Error(`World not found: ${slug} in namespace ${namespace}`);
+    await this.ensureInitialized();
+    const { query } = input;
+    const sources = input.sources ?? ["_"];
+    const namespace = input.namespace ?? this.appContext.namespace;
+
+    if (isSparqlUpdate(query) && sources.length !== 1) {
+      throw new Error(
+        "SPARQL Update is not supported for global or multi-source queries. Please specify a single target slug.",
+      );
     }
 
-    const managed = await this.appContext.libsql.manager.get({
-      namespace,
-      slug,
-    });
-    const patchHandler = new TriplesPatchHandler(managed.database);
-    const batchHandler = new BatchPatchHandler(patchHandler);
-
-    const store = await this.getStore({ slug, namespace });
-    const { result } = await sparql(store, query, batchHandler);
-
-    const isUpdate = await isSparqlUpdate(query);
-    if (isUpdate) {
-      await batchHandler.commit();
-
-      // Also run handlePatch to create chunks from the updated store
-      await handlePatch(
-        managed.database,
-        this.appContext.embeddings,
-        batchHandler.patches,
-      ); // close handlePatch
-
-      this.invalidateStore({ slug, namespace });
-
-      await this.worldsRepository.update(slug, namespace, {
-        updated_at: Date.now(),
+    let targetWorlds = [];
+    if (sources.length === 1 && sources[0] === "*") {
+      targetWorlds = await this.worldsRepository.list(namespace, 100, 0);
+      targetWorlds = targetWorlds.filter((w) => w.slug !== WORLDS_WORLD_SLUG);
+    } else {
+      const worldPromises = sources.map((s) => {
+        const parsed = resolveSource(s);
+        const targetNamespace = parsed.namespace ??
+          (parsed.slug === WORLDS_WORLD_SLUG ? undefined : namespace);
+        return this.worldsRepository.get(parsed.slug, targetNamespace);
       });
-
-      return null;
+      const results = await Promise.all(worldPromises);
+      targetWorlds = results.filter((w): w is any => !!w);
     }
 
+    const worldStores = await Promise.all(
+      targetWorlds.map((w) =>
+        this.getStore({ slug: w.slug, namespace: w.namespace_id })
+      ),
+    );
+
+    const { result } = await sparql(worldStores, query);
     return worldsSparqlOutputSchema.parse(result);
   }
 
@@ -361,37 +365,72 @@ export class LocalWorlds implements WorldsInterface {
    */
   async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
     await this.ensureInitialized();
-    const { slug, query, limit, subjects, predicates, types } = input;
-    const namespace = slug === WORLDS_WORLD_SLUG
-      ? undefined
-      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
-    const world = await this.worldsRepository.get(slug, namespace);
-    if (!world) {
-      throw new Error("World not found");
-    }
+    const { query, limit, subjects, predicates, types } = input;
+    const sources = input.sources ?? ["_"];
+    const requestedLimit = limit ?? 20;
 
     const chunksSearchRepository = new ChunksSearchRepository(
       this.appContext,
       this.worldsRepository,
     );
-    const results = await chunksSearchRepository.search({
-      query,
-      world,
-      subjects,
-      predicates,
-      types,
-      limit: limit ?? 20,
-    });
 
-    return results;
+    const namespace = input.namespace ?? this.appContext.namespace;
+
+    // Resolve target worlds
+    let targetWorlds = [];
+    if (sources.length === 1 && sources[0] === "*") {
+      targetWorlds = await this.worldsRepository.list(namespace, 100, 0);
+      targetWorlds = targetWorlds.filter((w) => w.slug !== WORLDS_WORLD_SLUG);
+    } else {
+      const worldPromises = sources.map((s) => {
+        const parsed = resolveSource(s);
+        const targetNamespace = parsed.namespace ??
+          (parsed.slug === WORLDS_WORLD_SLUG ? undefined : namespace);
+        return this.worldsRepository.get(parsed.slug, targetNamespace);
+      });
+      const results = await Promise.all(worldPromises);
+      targetWorlds = results.filter((w): w is any => !!w);
+    }
+
+    if (targetWorlds.length === 0) {
+      return [];
+    }
+
+    const searchTasks = targetWorlds.map((world) =>
+      chunksSearchRepository.search({
+        query,
+        world: {
+          namespace_id: world.namespace_id,
+          slug: world.slug,
+          label: world.label,
+          description: world.description,
+          db_hostname: world.db_hostname,
+          db_token: world.db_token,
+          created_at: world.created_at,
+          updated_at: world.updated_at,
+          deleted_at: world.deleted_at,
+        },
+        subjects,
+        predicates,
+        types,
+        limit: requestedLimit,
+      })
+    );
+
+    const allResults = await Promise.all(searchTasks);
+    return allResults
+      .flat()
+      .sort((a, b) => b.score - a.score)
+      .slice(0, requestedLimit);
   }
 
   async import(input: WorldsImportInput): Promise<void> {
-    await this.registryWorldInitialized;
-    const { slug, data, contentType } = input;
-    const namespace = slug === WORLDS_WORLD_SLUG
-      ? undefined
-      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
+    await this.ensureInitialized();
+    const { source, data, contentType } = input;
+    const { slug, namespace } = resolveSource(
+      source,
+      this.appContext.namespace,
+    );
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error("World not found");
@@ -437,10 +476,11 @@ export class LocalWorlds implements WorldsInterface {
    */
   async export(input: WorldsExportInput): Promise<ArrayBuffer> {
     await this.ensureInitialized();
-    const { slug, contentType } = input;
-    const namespace = slug === WORLDS_WORLD_SLUG
-      ? undefined
-      : (input.namespace ?? this.appContext.namespace ?? DEFAULT_NAMESPACE);
+    const { source, contentType } = input;
+    const { slug, namespace } = resolveSource(
+      source,
+      this.appContext.namespace,
+    );
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error(`World not found: ${slug} in namespace ${namespace}`);

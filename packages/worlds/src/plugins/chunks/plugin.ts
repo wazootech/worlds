@@ -21,7 +21,7 @@ export class ChunksPlugin implements WorldsPlugin {
    */
   async initialize(worlds: WorldsInterface): Promise<void> {
     await worlds.sparql({
-      slug: WORLDS_WORLD_SLUG,
+      sources: [WORLDS_WORLD_SLUG],
       query: `
         PREFIX worlds: <${WORLDS.NAMESPACE}>
         INSERT DATA {

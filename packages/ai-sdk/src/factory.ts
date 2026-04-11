@@ -2,6 +2,7 @@ import type { Source } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "./types.ts";
 
 import type { WorldsSparqlTool } from "./tools/sparql.ts";
+import { resolveSource } from "@wazoo/worlds-sdk";
 import { createWorldsSparqlTool } from "./tools/sparql.ts";
 import type { WorldsSearchTool } from "./tools/search.ts";
 import { createWorldsSearchTool } from "./tools/search.ts";
@@ -68,14 +69,14 @@ export function validateCreateToolsOptions(options: CreateToolsOptions) {
   let writable = false;
   const seen = new Set<string>();
   for (const source of options.sources) {
-    const s = typeof source === "string" ? { slug: source } : source;
-    if (seen.has(s.slug)) {
-      throw new Error(`Duplicate source: ${s.slug}`);
+    const { slug } = resolveSource(source);
+    if (seen.has(slug)) {
+      throw new Error(`Duplicate source: ${slug}`);
     }
 
-    seen.add(s.slug);
+    seen.add(slug);
 
-    if (s.write) {
+    if (typeof source === "object" && source !== null && source.write) {
       if (writable) {
         throw new Error("Multiple writable sources are not allowed.");
       }

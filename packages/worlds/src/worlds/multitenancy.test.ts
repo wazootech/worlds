@@ -17,7 +17,7 @@ Deno.test({
       await engine.init();
 
       await engine.sparql({
-        slug: WORLDS_WORLD_SLUG,
+        sources: [WORLDS_WORLD_SLUG],
         query: `
         PREFIX registry: <${WORLDS.NAMESPACE}>
         INSERT DATA {
@@ -65,7 +65,7 @@ Deno.test({
     });
 
     await t.step("NS B cannot get NS A's world by slug", async () => {
-      const world = await worldsB.get({ slug: sharedSlug });
+      const world = await worldsB.get({ source: sharedSlug });
       assertEquals(world, null);
     });
 
@@ -77,31 +77,31 @@ Deno.test({
       assertEquals(world.slug, sharedSlug);
       assertEquals(world.slug, sharedSlug);
 
-      const worldB = await worldsB.get({ slug: sharedSlug });
+      const worldB = await worldsB.get({ source: sharedSlug });
       assertEquals(worldB?.label, "World B");
 
-      const worldA = await worldsA.get({ slug: sharedSlug });
+      const worldA = await worldsA.get({ source: sharedSlug });
       assertEquals(worldA?.label, "World A");
     });
 
     await t.step("Data isolation between worlds with same slug", async () => {
       // Insert into A
       await worldsA.sparql({
-        slug: sharedSlug,
+        sources: [sharedSlug],
         query:
           `INSERT DATA { <http://example.org/s> <http://example.org/p> "Value A" . }`,
       });
 
       // Insert into B
       await worldsB.sparql({
-        slug: sharedSlug,
+        sources: [sharedSlug],
         query:
           `INSERT DATA { <http://example.org/s> <http://example.org/p> "Value B" . }`,
       });
 
       // Check A
       const resA = await worldsA.sparql({
-        slug: sharedSlug,
+        sources: [sharedSlug],
         query:
           `SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }`,
       }) as SparqlSelectResults;
@@ -109,7 +109,7 @@ Deno.test({
 
       // Check B
       const resB = await worldsB.sparql({
-        slug: sharedSlug,
+        sources: [sharedSlug],
         query:
           `SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }`,
       }) as SparqlSelectResults;

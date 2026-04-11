@@ -1,7 +1,7 @@
 import type { Client } from "@libsql/client";
 import type { WorldsContext } from "#/core/types.ts";
 import { searchChunks, upsertChunks } from "./queries.sql.ts";
-import type { WorldsSearchOutput } from "#/schemas/mod.ts";
+import type { World, WorldsSearchOutput } from "#/schemas/mod.ts";
 import type { WorldRow } from "#/plugins/registry/worlds.schema.ts";
 import type { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
 import {
@@ -184,8 +184,18 @@ export class ChunksSearchRepository {
           vecRank: row.vec_rank,
           ftsRank: row.fts_rank,
           score: row.combined_rank,
-          slug: world.slug,
-        };
+          world: {
+            slug: world.slug,
+            namespace: world.namespace_id,
+            label: world.label ?? undefined,
+            description: world.description ?? undefined,
+            dbHostname: world.db_hostname ?? undefined,
+            dbToken: world.db_token ?? undefined,
+            createdAt: world.created_at,
+            updatedAt: world.updated_at,
+            deletedAt: world.deleted_at ?? undefined,
+          },
+        } as WorldsSearchOutput;
       });
 
       // Sort by combined rank and limit

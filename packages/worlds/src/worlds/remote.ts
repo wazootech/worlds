@@ -60,7 +60,11 @@ export class RemoteWorlds implements WorldsInterface {
    * get fetches a single world from the Worlds API.
    */
   public async get(input: WorldsGetInput): Promise<World | null> {
-    const url = new URL(`${this.options.baseUrl}/worlds/${input.slug}`);
+    const { source } = input;
+    const identifier = typeof source === "string"
+      ? source
+      : ("slug" in source ? source.slug : source.name);
+    const url = new URL(`${this.options.baseUrl}/worlds/${identifier}`);
 
     const response = await this.fetch(
       url,
@@ -111,8 +115,11 @@ export class RemoteWorlds implements WorldsInterface {
    * update updates a world in the Worlds API.
    */
   public async update(input: WorldsUpdateInput): Promise<void> {
-    const { slug, ...data } = input;
-    const url = new URL(`${this.options.baseUrl}/worlds/${slug}`);
+    const { source, ...data } = input;
+    const identifier = typeof source === "string"
+      ? source
+      : ("slug" in source ? source.slug : source.name);
+    const url = new URL(`${this.options.baseUrl}/worlds/${identifier}`);
 
     const response = await this.fetch(
       url,
@@ -122,7 +129,7 @@ export class RemoteWorlds implements WorldsInterface {
           Authorization: `Bearer ${this.options.apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, source }),
       },
     );
     if (!response.ok) {
@@ -135,7 +142,11 @@ export class RemoteWorlds implements WorldsInterface {
    * delete deletes a world from the Worlds API.
    */
   public async delete(input: WorldsDeleteInput): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/worlds/${input.slug}`);
+    const { source } = input;
+    const identifier = typeof source === "string"
+      ? source
+      : ("slug" in source ? source.slug : source.name);
+    const url = new URL(`${this.options.baseUrl}/worlds/${identifier}`);
 
     const response = await this.fetch(
       url,
@@ -156,22 +167,7 @@ export class RemoteWorlds implements WorldsInterface {
    * sparql executes a SPARQL query or update against a world.
    */
   public async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
-    const { slug, query, defaultGraphUris, namedGraphUris } = input;
-    const url = new URL(
-      `${this.options.baseUrl}/worlds/${slug}/sparql`,
-    );
-
-    if (defaultGraphUris) {
-      for (const uri of defaultGraphUris) {
-        url.searchParams.append("default-graph-uri", uri);
-      }
-    }
-
-    if (namedGraphUris) {
-      for (const uri of namedGraphUris) {
-        url.searchParams.append("named-graph-uri", uri);
-      }
-    }
+    const url = new URL(`${this.options.baseUrl}/sparql`);
 
     const response = await this.fetch(
       url,
@@ -179,10 +175,10 @@ export class RemoteWorlds implements WorldsInterface {
         method: "POST",
         headers: {
           Authorization: `Bearer ${this.options.apiKey}`,
-          "Content-Type": "application/sparql-query",
+          "Content-Type": "application/json",
           "Accept": "application/sparql-results+json",
         },
-        body: query,
+        body: JSON.stringify(input),
       },
     );
     if (!response.ok) {
@@ -201,39 +197,15 @@ export class RemoteWorlds implements WorldsInterface {
    * search performs semantic/text search on a world using vector embeddings.
    */
   public async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
-    const { slug, query, limit, subjects, predicates, types } = input;
-    const url = new URL(
-      `${this.options.baseUrl}/worlds/${slug}/search`,
-    );
-
-    url.searchParams.set("query", query);
-
-    if (limit) {
-      url.searchParams.set("limit", limit.toString());
-    }
-
-    if (subjects) {
-      for (const s of subjects) {
-        url.searchParams.append("subjects", s);
-      }
-    }
-
-    if (predicates) {
-      for (const p of predicates) {
-        url.searchParams.append("predicates", p);
-      }
-    }
-
-    if (types) {
-      for (const t of types) {
-        url.searchParams.append("types", t);
-      }
-    }
+    const url = new URL(`${this.options.baseUrl}/search`);
 
     const response = await this.fetch(url, {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${this.options.apiKey}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify(input),
     });
     if (!response.ok) {
       const errorMessage = await parseError(response);
@@ -247,20 +219,31 @@ export class RemoteWorlds implements WorldsInterface {
    * import ingests RDF data into a world.
    */
   public async import(input: WorldsImportInput): Promise<void> {
-    const { slug, data, contentType } = input;
-    const url = new URL(
-      `${this.options.baseUrl}/worlds/${slug}/import`,
-    );
+    const { source, data, contentType } = input;
+    const url = new URL(`${this.options.baseUrl}/import`);
 
     const type = contentType ?? "application/n-quads";
 
+    const binaryData = typeof data === "string"
+      ? new TextEncoder().encode(data)
+      : new Uint8Array(data);
+
+    // Convert to base64
+    const base64Data = btoa(String.fromCharCode(...binaryData));
+
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${this.options.apiKey}`,
+      "Content-Type": "application/json",
+    };
+
     const response = await this.fetch(url, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.options.apiKey}`,
-        "Content-Type": type,
-      },
-      body: data,
+      headers,
+      body: JSON.stringify({
+        source,
+        data: base64Data,
+        contentType: type,
+      }),
     });
 
     if (!response.ok) {
@@ -273,18 +256,18 @@ export class RemoteWorlds implements WorldsInterface {
    * export exports a world in the specified RDF content type.
    */
   public async export(input: WorldsExportInput): Promise<ArrayBuffer> {
-    const { slug, contentType } = input;
-    const url = new URL(
-      `${this.options.baseUrl}/worlds/${slug}/export`,
-    );
-    if (contentType) {
-      url.searchParams.set("contentType", contentType);
-    }
+    const { source, contentType } = input;
+    const url = new URL(`${this.options.baseUrl}/export`);
+
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${this.options.apiKey}`,
+      "Content-Type": "application/json",
+    };
 
     const response = await this.fetch(url, {
-      headers: {
-        Authorization: `Bearer ${this.options.apiKey}`,
-      },
+      method: "POST",
+      headers,
+      body: JSON.stringify({ source, contentType }),
     });
 
     if (!response.ok) {
@@ -301,19 +284,17 @@ export class RemoteWorlds implements WorldsInterface {
   public async getServiceDescription(
     input: WorldsServiceDescriptionInput,
   ): Promise<string> {
-    const { slug, endpointUrl: _endpointUrl, contentType } = input;
-    const url = new URL(
-      `${this.options.baseUrl}/worlds/${slug}/sparql`,
-    );
-    if (contentType) {
-      url.searchParams.set("contentType", contentType);
-    }
+    const { contentType } = input;
+    const url = new URL(`${this.options.baseUrl}/sparql`);
 
     const response = await this.fetch(url, {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${this.options.apiKey}`,
+        "Content-Type": "application/json",
         Accept: contentType ?? "application/n-quads",
       },
+      body: JSON.stringify(input),
     });
 
     if (!response.ok) {

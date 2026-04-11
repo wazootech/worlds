@@ -6,47 +6,11 @@ import type { WorldsContentType, WorldsContext } from "@wazoo/worlds-sdk";
 import { getNamespacedEngine } from "#/utils/engine.ts";
 
 /**
- * parseQuery parses the query and dataset parameters from the request.
- */
-async function parseQuery(request: Request) {
-  const url = new URL(request.url);
-  const contentType = request.headers.get("content-type") || "";
-  const method = request.method;
-
-  const defaultGraphUris = url.searchParams.getAll("default-graph-uri");
-  const namedGraphUris = url.searchParams.getAll("named-graph-uri");
-
-  let query: string | null = null;
-
-  if (method === "GET") {
-    query = url.searchParams.get("query");
-  } else if (method === "POST") {
-    const queryParam = url.searchParams.get("query");
-    if (queryParam) {
-      query = queryParam;
-    } else if (contentType.includes("application/x-www-form-urlencoded")) {
-      const formData = await request.formData();
-      query = formData.get("query") as string | null;
-    } else if (
-      contentType.includes("application/sparql-query") ||
-      contentType.includes("application/sparql-update")
-    ) {
-      query = await request.text();
-    }
-  }
-
-  return { query, defaultGraphUris, namedGraphUris };
-}
-
-/**
  * sparqlRouter creates a router for the SPARQL API.
  */
 export default (appContext: WorldsContext) => {
   return new Router()
-    .get("/worlds/:slug/sparql", async (ctx) => {
-      const slug = ctx.params?.pathname.groups.slug;
-      if (!slug) return ErrorResponse.BadRequest("World slug required");
-
+    .post("/sparql", async (ctx) => {
       const authorized = await authorizeRequest(
         appContext,
         ctx.request,
@@ -56,66 +20,28 @@ export default (appContext: WorldsContext) => {
       }
 
       const engine = getNamespacedEngine(appContext, authorized.namespaceId);
-      const { query, defaultGraphUris, namedGraphUris } = await parseQuery(
-        ctx.request,
-      );
-
-      if (!query) {
-        const serialization = negotiateSerialization(ctx.request);
-        const description = await engine.getServiceDescription({
-          slug,
-          namespace: authorized.namespaceId,
-          endpointUrl: ctx.request.url,
-          contentType: serialization.contentType as WorldsContentType,
-        });
-        return new Response(description, {
-          headers: { "Content-Type": serialization.contentType },
-        });
-      }
-
       try {
+        const input = await ctx.request.json();
+        const { query } = input;
+
+        if (!query) {
+          const serialization = negotiateSerialization(ctx.request);
+          const description = await engine.getServiceDescription({
+            ...input,
+            namespace: authorized.namespaceId,
+            endpointUrl: ctx.request.url,
+            contentType: serialization.contentType as WorldsContentType,
+          });
+          return new Response(description, {
+            headers: { "Content-Type": serialization.contentType },
+          });
+        }
+
         const result = await engine.sparql({
-          slug: slug,
+          ...input,
           namespace: authorized.namespaceId,
-          query: query,
-          defaultGraphUris: defaultGraphUris,
-          namedGraphUris: namedGraphUris,
         });
-        return Response.json(result, {
-          headers: { "Content-Type": "application/sparql-results+json" },
-        });
-      } catch (error) {
-        return ErrorResponse.BadRequest(
-          error instanceof Error ? error.message : "Query failed",
-        );
-      }
-    })
-    .post("/worlds/:slug/sparql", async (ctx) => {
-      const slug = ctx.params?.pathname.groups.slug;
-      if (!slug) return ErrorResponse.BadRequest("World slug required");
 
-      const authorized = await authorizeRequest(
-        appContext,
-        ctx.request,
-      );
-      if (!authorized.admin && !authorized.namespaceId) {
-        return ErrorResponse.Unauthorized();
-      }
-
-      const engine = getNamespacedEngine(appContext, authorized.namespaceId);
-      const { query, defaultGraphUris, namedGraphUris } = await parseQuery(
-        ctx.request,
-      );
-      if (!query) return ErrorResponse.BadRequest("Query required");
-
-      try {
-        const result = await engine.sparql({
-          slug: slug,
-          namespace: authorized.namespaceId,
-          query: query,
-          defaultGraphUris: defaultGraphUris,
-          namedGraphUris: namedGraphUris,
-        });
         if (result === null) return new Response(null, { status: 204 });
         return Response.json(result, {
           headers: { "Content-Type": "application/sparql-results+json" },

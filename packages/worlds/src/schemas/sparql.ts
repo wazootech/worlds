@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { type WorldSource, worldSourceSchema } from "./source.ts";
 
 /**
  * SparqlValue represents a value in a SPARQL result.
@@ -306,9 +307,9 @@ export const sparqlQuadsResultsSchema: z.ZodType<SparqlQuadsResults> = z
  */
 export interface WorldsSparqlInput {
   /**
-   * slug is the slug of the target world.
+   * sources is the optional list of target worlds.
    */
-  slug: string;
+  sources?: WorldSource[];
 
   /**
    * namespace is the optional namespace of the target world.
@@ -335,7 +336,9 @@ export interface WorldsSparqlInput {
  * worldsSparqlInputSchema is the Zod schema for WorldsSparqlInput.
  */
 export const worldsSparqlInputSchema: z.ZodType<WorldsSparqlInput> = z.object({
-  slug: z.string().describe("The slug of the target world."),
+  sources: z.array(worldSourceSchema).optional().describe(
+    "The optional list of target worlds.",
+  ),
   namespace: z.string().optional().describe(
     "The optional namespace of the target world.",
   ),
@@ -372,9 +375,9 @@ export const worldsContentTypeSchema: z.ZodType<WorldsContentType> = z.enum([
  */
 export interface WorldsServiceDescriptionInput {
   /**
-   * slug is the slug of the target world.
+   * sources is the optional list of target worlds.
    */
-  slug: string;
+  sources?: WorldSource[];
 
   /**
    * namespace is the optional namespace of the target world.
@@ -398,7 +401,9 @@ export interface WorldsServiceDescriptionInput {
 export const worldsServiceDescriptionInputSchema: z.ZodType<
   WorldsServiceDescriptionInput
 > = z.object({
-  slug: z.string().describe("The slug of the target world."),
+  sources: z.array(worldSourceSchema).optional().describe(
+    "The optional list of target worlds.",
+  ),
   namespace: z.string().optional().describe(
     "The optional namespace of the target world.",
   ),

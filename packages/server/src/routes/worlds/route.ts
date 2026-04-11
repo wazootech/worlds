@@ -12,6 +12,7 @@ import type { WorldsContentType, WorldsContext } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import { getNamespacedEngine } from "#/utils/engine.ts";
 
+
 /**
  * worldsRouter creates a router for the Worlds API.
  */
@@ -35,8 +36,7 @@ export default (appContext: WorldsContext) => {
 
         const engine = getNamespacedEngine(appContext, authorized.namespaceId);
         const world = await engine.get({
-          slug,
-          namespace: authorized.namespaceId,
+          source: slug,
         });
         if (!world) {
           return ErrorResponse.NotFound("World not found");
@@ -45,14 +45,9 @@ export default (appContext: WorldsContext) => {
         return await handleETagRequest(ctx.request, Response.json(world));
       },
     )
-    .get(
-      "/worlds/:slug/export",
+    .post(
+      "/export",
       async (ctx) => {
-        const slug = ctx.params?.pathname.groups.slug;
-        if (!slug) {
-          return ErrorResponse.BadRequest("World slug required");
-        }
-
         const authorized = await authorizeRequest(
           appContext,
           ctx.request,
@@ -61,15 +56,16 @@ export default (appContext: WorldsContext) => {
           return ErrorResponse.Unauthorized();
         }
 
-        const url = new URL(ctx.request.url);
-        const contentTypeParam = url.searchParams.get("contentType") as
-          | WorldsContentType
-          | null;
+        const body = await ctx.request.json();
+        const { slug, contentType: contentTypeParam } = body;
+        if (!slug) {
+          return ErrorResponse.BadRequest("World slug required");
+        }
 
         let serialization;
         if (contentTypeParam) {
           serialization = {
-            contentType: contentTypeParam,
+            contentType: contentTypeParam as WorldsContentType,
           };
         } else {
           const negotiated = negotiateSerialization(
@@ -87,8 +83,7 @@ export default (appContext: WorldsContext) => {
             authorized.namespaceId,
           );
           const buffer = await engine.export({
-            slug: slug,
-            namespace: authorized.namespaceId,
+            source: body.source ?? body.slug ?? slug,
             contentType: serialization.contentType,
           });
           return await handleETagRequest(
@@ -105,13 +100,8 @@ export default (appContext: WorldsContext) => {
       },
     )
     .post(
-      "/worlds/:slug/import",
+      "/import",
       async (ctx) => {
-        const slug = ctx.params?.pathname.groups.slug;
-        if (!slug) {
-          return ErrorResponse.BadRequest("World slug required");
-        }
-
         const authorized = await authorizeRequest(
           appContext,
           ctx.request,
@@ -120,10 +110,18 @@ export default (appContext: WorldsContext) => {
           return ErrorResponse.Unauthorized();
         }
 
-        const body = await ctx.request.arrayBuffer();
-        const contentType =
-          ctx.request.headers.get("Content-Type") as WorldsContentType ||
-          "application/n-quads";
+        const body = await ctx.request.json();
+        const { slug, data, contentType = "application/n-quads" } = body;
+        if (!slug) {
+          return ErrorResponse.BadRequest("World slug required");
+        }
+        if (!data) {
+          return ErrorResponse.BadRequest("Import data required");
+        }
+
+        // Convert base64 data to ArrayBuffer
+        const binaryData = Uint8Array.from(atob(data), (c) => c.charCodeAt(0))
+          .buffer;
 
         try {
           const engine = getNamespacedEngine(
@@ -131,10 +129,9 @@ export default (appContext: WorldsContext) => {
             authorized.namespaceId,
           );
           await engine.import({
-            slug: slug,
-            namespace: authorized.namespaceId,
-            data: body,
-            contentType,
+            source: body.source ?? body.slug ?? slug,
+            data: binaryData as ArrayBuffer,
+            contentType: contentType as WorldsContentType,
           });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
@@ -238,10 +235,10 @@ export default (appContext: WorldsContext) => {
 
         const updateResult = worldsUpdateInputSchema.safeParse({
           ...body as object,
-          slug: slug,
-          namespace: authorized.namespaceId,
+          source: (body as any).source ?? (body as any).slug ?? slug,
         });
         if (!updateResult.success) {
+          console.error("Update validation failed:", updateResult.error);
           return ErrorResponse.BadRequest("Invalid parameters");
         }
 
@@ -276,11 +273,14 @@ export default (appContext: WorldsContext) => {
         }
 
         try {
+          const body = await ctx.request.json().catch(() => ({}));
           const engine = getNamespacedEngine(
             appContext,
             authorized.namespaceId,
           );
-          await engine.delete({ slug, namespace: authorized.namespaceId });
+          await engine.delete({
+            source: (body as any).source ?? (body as any).slug ?? slug,
+          });
           return new Response(null, { status: STATUS_CODE.NoContent });
         } catch (error) {
           return ErrorResponse.NotFound(

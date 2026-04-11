@@ -2,35 +2,42 @@ import { z } from "zod";
 import { type WorldsContentType, worldsContentTypeSchema } from "./sparql.ts";
 
 /**
- * Source represents a data source world by slug.
+ * WorldSource represents a target world by slug, qualified name, or name object.
  */
-export interface Source {
-  /**
-   * slug is the slug of the source world.
-   */
-  slug: string;
-
-  /**
-   * write indicates if write access is enabled for this source.
-   */
-  write?: boolean;
-
-  /**
-   * schema indicates if this source should be treated as a schema source.
-   */
-  schema?: boolean;
-}
+export type WorldSource =
+  | string
+  | { slug: string; namespace?: string; write?: boolean; schema?: boolean }
+  | { name: string; write?: boolean; schema?: boolean };
 
 /**
- * sourceSchema is the Zod schema for Source.
+ * Source is a backward-compatibility alias for WorldSource.
+ * @deprecated Use WorldSource instead.
  */
-export const sourceSchema: z.ZodType<Source> = z.object({
-  slug: z.string().describe("The slug of the source world."),
-  write: z.boolean().optional().describe("Whether write access is enabled."),
-  schema: z.boolean().optional().describe(
-    "Whether this source should be treated as a schema source.",
-  ),
-});
+export type Source = WorldSource;
+
+/**
+ * worldSourceSchema is the Zod schema for WorldSource.
+ */
+export const worldSourceSchema = z.union([
+  z.string().describe("A qualified source name: <namespace>/<slug>"),
+  z.object({
+    slug: z.string().describe("The slug of the target world."),
+    namespace: z.string().optional().describe(
+      "The optional namespace of the target world.",
+    ),
+    write: z.boolean().optional().describe("Whether write access is enabled."),
+    schema: z.boolean().optional().describe(
+      "Whether this source should be treated as a schema source.",
+    ),
+  }),
+  z.object({
+    name: z.string().describe("A qualified source name: <namespace>/<slug>"),
+    write: z.boolean().optional().describe("Whether write access is enabled."),
+    schema: z.boolean().optional().describe(
+      "Whether this source should be treated as a schema source.",
+    ),
+  }),
+]);
 
 /**
  * ErrorResponseData is the standard error response format.
@@ -90,14 +97,9 @@ export const worldsListInputSchema: z.ZodType<WorldsListInput> = z.object({
  */
 export interface WorldsImportInput {
   /**
-   * slug is the slug of the target world.
+   * source is the target world identification.
    */
-  slug: string;
-
-  /**
-   * namespace is the optional namespace of the target world.
-   */
-  namespace?: string;
+  source: WorldSource;
 
   /**
    * data is the RDF data to import (string or Buffer).
@@ -114,10 +116,7 @@ export interface WorldsImportInput {
  * worldsImportInputSchema is the Zod schema for WorldsImportInput.
  */
 export const worldsImportInputSchema: z.ZodType<WorldsImportInput> = z.object({
-  slug: z.string().describe("The slug of the target world."),
-  namespace: z.string().optional().describe(
-    "The optional namespace of the target world.",
-  ),
+  source: worldSourceSchema.describe("The target world identification."),
   data: z.union([z.string(), z.instanceof(ArrayBuffer)]).describe(
     "The RDF data to import.",
   ),
@@ -131,14 +130,9 @@ export const worldsImportInputSchema: z.ZodType<WorldsImportInput> = z.object({
  */
 export interface WorldsExportInput {
   /**
-   * slug is the slug of the target world.
+   * source is the target world identification.
    */
-  slug: string;
-
-  /**
-   * namespace is the optional namespace of the target world.
-   */
-  namespace?: string;
+  source: WorldSource;
 
   /**
    * contentType is the requested RDF content type.
@@ -150,10 +144,7 @@ export interface WorldsExportInput {
  * worldsExportInputSchema is the Zod schema for WorldsExportInput.
  */
 export const worldsExportInputSchema: z.ZodType<WorldsExportInput> = z.object({
-  slug: z.string().describe("The slug of the target world."),
-  namespace: z.string().optional().describe(
-    "The optional namespace of the target world.",
-  ),
+  source: worldSourceSchema.describe("The target world identification."),
   contentType: worldsContentTypeSchema.optional().describe(
     "The requested RDF content type.",
   ),

@@ -10,7 +10,7 @@
     "start": "npm run dev --prefix ./packages/console",
     "start:cli": "deno -A --env=./packages/cli/.env ./packages/cli/main.ts",
     "start:docs": "npm run dev --prefix ./packages/docs",
-    "start:server": "deno serve -A --env=./packages/server/.env ./packages/server/main.ts",
+    "start:server": "deno serve -A --env=./packages/server/.env ./packages/server/src/main.ts",
     "test": "deno test -A --reporter=pretty",
     "lint": "deno lint --json",
     "fmt": "deno fmt --check",

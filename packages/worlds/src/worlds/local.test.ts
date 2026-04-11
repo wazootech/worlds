@@ -26,7 +26,7 @@ Deno.test({
     });
 
     await t.step("get world", async () => {
-      const world = await worlds.get({ slug });
+      const world = await worlds.get({ source: slug });
       assertExists(world);
       assertEquals(world!.label, "Core World");
     });
@@ -38,23 +38,23 @@ Deno.test({
 
     await t.step("update world", async () => {
       await worlds.update({
-        slug,
+        source: slug,
         description: "Updated from Core",
       });
-      const world = await worlds.get({ slug });
+      const world = await worlds.get({ source: slug });
       assertEquals(world!.description, "Updated from Core");
     });
 
     await t.step("sparql query/update", async () => {
       await worlds.sparql({
-        slug,
+        sources: [slug],
         query: `
       INSERT DATA { <http://example.org/s> <http://example.org/p> "Core Value" . }
     `,
       });
 
       const result = await worlds.sparql({
-        slug,
+        sources: [slug],
         query: `
       SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }
     `,
@@ -72,8 +72,8 @@ Deno.test({
     });
 
     await t.step("delete world", async () => {
-      await worlds.delete({ slug });
-      const world = await worlds.get({ slug });
+      await worlds.delete({ source: slug });
+      const world = await worlds.get({ source: slug });
       assertEquals(world, null);
     });
   },

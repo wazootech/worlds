@@ -96,7 +96,7 @@ export class WorldsCli {
       return;
     }
     await this.worlds.update({
-      slug,
+      source: slug,
       label: parsed.label,
       description: parsed.description,
     });
@@ -125,7 +125,7 @@ export class WorldsCli {
       return;
     }
 
-    await this.worlds.delete({ slug });
+    await this.worlds.delete({ source: slug });
     console.log(`Deleted world ${slug}`);
   }
 
@@ -176,7 +176,7 @@ export class WorldsCli {
       console.error("Usage: worlds get --world <id>");
       return;
     }
-    const worldObj = await this.worlds.get({ slug: world });
+    const worldObj = await this.worlds.get({ source: world });
     console.log(JSON.stringify(worldObj, null, 2));
   }
 
@@ -186,11 +186,11 @@ export class WorldsCli {
   public async search(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["world", "query", "subjects", "predicates", "limit"],
+      string: ["slug", "query", "subjects", "predicates", "limit"],
       alias: {
-        w: "world",
+        s: "slug",
         q: "query",
-        s: "subjects",
+        subj: "subjects",
         p: "predicates",
         l: "limit",
         h: "help",
@@ -201,24 +201,24 @@ export class WorldsCli {
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds search --world <id> --query <string> [--limit <n>] [--subjects <s1> --subjects <s2>]",
+        "Usage: worlds search [--slug <id>] --query <string> [--limit <n>] [--subjects <s1> --subjects <s2>]",
       );
       return;
     }
-    const world = parsed.world as string;
+    const slug = (parsed.slug as string) || "_";
     const query = parsed.query as string;
-    if (!world || !query) {
+    if (!query) {
       console.error(
-        "Usage: worlds search --world <id> --query <string> [--limit <n>] [--subjects <s1> --subjects <s2>]",
+        "Usage: worlds search [--slug <id>] --query <string> [--limit <n>] [--subjects <s1> --subjects <s2>]",
       );
       return;
     }
     const results = await this.worlds.search({
-      slug: world,
+      sources: [slug],
       query,
       limit: parsed.limit ? parseInt(parsed.limit as string) : undefined,
-      subjects: parsed.subjects,
-      predicates: parsed.predicates,
+      subjects: parsed.subjects as string[] | undefined,
+      predicates: parsed.predicates as string[] | undefined,
     });
     console.log(JSON.stringify(results, null, 2));
   }
@@ -236,16 +236,16 @@ export class WorldsCli {
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds sparql --world <id> --query <query_or_file_path>",
+        "Usage: worlds sparql [--slug <id>] --query <query_or_file_path>",
       );
       return;
     }
 
-    const world = parsed.world as string;
+    const slug = (parsed.slug as string) || "_";
     const queryOrPath = parsed.query as string;
-    if (!world || !queryOrPath) {
+    if (!queryOrPath) {
       console.error(
-        "Usage: worlds sparql --world <id> --query <query_or_file_path>",
+        "Usage: worlds sparql [--slug <id>] --query <query_or_file_path>",
       );
       return;
     }
@@ -257,42 +257,42 @@ export class WorldsCli {
       // Not a file, use as query string
     }
 
-    const results = await this.worlds.sparql({ slug: world, query });
+    const results = await this.worlds.sparql({
+      sources: [slug],
+      query,
+    });
     console.log(JSON.stringify(results, null, 2));
   }
 
-  /**
-   * import RDF data into a world from a file.
-   */
   public async import(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["world", "file", "content-type"],
-      alias: { w: "world", f: "file", c: "content-type", h: "help" },
+      string: ["slug", "file", "content-type"],
+      alias: { s: "slug", f: "file", c: "content-type", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds import --world <id> --file <file_path> [--content-type <text/turtle|application/n-quads|...>]",
+        "Usage: worlds import --slug <id> --file <file_path> [--content-type <text/turtle|application/n-quads|...>]",
       );
       return;
     }
-    const world = parsed.world as string;
+    const slug = (parsed.slug as string) || "_";
     const path = parsed.file as string;
-    if (!world || !path) {
+    if (!path) {
       console.error(
-        "Usage: worlds import --world <id> --file <file_path> [--content-type <text/turtle|application/n-quads|...>]",
+        "Usage: worlds import --slug <id> --file <file_path> [--content-type <text/turtle|application/n-quads|...>]",
       );
       return;
     }
     const data = await Deno.readFile(path);
     await this.worlds.import({
-      slug: world,
+      source: slug,
       data: data.buffer as ArrayBuffer,
       contentType: parsed["content-type"] as WorldsContentType,
     });
-    console.log(`Imported data into world ${world}`);
+    console.log(`Imported data into world ${slug}`);
   }
 
   /**
@@ -301,26 +301,20 @@ export class WorldsCli {
   public async export(args: string[]) {
     const parsed = parseArgs(args, {
       boolean: ["help"],
-      string: ["world", "content-type"],
-      alias: { w: "world", c: "content-type", h: "help" },
+      string: ["slug", "content-type"],
+      alias: { s: "slug", c: "content-type", h: "help" },
     });
 
     if (parsed.help) {
       WorldsCli.logo();
       console.log(
-        "Usage: worlds export --world <id> [--content-type <text/turtle|application/n-quads|...>]",
+        "Usage: worlds export --slug <id> [--content-type <text/turtle|application/n-quads|...>]",
       );
       return;
     }
-    const world = parsed.world as string;
-    if (!world) {
-      console.error(
-        "Usage: worlds export --world <id> [--content-type <text/turtle|application/n-quads|...>]",
-      );
-      return;
-    }
+    const slug = (parsed.slug as string) || "_";
     const buffer = await this.worlds.export({
-      slug: world,
+      source: slug,
       contentType: parsed["content-type"] as WorldsContentType,
     });
     await Deno.stdout.write(new Uint8Array(buffer));
@@ -372,7 +366,7 @@ export class WorldsCli {
       return;
     }
 
-    const world = await this.worlds.get({ slug: parsed.world });
+    const world = await this.worlds.get({ source: parsed.world });
     if (!world) {
       console.error(`World "${parsed.world}" not found.`);
       return;

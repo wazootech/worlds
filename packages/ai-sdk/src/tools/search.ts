@@ -55,7 +55,7 @@ export const worldsSearchTool: WorldsTool<
 > = {
   name: "worlds_search",
   description:
-    "Performs semantic or text search for entities and facts within a specific world. Use this tool when a user asks about an entity by a natural language name or needs to find related information by proximity. Input must be a 'slug' and a 'query' string. Returns an array of search results including IRIs and relevance scores.",
+    "Performs semantic or text search for entities and facts within one or more worlds. Use this tool when a user asks about an entity by a natural language name or needs to find related information by proximity. Input must be an array of 'sources' and a 'query' string. Returns an array of search results including IRIs and relevance scores.",
   inputSchema: worldsSearchInputSchema,
   outputSchema: worldsSearchOutputSchema,
   isWrite: false,

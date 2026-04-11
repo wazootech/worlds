@@ -8,7 +8,7 @@ Deno.test("SPARQL Layer", async (t) => {
   await t.step("SELECT on empty world returns empty results", async () => {
     const store = new Store();
     const query = "SELECT * WHERE { ?s ?p ?o }";
-    const { result } = await sparql(store, query);
+    const { result } = await sparql([store], query);
 
     // deno-lint-ignore no-explicit-any
     assertEquals((result as any).results.bindings.length, 0);
@@ -21,12 +21,12 @@ Deno.test("SPARQL Layer", async (t) => {
         <http://example.org/s> <http://example.org/p> "object" .
       }
     `;
-    const { result } = await sparql(store, insertQuery);
+    const { result } = await sparql([store], insertQuery);
     assert(result === null);
 
     const selectQuery =
       "SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }";
-    const { result: selectResult } = await sparql(store, selectQuery);
+    const { result: selectResult } = await sparql([store], selectQuery);
 
     // deno-lint-ignore no-explicit-any
     assertEquals((selectResult as any).results.bindings.length, 1);
@@ -43,7 +43,7 @@ Deno.test("SPARQL Layer", async (t) => {
     ));
 
     const query = "SELECT ?s WHERE { ?s <http://b> 'c' }";
-    const { result } = await sparql(store, query);
+    const { result } = await sparql([store], query);
 
     // deno-lint-ignore no-explicit-any
     assertEquals((result as any).results.bindings.length, 1);

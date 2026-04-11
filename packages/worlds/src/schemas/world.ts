@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { type WorldSource, worldSourceSchema } from "./source.ts";
 
 /**
  * World represents a world in the Worlds API.
@@ -94,14 +95,9 @@ export const worldsCreateInputSchema: z.ZodType<WorldsCreateInput> = z.object({
  */
 export interface WorldsUpdateInput {
   /**
-   * slug is the identifier of the world to update.
+   * source is the target world identification.
    */
-  slug: string;
-
-  /**
-   * namespace is the parent namespace (for namespaced lookups).
-   */
-  namespace?: string;
+  source: WorldSource;
 
   /**
    * label is the updated human-readable name.
@@ -118,8 +114,7 @@ export interface WorldsUpdateInput {
  * worldsUpdateInputSchema is the Zod schema for WorldsUpdateInput.
  */
 export const worldsUpdateInputSchema: z.ZodType<WorldsUpdateInput> = z.object({
-  slug: z.string().describe("The slug to update."),
-  namespace: z.string().optional(),
+  source: worldSourceSchema.describe("The target world identification."),
   label: z.string().optional(),
   description: z.string().optional(),
 });
@@ -129,22 +124,16 @@ export const worldsUpdateInputSchema: z.ZodType<WorldsUpdateInput> = z.object({
  */
 export interface WorldsGetInput {
   /**
-   * slug is the identifier of the world to retrieve.
+   * source is the target world identification.
    */
-  slug: string;
-
-  /**
-   * namespace is the parent namespace (for namespaced lookups).
-   */
-  namespace?: string;
+  source: WorldSource;
 }
 
 /**
  * worldsGetInputSchema is the Zod schema for WorldsGetInput.
  */
 export const worldsGetInputSchema: z.ZodType<WorldsGetInput> = z.object({
-  slug: z.string().describe("The slug to retrieve."),
-  namespace: z.string().optional(),
+  source: worldSourceSchema.describe("The target world identification."),
 });
 
 /**
@@ -152,20 +141,14 @@ export const worldsGetInputSchema: z.ZodType<WorldsGetInput> = z.object({
  */
 export interface WorldsDeleteInput {
   /**
-   * slug is the identifier of the world to delete.
+   * source is the target world identification.
    */
-  slug: string;
-
-  /**
-   * namespace is the parent namespace (for namespaced lookups).
-   */
-  namespace?: string;
+  source: WorldSource;
 }
 
 /**
  * worldsDeleteInputSchema is the Zod schema for WorldsDeleteInput.
  */
 export const worldsDeleteInputSchema: z.ZodType<WorldsDeleteInput> = z.object({
-  slug: z.string().describe("The slug to delete."),
-  namespace: z.string().optional(),
+  source: worldSourceSchema.describe("The target world identification."),
 });

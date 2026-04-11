@@ -18,7 +18,7 @@ Deno.test({
     await worlds.init();
 
     await t.step("registry world auto-initialization", async () => {
-      const worldsWorld = await worlds.get({ slug: WORLDS_WORLD_SLUG });
+      const worldsWorld = await worlds.get({ source: WORLDS_WORLD_SLUG });
       assertExists(worldsWorld);
       assertEquals(worldsWorld!.slug, "worlds");
     });
@@ -26,7 +26,7 @@ Deno.test({
     await t.step("registry world bootstrapping with API key", async () => {
       const namespace = "https://wazoo.dev/worlds/namespaces/_";
       const result = await worlds.sparql({
-        slug: WORLDS_WORLD_SLUG,
+        sources: [WORLDS_WORLD_SLUG],
         query: `
         PREFIX registry: <${WORLDS.NAMESPACE}>
         SELECT ?ns ?key WHERE {

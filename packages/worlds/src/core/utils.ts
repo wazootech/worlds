@@ -1,4 +1,4 @@
-import type { Source } from "#/schemas/mod.ts";
+import { type WorldSource } from "#/schemas/mod.ts";
 import { errorResponseDataSchema } from "#/schemas/mod.ts";
 
 /**
@@ -61,19 +61,70 @@ export function isSparqlUpdate(query: string): boolean {
 }
 
 /**
+ * parseSourceName parses a source name into a namespace and slug.
+ * The name format is optional: "<namespace>/<slug>" or just "<slug>".
+ */
+export function parseSourceName(name: string): {
+  namespace?: string;
+  slug: string;
+} {
+  const parts = name.split("/");
+  if (parts.length === 2 && parts[0] && parts[1]) {
+    return { namespace: parts[0], slug: parts[1] };
+  }
+  return { slug: name };
+}
+
+/**
+ * resolveSource resolves a WorldSource into slug and namespace components.
+ */
+export function resolveSource(
+  source: WorldSource,
+  defaultNamespace?: string,
+): {
+  slug: string;
+  namespace?: string;
+} {
+  let resolved: { slug: string; namespace?: string };
+  if (typeof source === "string") {
+    resolved = parseSourceName(source);
+  } else if (
+    typeof source === "object" && source !== null && "name" in source
+  ) {
+    resolved = parseSourceName(source.name);
+  } else {
+    resolved = {
+      slug: (source as any).slug,
+      namespace: (source as any).namespace,
+    };
+  }
+
+  return {
+    slug: resolved.slug,
+    namespace: resolved.namespace ?? defaultNamespace,
+  };
+}
+
+/**
  * parseSources validates and normalizes a list of sources.
  */
-export function parseSources(sources: Array<string | Source>): Source[] {
-  const seen = new Set<string>();
-  return sources.map((source) => {
-    const parsed: Source = typeof source === "string"
-      ? { slug: source }
-      : source;
-    if (seen.has(parsed.slug)) {
-      throw new Error(`Duplicate source: ${parsed.slug}`);
-    }
+export function parseSources(sources: WorldSource[]): Array<{
+  slug: string;
+  namespace?: string;
+}> {
+  return sources.map((s) => resolveSource(s));
+}
 
-    seen.add(parsed.slug);
-    return parsed;
-  });
+/**
+ * escapeSparqlLiteral escapes a string for use as a SPARQL literal.
+ */
+export function escapeSparqlLiteral(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+/**
+ * escapeSparqlUri escapes a string for use as a SPARQL URI.
+ */
+export function escapeSparqlUri(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/>/g, "\\>");
 }

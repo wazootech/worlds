@@ -7,6 +7,7 @@ import type {
 } from "@wazoo/worlds-sdk";
 import {
   isSparqlUpdate,
+  resolveSource,
   worldsSparqlInputSchema,
   worldsSparqlOutputSchema,
 } from "@wazoo/worlds-sdk";
@@ -20,17 +21,27 @@ export async function sparql(
   sources: SourceInput[],
   input: WorldsSparqlInput,
 ): Promise<WorldsSparqlOutput> {
-  const { query, slug: source } = input;
-  const s = sources.find((src) =>
-    (typeof src === "string" ? src : src.slug) === source
-  );
-  const isWritable = typeof s === "object" ? s.write : false;
+  const { query, sources: inputSources } = input;
+  const targetSources = inputSources ?? [];
 
-  if (isSparqlUpdate(query) && !isWritable) {
-    throw new Error(
-      "Write operations are disabled. This source is configured as read-only. " +
-        "Only SELECT, ASK, CONSTRUCT, and DESCRIBE queries are allowed.",
-    );
+  if (isSparqlUpdate(query)) {
+    // For updates, ensure all targeted sources are writable
+    for (const source of targetSources) {
+      const { slug } = resolveSource(source);
+      
+      const s = sources.find((src) => {
+        const resolved = resolveSource(src);
+        return resolved.slug === slug;
+      });
+      const isWritable = typeof s === "object" ? s.write : false;
+
+      if (!isWritable) {
+        throw new Error(
+          `Write operations are disabled for source: ${slug}. ` +
+            "Only SELECT, ASK, CONSTRUCT, and DESCRIBE queries are allowed.",
+        );
+      }
+    }
   }
 
   return await worlds.sparql(input);
@@ -50,7 +61,7 @@ export const worldsSparqlTool: WorldsTool<
 > = {
   name: "worlds_sparql",
   description:
-    "Executes a SPARQL query or update against a specific world. Use this tool when you need to retrieve raw facts, perform complex joins, or modify the knowledge graph via SPARQL. Input must be a 'slug' and a 'query' string. Returns a JSON result object with bindings for SELECT/ASK or a boolean for updates.",
+    "Executes a SPARQL query or update against one or more worlds. Use this tool when you need to retrieve raw facts, perform complex joins, or modify the knowledge graph via SPARQL. Input must be an array of 'sources' and a 'query' string. Returns a JSON result object with bindings for SELECT/ASK or a boolean for updates.",
   inputSchema: worldsSparqlInputSchema,
   outputSchema: worldsSparqlOutputSchema,
   isWrite: true,
