@@ -1,5 +1,7 @@
 import type { Client } from "@libsql/client";
 import { worldsTable } from "#/plugins/registry/worlds.queries.sql.ts";
+import { triplesGraphIndex, triplesTable } from "#/world/triples/queries.sql.ts";
+
 import {
   chunksFtsDeleteTrigger,
   chunksFtsInsertTrigger,
@@ -11,8 +13,6 @@ import {
   chunksTripleIdIndex,
   chunksVectorIndex,
 } from "#/world/chunks/queries.sql.ts";
-import { triplesTable } from "#/world/triples/queries.sql.ts";
-import { blobsTable } from "#/world/blobs/queries.sql.ts";
 
 import {
   itemTypesIndex,
@@ -26,10 +26,7 @@ import {
  * @param client The database client.
  */
 export async function initializeDatabase(client: Client): Promise<void> {
-  // Create tables
   await client.execute(worldsTable);
-
-  // Create indexes
 }
 
 /**
@@ -46,27 +43,23 @@ export async function initializeWorldDatabase(
     `F32_BLOB(${dimensions})`,
   );
 
-  // Create tables
   await client.execute(chunksTableWithDimensions);
   await client.execute(chunksFtsTable);
-  await client.execute(blobsTable);
   await client.execute(triplesTable);
 
   await client.execute(itemTypesTable);
 
-  // Create indexes
   await client.execute(chunksTripleIdIndex);
   await client.execute(chunksSubjectIndex);
   await client.execute(chunksPredicateIndex);
   await client.execute(chunksVectorIndex);
+  await client.execute(triplesGraphIndex);
 
   await client.execute(itemTypesIndex);
 
-  // Create triggers
   await client.execute(chunksFtsInsertTrigger);
   await client.execute(chunksFtsDeleteTrigger);
   await client.execute(chunksFtsUpdateTrigger);
   await client.execute(triplesItemTypeInsertTrigger);
   await client.execute(triplesItemTypeDeleteTrigger);
 }
-

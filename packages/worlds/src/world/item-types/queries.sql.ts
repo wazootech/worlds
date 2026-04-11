@@ -20,4 +20,3 @@ export const triplesItemTypeInsertTrigger = "CREATE TRIGGER IF NOT EXISTS triple
  */
 export const triplesItemTypeDeleteTrigger = "CREATE TRIGGER IF NOT EXISTS triples_type_ad\r\nAFTER DELETE ON triples\r\nWHEN old.predicate = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'\r\nBEGIN\r\n  DELETE FROM item_types WHERE subject = old.subject AND type = old.object;\r\nEND;";
 
-

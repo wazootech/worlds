@@ -56,7 +56,7 @@ Deno.test("ChunksSearchRepository", async (t) => {
         subject: "s",
         predicate: "p",
         object: "o",
-        vector: null,
+        graph: "<default>",
       });
 
       const chunksRepository = new ChunksRepository(worldManaged.database);

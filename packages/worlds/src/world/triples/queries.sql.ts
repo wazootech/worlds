@@ -2,18 +2,33 @@
 
 /**
  * triplesTable is a table for triples with vector embeddings.
+ * Graph column stores the named graph URI (default graph if null).
+ * Recommended max: 100K triples for in-memory N3 Store loading.
  */
-export const triplesTable = "CREATE TABLE IF NOT EXISTS triples (\r\n  id TEXT PRIMARY KEY,\r\n  subject TEXT NOT NULL,\r\n  predicate TEXT NOT NULL,\r\n  object TEXT NOT NULL,\r\n  UNIQUE(subject, predicate, object)\r\n);";
+export const triplesTable = "CREATE TABLE IF NOT EXISTS triples (\r\n  id TEXT PRIMARY KEY,\r\n  subject TEXT NOT NULL,\r\n  predicate TEXT NOT NULL,\r\n  object TEXT NOT NULL,\r\n  graph TEXT DEFAULT '<default>',\r\n  UNIQUE(subject, predicate, object, graph)\r\n);";
+
+/**
+ * triplesGraphIndex is an index on graph for efficient graph-scoped queries.
+ */
+export const triplesGraphIndex = "CREATE INDEX IF NOT EXISTS idx_triples_graph ON triples(graph);";
 
 /**
  * deleteTriples is a query that deletes a specific triple by id.
  */
-export const deleteTriples = "DELETE FROM\r\n  triples\r\nWHERE\r\n  id = ?;";
+export const deleteTriples = "DELETE FROM triples WHERE id = ?;";
 
 /**
- * upsertTriples is a query that inserts or replaces a triple with
- * embedding.
+ * upsertTriples is a query that inserts or replaces a triple with embedding.
  */
-export const upsertTriples = "INSERT\r\n  OR REPLACE INTO triples (\r\n    id,\r\n    subject,\r\n    predicate,\r\n    object\r\n  )\r\nVALUES\r\n  (?, ?, ?, ?);";
+export const upsertTriples = "INSERT OR REPLACE INTO triples (id, subject, predicate, object, graph)\r\nVALUES (?, ?, ?, ?, ?);";
 
+/**
+ * selectTriplesByGraph is a query that selects all triples in a given graph.
+ */
+export const selectTriplesByGraph = "SELECT * FROM triples WHERE graph = ?;";
+
+/**
+ * selectAllTriples is a query that selects all triples.
+ */
+export const selectAllTriples = "SELECT * FROM triples;";
 

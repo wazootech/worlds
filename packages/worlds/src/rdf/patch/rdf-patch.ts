@@ -6,6 +6,8 @@ import type { Embeddings } from "#/embeddings/embeddings.ts";
 import { TriplesRepository } from "#/world/triples/repository.ts";
 import { ChunksRepository } from "#/world/chunks/repository.ts";
 
+const DEFAULT_GRAPH = "<default>";
+
 /**
  * handlePatch handles RDF patches by upserting and deleting triples and chunks.
  * @param client The database client.
@@ -35,53 +37,48 @@ export async function handlePatch(
         for (const q of patch.insertions) {
           const quadId = await skolemizeQuad(q);
           const isFtsEligible = (q.object.termType === "Literal") &&
-            (q.object.value.length > 0); // Check if literal has text for FTS
+            (q.object.value.length > 0);
 
-          const tripleId = await hash(quadId); // Use quadId for deterministic tripleId
+          const tripleId = await hash(quadId);
 
-          // Use original values for columns, but deterministic ID
           const subject = q.subject.value;
           const predicate = q.predicate.value;
           const object = q.object.value;
+          const graph = q.graph.termType === "DefaultGraph"
+            ? DEFAULT_GRAPH
+            : q.graph.value;
 
-          // Calculate embedding if object is a literal and has text
           let vector: number[] | null = null;
           if (isFtsEligible) {
             try {
               vector = await embeddings.embed(object);
             } catch (_error) {
-              // Continue without vector - triples will be stored but not searchable via semantic search
             }
           }
 
-          // Upsert triple
           await triplesRepository.upsert({
             id: tripleId,
             subject,
             predicate,
             object,
-            vector: null, // Triples table doesn't store vector in this schema, only Chunks
+            graph,
           });
 
-          // Create and upsert chunks
           if (vector) {
-            // Split text using RecursiveCharacterTextSplitter
             const splitter = new RecursiveCharacterTextSplitter({
-              chunkSize: 1000, // Default to reasonable size
+              chunkSize: 1000,
               chunkOverlap: 200,
             });
             const chunks = await splitter.splitText(object);
 
             for (let i = 0; i < chunks.length; i++) {
               const chunkText = chunks[i];
-              let chunkVector = vector; // Default to object vector if single chunk
+              let chunkVector = vector;
 
-              // If multiple chunks, re-embed each chunk
               if (chunks.length > 1) {
                 try {
                   chunkVector = await embeddings.embed(chunkText);
                 } catch (_error) {
-                  // Use the original vector if re-embedding fails, or continue without vector if original failed too
                 }
               }
 

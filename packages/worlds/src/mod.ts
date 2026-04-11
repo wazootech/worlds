@@ -20,7 +20,6 @@ export * from "#/plugins/registry/keys.repository.ts";
 export * from "#/plugins/registry/worlds.repository.ts";
 export * from "#/world/triples/repository.ts";
 export * from "#/world/chunks/repository.ts";
-export * from "#/world/blobs/repository.ts";
 export * from "#/rdf/core/serialization.ts";
 export * from "#/rdf/patch/mod.ts";
 export * from "#/embeddings/mod.ts";

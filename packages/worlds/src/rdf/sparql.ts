@@ -1,4 +1,5 @@
 import { QueryEngine } from "@comunica/query-sparql-rdfjs-lite";
+import { Store } from "n3";
 import type { PatchHandler } from "./patch/mod.ts";
 import { connectSearchStoreToN3Store } from "./patch/mod.ts";
 import { generateBlobFromN3Store, generateN3StoreFromBlob } from "./n3.ts";
@@ -40,13 +41,60 @@ export class NoopPatchHandler implements PatchHandler {
 const queryEngine = new QueryEngine();
 
 /**
- * sparql executes a SPARQL query and returns the result.
+ * sparql executes a SPARQL query against an N3 Store and returns the result.
+ * @param store The N3 Store to query against.
+ * @param query The SPARQL query or update.
+ * @param handler The patch handler for monitoring changes.
+ * @returns The updated store (for updates) and the query result.
+ */
+export async function sparql(
+  store: Store,
+  query: string,
+  handler: PatchHandler = new NoopPatchHandler(),
+): Promise<{ store: Store; result: WorldsSparqlOutput }> {
+  const { store: proxiedStore, sync } = connectSearchStoreToN3Store(
+    handler,
+    store,
+  );
+
+  const queryType = await queryEngine.query(query, {
+    sources: [proxiedStore],
+    baseIRI: REGISTRY.BASE,
+  });
+
+  if (queryType.resultType === "void") {
+    await queryType.execute();
+    await sync();
+    return { store, result: null };
+  }
+
+  if (queryType.resultType === "bindings") {
+    const result = await handleBindings(queryType);
+    return { store, result };
+  }
+
+  if (queryType.resultType === "boolean") {
+    const result = await handleBoolean(queryType);
+    return { store, result };
+  }
+
+  if (queryType.resultType === "quads") {
+    const result = await handleQuads(queryType);
+    return { store, result };
+  }
+
+  throw new Error("Unsupported query type");
+}
+
+/**
+ * sparqlBlob executes a SPARQL query against a Blob (legacy API).
  * @param blob The RDF data as a blob.
  * @param query The SPARQL query or update.
  * @param handler The patch handler for monitoring changes.
  * @returns The new blob and the query result.
+ * @deprecated Use sparql() with a Store for better performance.
  */
-export async function sparql(
+export async function sparqlBlob(
   blob: Blob,
   query: string,
   handler: PatchHandler = new NoopPatchHandler(),

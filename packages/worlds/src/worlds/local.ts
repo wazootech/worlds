@@ -2,7 +2,8 @@ import { DataFactory, Parser, Store, Writer } from "n3";
 
 import { ChunksSearchRepository } from "#/world/chunks/repository.ts";
 import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
-import { BlobsRepository } from "#/world/blobs/repository.ts";
+import { loadStore } from "#/world/triples/loader.ts";
+import { TriplesPatchHandler } from "#/world/triples/loader.ts";
 
 import { BatchPatchHandler, handlePatch } from "#/rdf/patch/mod.ts";
 import { sparql } from "#/rdf/sparql.ts";
@@ -40,14 +41,41 @@ const { namedNode, quad } = DataFactory;
 
 /**
  * LocalWorlds is a server-side implementation of the Worlds interface.
+ * Uses in-memory N3 Store backed by triples table for SPARQL queries.
+ * Recommended max: 100K triples per world for in-memory Store loading.
  */
 export class LocalWorlds implements WorldsInterface {
   private readonly worldsRepository: WorldsRepository;
   private registryWorldInitialized?: Promise<void>;
   private isClosed = false;
+  private storeCache = new Map<string, Store>();
 
   constructor(private readonly appContext: WorldsContext) {
     this.worldsRepository = new WorldsRepository(appContext.libsql.database);
+  }
+
+  private async getStore(
+    namespaceId: string,
+    slug: string,
+  ): Promise<Store> {
+    const cacheKey = `${namespaceId}:${slug}`;
+    let store = this.storeCache.get(cacheKey);
+
+    if (!store) {
+      const managed = await this.appContext.libsql.manager.get(
+        namespaceId,
+        slug,
+      );
+      store = await loadStore(managed.database);
+      this.storeCache.set(cacheKey, store);
+    }
+
+    return store;
+  }
+
+  private invalidateStore(namespaceId: string, slug: string): void {
+    const cacheKey = `${namespaceId}:${slug}`;
+    this.storeCache.delete(cacheKey);
   }
 
   /**
@@ -92,7 +120,6 @@ export class LocalWorlds implements WorldsInterface {
         REGISTRY_WORLD_ID,
       );
     } catch (error) {
-      // If another instance already initialized the registry world, we can safe skip
       const checkAgain = await this.worldsRepository.get(
         REGISTRY_WORLD_ID,
         REGISTRY_NAMESPACE_ID,
@@ -102,7 +129,6 @@ export class LocalWorlds implements WorldsInterface {
       }
     }
 
-    // Bootstrap if an API key is provided
     if (this.appContext.apiKey) {
       const namespaceId = this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID;
       const keyId = `${REGISTRY.BASE}keys/bootstrap`;
@@ -143,7 +169,7 @@ export class LocalWorlds implements WorldsInterface {
     const rows = await this.worldsRepository.list(namespaceId, limit, offset);
     return rows.map((world) =>
       worldSchema.parse({
-        id: world.slug, // ID is now the slug
+        id: world.slug,
         slug: world.slug,
         label: world.label,
         description: world.description,
@@ -257,6 +283,7 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error("World not found");
     }
 
+    this.invalidateStore(namespaceId, input.world);
     await this.worldsRepository.update(input.world, namespaceId, {
       deleted_at: Date.now(),
     });
@@ -283,33 +310,23 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error(`World not found: ${slug} in namespace ${namespaceId}`);
     }
 
-    const managedWorld = await this.appContext.libsql.manager.get(
+    const managed = await this.appContext.libsql.manager.get(
       namespaceId,
       slug,
     );
-    const patchHandler = new BatchPatchHandler({
-      patch: (patches: Patch[]) =>
-        handlePatch(managedWorld.database, this.appContext.embeddings, patches),
-    });
+    const patchHandler = new TriplesPatchHandler(managed.database);
+    const batchHandler = new BatchPatchHandler(patchHandler);
 
-    const blobsRepository = new BlobsRepository(managedWorld.database);
-    const worldData = await blobsRepository.get();
-    const blobData = worldData?.blob as unknown as ArrayBuffer;
-    const blob = blobData
-      ? new Blob([new Uint8Array(blobData)])
-      : new Blob([], { type: "application/n-quads" });
+    const store = await this.getStore(namespaceId, slug);
+    const { result } = await sparql(store, query, batchHandler);
 
     const isUpdate = await isSparqlUpdate(query);
-    const { blob: newBlob, result } = await sparql(blob, query, patchHandler);
-
     if (isUpdate) {
-      const newData = new Uint8Array(await newBlob.arrayBuffer());
-      await patchHandler.commit();
+      await batchHandler.commit();
+      this.invalidateStore(namespaceId, slug);
 
-      const updatedAt = Date.now();
-      await blobsRepository.set(newData, updatedAt);
       await this.worldsRepository.update(slug, namespaceId, {
-        updated_at: updatedAt,
+        updated_at: Date.now(),
       });
 
       return null;
@@ -373,42 +390,24 @@ export class LocalWorlds implements WorldsInterface {
     const store = new Store();
     store.addQuads(parser.parse(body));
 
-    const writer = new Writer({ format: "N-Quads" });
-    writer.addQuads(store.getQuads(null, null, null, null));
+    const managed = await this.appContext.libsql.manager.get(
+      namespaceId,
+      slug,
+    );
+    const now = Date.now();
 
-    return new Promise((resolve, reject) => {
-      writer.end(async (error: Error | null, result: string | undefined) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        try {
-          const managed = await this.appContext.libsql.manager.get(
-            namespaceId,
-            slug,
-          );
-          const blobsRepository = new BlobsRepository(managed.database);
-          const now = Date.now();
+    await handlePatch(
+      managed.database,
+      this.appContext.embeddings,
+      [{
+        insertions: store.getQuads(null, null, null, null),
+        deletions: [],
+      }],
+    );
 
-          await handlePatch(
-            managed.database,
-            this.appContext.embeddings,
-            [{
-              insertions: store.getQuads(null, null, null, null),
-              deletions: [],
-            }],
-          );
-
-          await blobsRepository.set(new TextEncoder().encode(result), now);
-          await this.worldsRepository.update(slug, namespaceId, {
-            updated_at: now,
-          });
-
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      });
+    this.invalidateStore(namespaceId, slug);
+    await this.worldsRepository.update(slug, namespaceId, {
+      updated_at: now,
     });
   }
 
@@ -433,26 +432,22 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error(`Unsupported content type: ${contentType}`);
     }
 
-    const managed = await this.appContext.libsql.manager.get(namespaceId, slug);
-    const blobsRepository = new BlobsRepository(managed.database);
-    const worldData = await blobsRepository.get();
+    const store = await this.getStore(namespaceId, slug);
+    const quads = store.getQuads(null, null, null, null);
 
-    if (!worldData) {
-      return new ArrayBuffer(0);
-    }
-
-    const blobData = worldData.blob as unknown as ArrayBuffer;
     if (serialization.format === DEFAULT_SERIALIZATION.format) {
-      return blobData;
+      return new Promise((resolve, reject) => {
+        const writer = new Writer({ format: "N-Quads" });
+        writer.addQuads(quads);
+        writer.end((error: Error | null, result: string | undefined) => {
+          if (error) reject(error);
+          else resolve(new TextEncoder().encode(result).buffer);
+        });
+      });
     }
-
-    const quads = new TextDecoder().decode(blobData);
-    const parser = new Parser({ format: "N-Quads" });
-    const store = new Store();
-    store.addQuads(parser.parse(quads));
 
     const writer = new Writer({ format: serialization.format });
-    writer.addQuads(store.getQuads(null, null, null, null));
+    writer.addQuads(quads);
 
     return new Promise((resolve, reject) => {
       writer.end((error: Error | null, result: string | undefined) => {
@@ -477,18 +472,15 @@ export class LocalWorlds implements WorldsInterface {
     return new Promise((resolve, reject) => {
       const writer = new Writer({ format: serialization.format });
 
-      // SPARQL Service Description vocabulary
       const sd = "http://www.w3.org/ns/sparql-service-description#";
       const rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
       const endpoint = namedNode(endpointUrl);
       const serviceType = namedNode(`${sd}Service`);
       const endpointProperty = namedNode(`${sd}endpoint`);
 
-      // Required triples
       writer.addQuad(quad(endpoint, namedNode(`${rdf}type`), serviceType));
       writer.addQuad(quad(endpoint, endpointProperty, endpoint));
 
-      // Advertise supported formats
       const supportedFormat = namedNode(`${sd}supportedFormat`);
       const jsonFormat = namedNode(
         "http://www.w3.org/ns/formats/SPARQL_Results_JSON",
@@ -499,7 +491,6 @@ export class LocalWorlds implements WorldsInterface {
       writer.addQuad(quad(endpoint, supportedFormat, jsonFormat));
       writer.addQuad(quad(endpoint, supportedFormat, turtleFormat));
 
-      // Advertise supported languages
       const supportedLanguage = namedNode(`${sd}supportedLanguage`);
       const sparql11Query = namedNode(`${sd}SPARQL11Query`);
       const sparql11Update = namedNode(`${sd}SPARQL11Update`);
@@ -510,7 +501,6 @@ export class LocalWorlds implements WorldsInterface {
       writer.addQuad(quad(endpoint, supportedLanguage, sparql12Query));
       writer.addQuad(quad(endpoint, supportedLanguage, sparql12Update));
 
-      // Advertise features
       const feature = namedNode(`${sd}feature`);
       const unionDefaultGraph = namedNode(`${sd}UnionDefaultGraph`);
       const dereferencesURIs = namedNode(`${sd}DereferencesURIs`);
@@ -533,6 +523,7 @@ export class LocalWorlds implements WorldsInterface {
    */
   async close(): Promise<void> {
     this.isClosed = true;
+    this.storeCache.clear();
     await this.appContext.libsql.manager.close();
     this.appContext.libsql.database.close();
   }

@@ -16,4 +16,3 @@ export const selectBlob = "SELECT\r\n  blob,\r\n  updated_at\r\nFROM\r\n  blobs\
  */
 export const upsertBlob = "INSERT INTO\r\n  blobs (id, blob, updated_at)\r\nVALUES\r\n  (1, ?, ?) ON CONFLICT(id) DO\r\nUPDATE\r\nSET\r\n  blob = excluded.blob,\r\n  updated_at = excluded.updated_at;";
 
-
