@@ -4,6 +4,10 @@ import { DataFactory, Store } from "n3";
 
 const { namedNode, literal, quad } = DataFactory;
 
+globalThis.addEventListener("unhandledrejection", (e) => {
+  console.error("DIAGNOSTIC: Unhandled Rejection:", e.reason);
+});
+
 Deno.test({
   name: "SPARQL Layer",
   sanitizeOps: false,
