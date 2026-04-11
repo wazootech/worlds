@@ -109,7 +109,7 @@ export class ChunksSearchRepository {
       limit = 10,
     } = params;
 
-    const namespaceId = this.ctx.namespace ?? undefined;
+    const namespaceId = undefined;
 
     // Generate Embeddings
     const vector = query
@@ -132,10 +132,9 @@ export class ChunksSearchRepository {
 
     // Search across the target world
     try {
-      const managed = await this.ctx.libsql.manager.get(
-        namespaceId ?? "",
-        world.slug,
-      );
+      const managed = await this.ctx.libsql.manager.get({
+        slug: world.slug,
+      });
 
       const subjectsParam = subjects && subjects.length > 0
         ? JSON.stringify(subjects)

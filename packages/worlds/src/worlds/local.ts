@@ -61,10 +61,10 @@ export class LocalWorlds implements WorldsInterface {
     let store = this.storeCache.get(cacheKey);
 
     if (!store) {
-      const managed = await this.appContext.libsql.manager.get({
+const managed = await this.appContext.libsql.manager.get({
         namespace,
         slug,
-      );
+      });
       store = await loadStore(managed.database);
       this.storeCache.set(cacheKey, store);
     }
@@ -122,10 +122,9 @@ export class LocalWorlds implements WorldsInterface {
         deleted_at: null,
       });
 
-      await this.appContext.libsql.manager.create(
-        undefined as string | undefined,
-        WORLDS_WORLD_ID,
-      );
+      await this.appContext.libsql.manager.create({
+        slug: WORLDS_WORLD_ID,
+      });
     } catch (error) {
       const checkAgain = await this.worldsRepository.get(
         WORLDS_WORLD_ID,
@@ -242,7 +241,7 @@ export class LocalWorlds implements WorldsInterface {
     };
 
     await this.worldsRepository.insert(worldRow);
-    await this.appContext.libsql.manager.create(namespace ?? "", slug);
+    await this.appContext.libsql.manager.create({ slug, namespace });
 
     return worldSchema.parse({
       world: slug,
@@ -319,7 +318,7 @@ export class LocalWorlds implements WorldsInterface {
     const managed = await this.appContext.libsql.manager.get({
       namespace,
       slug,
-    );
+    });
     const patchHandler = new TriplesPatchHandler(managed.database);
     const batchHandler = new BatchPatchHandler(patchHandler);
 
@@ -410,7 +409,7 @@ export class LocalWorlds implements WorldsInterface {
     const managed = await this.appContext.libsql.manager.get({
       namespace,
       slug,
-    );
+    });
     const now = Date.now();
 
     await handlePatch(
