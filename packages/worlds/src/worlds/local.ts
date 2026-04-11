@@ -79,6 +79,14 @@ export class LocalWorlds implements WorldsInterface {
   }
 
   /**
+   * clearCache removes all cached N3 Stores.
+   * Useful for test isolation between test runs.
+   */
+  public clearCache(): void {
+    this.storeCache.clear();
+  }
+
+  /**
    * init initializes the engine and its background tasks.
    */
   public async init(): Promise<void> {

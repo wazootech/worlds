@@ -38,10 +38,9 @@ export class NoopPatchHandler implements PatchHandler {
   }
 }
 
-const queryEngine = new QueryEngine();
-
 /**
  * sparql executes a SPARQL query against an N3 Store and returns the result.
+ * Creates a fresh QueryEngine per call to ensure test isolation.
  * @param store The N3 Store to query against.
  * @param query The SPARQL query or update.
  * @param handler The patch handler for monitoring changes.
@@ -52,6 +51,7 @@ export async function sparql(
   query: string,
   handler: PatchHandler = new NoopPatchHandler(),
 ): Promise<{ store: Store; result: WorldsSparqlOutput }> {
+  const queryEngine = new QueryEngine();
   const { store: proxiedStore, sync } = connectSearchStoreToN3Store(
     handler,
     store,
@@ -99,6 +99,7 @@ export async function sparqlBlob(
   query: string,
   handler: PatchHandler = new NoopPatchHandler(),
 ): Promise<{ blob: Blob; result: WorldsSparqlOutput }> {
+  const queryEngine = new QueryEngine();
   const store = await generateN3StoreFromBlob(blob);
   const { store: proxiedStore, sync } = connectSearchStoreToN3Store(
     handler,
