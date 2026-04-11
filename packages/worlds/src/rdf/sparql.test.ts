@@ -10,7 +10,8 @@ globalThis.addEventListener("unhandledrejection", (e) => {
 });
 
 globalThis.addEventListener("error", (e) => {
-  const msg = `DIAGNOSTIC: Uncaught Error: ${e.message} @ ${e.filename}:${e.lineno}:${e.colno}\n`;
+  const msg =
+    `DIAGNOSTIC: Uncaught Error: ${e.message} @ ${e.filename}:${e.lineno}:${e.colno}\n`;
   Deno.stderr.writeSync(new TextEncoder().encode(msg));
 });
 
