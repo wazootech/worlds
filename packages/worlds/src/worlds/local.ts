@@ -99,10 +99,7 @@ export class LocalWorlds implements WorldsInterface {
    * ensureRegistryWorld guarantees the presence of the registry world and seeds it if necessary.
    */
   private async ensureRegistryWorld(): Promise<void> {
-    const existing = await this.worldsRepository.get(
-      WORLDS_WORLD_ID,
-      undefined as string | undefined,
-    );
+    const existing = await this.worldsRepository.get(WORLDS_WORLD_ID, undefined);
     if (existing) {
       return;
     }

@@ -21,33 +21,33 @@ export class WorldsRepository {
 
   /**
    * get retrieves a world by its identifier and optional namespace.
-   * @param world The world identifier.
-   * @param namespace The namespace ID (optional - uses internal lookup if not provided).
+   * @param slug The world identifier.
+   * @param namespaceId The namespace ID (optional - uses internal lookup if not provided).
    * @returns The world row or null if not found.
    */
-  async get(world: string, namespace?: string): Promise<WorldRow | null> {
-    if (namespace) {
+  async get(slug: string, namespaceId?: string): Promise<WorldRow | null> {
+    if (namespaceId) {
       const result = await this.db.execute({
         sql: selectWorldBySlug,
-        args: [world, namespace],
+        args: [slug, namespaceId],
       });
       const row = result.rows[0] as Record<string, unknown> | undefined;
       if (!row) return null;
       return this.mapRow(row);
     }
-    return this.getInternal(world);
+    return this.getInternal(slug);
   }
 
   /**
    * getInternal retrieves a world by its identifier without namespace scoping.
    * Use this ONLY for internal system operations.
-   * @param world The world identifier.
+   * @param slug The world identifier.
    * @returns The world row or null if not found.
    */
-  async getInternal(world: string): Promise<WorldRow | null> {
+  async getInternal(slug: string): Promise<WorldRow | null> {
     const result = await this.db.execute({
       sql: selectWorldBySlugInternal,
-      args: [world],
+      args: [slug],
     });
     const row = result.rows[0] as Record<string, unknown> | undefined;
     if (!row) return null;
@@ -73,20 +73,20 @@ export class WorldsRepository {
 
   /**
    * list retrieves a paginated list of worlds for a specific namespace.
-   * @param namespace The namespace ID (optional - if not provided, lists all worlds).
+   * @param namespaceId The namespace ID (optional - if not provided, lists all worlds).
    * @param limit The maximum number of worlds to return.
    * @param offset The number of worlds to skip.
    * @returns An array of world rows.
    */
   async list(
-    namespace: string | undefined,
+    namespaceId: string | undefined,
     limit: number,
     offset: number,
   ): Promise<WorldRow[]> {
-    const result = namespace
+    const result = namespaceId
       ? await this.db.execute({
           sql: selectAllWorlds,
-          args: [namespace, limit, offset],
+          args: [namespaceId, limit, offset],
         })
       : await this.db.execute({
           sql: `SELECT * FROM worlds ORDER BY created_at DESC LIMIT ? OFFSET ?`,
@@ -128,18 +128,18 @@ export class WorldsRepository {
 
   /**
    * update modifies an existing world record.
-   * @param world The world identifier.
-   * @param namespace The namespace ID.
+   * @param slug The world identifier.
+   * @param namespaceId The namespace ID.
    * @param updates The fields to update.
    */
   async update(
-    world: string,
-    namespace: string | undefined,
+    slug: string,
+    namespaceId: string | undefined,
     updates: WorldTableUpdate,
   ): Promise<void> {
-    const row = await this.get(world, namespace);
+    const row = await this.get(slug, namespaceId);
     if (!row) return;
-    const ns = namespace ?? "";
+    const ns = namespaceId ?? "";
     await this.db.execute({
       sql: updateWorld,
       args: [
@@ -149,7 +149,7 @@ export class WorldsRepository {
         updates.db_hostname ?? row.db_hostname,
         updates.db_token ?? row.db_token,
         updates.deleted_at ?? row.deleted_at,
-        world,
+        slug,
         ns,
       ],
     });
@@ -157,12 +157,12 @@ export class WorldsRepository {
 
   /**
    * delete removes a world record by its identifier and namespace.
-   * @param world The world identifier.
-   * @param namespace The namespace ID (optional).
+   * @param slug The world identifier.
+   * @param namespaceId The namespace ID (optional).
    */
-  async delete(world: string, namespace: string | undefined): Promise<void> {
-    const ns = namespace ?? "";
-    await this.db.execute({ sql: deleteWorld, args: [world, ns] });
+  async delete(slug: string, namespaceId: string | undefined): Promise<void> {
+    const ns = namespaceId ?? "";
+    await this.db.execute({ sql: deleteWorld, args: [slug, ns] });
   }
 }
 
