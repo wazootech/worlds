@@ -47,7 +47,6 @@ export class NoopPatchHandler implements PatchHandler {
 
 /**
  * sparql executes a SPARQL query against an N3 Store and returns the result.
- * Creates a fresh QueryEngine per call to ensure test isolation.
  * @param store The N3 Store to query against.
  * @param query The SPARQL query or update.
  * @param handler The patch handler for monitoring changes.
