@@ -16,5 +16,7 @@ jobs:
         run: deno fmt && git diff-index --quiet HEAD
       - name: Lint
         run: deno lint && git diff-index --quiet HEAD
+      - name: Environment Info
+        run: deno --version && deno info
       - name: Test
-        run: deno cache --reload packages/worlds/src/mod.ts && deno task test
+        run: deno cache --reload packages/worlds/src/mod.ts && deno task test --trace-leaks
