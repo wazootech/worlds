@@ -18,6 +18,7 @@ import type { Patch } from "#/rdf/patch/mod.ts";
 import type { WorldOptions } from "#/storage/manager.ts";
 import type { WorldsContext } from "#/core/types.ts";
 import {
+  DEFAULT_NAMESPACE,
   WORLDS,
   WORLDS_WORLD_ID,
 } from "#/core/ontology.ts";
@@ -107,7 +108,7 @@ export class LocalWorlds implements WorldsInterface {
     const now = Date.now();
     try {
       await this.worldsRepository.insert({
-        namespace_id: "",
+        namespace_id: DEFAULT_NAMESPACE,
         slug: WORLDS_WORLD_ID,
         label: "Registry",
         description: "Worlds platform registry and control plane.",
@@ -223,7 +224,7 @@ export class LocalWorlds implements WorldsInterface {
     const now = Date.now();
     const worldLabel = label ?? slug;
     const worldRow = {
-      namespace_id: namespace ?? "",
+      namespace_id: namespace ?? DEFAULT_NAMESPACE,
       slug,
       label: worldLabel,
       description: description ?? null,

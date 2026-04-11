@@ -49,3 +49,9 @@ export const WORLDS_WORLD_ID: string = Deno.env.get("WORLDS_WORLD_ID") ??
 export const WORLDS_NAMESPACE_ID: string =
   Deno.env.get("WORLDS_NAMESPACE_ID") ?? "https://wazoo.dev/worlds";
 
+/**
+ * DEFAULT_NAMESPACE is used when no namespace is specified.
+ * Mirrors the RDF default graph concept.
+ */
+export const DEFAULT_NAMESPACE = "_";
+

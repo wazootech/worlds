@@ -1,4 +1,5 @@
 import type { Client } from "@libsql/client";
+import { DEFAULT_NAMESPACE } from "#/core/ontology.ts";
 import {
   deleteWorld,
   insertWorld,
@@ -139,7 +140,7 @@ export class WorldsRepository {
   ): Promise<void> {
     const row = await this.get(slug, namespaceId);
     if (!row) return;
-    const ns = namespaceId ?? "";
+    const ns = namespaceId ?? DEFAULT_NAMESPACE;
     await this.db.execute({
       sql: updateWorld,
       args: [
@@ -161,7 +162,7 @@ export class WorldsRepository {
    * @param namespaceId The namespace ID (optional).
    */
   async delete(slug: string, namespaceId: string | undefined): Promise<void> {
-    const ns = namespaceId ?? "";
+    const ns = namespaceId ?? DEFAULT_NAMESPACE;
     await this.db.execute({ sql: deleteWorld, args: [slug, ns] });
   }
 }
