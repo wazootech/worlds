@@ -60,7 +60,7 @@ export class RemoteWorlds implements WorldsInterface {
    * get fetches a single world from the Worlds API.
    */
   public async get(input: WorldsGetInput): Promise<World | null> {
-    const url = new URL(`${this.options.baseUrl}/worlds/${input.world}`);
+    const url = new URL(`${this.options.baseUrl}/worlds/${input.slug}`);
 
     const response = await this.fetch(
       url,
@@ -111,8 +111,8 @@ export class RemoteWorlds implements WorldsInterface {
    * update updates a world in the Worlds API.
    */
   public async update(input: WorldsUpdateInput): Promise<void> {
-    const { world: idOrSlug, ...data } = input;
-    const url = new URL(`${this.options.baseUrl}/worlds/${idOrSlug}`);
+    const { slug, ...data } = input;
+    const url = new URL(`${this.options.baseUrl}/worlds/${slug}`);
 
     const response = await this.fetch(
       url,
@@ -135,7 +135,7 @@ export class RemoteWorlds implements WorldsInterface {
    * delete deletes a world from the Worlds API.
    */
   public async delete(input: WorldsDeleteInput): Promise<void> {
-    const url = new URL(`${this.options.baseUrl}/worlds/${input.world}`);
+    const url = new URL(`${this.options.baseUrl}/worlds/${input.slug}`);
 
     const response = await this.fetch(
       url,

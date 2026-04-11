@@ -129,11 +129,12 @@ export class WorldsRepository {
    */
   async update(
     world: string,
-    namespace: string,
+    namespace: string | undefined,
     updates: WorldTableUpdate,
   ): Promise<void> {
     const row = await this.get(world, namespace);
     if (!row) return;
+    const ns = namespace ?? "";
     await this.db.execute({
       sql: updateWorld,
       args: [
@@ -144,7 +145,7 @@ export class WorldsRepository {
         updates.db_token ?? row.db_token,
         updates.deleted_at ?? row.deleted_at,
         world,
-        namespace,
+        ns,
       ],
     });
   }
@@ -152,10 +153,11 @@ export class WorldsRepository {
   /**
    * delete removes a world record by its identifier and namespace.
    * @param world The world identifier.
-   * @param namespace The namespace ID.
+   * @param namespace The namespace ID (optional).
    */
-  async delete(world: string, namespace: string): Promise<void> {
-    await this.db.execute({ sql: deleteWorld, args: [world, namespace] });
+  async delete(world: string, namespace: string | undefined): Promise<void> {
+    const ns = namespace ?? "";
+    await this.db.execute({ sql: deleteWorld, args: [world, ns] });
   }
 }
 

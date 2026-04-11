@@ -2,13 +2,13 @@ import { z } from "zod";
 
 /**
  * World represents a world in the Worlds API.
- * Resource name format: {namespace}/{world} (computed, not stored)
+ * Resource name format: {namespace}/{slug} (computed, not stored)
  */
 export interface World {
   /**
-   * world is the URL-friendly identifier (resource ID segment).
+   * slug is the URL-friendly identifier (resource ID segment).
    */
-  world: string;
+  slug: string;
 
   /**
    * namespace is the optional parent namespace (optional - for multi-tenant).
@@ -45,7 +45,7 @@ export interface World {
  * worldSchema is the Zod schema for World.
  */
 export const worldSchema: z.ZodType<World> = z.object({
-  world: z.string().describe("The world identifier."),
+  slug: z.string().describe("The slug identifier."),
   namespace: z.string().optional().describe("The namespace (optional)."),
   label: z.string().optional().describe("The display label."),
   description: z.string().optional().describe("The description."),
@@ -59,9 +59,9 @@ export const worldSchema: z.ZodType<World> = z.object({
  */
 export interface WorldsCreateInput {
   /**
-   * world is the URL-friendly identifier for the new world.
+   * slug is the URL-friendly identifier for the new world.
    */
-  world: string;
+  slug: string;
 
   /**
    * namespace is the parent namespace (optional - for multi-tenant).
@@ -83,7 +83,7 @@ export interface WorldsCreateInput {
  * worldsCreateInputSchema is the Zod schema for WorldsCreateInput.
  */
 export const worldsCreateInputSchema: z.ZodType<WorldsCreateInput> = z.object({
-  world: z.string().describe("The world identifier."),
+  slug: z.string().describe("The slug identifier."),
   namespace: z.string().optional().describe("The namespace (optional)."),
   label: z.string().optional().describe("The display label."),
   description: z.string().optional().describe("The description."),
@@ -94,9 +94,9 @@ export const worldsCreateInputSchema: z.ZodType<WorldsCreateInput> = z.object({
  */
 export interface WorldsUpdateInput {
   /**
-   * world is the identifier of the world to update.
+   * slug is the identifier of the world to update.
    */
-  world: string;
+  slug: string;
 
   /**
    * namespace is the parent namespace (for namespaced lookups).
@@ -118,7 +118,7 @@ export interface WorldsUpdateInput {
  * worldsUpdateInputSchema is the Zod schema for WorldsUpdateInput.
  */
 export const worldsUpdateInputSchema: z.ZodType<WorldsUpdateInput> = z.object({
-  world: z.string().describe("The world to update."),
+  slug: z.string().describe("The slug to update."),
   namespace: z.string().optional(),
   label: z.string().optional(),
   description: z.string().optional(),
@@ -129,9 +129,9 @@ export const worldsUpdateInputSchema: z.ZodType<WorldsUpdateInput> = z.object({
  */
 export interface WorldsGetInput {
   /**
-   * world is the identifier of the world to retrieve.
+   * slug is the identifier of the world to retrieve.
    */
-  world: string;
+  slug: string;
 
   /**
    * namespace is the parent namespace (for namespaced lookups).
@@ -143,7 +143,7 @@ export interface WorldsGetInput {
  * worldsGetInputSchema is the Zod schema for WorldsGetInput.
  */
 export const worldsGetInputSchema: z.ZodType<WorldsGetInput> = z.object({
-  world: z.string().describe("The world to retrieve."),
+  slug: z.string().describe("The slug to retrieve."),
   namespace: z.string().optional(),
 });
 
@@ -152,9 +152,9 @@ export const worldsGetInputSchema: z.ZodType<WorldsGetInput> = z.object({
  */
 export interface WorldsDeleteInput {
   /**
-   * world is the identifier of the world to delete.
+   * slug is the identifier of the world to delete.
    */
-  world: string;
+  slug: string;
 
   /**
    * namespace is the parent namespace (for namespaced lookups).
@@ -166,7 +166,7 @@ export interface WorldsDeleteInput {
  * worldsDeleteInputSchema is the Zod schema for WorldsDeleteInput.
  */
 export const worldsDeleteInputSchema: z.ZodType<WorldsDeleteInput> = z.object({
-  world: z.string().describe("The world to delete."),
+  slug: z.string().describe("The slug to delete."),
   namespace: z.string().optional(),
 });
 

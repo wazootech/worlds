@@ -193,10 +193,10 @@ export class LocalWorlds implements WorldsInterface {
    */
   async get(input: WorldsGetInput): Promise<World | null> {
     await this.ensureInitialized();
-    const namespace = input.world === WORLDS_WORLD_ID
-      ? WORLDS_NAMESPACE_ID
-      : (this.appContext.namespace ?? WORLDS_NAMESPACE_ID);
-    const world = await this.worldsRepository.get(input.world, namespace);
+    const namespace = input.slug === WORLDS_WORLD_ID
+      ? undefined
+      : this.appContext.namespace;
+    const world = await this.worldsRepository.get(input.slug, namespace);
     if (!world || world.deleted_at !== null) {
       return null;
     }
@@ -217,9 +217,9 @@ export class LocalWorlds implements WorldsInterface {
    */
   async create(data: WorldsCreateInput): Promise<World> {
     await this.ensureInitialized();
-    const { world: slug, label, description } = data;
+    const { slug, namespace: inputNamespace, label, description } = data;
 
-    const namespace = this.appContext.namespace ?? WORLDS_NAMESPACE_ID;
+    const namespace = inputNamespace ?? this.appContext.namespace;
     const existingBySlug = await this.worldsRepository.get(
       slug,
       namespace,
@@ -261,10 +261,8 @@ export class LocalWorlds implements WorldsInterface {
    */
   async update(input: WorldsUpdateInput): Promise<void> {
     await this.ensureInitialized();
-    const { world: slug, ...data } = input;
-    const namespace = slug === WORLDS_WORLD_ID
-      ? WORLDS_NAMESPACE_ID
-      : (this.appContext.namespace ?? WORLDS_NAMESPACE_ID);
+    const { slug, namespace: inputNamespace, ...data } = input;
+    const namespace = inputNamespace ?? this.appContext.namespace;
     const world = await this.worldsRepository.get(slug, namespace);
     if (!world) {
       throw new Error("World not found");
@@ -284,16 +282,16 @@ export class LocalWorlds implements WorldsInterface {
    */
   async delete(input: WorldsDeleteInput): Promise<void> {
     await this.ensureInitialized();
-    const namespace = input.world === WORLDS_WORLD_ID
-      ? WORLDS_NAMESPACE_ID
-      : (this.appContext.namespace ?? WORLDS_NAMESPACE_ID);
-    const world = await this.worldsRepository.get(input.world, namespace);
+    const namespace = input.slug === WORLDS_WORLD_ID
+      ? undefined
+      : this.appContext.namespace;
+    const world = await this.worldsRepository.get(input.slug, namespace);
     if (!world) {
       throw new Error("World not found");
     }
 
-    this.invalidateStore(namespace, input.world);
-    await this.worldsRepository.update(input.world, namespace, {
+    this.invalidateStore(namespace ?? "", input.slug);
+    await this.worldsRepository.update(input.slug, namespace, {
       deleted_at: Date.now(),
     });
   }
