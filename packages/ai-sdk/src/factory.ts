@@ -19,8 +19,6 @@ import type { WorldsImportTool } from "./tools/import.ts";
 import { createWorldsImportTool } from "./tools/import.ts";
 import type { WorldsExportTool } from "./tools/export.ts";
 import { createWorldsExportTool } from "./tools/export.ts";
-import type { WorldsLogsTool } from "./tools/logs.ts";
-import { createWorldsLogsTool } from "./tools/logs.ts";
 
 /**
  * createTools creates a toolset from a CreateToolsOptions.
@@ -35,7 +33,6 @@ export function createTools(options: CreateToolsOptions): {
   delete: WorldsDeleteTool;
   import: WorldsImportTool;
   export: WorldsExportTool;
-  logs: WorldsLogsTool;
 } {
   const normalizedSources: Source[] = options.sources.map((source) =>
     typeof source === "string" ? { world: source } : source
@@ -57,7 +54,6 @@ export function createTools(options: CreateToolsOptions): {
     delete: createWorldsDeleteTool(normalizedOptions),
     import: createWorldsImportTool(normalizedOptions),
     export: createWorldsExportTool(normalizedOptions),
-    logs: createWorldsLogsTool(normalizedOptions),
   };
 }
 

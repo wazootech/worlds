@@ -5,6 +5,5 @@
 export * from "./search.ts";
 export * from "./world.ts";
 export * from "./sparql.ts";
-export * from "./log.ts";
 export * from "./source.ts";
-export * from "./kernel.ts";
+export * from "./registry.ts";

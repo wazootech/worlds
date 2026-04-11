@@ -1,9 +1,9 @@
 import { DataFactory, Parser, Store, Writer } from "n3";
-import { ulid } from "@std/ulid/ulid";
+
 import { ChunksSearchRepository } from "./database/repositories/world/chunks/mod.ts";
 import { WorldsRepository } from "./database/repositories/system/worlds/mod.ts";
 import { BlobsRepository } from "./database/repositories/world/blobs/mod.ts";
-import { LogsRepository } from "./database/repositories/world/logs/mod.ts";
+
 import { BatchPatchHandler, handlePatch } from "./rdf/patch/mod.ts";
 import { sparql } from "./rdf/sparql.ts";
 import { isSparqlUpdate } from "./utils.ts";
@@ -11,11 +11,7 @@ import {
   DEFAULT_SERIALIZATION,
   getSerializationByContentType,
 } from "./rdf/core/serialization.ts";
-import {
-  logSchema,
-  worldSchema,
-  worldsSparqlOutputSchema,
-} from "./schemas/mod.ts";
+import { worldSchema, worldsSparqlOutputSchema } from "./schemas/mod.ts";
 import type { WorldsInterface } from "./types.ts";
 import type { Patch } from "./rdf/patch/mod.ts";
 import type { WorldsContext } from "./types.ts";
@@ -25,7 +21,6 @@ import {
   REGISTRY_WORLD_ID,
 } from "./ontology.ts";
 import type {
-  Log,
   World,
   WorldsCreateInput,
   WorldsDeleteInput,
@@ -33,7 +28,6 @@ import type {
   WorldsGetInput,
   WorldsImportInput,
   WorldsListInput,
-  WorldsLogsInput,
   WorldsSearchInput,
   WorldsSearchOutput,
   WorldsServiceDescriptionInput,
@@ -318,28 +312,8 @@ export class LocalWorlds implements WorldsInterface {
         updated_at: updatedAt,
       });
 
-      const logsRepository = new LogsRepository(managedWorld.database);
-      await logsRepository.add({
-        id: ulid(),
-        world_id: slug,
-        timestamp: Date.now(),
-        level: "info",
-        message: "SPARQL update",
-        metadata: { query: query.slice(0, 1000) },
-      });
-
       return null;
     }
-
-    const logsRepository = new LogsRepository(managedWorld.database);
-    await logsRepository.add({
-      id: ulid(),
-      world_id: slug,
-      timestamp: Date.now(),
-      level: "info",
-      message: "SPARQL query",
-      metadata: { query: query.slice(0, 1000) },
-    });
 
     return worldsSparqlOutputSchema.parse(result);
   }
@@ -369,22 +343,6 @@ export class LocalWorlds implements WorldsInterface {
       predicates,
       types,
       limit: limit ?? 20,
-    });
-
-    const managed = await this.appContext.libsql.manager.get(namespaceId, slug);
-    const logsRepository = new LogsRepository(managed.database);
-    await logsRepository.add({
-      id: slug + Date.now(), // FIXME: Use a proper unique ID for log entries
-      world_id: slug,
-      timestamp: Date.now(),
-      level: "info",
-      message: "Semantic search executed",
-      metadata: {
-        query: query.slice(0, 500),
-        subjects: subjects?.length ? subjects : null,
-        predicates: predicates?.length ? predicates : null,
-        types: types?.length ? types : null,
-      },
     });
 
     return results;
@@ -444,16 +402,6 @@ export class LocalWorlds implements WorldsInterface {
           await blobsRepository.set(new TextEncoder().encode(result), now);
           await this.worldsRepository.update(slug, namespaceId, {
             updated_at: now,
-          });
-
-          const logsRepository = new LogsRepository(managed.database);
-          await logsRepository.add({
-            id: ulid(),
-            world_id: slug,
-            timestamp: now,
-            level: "info",
-            message: "World data imported",
-            metadata: { triples: store.size },
           });
 
           resolve();
@@ -578,46 +526,6 @@ export class LocalWorlds implements WorldsInterface {
         else resolve(result as string);
       });
     });
-  }
-
-  /**
-   * listLogs retrieves execution and audit logs from the world database.
-   */
-  async listLogs(input: WorldsLogsInput): Promise<Log[]> {
-    await this.ensureInitialized();
-    const { world: slug, page: p, pageSize: ps, level } = input;
-    const namespaceId = slug === REGISTRY_WORLD_ID
-      ? REGISTRY_NAMESPACE_ID
-      : (this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID);
-    const world = await this.worldsRepository.get(slug, namespaceId);
-    if (!world) {
-      throw new Error("World not found");
-    }
-
-    const managed = await this.appContext.libsql.manager.get(namespaceId, slug);
-    const logsRepository = new LogsRepository(managed.database);
-
-    const page = p ?? 1;
-    const pageSize = ps ?? 20;
-
-    const rows = await logsRepository.listByWorld(
-      slug,
-      page,
-      pageSize,
-      level,
-    );
-
-    const results = rows.map((log) =>
-      logSchema.parse({
-        id: log.id,
-        worldId: log.world_id,
-        timestamp: log.timestamp,
-        level: log.level,
-        message: log.message,
-        metadata: log.metadata,
-      })
-    );
-    return results;
   }
 
   /**

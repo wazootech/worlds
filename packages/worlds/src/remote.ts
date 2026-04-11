@@ -1,6 +1,5 @@
 import type { WorldsOptions } from "./types.ts";
 import type {
-  Log,
   World,
   WorldsCreateInput,
   WorldsDeleteInput,
@@ -8,7 +7,6 @@ import type {
   WorldsGetInput,
   WorldsImportInput,
   WorldsListInput,
-  WorldsLogsInput,
   WorldsSearchInput,
   WorldsSearchOutput,
   WorldsServiceDescriptionInput,
@@ -325,41 +323,6 @@ export class RemoteWorlds implements WorldsInterface {
     }
 
     return await response.text();
-  }
-
-  /**
-   * listLogs retrieves execution and audit logs.
-   */
-  public async listLogs(input: WorldsLogsInput): Promise<Log[]> {
-    const { world: idOrSlug, page, pageSize, level } = input;
-    const url = new URL(
-      `${this.options.baseUrl}/worlds/${idOrSlug}/logs`,
-    );
-
-    if (page) {
-      url.searchParams.set("page", page.toString());
-    }
-
-    if (pageSize) {
-      url.searchParams.set("pageSize", pageSize.toString());
-    }
-
-    if (level) {
-      url.searchParams.set("level", level);
-    }
-
-    const response = await this.fetch(url, {
-      headers: {
-        Authorization: `Bearer ${this.options.apiKey}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorMessage = await parseError(response);
-      throw new Error(`Failed to list logs: ${errorMessage}`);
-    }
-
-    return await response.json();
   }
 
   /**

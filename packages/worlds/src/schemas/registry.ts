@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 /**
- * KernelNamespace represents a namespace in the kernel.
+ * RegistryNamespace represents a namespace in the registry.
  */
-export interface KernelNamespace {
+export interface RegistryNamespace {
   /**
    * id is the unique IRI of the namespace.
    */
@@ -21,18 +21,18 @@ export interface KernelNamespace {
 }
 
 /**
- * kernelNamespaceSchema is the Zod schema for KernelNamespace.
+ * registryNamespaceSchema is the Zod schema for RegistryNamespace.
  */
-export const kernelNamespaceSchema: z.ZodType<KernelNamespace> = z.object({
+export const registryNamespaceSchema: z.ZodType<RegistryNamespace> = z.object({
   id: z.string().url(),
   slug: z.string(),
   label: z.string(),
 });
 
 /**
- * KernelApiKey represents an API key in the kernel.
+ * RegistryApiKey represents an API key in the registry.
  */
-export interface KernelApiKey {
+export interface RegistryApiKey {
   /**
    * id is the unique IRI of the key.
    */
@@ -50,18 +50,18 @@ export interface KernelApiKey {
 }
 
 /**
- * kernelApiKeySchema is the Zod schema for KernelApiKey.
+ * registryApiKeySchema is the Zod schema for RegistryApiKey.
  */
-export const kernelApiKeySchema: z.ZodType<KernelApiKey> = z.object({
+export const registryApiKeySchema: z.ZodType<RegistryApiKey> = z.object({
   id: z.string().url(),
   namespaceId: z.string().url(),
   secret: z.string(),
 });
 
 /**
- * KernelWorldRegistry represents a world registry entry in the kernel.
+ * RegistryWorldEntry represents a world registry entry.
  */
-export interface KernelWorldRegistry {
+export interface RegistryWorldEntry {
   /**
    * id is the unique ULID of the world.
    */
@@ -84,9 +84,9 @@ export interface KernelWorldRegistry {
 }
 
 /**
- * kernelWorldRegistrySchema is the Zod schema for KernelWorldRegistry.
+ * registryWorldEntrySchema is the Zod schema for RegistryWorldEntry.
  */
-export const kernelWorldRegistrySchema: z.ZodType<KernelWorldRegistry> = z
+export const registryWorldEntrySchema: z.ZodType<RegistryWorldEntry> = z
   .object({
     id: z.string(),
     namespaceId: z.string().url(),

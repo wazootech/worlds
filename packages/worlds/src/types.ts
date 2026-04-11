@@ -2,7 +2,6 @@ import type { Client } from "@libsql/client";
 import type { Embeddings } from "#/embeddings/embeddings.ts";
 import type { DatabaseManager } from "#/database/manager.ts";
 import type {
-  Log,
   World,
   WorldsCreateInput,
   WorldsDeleteInput,
@@ -10,7 +9,6 @@ import type {
   WorldsGetInput,
   WorldsImportInput,
   WorldsListInput,
-  WorldsLogsInput,
   WorldsSearchInput,
   WorldsSearchOutput,
   WorldsServiceDescriptionInput,
@@ -146,11 +144,6 @@ export interface WorldsInterface {
    * getServiceDescription gets the SPARQL service description.
    */
   getServiceDescription(input: WorldsServiceDescriptionInput): Promise<string>;
-
-  /**
-   * listLogs lists the execution/audit logs for a world.
-   */
-  listLogs(input: WorldsLogsInput): Promise<Log[]>;
 
   /**
    * init initializes the engine and its background tasks.

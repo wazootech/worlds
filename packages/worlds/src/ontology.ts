@@ -37,9 +37,11 @@ export const REGISTRY = {
 /**
  * REGISTRY_WORLD_ID is the reserved identifier for the platform registry world.
  */
-export const REGISTRY_WORLD_ID: string = "registry";
+export const REGISTRY_WORLD_ID: string = Deno.env.get("REGISTRY_WORLD_ID") ??
+  "registry";
 
 /**
  * REGISTRY_NAMESPACE_ID is the default namespace ID for the platform registry.
  */
-export const REGISTRY_NAMESPACE_ID: string = "https://wazoo.dev/registry";
+export const REGISTRY_NAMESPACE_ID: string =
+  Deno.env.get("REGISTRY_NAMESPACE_ID") ?? "https://wazoo.dev/registry";

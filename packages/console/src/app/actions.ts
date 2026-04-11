@@ -468,44 +468,6 @@ export async function searchTriples(
   }
 }
 
-/**
- * listWorldLogs lists logs for a world with pagination and level filtering.
- */
-export async function listWorldLogs(
-  worldId: string,
-  page?: number,
-  pageSize?: number,
-  level?: string,
-) {
-  const { user } = await withAuth();
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
-
-  try {
-    const workos = await getWorkOS();
-    const activeOrgId = await getActiveOrgId(user);
-    if (!activeOrgId) throw new Error("No active organization");
-    const organization = await workos.getOrganization(activeOrgId);
-    if (!organization) throw new Error("Organization not found");
-    const worlds = getWorldsByOrgMetadata(organization);
-
-    // Resolve world to ensure we have the actual ID for sub-resource call
-    const world = await worlds.get(worldId);
-    if (!world) {
-      throw new Error("World not found");
-    }
-    const logs = await worlds.listLogs(world.id, { page, pageSize, level });
-
-    return { success: true, logs };
-  } catch (error) {
-    console.error("Failed to list world logs:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to list logs",
-    };
-  }
-}
 
 /**
  * pingEndpointAction pings an endpoint to check if it is alive.

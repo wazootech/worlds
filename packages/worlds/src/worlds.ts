@@ -2,7 +2,6 @@ import type { WorldsOptions } from "./types.ts";
 import { RemoteWorlds } from "./remote.ts";
 import type { WorldsInterface } from "./types.ts";
 import type {
-  Log,
   World,
   WorldsCreateInput,
   WorldsDeleteInput,
@@ -10,7 +9,6 @@ import type {
   WorldsGetInput,
   WorldsImportInput,
   WorldsListInput,
-  WorldsLogsInput,
   WorldsSearchInput,
   WorldsSearchOutput,
   WorldsServiceDescriptionInput,
@@ -110,13 +108,6 @@ export class Worlds implements WorldsInterface {
     input: WorldsServiceDescriptionInput,
   ): Promise<string> {
     return this.engine.getServiceDescription(input);
-  }
-
-  /**
-   * listLogs retrieves execution and audit logs.
-   */
-  public listLogs(input: WorldsLogsInput): Promise<Log[]> {
-    return this.engine.listLogs(input);
   }
 
   /**

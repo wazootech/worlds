@@ -8,7 +8,6 @@ import type {
   WorldsGetInput,
   WorldsImportInput,
   WorldsListInput,
-  WorldsLogsInput,
   WorldsSearchInput,
   WorldsSparqlInput,
   WorldsUpdateInput,
@@ -36,7 +35,6 @@ import {
   exportWorld,
   worldsExportTool,
 } from "@wazoo/worlds-ai-sdk/tools/export";
-import { listLogs, worldsLogsTool } from "@wazoo/worlds-ai-sdk/tools/logs";
 
 type McpToolOptions = {
   name: string;
@@ -130,15 +128,6 @@ const TOOLS: ToolDefinition[] = [
       idempotentHint: true,
     },
     fn: (w, _s, a) => search(w, a as WorldsSearchInput),
-  },
-  {
-    tool: {
-      ...worldsLogsTool,
-      title: "Logs",
-      readOnlyHint: true,
-      idempotentHint: true,
-    },
-    fn: (w, _s, a) => listLogs(w, a as WorldsLogsInput),
   },
 ];
 

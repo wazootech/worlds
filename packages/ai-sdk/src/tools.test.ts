@@ -7,7 +7,7 @@ import type {
   WorldsImportInput,
   WorldsUpdateInput,
 } from "@wazoo/worlds-sdk";
-import type { Log, World, WorldsSearchOutput } from "@wazoo/worlds-sdk";
+import type { World, WorldsSearchOutput } from "@wazoo/worlds-sdk";
 
 import { sparql, worldsSparqlTool } from "./tools/sparql.ts";
 import { search, worldsSearchTool } from "./tools/search.ts";
@@ -18,7 +18,7 @@ import { update, worldsUpdateTool } from "./tools/update.ts";
 import { deleteWorld, worldsDeleteTool } from "./tools/delete.ts";
 import { importWorld, worldsImportTool } from "./tools/import.ts";
 import { exportWorld, worldsExportTool } from "./tools/export.ts";
-import { listLogs, worldsLogsTool } from "./tools/logs.ts";
+
 
 function createMockWorld(overrides?: Partial<World>): World {
   const now = Date.now();
@@ -45,7 +45,7 @@ const mockWorldsBase: WorldsInterface = {
   import: () => Promise.resolve(),
   export: () => Promise.resolve(new ArrayBuffer(0)),
   getServiceDescription: () => Promise.resolve("{}"),
-  listLogs: () => Promise.resolve([]),
+
   close: () => Promise.resolve(),
   init: () => Promise.resolve(),
   [Symbol.asyncDispose]: () => Promise.resolve(),
@@ -351,42 +351,4 @@ Deno.test("export tool", async (t) => {
   });
 });
 
-Deno.test("logs tool", async (t) => {
-  await t.step("returns logs for world", async () => {
-    const mockLogs: Log[] = [
-      {
-        id: "log-1",
-        worldId: "test-world",
-        level: "info",
-        message: "Test log entry",
-        timestamp: Date.now(),
-        metadata: null,
-      },
-    ];
-    const mockWorlds = createMockWorlds({
-      listLogs: () => Promise.resolve(mockLogs),
-    });
-    const result = await listLogs(mockWorlds, { world: "test-world" });
-    assertEquals(result.logs.length, 1);
-    assertEquals(result.logs[0].level, "info");
-  });
 
-  await t.step("respects pagination parameters", async () => {
-    const mockWorlds = createMockWorlds({
-      listLogs: () => Promise.resolve([]),
-    });
-    const result = await listLogs(mockWorlds, {
-      world: "test-world",
-      page: 1,
-      pageSize: 10,
-    });
-    assertEquals(result.logs.length, 0);
-  });
-
-  await t.step("tool definition has correct shape", () => {
-    assertEquals(worldsLogsTool.name, "worlds_logs");
-    assertExists(worldsLogsTool.description);
-    assertExists(worldsLogsTool.inputSchema);
-    assertExists(worldsLogsTool.outputSchema);
-  });
-});

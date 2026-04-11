@@ -13,11 +13,7 @@ import {
 } from "#/database/repositories/world/chunks/mod.ts";
 import { triplesTable } from "#/database/repositories/world/triples/mod.ts";
 import { blobsTable } from "#/database/repositories/world/blobs/mod.ts";
-import {
-  logsTable,
-  logsTimestampIndex,
-  logsWorldIdIndex,
-} from "#/database/repositories/world/logs/mod.ts";
+
 import {
   itemTypesIndex,
   itemTypesTable,
@@ -55,7 +51,7 @@ export async function initializeWorldDatabase(
   await client.execute(chunksFtsTable);
   await client.execute(blobsTable);
   await client.execute(triplesTable);
-  await client.execute(logsTable);
+
   await client.execute(itemTypesTable);
 
   // Create indexes
@@ -63,8 +59,7 @@ export async function initializeWorldDatabase(
   await client.execute(chunksSubjectIndex);
   await client.execute(chunksPredicateIndex);
   await client.execute(chunksVectorIndex);
-  await client.execute(logsWorldIdIndex);
-  await client.execute(logsTimestampIndex);
+
   await client.execute(itemTypesIndex);
 
   // Create triggers

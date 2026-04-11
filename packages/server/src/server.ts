@@ -4,7 +4,6 @@ import { Router } from "@fartlabs/rt";
 
 import worldsRouter from "./routes/worlds/route.ts";
 import sparqlRouter from "./routes/worlds/sparql/route.ts";
-import logsRouter from "./routes/worlds/logs/route.ts";
 import searchRouter from "./routes/worlds/search/route.ts";
 import mcpRouter from "./routes/mcp/route.ts";
 
@@ -23,7 +22,6 @@ export async function createServer(
 
   app.use(worldsRouter(appContext));
   app.use(sparqlRouter(appContext));
-  app.use(logsRouter(appContext));
   app.use(searchRouter(appContext));
   app.use(mcpRouter(appContext));
 
