@@ -17,9 +17,9 @@ import type { WorldsInterface } from "#/core/types.ts";
 import type { Patch } from "#/rdf/patch/mod.ts";
 import type { WorldsContext } from "#/core/types.ts";
 import {
-  REGISTRY,
-  REGISTRY_NAMESPACE_ID,
-  REGISTRY_WORLD_ID,
+  WORLDS,
+  WORLDS_NAMESPACE_ID,
+  WORLDS_WORLD_ID,
 } from "#/core/ontology.ts";
 import type {
   World,
@@ -102,8 +102,8 @@ export class LocalWorlds implements WorldsInterface {
    */
   private async ensureRegistryWorld(): Promise<void> {
     const existing = await this.worldsRepository.get(
-      REGISTRY_WORLD_ID,
-      REGISTRY_NAMESPACE_ID,
+      WORLDS_WORLD_ID,
+      WORLDS_NAMESPACE_ID,
     );
     if (existing) {
       return;
@@ -112,8 +112,8 @@ export class LocalWorlds implements WorldsInterface {
     const now = Date.now();
     try {
       await this.worldsRepository.insert({
-        namespace_id: REGISTRY_NAMESPACE_ID,
-        slug: REGISTRY_WORLD_ID,
+        namespace_id: WORLDS_NAMESPACE_ID,
+        slug: WORLDS_WORLD_ID,
         label: "Registry",
         description: "Worlds platform registry and control plane.",
         db_hostname: null,
@@ -124,13 +124,13 @@ export class LocalWorlds implements WorldsInterface {
       });
 
       await this.appContext.libsql.manager.create(
-        REGISTRY_NAMESPACE_ID,
-        REGISTRY_WORLD_ID,
+        WORLDS_NAMESPACE_ID,
+        WORLDS_WORLD_ID,
       );
     } catch (error) {
       const checkAgain = await this.worldsRepository.get(
-        REGISTRY_WORLD_ID,
-        REGISTRY_NAMESPACE_ID,
+        WORLDS_WORLD_ID,
+        WORLDS_NAMESPACE_ID,
       );
       if (!checkAgain) {
         throw error;
@@ -138,22 +138,22 @@ export class LocalWorlds implements WorldsInterface {
     }
 
     if (this.appContext.apiKey) {
-      const namespaceId = this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID;
-      const keyId = `${REGISTRY.BASE}keys/bootstrap`;
+      const namespaceId = this.appContext.namespaceId ?? WORLDS_NAMESPACE_ID;
+      const keyId = `${WORLDS.BASE}keys/bootstrap`;
 
       await this._sparql({
-        world: REGISTRY_WORLD_ID,
+        world: WORLDS_WORLD_ID,
         query: `
-          PREFIX registry: <${REGISTRY.NAMESPACE}>
+          PREFIX registry: <${WORLDS.NAMESPACE}>
           INSERT DATA {
-            <${namespaceId}> a <${REGISTRY.Namespace}> ;
-              <${REGISTRY.hasLabel}> "Root Namespace" ;
-              <${REGISTRY.createdAt}> ${now} .
+            <${namespaceId}> a <${WORLDS.Namespace}> ;
+              <${WORLDS.hasLabel}> "Root Namespace" ;
+              <${WORLDS.createdAt}> ${now} .
             
-            <${keyId}> a <${REGISTRY.ApiKey}> ;
-              <${REGISTRY.belongsTo}> <${namespaceId}> ;
-              <${REGISTRY.hasSecret}> "${this.appContext.apiKey}" ;
-              <${REGISTRY.createdAt}> ${now} .
+            <${keyId}> a <${WORLDS.ApiKey}> ;
+              <${WORLDS.belongsTo}> <${namespaceId}> ;
+              <${WORLDS.hasSecret}> "${this.appContext.apiKey}" ;
+              <${WORLDS.createdAt}> ${now} .
           }
         `,
       });
@@ -173,7 +173,7 @@ export class LocalWorlds implements WorldsInterface {
       offset = (input.page - 1) * input.pageSize;
     }
 
-    const namespaceId = this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID;
+    const namespaceId = this.appContext.namespaceId ?? WORLDS_NAMESPACE_ID;
     const rows = await this.worldsRepository.list(namespaceId, limit, offset);
     return rows.map((world) =>
       worldSchema.parse({
@@ -193,9 +193,9 @@ export class LocalWorlds implements WorldsInterface {
    */
   async get(input: WorldsGetInput): Promise<World | null> {
     await this.ensureInitialized();
-    const namespaceId = input.world === REGISTRY_WORLD_ID
-      ? REGISTRY_NAMESPACE_ID
-      : (this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID);
+    const namespaceId = input.world === WORLDS_WORLD_ID
+      ? WORLDS_NAMESPACE_ID
+      : (this.appContext.namespaceId ?? WORLDS_NAMESPACE_ID);
     const world = await this.worldsRepository.get(input.world, namespaceId);
     if (!world || world.deleted_at !== null) {
       return null;
@@ -219,7 +219,7 @@ export class LocalWorlds implements WorldsInterface {
     await this.ensureInitialized();
     const { slug, label, description } = data;
 
-    const namespaceId = this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID;
+    const namespaceId = this.appContext.namespaceId ?? WORLDS_NAMESPACE_ID;
     const existingBySlug = await this.worldsRepository.get(
       slug,
       namespaceId,
@@ -261,9 +261,9 @@ export class LocalWorlds implements WorldsInterface {
   async update(input: WorldsUpdateInput): Promise<void> {
     await this.ensureInitialized();
     const { world: slug, ...data } = input;
-    const namespaceId = slug === REGISTRY_WORLD_ID
-      ? REGISTRY_NAMESPACE_ID
-      : (this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID);
+    const namespaceId = slug === WORLDS_WORLD_ID
+      ? WORLDS_NAMESPACE_ID
+      : (this.appContext.namespaceId ?? WORLDS_NAMESPACE_ID);
     const world = await this.worldsRepository.get(slug, namespaceId);
     if (!world) {
       throw new Error("World not found");
@@ -283,9 +283,9 @@ export class LocalWorlds implements WorldsInterface {
    */
   async delete(input: WorldsDeleteInput): Promise<void> {
     await this.ensureInitialized();
-    const namespaceId = input.world === REGISTRY_WORLD_ID
-      ? REGISTRY_NAMESPACE_ID
-      : (this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID);
+    const namespaceId = input.world === WORLDS_WORLD_ID
+      ? WORLDS_NAMESPACE_ID
+      : (this.appContext.namespaceId ?? WORLDS_NAMESPACE_ID);
     const world = await this.worldsRepository.get(input.world, namespaceId);
     if (!world) {
       throw new Error("World not found");
@@ -310,9 +310,9 @@ export class LocalWorlds implements WorldsInterface {
    */
   private async _sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
     const { world: slug, query } = input;
-    const namespaceId = slug === REGISTRY_WORLD_ID
-      ? REGISTRY_NAMESPACE_ID
-      : (this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID);
+    const namespaceId = slug === WORLDS_WORLD_ID
+      ? WORLDS_NAMESPACE_ID
+      : (this.appContext.namespaceId ?? WORLDS_NAMESPACE_ID);
     const world = await this.worldsRepository.get(slug, namespaceId);
     if (!world) {
       throw new Error(`World not found: ${slug} in namespace ${namespaceId}`);
@@ -360,9 +360,9 @@ export class LocalWorlds implements WorldsInterface {
   async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
     await this.ensureInitialized();
     const { world: slug, query, limit, subjects, predicates, types } = input;
-    const namespaceId = slug === REGISTRY_WORLD_ID
-      ? REGISTRY_NAMESPACE_ID
-      : (this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID);
+    const namespaceId = slug === WORLDS_WORLD_ID
+      ? WORLDS_NAMESPACE_ID
+      : (this.appContext.namespaceId ?? WORLDS_NAMESPACE_ID);
     const world = await this.worldsRepository.get(slug, namespaceId);
     if (!world) {
       throw new Error("World not found");
@@ -387,9 +387,9 @@ export class LocalWorlds implements WorldsInterface {
   async import(input: WorldsImportInput): Promise<void> {
     await this.registryWorldInitialized;
     const { world: slug, data, contentType } = input;
-    const namespaceId = slug === REGISTRY_WORLD_ID
-      ? REGISTRY_NAMESPACE_ID
-      : (this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID);
+    const namespaceId = slug === WORLDS_WORLD_ID
+      ? WORLDS_NAMESPACE_ID
+      : (this.appContext.namespaceId ?? WORLDS_NAMESPACE_ID);
     const world = await this.worldsRepository.get(slug, namespaceId);
     if (!world) {
       throw new Error("World not found");
@@ -436,9 +436,9 @@ export class LocalWorlds implements WorldsInterface {
   async export(input: WorldsExportInput): Promise<ArrayBuffer> {
     await this.ensureInitialized();
     const { world: slug, contentType } = input;
-    const namespaceId = slug === REGISTRY_WORLD_ID
-      ? REGISTRY_NAMESPACE_ID
-      : (this.appContext.namespaceId ?? REGISTRY_NAMESPACE_ID);
+    const namespaceId = slug === WORLDS_WORLD_ID
+      ? WORLDS_NAMESPACE_ID
+      : (this.appContext.namespaceId ?? WORLDS_NAMESPACE_ID);
     const world = await this.worldsRepository.get(slug, namespaceId);
     if (!world) {
       throw new Error(`World not found: ${slug} in namespace ${namespaceId}`);

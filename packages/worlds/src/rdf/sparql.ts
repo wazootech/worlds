@@ -9,7 +9,7 @@ import type {
   SparqlValue,
   WorldsSparqlOutput,
 } from "#/schemas/mod.ts";
-import { REGISTRY } from "#/core/ontology.ts";
+import { WORLDS } from "#/core/ontology.ts";
 
 /**
  * DatasetParams are the parameters for a SPARQL query.
@@ -59,7 +59,7 @@ export async function sparql(
 
   const queryType = await queryEngine.query(query, {
     sources: [proxiedStore],
-    baseIRI: REGISTRY.BASE,
+    baseIRI: WORLDS.BASE,
   });
 
   if (queryType.resultType === "void") {
@@ -108,7 +108,7 @@ export async function sparqlBlob(
 
   const queryType = await queryEngine.query(query, {
     sources: [proxiedStore],
-    baseIRI: REGISTRY.BASE,
+    baseIRI: WORLDS.BASE,
   });
 
   // If the query is an update, we need to execute it and then sync the search store.

@@ -4,7 +4,7 @@ import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { WorldsSearchOutput } from "#/schemas/mod.ts";
 import type { WorldRow } from "#/plugins/registry/worlds.schema.ts";
 import type { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
-import { REGISTRY_NAMESPACE_ID } from "#/core/ontology.ts";
+import { WORLDS_NAMESPACE_ID } from "#/core/ontology.ts";
 import {
   type ChunkTableUpsert,
   type SearchRow,
@@ -109,7 +109,7 @@ export class ChunksSearchRepository {
       limit = 10,
     } = params;
 
-    const namespaceId = this.ctx.namespaceId ?? REGISTRY_NAMESPACE_ID;
+    const namespaceId = this.ctx.namespaceId ?? WORLDS_NAMESPACE_ID;
 
     // Generate Embeddings
     const vector = query

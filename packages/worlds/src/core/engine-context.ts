@@ -4,7 +4,7 @@ import { initializeDatabase } from "#/storage/init.ts";
 import { MemoryDatabaseManager } from "#/storage/memory-manager.ts";
 import type { Embeddings } from "#/embeddings/embeddings.ts";
 import type { WorldsContext } from "#/core/types.ts";
-import { REGISTRY, REGISTRY_NAMESPACE_ID } from "#/core/ontology.ts";
+import { WORLDS, WORLDS_NAMESPACE_ID } from "#/core/ontology.ts";
 
 /**
  * createTestContext creates a test application context with an in-memory
@@ -33,7 +33,7 @@ export async function createTestContext(): Promise<WorldsContext> {
       manager: databaseManager,
     },
     apiKey: ulid(),
-    namespaceId: REGISTRY_NAMESPACE_ID,
+    namespaceId: WORLDS_NAMESPACE_ID,
     async [Symbol.asyncDispose]() {
       await databaseManager.close();
       client.close();
@@ -49,7 +49,7 @@ export function createTestNamespace(
   context: WorldsContext,
   _options?: { plan?: string },
 ): Promise<{ id: string; apiKey: string | undefined }> {
-  const id = `${REGISTRY.BASE}namespaces/${ulid()}`;
+  const id = `${WORLDS.BASE}namespaces/${ulid()}`;
   // Return the admin API key for authentication, as namespace keys are no longer valid
   return Promise.resolve({ id, apiKey: context.apiKey });
 }

@@ -1,7 +1,7 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { createTestContext } from "#/core/engine-context.ts";
 import { LocalWorlds } from "#/worlds/local.ts";
-import { REGISTRY, REGISTRY_WORLD_ID } from "#/core/ontology.ts";
+import { WORLDS, WORLDS_WORLD_ID } from "#/core/ontology.ts";
 import type { SparqlSelectResults } from "#/schemas/mod.ts";
 
 Deno.test("LocalWorlds Registry", async (t) => {
@@ -17,22 +17,22 @@ Deno.test("LocalWorlds Registry", async (t) => {
 
   await t.step("registry world auto-initialization", async () => {
     // Calling any method should trigger the initialization
-    const registryWorld = await worlds.get({ world: REGISTRY_WORLD_ID });
-    assertExists(registryWorld);
-    assertEquals(registryWorld!.slug, "registry");
+    const worldsWorld = await worlds.get({ world: WORLDS_WORLD_ID });
+    assertExists(worldsWorld);
+    assertEquals(worldsWorld!.slug, "worlds");
   });
 
   await t.step("registry world bootstrapping with API key", async () => {
     // Check if the organization and API key triples were created
     const result = await worlds.sparql({
-      world: REGISTRY_WORLD_ID,
+      world: WORLDS_WORLD_ID,
       query: `
-        PREFIX registry: <${REGISTRY.NAMESPACE}>
+        PREFIX registry: <${WORLDS.NAMESPACE}>
         SELECT ?ns ?key WHERE {
-          ?ns a <${REGISTRY.Namespace}> .
-          ?key a <${REGISTRY.ApiKey}> ;
-               <${REGISTRY.belongsTo}> ?ns ;
-               <${REGISTRY.hasSecret}> "${apiKey}" .
+          ?ns a <${WORLDS.Namespace}> .
+          ?key a <${WORLDS.ApiKey}> ;
+               <${WORLDS.belongsTo}> ?ns ;
+               <${WORLDS.hasSecret}> "${apiKey}" .
         }
       `,
     }) as SparqlSelectResults;
@@ -47,7 +47,7 @@ Deno.test("LocalWorlds Registry", async (t) => {
 
     const list = await worlds.list();
     // Registry world should NOT be in the list for a non-root namespace
-    assertEquals(list.find((w) => w.slug === REGISTRY_WORLD_ID), undefined);
+    assertEquals(list.find((w) => w.slug === WORLDS_WORLD_ID), undefined);
   });
 });
 

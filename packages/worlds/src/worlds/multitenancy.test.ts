@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import { LocalWorlds } from "#/worlds/local.ts";
 import { createTestContext } from "#/core/engine-context.ts";
-import { REGISTRY, REGISTRY_WORLD_ID } from "#/core/ontology.ts";
+import { WORLDS, WORLDS_WORLD_ID } from "#/core/ontology.ts";
 import type { SparqlSelectResults } from "#/schemas/mod.ts";
 
 Deno.test("Multi-tenant Isolation", async (t) => {
@@ -13,14 +13,14 @@ Deno.test("Multi-tenant Isolation", async (t) => {
     await engine.init();
 
     await engine.sparql({
-      world: REGISTRY_WORLD_ID,
+      world: WORLDS_WORLD_ID,
       query: `
-        PREFIX registry: <${REGISTRY.NAMESPACE}>
+        PREFIX registry: <${WORLDS.NAMESPACE}>
         INSERT DATA {
-          <https://wazoo.dev/registry/namespaces/ns-a> a <${REGISTRY.Namespace}> ;
-            <${REGISTRY.hasLabel}> "NS A" .
-          <https://wazoo.dev/registry/namespaces/ns-b> a <${REGISTRY.Namespace}> ;
-            <${REGISTRY.hasLabel}> "NS B" .
+          <https://wazoo.dev/registry/namespaces/ns-a> a <${WORLDS.Namespace}> ;
+            <${WORLDS.hasLabel}> "NS A" .
+          <https://wazoo.dev/registry/namespaces/ns-b> a <${WORLDS.Namespace}> ;
+            <${WORLDS.hasLabel}> "NS B" .
         }
       `,
     });

@@ -4,7 +4,7 @@ import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  REGISTRY_NAMESPACE_ID,
+  WORLDS_NAMESPACE_ID,
   type WorldsContext,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
@@ -28,7 +28,7 @@ Deno.test("Worlds API routes", async (t) => {
       const slug = "test-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: REGISTRY_NAMESPACE_ID,
+        namespace_id: WORLDS_NAMESPACE_ID,
         slug,
         label: "Test World",
         description: "Test Description",
@@ -38,7 +38,7 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(REGISTRY_NAMESPACE_ID, slug);
+      await testContext.libsql.manager.create(WORLDS_NAMESPACE_ID, slug);
 
       const resp = await app.fetch(
         new Request(`http://localhost/worlds/${slug}`, {
@@ -89,7 +89,7 @@ Deno.test("Worlds API routes", async (t) => {
       const slug = "export-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: REGISTRY_NAMESPACE_ID,
+        namespace_id: WORLDS_NAMESPACE_ID,
         slug,
         label: "Export World",
         description: null,
@@ -99,7 +99,7 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(REGISTRY_NAMESPACE_ID, slug);
+      await testContext.libsql.manager.create(WORLDS_NAMESPACE_ID, slug);
 
       // Request with Turtle Accept header
       const resp = await app.fetch(
@@ -132,7 +132,7 @@ Deno.test("Worlds API routes", async (t) => {
         unprotectedContext.libsql.database,
       );
       await unprotectedWorldsRepository.insert({
-        namespace_id: REGISTRY_NAMESPACE_ID,
+        namespace_id: WORLDS_NAMESPACE_ID,
         slug,
         label: "Unprotected World",
         description: null,
@@ -143,7 +143,7 @@ Deno.test("Worlds API routes", async (t) => {
         deleted_at: null,
       });
       await unprotectedContext.libsql.manager.create(
-        REGISTRY_NAMESPACE_ID,
+        WORLDS_NAMESPACE_ID,
         slug,
       );
 

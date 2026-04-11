@@ -1,9 +1,9 @@
 /**
- * REGISTRY is the core ontology for the Worlds platform control plane.
- * These URIs are used in the reserved Registry World (slug "registry") to manage
+ * WORLDS is the core ontology for the Worlds platform control plane.
+ * These URIs are used in the reserved Worlds World to manage
  * multitenancy, identity, and world registries.
  */
-export const REGISTRY = {
+export const WORLDS = {
   /**
    * NAMESPACE is the base URI for the registry ontology.
    */
@@ -35,14 +35,14 @@ export const REGISTRY = {
 } as const;
 
 /**
- * REGISTRY_WORLD_ID is the reserved identifier for the platform registry world.
+ * WORLDS_WORLD_ID is the reserved identifier for the platform worlds world.
  */
-export const REGISTRY_WORLD_ID: string = Deno.env.get("REGISTRY_WORLD_ID") ??
-  "registry";
+export const WORLDS_WORLD_ID: string = Deno.env.get("WORLDS_WORLD_ID") ??
+  "worlds";
 
 /**
- * REGISTRY_NAMESPACE_ID is the default namespace ID for the platform registry.
+ * WORLDS_NAMESPACE_ID is the default namespace ID for the platform worlds.
  */
-export const REGISTRY_NAMESPACE_ID: string =
-  Deno.env.get("REGISTRY_NAMESPACE_ID") ?? "https://wazoo.dev/registry";
+export const WORLDS_NAMESPACE_ID: string =
+  Deno.env.get("WORLDS_NAMESPACE_ID") ?? "https://wazoo.dev/worlds";
 
