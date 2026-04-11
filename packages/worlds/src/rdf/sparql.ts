@@ -18,15 +18,6 @@ import { WORLDS } from "#/core/ontology.ts";
  */
 const queryEngine = new QueryEngine();
 
-// Diagnostic listener for "uncaught errors" in CI
-if (Deno.env.get("GITHUB_ACTIONS")) {
-  globalThis.addEventListener("unhandledrejection", (e) => {
-    console.error("DIAGNOSTIC: Unhandled Rejection:", e.reason);
-  });
-  globalThis.addEventListener("error", (e) => {
-    console.error("DIAGNOSTIC: Uncaught Error:", e.error);
-  });
-}
 
 /**
  * DatasetParams are the parameters for a SPARQL query.
@@ -161,6 +152,7 @@ async function handleBindings(queryType: any): Promise<WorldsSparqlOutput> {
     const b: SparqlBinding[] = [];
     let finished = false;
 
+    // deno-lint-ignore no-explicit-any
     const onData = (binding: any) => {
       if (finished) return;
       const bindingObj: SparqlBinding = {};
@@ -220,6 +212,7 @@ async function handleQuads(queryType: any): Promise<WorldsSparqlOutput> {
     const q: SparqlQuad[] = [];
     let finished = false;
 
+    // deno-lint-ignore no-explicit-any
     const onData = (quad: any) => {
       if (finished) return;
       q.push({
