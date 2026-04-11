@@ -156,26 +156,47 @@ export async function sparqlBlob(
 // deno-lint-ignore no-explicit-any
 async function handleBindings(queryType: any): Promise<WorldsSparqlOutput> {
   const bindingsStream = await queryType.execute();
-  // deno-lint-ignore no-explicit-any
   const vars = (await queryType.metadata()).variables.map((v: any) => v.value);
-  const bindings = await new Promise<SparqlBinding[]>(
-    (resolve, reject) => {
-      const b: SparqlBinding[] = [];
-      // deno-lint-ignore no-explicit-any
-      bindingsStream.on("data", (binding: any) => {
-        const bindingObj: SparqlBinding = {};
-        for (const v of vars) {
-          const term = binding.get(v);
-          if (term) {
-            bindingObj[v] = toSparqlValue(term);
-          }
+  const bindings = await new Promise<SparqlBinding[]>((resolve, reject) => {
+    const b: SparqlBinding[] = [];
+    let finished = false;
+
+    const onData = (binding: any) => {
+      if (finished) return;
+      const bindingObj: SparqlBinding = {};
+      for (const v of vars) {
+        const term = binding.get(v);
+        if (term) {
+          bindingObj[v] = toSparqlValue(term);
         }
-        b.push(bindingObj);
-      });
-      bindingsStream.on("end", () => resolve(b));
-      bindingsStream.on("error", reject);
-    },
-  );
+      }
+      b.push(bindingObj);
+    };
+
+    const onEnd = () => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      resolve(b);
+    };
+
+    const onError = (err: any) => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      reject(err);
+    };
+
+    const cleanup = () => {
+      bindingsStream.off("data", onData);
+      bindingsStream.off("end", onEnd);
+      bindingsStream.off("error", onError);
+    };
+
+    bindingsStream.on("data", onData);
+    bindingsStream.on("end", onEnd);
+    bindingsStream.on("error", onError);
+  });
 
   return {
     head: { vars, link: null },
@@ -197,8 +218,10 @@ async function handleQuads(queryType: any): Promise<WorldsSparqlOutput> {
   const quadsStream = await queryType.execute();
   const quads = await new Promise<SparqlQuad[]>((resolve, reject) => {
     const q: SparqlQuad[] = [];
-    // deno-lint-ignore no-explicit-any
-    quadsStream.on("data", (quad: any) => {
+    let finished = false;
+
+    const onData = (quad: any) => {
+      if (finished) return;
       q.push({
         subject: {
           type: quad.subject.termType === "NamedNode" ? "uri" : "bnode",
@@ -214,9 +237,31 @@ async function handleQuads(queryType: any): Promise<WorldsSparqlOutput> {
           value: quad.graph.value,
         },
       });
-    });
-    quadsStream.on("end", () => resolve(q));
-    quadsStream.on("error", reject);
+    };
+
+    const onEnd = () => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      resolve(q);
+    };
+
+    const onError = (err: any) => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      reject(err);
+    };
+
+    const cleanup = () => {
+      quadsStream.off("data", onData);
+      quadsStream.off("end", onEnd);
+      quadsStream.off("error", onError);
+    };
+
+    quadsStream.on("data", onData);
+    quadsStream.on("end", onEnd);
+    quadsStream.on("error", onError);
   });
 
   return {
