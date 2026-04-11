@@ -39,9 +39,9 @@ export interface RegistryApiKey {
   id: string;
 
   /**
-   * namespaceId is the IRI of the namespace this key belongs to.
+   * namespace is the IRI of the namespace this key belongs to.
    */
-  namespaceId: string;
+  namespace: string;
 
   /**
    * secret is the raw Bearer token value.
@@ -54,7 +54,7 @@ export interface RegistryApiKey {
  */
 export const registryApiKeySchema: z.ZodType<RegistryApiKey> = z.object({
   id: z.string().url(),
-  namespaceId: z.string().url(),
+  namespace: z.string().url(),
   secret: z.string(),
 });
 
@@ -68,14 +68,14 @@ export interface RegistryWorldEntry {
   id: string;
 
   /**
-   * namespaceId is the IRI of the namespace that owns this world.
+   * namespace is the IRI of the namespace that owns this world.
    */
-  namespaceId: string;
+  namespace: string;
 
   /**
-   * slug is the URL-friendly name.
+   * world is the URL-friendly name.
    */
-  slug: string;
+  world: string;
 
   /**
    * label is the human-readable name.
@@ -89,8 +89,8 @@ export interface RegistryWorldEntry {
 export const registryWorldEntrySchema: z.ZodType<RegistryWorldEntry> = z
   .object({
     id: z.string(),
-    namespaceId: z.string().url(),
-    slug: z.string(),
+    namespace: z.string().url(),
+    world: z.string(),
     label: z.string(),
   });
 

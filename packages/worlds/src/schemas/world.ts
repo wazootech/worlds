@@ -2,27 +2,28 @@ import { z } from "zod";
 
 /**
  * World represents a world in the Worlds API.
+ * Resource name format: {namespace}/{world} (computed, not stored)
  */
 export interface World {
   /**
-   * id is the unique identifier of the world. In this architecture, it is equal to the slug.
+   * world is the URL-friendly identifier (resource ID segment).
    */
-  id: string;
+  world: string;
 
   /**
-   * slug is the URL-friendly name of the world.
+   * namespace is the optional parent namespace (optional - for multi-tenant).
    */
-  slug: string;
+  namespace?: string;
 
   /**
    * label is the human-readable name of the world.
    */
-  label: string;
+  label?: string;
 
   /**
    * description is an optional human-readable description of the world.
    */
-  description: string | null;
+  description?: string;
 
   /**
    * createdAt is the millisecond timestamp of creation.
@@ -37,20 +38,20 @@ export interface World {
   /**
    * deletedAt is the millisecond timestamp of deletion, if applicable.
    */
-  deletedAt: number | null;
+  deletedAt?: number;
 }
 
 /**
  * worldSchema is the Zod schema for World.
  */
 export const worldSchema: z.ZodType<World> = z.object({
-  id: z.string(),
-  slug: z.string(),
-  label: z.string(),
-  description: z.string().nullable(),
+  world: z.string().describe("The world identifier."),
+  namespace: z.string().optional().describe("The namespace (optional)."),
+  label: z.string().optional().describe("The display label."),
+  description: z.string().optional().describe("The description."),
   createdAt: z.number(),
   updatedAt: z.number(),
-  deletedAt: z.number().nullable(),
+  deletedAt: z.number().optional(),
 });
 
 /**
@@ -58,28 +59,34 @@ export const worldSchema: z.ZodType<World> = z.object({
  */
 export interface WorldsCreateInput {
   /**
-   * slug is the URL-friendly name for the new world.
+   * world is the URL-friendly identifier for the new world.
    */
-  slug: string;
+  world: string;
+
+  /**
+   * namespace is the parent namespace (optional - for multi-tenant).
+   */
+  namespace?: string;
 
   /**
    * label is the human-readable name for the new world.
    */
-  label: string;
+  label?: string;
 
   /**
    * description is an optional human-readable description.
    */
-  description?: string | null;
+  description?: string;
 }
 
 /**
  * worldsCreateInputSchema is the Zod schema for WorldsCreateInput.
  */
 export const worldsCreateInputSchema: z.ZodType<WorldsCreateInput> = z.object({
-  slug: z.string(),
-  label: z.string(),
-  description: z.string().nullable().optional(),
+  world: z.string().describe("The world identifier."),
+  namespace: z.string().optional().describe("The namespace (optional)."),
+  label: z.string().optional().describe("The display label."),
+  description: z.string().optional().describe("The description."),
 });
 
 /**
@@ -87,9 +94,14 @@ export const worldsCreateInputSchema: z.ZodType<WorldsCreateInput> = z.object({
  */
 export interface WorldsUpdateInput {
   /**
-   * world is the slug of the world to update.
+   * world is the identifier of the world to update.
    */
   world: string;
+
+  /**
+   * namespace is the parent namespace (for namespaced lookups).
+   */
+  namespace?: string;
 
   /**
    * label is the updated human-readable name.
@@ -99,16 +111,17 @@ export interface WorldsUpdateInput {
   /**
    * description is the updated human-readable description.
    */
-  description?: string | null;
+  description?: string;
 }
 
 /**
  * worldsUpdateInputSchema is the Zod schema for WorldsUpdateInput.
  */
 export const worldsUpdateInputSchema: z.ZodType<WorldsUpdateInput> = z.object({
-  world: z.string().describe("The slug of the world to update."),
+  world: z.string().describe("The world to update."),
+  namespace: z.string().optional(),
   label: z.string().optional(),
-  description: z.string().nullable().optional(),
+  description: z.string().optional(),
 });
 
 /**
@@ -116,16 +129,22 @@ export const worldsUpdateInputSchema: z.ZodType<WorldsUpdateInput> = z.object({
  */
 export interface WorldsGetInput {
   /**
-   * world is the slug of the world to retrieve.
+   * world is the identifier of the world to retrieve.
    */
   world: string;
+
+  /**
+   * namespace is the parent namespace (for namespaced lookups).
+   */
+  namespace?: string;
 }
 
 /**
  * worldsGetInputSchema is the Zod schema for WorldsGetInput.
  */
 export const worldsGetInputSchema: z.ZodType<WorldsGetInput> = z.object({
-  world: z.string().describe("The slug of the world to retrieve."),
+  world: z.string().describe("The world to retrieve."),
+  namespace: z.string().optional(),
 });
 
 /**
@@ -133,15 +152,21 @@ export const worldsGetInputSchema: z.ZodType<WorldsGetInput> = z.object({
  */
 export interface WorldsDeleteInput {
   /**
-   * world is the slug of the world to delete.
+   * world is the identifier of the world to delete.
    */
   world: string;
+
+  /**
+   * namespace is the parent namespace (for namespaced lookups).
+   */
+  namespace?: string;
 }
 
 /**
  * worldsDeleteInputSchema is the Zod schema for WorldsDeleteInput.
  */
 export const worldsDeleteInputSchema: z.ZodType<WorldsDeleteInput> = z.object({
-  world: z.string().describe("The slug of the world to delete."),
+  world: z.string().describe("The world to delete."),
+  namespace: z.string().optional(),
 });
 

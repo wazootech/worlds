@@ -75,9 +75,9 @@ export interface WorldsContext {
   };
 
   /**
-   * namespaceId is the identifier of the namespace for this context engine.
+   * namespace is the identifier of the namespace for this context engine.
    */
-  namespaceId?: string;
+  namespace?: string;
 
   /**
    * engine is the core Worlds engine for this context.

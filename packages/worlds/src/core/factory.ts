@@ -200,7 +200,7 @@ export async function createWorldsContext(
     embeddings,
     libsql: { database, manager },
     apiKey: config.envs.WORLDS_API_KEY,
-    namespaceId: config.envs.WORLDS_NAMESPACE_ID,
+    namespace: config.envs.WORLDS_NAMESPACE_ID,
     async [Symbol.asyncDispose]() {
       await this.engine?.close();
       await manager.close();

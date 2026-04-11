@@ -33,7 +33,7 @@ export async function createTestContext(): Promise<WorldsContext> {
       manager: databaseManager,
     },
     apiKey: ulid(),
-    namespaceId: WORLDS_NAMESPACE_ID,
+    namespace: WORLDS_NAMESPACE_ID,
     async [Symbol.asyncDispose]() {
       await databaseManager.close();
       client.close();
