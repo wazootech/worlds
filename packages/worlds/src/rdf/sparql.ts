@@ -17,6 +17,7 @@ import { WORLDS } from "#/core/ontology.ts";
  * and prevents resource leaks/dangling timers in test environments.
  */
 // const queryEngine = new QueryEngine();
+// deno-lint-ignore no-explicit-any
 const queryEngine: any = null;
 
 /**
