@@ -4,17 +4,6 @@ import { DataFactory, Store } from "n3";
 
 const { namedNode, literal, quad } = DataFactory;
 
-globalThis.addEventListener("unhandledrejection", (e) => {
-  const msg = `DIAGNOSTIC: Unhandled Rejection: ${e.reason}\n`;
-  Deno.stderr.writeSync(new TextEncoder().encode(msg));
-});
-
-globalThis.addEventListener("error", (e) => {
-  const msg =
-    `DIAGNOSTIC: Uncaught Error: ${e.message} @ ${e.filename}:${e.lineno}:${e.colno}\n`;
-  Deno.stderr.writeSync(new TextEncoder().encode(msg));
-});
-
 Deno.test({
   name: "SPARQL Layer",
   sanitizeOps: false,
