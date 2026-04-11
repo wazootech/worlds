@@ -331,6 +331,17 @@ export class LocalWorlds implements WorldsInterface {
     const isUpdate = await isSparqlUpdate(query);
     if (isUpdate) {
       await batchHandler.commit();
+
+      // Also run handlePatch to create chunks from the updated store
+      await handlePatch(
+        managed.database,
+        this.appContext.embeddings,
+        [{
+          insertions: store.getQuads(null, null, null, null),
+          deletions: [],
+        }],
+      );
+
       this.invalidateStore(namespaceId, slug);
 
       await this.worldsRepository.update(slug, namespaceId, {
