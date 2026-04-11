@@ -16,7 +16,8 @@ import { WORLDS } from "#/core/ontology.ts";
  * Using a singleton avoids the high overhead of instantiation per call
  * and prevents resource leaks/dangling timers in test environments.
  */
-const queryEngine = new QueryEngine();
+// const queryEngine = new QueryEngine();
+const queryEngine: any = null;
 
 /**
  * DatasetParams are the parameters for a SPARQL query.
