@@ -19,7 +19,7 @@ export type Source = WorldSource;
 /**
  * worldSourceSchema is the Zod schema for WorldSource.
  */
-export const worldSourceSchema = z.union([
+export const worldSourceSchema: z.ZodType<WorldSource> = z.union([
   z.string().describe("A qualified source name: <namespace>/<slug>"),
   z.object({
     slug: z.string().describe("The slug of the target world."),

@@ -3,17 +3,9 @@ import { DataFactory, Parser, Store, Writer } from "n3";
 import { ChunksSearchRepository } from "#/world/chunks/repository.ts";
 import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
 import { loadStore } from "#/world/triples/loader.ts";
-import { TriplesPatchHandler } from "#/world/triples/loader.ts";
-
-import { BatchPatchHandler, handlePatch } from "#/rdf/patch/mod.ts";
+import { handlePatch } from "#/rdf/patch/mod.ts";
 import { sparql } from "#/rdf/sparql.ts";
-import {
-  escapeSparqlLiteral,
-  escapeSparqlUri,
-  isSparqlUpdate,
-  parseSourceName,
-  resolveSource,
-} from "#/core/utils.ts";
+import { isSparqlUpdate, resolveSource } from "#/core/utils.ts";
 import {
   DEFAULT_SERIALIZATION,
   getSerializationByContentType,
@@ -27,6 +19,7 @@ import {
   WORLDS,
   WORLDS_WORLD_SLUG,
 } from "#/core/ontology.ts";
+import type { WorldRow } from "#/plugins/registry/worlds.schema.ts";
 import type {
   World,
   WorldsCreateInput,
@@ -345,7 +338,7 @@ export class LocalWorlds implements WorldsInterface {
         return this.worldsRepository.get(parsed.slug, targetNamespace);
       });
       const results = await Promise.all(worldPromises);
-      targetWorlds = results.filter((w): w is any => !!w);
+      targetWorlds = results.filter((w): w is WorldRow => w != null);
     }
 
     const worldStores = await Promise.all(
@@ -387,7 +380,7 @@ export class LocalWorlds implements WorldsInterface {
         return this.worldsRepository.get(parsed.slug, targetNamespace);
       });
       const results = await Promise.all(worldPromises);
-      targetWorlds = results.filter((w): w is any => !!w);
+      targetWorlds = results.filter((w): w is WorldRow => w != null);
     }
 
     if (targetWorlds.length === 0) {

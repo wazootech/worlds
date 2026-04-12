@@ -1,7 +1,7 @@
 import type { Client } from "@libsql/client";
 import type { WorldsContext } from "#/core/types.ts";
 import { searchChunks, upsertChunks } from "./queries.sql.ts";
-import type { World, WorldsSearchOutput } from "#/schemas/mod.ts";
+import type { WorldsSearchOutput } from "#/schemas/mod.ts";
 import type { WorldRow } from "#/plugins/registry/worlds.schema.ts";
 import type { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
 import {

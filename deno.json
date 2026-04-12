@@ -46,6 +46,9 @@
     "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.29.0"
   },
   "exclude": ["./packages/console", "./packages/docs"],
+  "lint": {
+    "exclude": ["scratch"]
+  },
   "publish": {
     "exclude": ["**/*.test.ts", "**/*_test.ts"]
   }
