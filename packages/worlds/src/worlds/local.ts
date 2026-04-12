@@ -18,6 +18,7 @@ import type { WorldsContext } from "#/core/types.ts";
 import {
   DEFAULT_NAMESPACE,
   WORLDS,
+  WORLDS_WORLD_NAMESPACE,
   WORLDS_WORLD_SLUG,
 } from "#/core/ontology.ts";
 import { worldResourcePath } from "#/core/resource-path.ts";
@@ -173,17 +174,20 @@ export class LocalWorlds implements WorldsInterface {
       offset = (input.page - 1) * input.pageSize;
     }
 
-    const namespace = input?.namespace ?? this.appContext.namespace;
+    const isAdmin = this.appContext.namespace === undefined ||
+      this.appContext.namespace === WORLDS_WORLD_NAMESPACE;
+
+    const namespaceForList = (input?.namespace ?? this.appContext.namespace) ??
+      null;
+    this.assertSourceAuthorized(null, namespaceForList);
+
     const rows = await this.worldsRepository.list(
-      namespace,
+      namespaceForList,
       limit,
       offset,
     );
     return rows
-      .filter((world) =>
-        world.slug !== WORLDS_WORLD_SLUG ||
-        this.appContext.namespace === undefined
-      )
+      .filter((world) => world.slug !== WORLDS_WORLD_SLUG || isAdmin)
       .map((world) =>
         worldSchema.parse({
           name: worldResourcePath(world.namespace_id, world.slug).slice(1),
@@ -207,6 +211,7 @@ export class LocalWorlds implements WorldsInterface {
       input.source,
       this.appContext.namespace,
     );
+    this.assertSourceAuthorized(slug, namespace);
     const world = await this.worldsRepository.get(
       slug ?? "",
       slug === WORLDS_WORLD_SLUG ? undefined : namespace,
@@ -236,6 +241,7 @@ export class LocalWorlds implements WorldsInterface {
 
     const namespace = inputNamespace ?? this.appContext.namespace ??
       DEFAULT_NAMESPACE;
+    this.assertSourceAuthorized(slug, namespace);
     const existingBySlug = await this.worldsRepository.get(
       slug,
       namespace,
@@ -288,6 +294,7 @@ export class LocalWorlds implements WorldsInterface {
       source,
       this.appContext.namespace,
     );
+    this.assertSourceAuthorized(slug, namespace);
     const world = await this.worldsRepository.get(
       slug ?? "",
       slug === WORLDS_WORLD_SLUG ? undefined : namespace,
@@ -312,6 +319,7 @@ export class LocalWorlds implements WorldsInterface {
       input.source,
       this.appContext.namespace,
     );
+    this.assertSourceAuthorized(slug, namespace);
     const world = await this.worldsRepository.get(
       slug ?? "",
       slug === WORLDS_WORLD_SLUG ? undefined : namespace,
@@ -358,6 +366,7 @@ export class LocalWorlds implements WorldsInterface {
     } else {
       const worldPromises = sources.map((s) => {
         const parsed = resolveSource(s, namespace);
+        this.assertSourceAuthorized(parsed.slug, parsed.namespace);
         // Registry world rows use the system namespace in the DB; resolveSource
         // may attach the app default namespace to bare "worlds", which would
         // make get(slug, ns) miss the row.
@@ -430,6 +439,7 @@ export class LocalWorlds implements WorldsInterface {
     } else {
       const worldPromises = sources.map((s) => {
         const parsed = resolveSource(s, namespace);
+        this.assertSourceAuthorized(parsed.slug, parsed.namespace);
         const targetNamespace = parsed.slug === WORLDS_WORLD_SLUG
           ? undefined
           : (parsed.namespace ?? namespace);
@@ -481,6 +491,7 @@ export class LocalWorlds implements WorldsInterface {
       source,
       this.appContext.namespace,
     );
+    this.assertSourceAuthorized(slug, namespace);
     const world = await this.worldsRepository.get(
       slug,
       slug === WORLDS_WORLD_SLUG ? undefined : namespace,
@@ -534,6 +545,7 @@ export class LocalWorlds implements WorldsInterface {
       source,
       this.appContext.namespace,
     );
+    this.assertSourceAuthorized(slug, namespace);
     const world = await this.worldsRepository.get(
       slug,
       slug === WORLDS_WORLD_SLUG ? undefined : namespace,
@@ -694,6 +706,37 @@ export class LocalWorlds implements WorldsInterface {
       return;
     } else {
       await this.registryWorldInitialized;
+    }
+  }
+
+  /**
+   * assertSourceAuthorized ensures the caller is authorized for the given resource.
+   */
+  private assertSourceAuthorized(
+    slug: string | null,
+    namespace: string | null,
+  ): void {
+    if (this.registryWorldBootstrapping) {
+      return;
+    }
+
+    const isRegistryWorld = slug === WORLDS_WORLD_SLUG;
+    const isAdmin = this.appContext.namespace === undefined ||
+      this.appContext.namespace === WORLDS_WORLD_NAMESPACE;
+
+    // Reject registry access for non-admins
+    if (isRegistryWorld && !isAdmin) {
+      throw new Error("Unauthorized access to the registry world");
+    }
+
+    // Reject cross-namespace access for tenants
+    if (
+      !isAdmin &&
+      namespace !== this.appContext.namespace
+    ) {
+      throw new Error(
+        `Unauthorized access to namespace: ${namespace ?? "system"}`,
+      );
     }
   }
 }

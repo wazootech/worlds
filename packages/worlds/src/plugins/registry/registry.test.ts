@@ -45,9 +45,14 @@ Deno.test({
     await t.step(
       "registry world is protected from normal listings",
       async () => {
-        await worlds.create({ slug: "normal-world", label: "Normal" });
+        const tenantContext = {
+          ...appContext,
+          namespace: "https://wazoo.dev/worlds/namespaces/tenant",
+        };
+        await using tenantWorlds = new LocalWorlds(tenantContext);
+        await tenantWorlds.create({ slug: "normal-world", label: "Normal" });
 
-        const list = await worlds.list();
+        const list = await tenantWorlds.list();
         assertEquals(
           list.find((world) => world.slug === WORLDS_WORLD_SLUG),
           undefined,

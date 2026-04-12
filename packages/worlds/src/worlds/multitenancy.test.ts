@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import { LocalWorlds } from "#/worlds/local.ts";
 import { createTestContext } from "#/core/engine-context.ts";
 import { WORLDS, WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
@@ -114,6 +114,50 @@ Deno.test({
           `SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }`,
       }) as SparqlSelectResults;
       assertEquals(resB.results.bindings[0].o.value, "Value B");
+    });
+
+    await t.step(
+      "NS B cannot access NS A's world using explicit namespace",
+      async () => {
+        // NS B tries to get NS A's world explicitly
+        await assertRejects(
+          () =>
+            worldsB.get({
+              source: { slug: sharedSlug, namespace: ctxA.namespace },
+            }),
+          Error,
+          "Unauthorized access to namespace",
+        );
+
+        // NS B tries to SPARQL into NS A's world explicitly
+        await assertRejects(
+          () =>
+            worldsB.sparql({
+              sources: [{ slug: sharedSlug, namespace: ctxA.namespace }],
+              query: "SELECT ?s WHERE { ?s ?p ?o }",
+            }),
+          Error,
+          "Unauthorized access to namespace",
+        );
+      },
+    );
+
+    await t.step("Non-admin cannot access registry world", async () => {
+      await assertRejects(
+        () => worldsA.get({ source: WORLDS_WORLD_SLUG }),
+        Error,
+        "Unauthorized access to the registry world",
+      );
+
+      await assertRejects(
+        () =>
+          worldsA.sparql({
+            sources: [WORLDS_WORLD_SLUG],
+            query: "SELECT ?s WHERE { ?s ?p ?o }",
+          }),
+        Error,
+        "Unauthorized access to the registry world",
+      );
     });
   },
 });
