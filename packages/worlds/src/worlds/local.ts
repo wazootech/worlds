@@ -4,6 +4,7 @@ import { ChunksSearchRepository } from "#/world/chunks/repository.ts";
 import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
 import { loadStore } from "#/world/triples/loader.ts";
 import { handlePatch } from "#/rdf/patch/mod.ts";
+import type { PatchHandler } from "#/rdf/patch/types.ts";
 import { sparql } from "#/rdf/sparql.ts";
 import { isSparqlUpdate, resolveSource } from "#/core/utils.ts";
 import {
@@ -46,6 +47,12 @@ const { namedNode, quad } = DataFactory;
 export class LocalWorlds implements WorldsInterface {
   private readonly worldsRepository: WorldsRepository;
   private registryWorldInitialized?: Promise<void>;
+  /**
+   * True while ensureRegistryWorld is running. SPARQL during bootstrap must not
+   * await registryWorldInitialized — that promise is the same async work and
+   * would deadlock (and leave a pending promise at process exit under Deno).
+   */
+  private registryWorldBootstrapping = false;
   private isClosed = false;
   private storeCache = new Map<string, Store>();
 
@@ -98,47 +105,49 @@ export class LocalWorlds implements WorldsInterface {
    * ensureRegistryWorld guarantees the presence of the registry world and seeds it if necessary.
    */
   private async ensureRegistryWorld(): Promise<void> {
-    const existing = await this.worldsRepository.get(
-      WORLDS_WORLD_SLUG,
-      undefined,
-    );
-    if (existing) {
-      return;
-    }
-
-    const now = Date.now();
+    this.registryWorldBootstrapping = true;
     try {
-      await this.worldsRepository.insert({
-        namespace_id: DEFAULT_NAMESPACE,
-        slug: WORLDS_WORLD_SLUG,
-        label: "Registry",
-        description: "Worlds platform registry and control plane.",
-        db_hostname: null,
-        db_token: null,
-        created_at: now,
-        updated_at: now,
-        deleted_at: null,
-      });
-
-      await this.appContext.libsql.manager.create({
-        slug: WORLDS_WORLD_SLUG,
-      });
-    } catch (error) {
-      const checkAgain = await this.worldsRepository.get(
+      const existing = await this.worldsRepository.get(
         WORLDS_WORLD_SLUG,
+        undefined,
       );
-      if (!checkAgain) {
-        throw error;
+      if (existing) {
+        return;
       }
-    }
 
-    if (this.appContext.apiKey) {
-      const namespace = `${WORLDS.BASE}namespaces/_`;
-      const keyId = `${WORLDS.BASE}keys/bootstrap`;
+      const now = Date.now();
+      try {
+        await this.worldsRepository.insert({
+          namespace_id: DEFAULT_NAMESPACE,
+          slug: WORLDS_WORLD_SLUG,
+          label: "Registry",
+          description: "Worlds platform registry and control plane.",
+          db_hostname: null,
+          db_token: null,
+          created_at: now,
+          updated_at: now,
+          deleted_at: null,
+        });
 
-      await this._sparql({
-        sources: [WORLDS_WORLD_SLUG],
-        query: `
+        await this.appContext.libsql.manager.create({
+          slug: WORLDS_WORLD_SLUG,
+        });
+      } catch (error) {
+        const checkAgain = await this.worldsRepository.get(
+          WORLDS_WORLD_SLUG,
+        );
+        if (!checkAgain) {
+          throw error;
+        }
+      }
+
+      if (this.appContext.apiKey) {
+        const namespace = `${WORLDS.BASE}namespaces/_`;
+        const keyId = `${WORLDS.BASE}keys/bootstrap`;
+
+        await this._sparql({
+          sources: [WORLDS_WORLD_SLUG],
+          query: `
           PREFIX registry: <${WORLDS.NAMESPACE}>
           INSERT DATA {
             <${namespace}> a <${WORLDS.Namespace}> ;
@@ -151,7 +160,10 @@ export class LocalWorlds implements WorldsInterface {
               <${WORLDS.createdAt}> ${now} .
           }
         `,
-      });
+        });
+      }
+    } finally {
+      this.registryWorldBootstrapping = false;
     }
   }
 
@@ -200,7 +212,10 @@ export class LocalWorlds implements WorldsInterface {
       input.source,
       this.appContext.namespace,
     );
-    const world = await this.worldsRepository.get(slug, namespace);
+    const world = await this.worldsRepository.get(
+      slug,
+      slug === WORLDS_WORLD_SLUG ? undefined : namespace,
+    );
     if (!world || world.deleted_at !== null) {
       return null;
     }
@@ -271,12 +286,15 @@ export class LocalWorlds implements WorldsInterface {
       source,
       this.appContext.namespace,
     );
-    const world = await this.worldsRepository.get(slug, namespace);
+    const world = await this.worldsRepository.get(
+      slug,
+      slug === WORLDS_WORLD_SLUG ? undefined : namespace,
+    );
     if (!world) {
       throw new Error("World not found");
     }
 
-    await this.worldsRepository.update(slug, namespace, {
+    await this.worldsRepository.update(slug, world.namespace_id, {
       label: label ?? world.label,
       description: description !== undefined ? description : world.description,
       updated_at: Date.now(),
@@ -292,13 +310,16 @@ export class LocalWorlds implements WorldsInterface {
       input.source,
       this.appContext.namespace,
     );
-    const world = await this.worldsRepository.get(slug, namespace);
+    const world = await this.worldsRepository.get(
+      slug,
+      slug === WORLDS_WORLD_SLUG ? undefined : namespace,
+    );
     if (!world) {
       throw new Error("World not found");
     }
 
-    this.invalidateStore({ slug, namespace });
-    await this.worldsRepository.update(slug, namespace, {
+    this.invalidateStore({ slug, namespace: world.namespace_id });
+    await this.worldsRepository.update(slug, world.namespace_id, {
       deleted_at: Date.now(),
     });
   }
@@ -333,8 +354,12 @@ export class LocalWorlds implements WorldsInterface {
     } else {
       const worldPromises = sources.map((s) => {
         const parsed = resolveSource(s, namespace);
-        const targetNamespace = parsed.namespace ??
-          (parsed.slug === WORLDS_WORLD_SLUG ? undefined : namespace);
+        // Registry world rows use the system namespace in the DB; resolveSource
+        // may attach the app default namespace to bare "worlds", which would
+        // make get(slug, ns) miss the row.
+        const targetNamespace = parsed.slug === WORLDS_WORLD_SLUG
+          ? undefined
+          : (parsed.namespace ?? namespace);
         return this.worldsRepository.get(parsed.slug, targetNamespace);
       });
       const results = await Promise.all(worldPromises);
@@ -346,6 +371,27 @@ export class LocalWorlds implements WorldsInterface {
         this.getStore({ slug: w.slug, namespace: w.namespace_id })
       ),
     );
+
+    if (worldStores.length === 1) {
+      const w = targetWorlds[0];
+      const managed = await this.appContext.libsql.manager.get({
+        slug: w.slug,
+        namespace: w.namespace_id,
+      });
+      const patchHandler: PatchHandler = {
+        patch: (patches) =>
+          handlePatch(
+            managed.database,
+            this.appContext.embeddings,
+            patches,
+          ),
+      };
+      const { result } = await sparql(worldStores, query, patchHandler);
+      if (isSparqlUpdate(query)) {
+        this.invalidateStore({ slug: w.slug, namespace: w.namespace_id });
+      }
+      return worldsSparqlOutputSchema.parse(result);
+    }
 
     const { result } = await sparql(worldStores, query);
     return worldsSparqlOutputSchema.parse(result);
@@ -375,8 +421,9 @@ export class LocalWorlds implements WorldsInterface {
     } else {
       const worldPromises = sources.map((s) => {
         const parsed = resolveSource(s, namespace);
-        const targetNamespace = parsed.namespace ??
-          (parsed.slug === WORLDS_WORLD_SLUG ? undefined : namespace);
+        const targetNamespace = parsed.slug === WORLDS_WORLD_SLUG
+          ? undefined
+          : (parsed.namespace ?? namespace);
         return this.worldsRepository.get(parsed.slug, targetNamespace);
       });
       const results = await Promise.all(worldPromises);
@@ -422,7 +469,10 @@ export class LocalWorlds implements WorldsInterface {
       source,
       this.appContext.namespace,
     );
-    const world = await this.worldsRepository.get(slug, namespace);
+    const world = await this.worldsRepository.get(
+      slug,
+      slug === WORLDS_WORLD_SLUG ? undefined : namespace,
+    );
     if (!world) {
       throw new Error("World not found");
     }
@@ -442,7 +492,7 @@ export class LocalWorlds implements WorldsInterface {
     store.addQuads(parser.parse(body));
 
     const managed = await this.appContext.libsql.manager.get({
-      namespace,
+      namespace: world.namespace_id,
       slug,
     });
     const now = Date.now();
@@ -456,8 +506,8 @@ export class LocalWorlds implements WorldsInterface {
       }],
     );
 
-    this.invalidateStore({ slug, namespace });
-    await this.worldsRepository.update(slug, namespace, {
+    this.invalidateStore({ slug, namespace: world.namespace_id });
+    await this.worldsRepository.update(slug, world.namespace_id, {
       updated_at: now,
     });
   }
@@ -472,7 +522,10 @@ export class LocalWorlds implements WorldsInterface {
       source,
       this.appContext.namespace,
     );
-    const world = await this.worldsRepository.get(slug, namespace);
+    const world = await this.worldsRepository.get(
+      slug,
+      slug === WORLDS_WORLD_SLUG ? undefined : namespace,
+    );
     if (!world) {
       throw new Error(`World not found: ${slug} in namespace ${namespace}`);
     }
@@ -484,7 +537,7 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error(`Unsupported content type: ${contentType}`);
     }
 
-    const store = await this.getStore({ slug, namespace });
+    const store = await this.getStore({ slug, namespace: world.namespace_id });
     const quads = store.getQuads(null, null, null, null);
 
     if (serialization.format === DEFAULT_SERIALIZATION.format) {
@@ -603,6 +656,11 @@ export class LocalWorlds implements WorldsInterface {
     this.ensureNotClosed();
     if (!this.registryWorldInitialized) {
       await this.init();
+    } else if (this.registryWorldBootstrapping) {
+      // Registry bootstrap is in progress and registryWorldInitialized is the
+      // in-flight ensureRegistryWorld() promise; do not await it from _sparql
+      // (same async work — deadlock) or from here before init has been entered.
+      return;
     } else {
       await this.registryWorldInitialized;
     }

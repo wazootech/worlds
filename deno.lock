@@ -1,7 +1,6 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@fartlabs/rt@0.0.11": "0.0.11",
     "jsr:@fartlabs/rt@^0.0.11": "0.0.11",
     "jsr:@std/assert@*": "1.0.19",
     "jsr:@std/assert@^1.0.19": "1.0.19",
@@ -13,6 +12,7 @@
     "jsr:@std/internal@^1.0.12": "1.0.12",
     "jsr:@std/path@^1.1.4": "1.1.4",
     "jsr:@std/ulid@1": "1.0.0",
+    "npm:@comunica/query-sparql-rdfjs-lite@*": "5.1.3",
     "npm:@comunica/query-sparql-rdfjs-lite@^5.1.3": "5.1.3",
     "npm:@langchain/textsplitters@^1.0.1": "1.0.1_@langchain+core@1.1.39",
     "npm:@libsql/client@0.17": "0.17.2",
@@ -3646,7 +3646,7 @@
         "@comunica/core@4.5.0",
         "@comunica/types@4.5.0",
         "@jeswr/stream-to-string",
-        "jsonld-context-parser@2.4.0",
+        "jsonld-context-parser",
         "jsonld-streaming-parser"
       ]
     },
@@ -4172,7 +4172,7 @@
         "@comunica/core@4.5.0",
         "@comunica/types@4.5.0",
         "@rdfjs/types@2.0.1",
-        "jsonld-context-parser@2.4.0",
+        "jsonld-context-parser",
         "sparqlalgebrajs"
       ]
     },
@@ -4183,7 +4183,7 @@
         "@comunica/types@5.1.3",
         "@comunica/utils-algebra",
         "@rdfjs/types@2.0.1",
-        "jsonld-context-parser@2.4.0"
+        "jsonld-context-parser"
       ]
     },
     "@comunica/core@4.5.0": {
@@ -4984,7 +4984,7 @@
       "integrity": "sha512-pxQ1986AuWfPX4oXzBvLwBnfgKDE5OMhAdR/5cZmRaB4Ygz5MecQybvwZupnRz341r2CtFmbk/BhSu7k2Lm+Jw==",
       "dependencies": [
         "@libsql/isomorphic-ws",
-        "cross-fetch@4.1.0",
+        "cross-fetch",
         "js-base64",
         "node-fetch@3.3.2"
       ]
@@ -5592,7 +5592,7 @@
         "@types/minimist",
         "@types/node",
         "@types/semver",
-        "jsonld-context-parser@3.1.0",
+        "jsonld-context-parser",
         "minimist",
         "rdf-data-factory@2.0.2",
         "rdf-object",
@@ -5626,12 +5626,6 @@
       "dependencies": [
         "object-assign",
         "vary"
-      ]
-    },
-    "cross-fetch@3.2.0": {
-      "integrity": "sha512-Q+xVJLoGOeIMXZmbUK4HYk+69cQH6LudR0Vu/pRm2YlU/hDV9CiS0gKUMaWY5f2NeUH9C1nV3bsTlCo0FsTV1Q==",
-      "dependencies": [
-        "node-fetch@2.7.0"
       ]
     },
     "cross-fetch@4.1.0": {
@@ -6051,17 +6045,6 @@
     "json-schema@0.4.0": {
       "integrity": "sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA=="
     },
-    "jsonld-context-parser@2.4.0": {
-      "integrity": "sha512-ZYOfvh525SdPd9ReYY58dxB3E2RUEU4DJ6ZibO8AitcowPeBH4L5rCAitE2om5G1P+HMEgYEYEr4EZKbVN4tpA==",
-      "dependencies": [
-        "@types/http-link-header",
-        "@types/node",
-        "cross-fetch@3.2.0",
-        "http-link-header",
-        "relative-to-absolute-iri"
-      ],
-      "bin": true
-    },
     "jsonld-context-parser@3.1.0": {
       "integrity": "sha512-BfgNJ/t9jjK7Lun9XRCJM6YeNqDk8B6/lg+KS8rzhXAOtS0FvoClSmtLvF24V1M2CDYRy2LcEBt0ilxqSX93WA==",
       "dependencies": [
@@ -6082,7 +6065,7 @@
         "buffer",
         "canonicalize",
         "http-link-header",
-        "jsonld-context-parser@3.1.0",
+        "jsonld-context-parser",
         "rdf-data-factory@1.1.3",
         "readable-stream@4.7.0"
       ]
@@ -6387,7 +6370,7 @@
     "rdf-object@3.0.0": {
       "integrity": "sha512-qefryIRh1d9gqZUKp2qQwzIWLbmQspsc2bvVoOCCp126MZmKubcUTigHiMlCrUI9g7MDCrdTFAwcAal1lVR09A==",
       "dependencies": [
-        "jsonld-context-parser@3.1.0",
+        "jsonld-context-parser",
         "rdf-data-factory@2.0.2",
         "rdf-string@2.0.1",
         "streamify-array"
