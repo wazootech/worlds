@@ -1,4 +1,20 @@
-import type { WorldsOptions } from "#/core/types.ts";
+import {
+  worldResourcePath,
+  worldsCollectionSearchPath,
+  worldsCollectionSparqlPath,
+  worldsShorthandCollectionSearchPath,
+  worldsShorthandCollectionSparqlPath,
+  worldsShorthandUnaryExportPath,
+  worldsShorthandUnaryImportPath,
+  worldsShorthandUnarySearchPath,
+  worldsShorthandUnarySparqlPath,
+  worldsUnaryExportPath,
+  worldsUnaryImportPath,
+  worldsUnarySearchPath,
+  worldsUnarySparqlPath,
+} from "#/core/resource-path.ts";
+import type { WorldsInterface, WorldsOptions } from "#/core/types.ts";
+import { parseError, resolveSource } from "#/core/utils.ts";
 import type {
   World,
   WorldsCreateInput,
@@ -14,8 +30,6 @@ import type {
   WorldsSparqlOutput,
   WorldsUpdateInput,
 } from "#/schemas/mod.ts";
-import { parseError } from "#/core/utils.ts";
-import type { WorldsInterface } from "#/core/types.ts";
 
 /**
  * RemoteWorlds is a TypeScript SDK client for the Worlds API.
@@ -36,7 +50,10 @@ export class RemoteWorlds implements WorldsInterface {
    * list paginates all worlds from the Worlds API.
    */
   public async list(input?: WorldsListInput): Promise<World[]> {
-    const url = new URL(`${this.options.baseUrl}/worlds`);
+    const path = input?.namespace
+      ? `/namespaces/${encodeURIComponent(input.namespace)}/worlds`
+      : "/worlds";
+    const url = new URL(`${this.options.baseUrl}${path}`);
 
     if (input?.page) url.searchParams.set("page", input.page.toString());
     if (input?.pageSize) {
@@ -61,10 +78,12 @@ export class RemoteWorlds implements WorldsInterface {
    */
   public async get(input: WorldsGetInput): Promise<World | null> {
     const { source } = input;
-    const identifier = typeof source === "string"
-      ? source
-      : ("slug" in source ? source.slug : source.name);
-    const url = new URL(`${this.options.baseUrl}/worlds/${identifier}`);
+    const resolvedSource = resolveSource(source, undefined);
+    const path = worldResourcePath(
+      resolvedSource.namespace,
+      resolvedSource.slug,
+    );
+    const url = new URL(`${this.options.baseUrl}${path}`);
 
     const response = await this.fetch(
       url,
@@ -90,7 +109,10 @@ export class RemoteWorlds implements WorldsInterface {
    * create creates a world in the Worlds API.
    */
   public async create(input: WorldsCreateInput): Promise<World> {
-    const url = new URL(`${this.options.baseUrl}/worlds`);
+    const path = input.namespace
+      ? `/namespaces/${encodeURIComponent(input.namespace)}/worlds`
+      : "/worlds";
+    const url = new URL(`${this.options.baseUrl}${path}`);
 
     const response = await this.fetch(
       url,
@@ -116,10 +138,12 @@ export class RemoteWorlds implements WorldsInterface {
    */
   public async update(input: WorldsUpdateInput): Promise<void> {
     const { source, ...data } = input;
-    const identifier = typeof source === "string"
-      ? source
-      : ("slug" in source ? source.slug : source.name);
-    const url = new URL(`${this.options.baseUrl}/worlds/${identifier}`);
+    const resolvedSource = resolveSource(source, undefined);
+    const path = worldResourcePath(
+      resolvedSource.namespace,
+      resolvedSource.slug,
+    );
+    const url = new URL(`${this.options.baseUrl}${path}`);
 
     const response = await this.fetch(
       url,
@@ -143,10 +167,12 @@ export class RemoteWorlds implements WorldsInterface {
    */
   public async delete(input: WorldsDeleteInput): Promise<void> {
     const { source } = input;
-    const identifier = typeof source === "string"
-      ? source
-      : ("slug" in source ? source.slug : source.name);
-    const url = new URL(`${this.options.baseUrl}/worlds/${identifier}`);
+    const resolvedSource = resolveSource(source, undefined);
+    const path = worldResourcePath(
+      resolvedSource.namespace,
+      resolvedSource.slug,
+    );
+    const url = new URL(`${this.options.baseUrl}${path}`);
 
     const response = await this.fetch(
       url,
@@ -167,7 +193,9 @@ export class RemoteWorlds implements WorldsInterface {
    * sparql executes a SPARQL query or update against a world.
    */
   public async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
-    const url = new URL(`${this.options.baseUrl}/sparql`);
+    const url = new URL(
+      `${this.options.baseUrl}${RemoteWorlds.sparqlPath(input)}`,
+    );
 
     const response = await this.fetch(
       url,
@@ -197,7 +225,9 @@ export class RemoteWorlds implements WorldsInterface {
    * search performs semantic/text search on a world using vector embeddings.
    */
   public async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
-    const url = new URL(`${this.options.baseUrl}/search`);
+    const url = new URL(
+      `${this.options.baseUrl}${RemoteWorlds.searchPath(input)}`,
+    );
 
     const response = await this.fetch(url, {
       method: "POST",
@@ -220,9 +250,13 @@ export class RemoteWorlds implements WorldsInterface {
    */
   public async import(input: WorldsImportInput): Promise<void> {
     const { source, data, contentType } = input;
-    const url = new URL(`${this.options.baseUrl}/import`);
+    const resolvedSource = resolveSource(source, undefined);
+    const path = resolvedSource.namespace
+      ? worldsUnaryImportPath(resolvedSource.namespace, resolvedSource.slug)
+      : worldsShorthandUnaryImportPath(resolvedSource.slug);
+    const url = new URL(`${this.options.baseUrl}${path}`);
 
-    const type = contentType ?? "application/n-quads";
+    const rdfContentType = contentType ?? "application/n-quads";
 
     const binaryData = typeof data === "string"
       ? new TextEncoder().encode(data)
@@ -240,9 +274,8 @@ export class RemoteWorlds implements WorldsInterface {
       method: "POST",
       headers,
       body: JSON.stringify({
-        source,
         data: base64Data,
-        contentType: type,
+        contentType: rdfContentType,
       }),
     });
 
@@ -257,7 +290,11 @@ export class RemoteWorlds implements WorldsInterface {
    */
   public async export(input: WorldsExportInput): Promise<ArrayBuffer> {
     const { source, contentType } = input;
-    const url = new URL(`${this.options.baseUrl}/export`);
+    const resolvedSource = resolveSource(source, undefined);
+    const path = resolvedSource.namespace
+      ? worldsUnaryExportPath(resolvedSource.namespace, resolvedSource.slug)
+      : worldsShorthandUnaryExportPath(resolvedSource.slug);
+    const url = new URL(`${this.options.baseUrl}${path}`);
 
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.options.apiKey}`,
@@ -267,7 +304,7 @@ export class RemoteWorlds implements WorldsInterface {
     const response = await this.fetch(url, {
       method: "POST",
       headers,
-      body: JSON.stringify({ source, contentType }),
+      body: JSON.stringify({ contentType }),
     });
 
     if (!response.ok) {
@@ -285,7 +322,16 @@ export class RemoteWorlds implements WorldsInterface {
     input: WorldsServiceDescriptionInput,
   ): Promise<string> {
     const { contentType } = input;
-    const url = new URL(`${this.options.baseUrl}/sparql`);
+    const sparqlInput: WorldsSparqlInput = {
+      query: "",
+      sources: input.sources,
+      namespace: input.namespace,
+      defaultGraphUris: undefined,
+      namedGraphUris: undefined,
+    };
+    const url = new URL(
+      `${this.options.baseUrl}${RemoteWorlds.sparqlPath(sparqlInput)}`,
+    );
 
     const response = await this.fetch(url, {
       method: "POST",
@@ -324,5 +370,47 @@ export class RemoteWorlds implements WorldsInterface {
    */
   public [Symbol.asyncDispose](): Promise<void> {
     return this.close();
+  }
+
+  private static sparqlPath(input: WorldsSparqlInput): string {
+    const { sources, namespace: inputNamespace } = input;
+    if (sources?.length === 1) {
+      const resolvedSource = resolveSource(sources[0], inputNamespace);
+      if (
+        resolvedSource.namespace !== undefined &&
+        resolvedSource.namespace !== ""
+      ) {
+        return worldsUnarySparqlPath(
+          resolvedSource.namespace,
+          resolvedSource.slug,
+        );
+      }
+      return worldsShorthandUnarySparqlPath(resolvedSource.slug);
+    }
+    if (inputNamespace !== undefined && inputNamespace !== "") {
+      return worldsCollectionSparqlPath(inputNamespace);
+    }
+    return worldsShorthandCollectionSparqlPath();
+  }
+
+  private static searchPath(input: WorldsSearchInput): string {
+    const { sources, namespace: inputNamespace } = input;
+    if (sources?.length === 1) {
+      const resolvedSource = resolveSource(sources[0], inputNamespace);
+      if (
+        resolvedSource.namespace !== undefined &&
+        resolvedSource.namespace !== ""
+      ) {
+        return worldsUnarySearchPath(
+          resolvedSource.namespace,
+          resolvedSource.slug,
+        );
+      }
+      return worldsShorthandUnarySearchPath(resolvedSource.slug);
+    }
+    if (inputNamespace !== undefined && inputNamespace !== "") {
+      return worldsCollectionSearchPath(inputNamespace);
+    }
+    return worldsShorthandCollectionSearchPath();
   }
 }

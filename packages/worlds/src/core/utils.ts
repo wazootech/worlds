@@ -1,4 +1,5 @@
-import { type WorldSource } from "#/schemas/mod.ts";
+import { DEFAULT_SLUG } from "#/core/ontology.ts";
+import type { WorldSource } from "#/schemas/mod.ts";
 import { errorResponseDataSchema } from "#/schemas/mod.ts";
 
 /**
@@ -7,8 +8,8 @@ import { errorResponseDataSchema } from "#/schemas/mod.ts";
 export async function parseError(response: Response): Promise<string> {
   let errorMessage = `${response.status} ${response.statusText}`;
   try {
-    const WorldsContentType = response.headers.get("content-type");
-    if (WorldsContentType?.includes("application/json")) {
+    const contentTypeHeader = response.headers.get("content-type");
+    if (contentTypeHeader?.includes("application/json")) {
       const json = await response.json();
       const result = errorResponseDataSchema.safeParse(json);
       if (result.success) {
@@ -68,11 +69,15 @@ export function parseSourceName(name: string): {
   namespace?: string;
   slug: string;
 } {
-  const parts = name.split("/");
+  const trimmed = name.trim();
+  if (trimmed === "") {
+    return { slug: DEFAULT_SLUG };
+  }
+  const parts = trimmed.split("/");
   if (parts.length === 2 && parts[0] && parts[1]) {
     return { namespace: parts[0], slug: parts[1] };
   }
-  return { slug: name };
+  return { slug: trimmed };
 }
 
 /**
@@ -93,14 +98,18 @@ export function resolveSource(
   ) {
     resolved = parseSourceName(source.name);
   } else {
+    const o = source as { slug?: string; namespace?: string };
+    const rawSlug = o.slug;
     resolved = {
-      slug: (source as any).slug,
-      namespace: (source as any).namespace,
+      slug: rawSlug !== undefined && rawSlug !== "" ? rawSlug : DEFAULT_SLUG,
+      namespace: o.namespace,
     };
   }
 
+  const slug = resolved.slug === "" ? DEFAULT_SLUG : resolved.slug;
+
   return {
-    slug: resolved.slug,
+    slug,
     namespace: resolved.namespace ?? defaultNamespace,
   };
 }
@@ -108,11 +117,14 @@ export function resolveSource(
 /**
  * parseSources validates and normalizes a list of sources.
  */
-export function parseSources(sources: WorldSource[]): Array<{
+export function parseSources(
+  sources: WorldSource[],
+  defaultNamespace?: string,
+): Array<{
   slug: string;
   namespace?: string;
 }> {
-  return sources.map((s) => resolveSource(s));
+  return sources.map((s) => resolveSource(s, defaultNamespace));
 }
 
 /**

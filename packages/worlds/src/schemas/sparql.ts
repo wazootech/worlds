@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { type WorldSource, worldSourceSchema } from "./source.ts";
+import type { WorldsContentType } from "./rdf-content-type.ts";
+import { worldsContentTypeSchema } from "./rdf-content-type.ts";
+import type { WorldSource } from "./source.ts";
+import { worldSourceSchema } from "./source.ts";
+
+export { type WorldsContentType, worldsContentTypeSchema };
 
 /**
  * SparqlValue represents a value in a SPARQL result.
@@ -350,25 +355,6 @@ export const worldsSparqlInputSchema: z.ZodType<WorldsSparqlInput> = z.object({
     "Optional list of named graphs to query.",
   ),
 });
-
-/**
- * WorldsContentType represents the supported RDF serialization content types.
- */
-export type WorldsContentType =
-  | "text/turtle"
-  | "application/n-quads"
-  | "application/n-triples"
-  | "text/n3";
-
-/**
- * worldsContentTypeSchema is the Zod schema for WorldsContentType.
- */
-export const worldsContentTypeSchema: z.ZodType<WorldsContentType> = z.enum([
-  "text/turtle",
-  "application/n-quads",
-  "application/n-triples",
-  "text/n3",
-]);
 
 /**
  * WorldsServiceDescriptionInput represents the parameters for retrieving a SPARQL service description.

@@ -80,6 +80,9 @@ Deno.test("escapeSparqlLiteral - Escaping", () => {
 
 Deno.test("escapeSparqlUri - Escaping", () => {
   assertEquals(escapeSparqlUri("http://example.org/"), "http://example.org/");
-  assertEquals(escapeSparqlUri("http://example.org/>"), "http://example.org/\\>");
+  assertEquals(
+    escapeSparqlUri("http://example.org/>"),
+    "http://example.org/\\>",
+  );
   assertEquals(escapeSparqlUri("a\\b"), "a\\\\b");
 });

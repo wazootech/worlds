@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@fartlabs/rt@0.0.11": "0.0.11",
     "jsr:@fartlabs/rt@^0.0.11": "0.0.11",
     "jsr:@std/assert@*": "1.0.19",
     "jsr:@std/assert@^1.0.19": "1.0.19",

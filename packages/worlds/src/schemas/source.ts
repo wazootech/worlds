@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { type WorldsContentType, worldsContentTypeSchema } from "./sparql.ts";
+import type { WorldsContentType } from "./rdf-content-type.ts";
+import { worldsContentTypeSchema } from "./rdf-content-type.ts";
 
 /**
  * WorldSource represents a target world by slug, qualified name, or name object.

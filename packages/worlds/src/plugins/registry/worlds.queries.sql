@@ -86,7 +86,7 @@ VALUES
   (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- updateWorld is a query that updates world fields
--- (used in PUT /worlds/:world).
+-- (used in PUT /worlds/:slug).
 UPDATE
   worlds
 SET
@@ -101,7 +101,7 @@ WHERE
   AND namespace_id = ?;
 
 -- deleteWorld is a query that deletes a world
--- (used in DELETE /worlds/:world).
+-- (used in DELETE /worlds/:slug).
 DELETE FROM
   worlds
 WHERE

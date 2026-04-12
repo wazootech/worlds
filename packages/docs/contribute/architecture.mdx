@@ -252,7 +252,7 @@ Each World is a specific context or knowledge graph managed by the server.
 
 - Dedicated storage: Each World maintains its own secondary SQLite database for
   [triples](/worlds#facts), chunks, and embeddings.
-- Isolation: Access Worlds via `/v1/worlds/{id}` to ensure zero
+- Isolation: Access Worlds via `/worlds/{slug}` to ensure zero
   cross-contamination between contexts.
 
 ## Deno runtime

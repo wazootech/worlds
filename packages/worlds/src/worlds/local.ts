@@ -285,9 +285,7 @@ export class LocalWorlds implements WorldsInterface {
 
     await this.worldsRepository.update(slug, namespace, {
       label: label ?? world.label,
-      description: description !== undefined
-        ? description
-        : world.description,
+      description: description !== undefined ? description : world.description,
       updated_at: Date.now(),
     });
   }
@@ -341,7 +339,7 @@ export class LocalWorlds implements WorldsInterface {
       targetWorlds = targetWorlds.filter((w) => w.slug !== WORLDS_WORLD_SLUG);
     } else {
       const worldPromises = sources.map((s) => {
-        const parsed = resolveSource(s);
+        const parsed = resolveSource(s, namespace);
         const targetNamespace = parsed.namespace ??
           (parsed.slug === WORLDS_WORLD_SLUG ? undefined : namespace);
         return this.worldsRepository.get(parsed.slug, targetNamespace);
@@ -383,7 +381,7 @@ export class LocalWorlds implements WorldsInterface {
       targetWorlds = targetWorlds.filter((w) => w.slug !== WORLDS_WORLD_SLUG);
     } else {
       const worldPromises = sources.map((s) => {
-        const parsed = resolveSource(s);
+        const parsed = resolveSource(s, namespace);
         const targetNamespace = parsed.namespace ??
           (parsed.slug === WORLDS_WORLD_SLUG ? undefined : namespace);
         return this.worldsRepository.get(parsed.slug, targetNamespace);

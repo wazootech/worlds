@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DEFAULT_NAMESPACE } from "#/core/ontology.ts";
 import { type WorldSource, worldSourceSchema } from "./source.ts";
 
 /**
@@ -83,12 +84,20 @@ export interface WorldsCreateInput {
 /**
  * worldsCreateInputSchema is the Zod schema for WorldsCreateInput.
  */
-export const worldsCreateInputSchema: z.ZodType<WorldsCreateInput> = z.object({
+export const worldsCreateInputSchema = z.object({
   slug: z.string().describe("The slug identifier."),
   namespace: z.string().optional().describe("The namespace (optional)."),
   label: z.string().optional().describe("The display label."),
   description: z.string().optional().describe("The description."),
-});
+}).superRefine((data, ctx) => {
+  if (data.namespace === DEFAULT_NAMESPACE) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Namespace "${DEFAULT_NAMESPACE}" is reserved.`,
+      path: ["namespace"],
+    });
+  }
+}) as z.ZodType<WorldsCreateInput>;
 
 /**
  * WorldsUpdateInput represents the parameters for updating a world.

@@ -20,7 +20,7 @@ Deno.test("Worlds API routes", async (t) => {
   const app = createRoute(testContext);
 
   await t.step(
-    "GET /worlds/:world returns world metadata (Admin)",
+    "GET /worlds/:slug returns world metadata (Admin)",
     async () => {
       const { apiKey } = await createTestNamespace(
         testContext,
@@ -84,7 +84,7 @@ Deno.test("Worlds API routes", async (t) => {
   });
 
   await t.step(
-    "GET /worlds/:world/export - Content Negotiation (Turtle)",
+    "POST /worlds/:slug/export - Content Negotiation (Turtle)",
     async () => {
       const { apiKey } = await createTestNamespace(
         testContext,
@@ -107,14 +107,15 @@ Deno.test("Worlds API routes", async (t) => {
         slug,
       });
 
-      // Request with Turtle Accept header
       const resp = await app.fetch(
         new Request(`http://localhost/worlds/${slug}/export`, {
-          method: "GET",
+          method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
             "Accept": "text/turtle",
           },
+          body: JSON.stringify({ contentType: "text/turtle" }),
         }),
       );
       assertEquals(resp.status, 200);
@@ -123,7 +124,7 @@ Deno.test("Worlds API routes", async (t) => {
   );
 
   await t.step(
-    "GET /worlds/:world returns 200 without Auth if no apiKey is set",
+    "GET /worlds/:slug returns 200 without Auth if no apiKey is set",
     async () => {
       await using unprotectedContext = await createTestContext();
       await using unprotectedWorlds = new LocalWorlds(unprotectedContext);

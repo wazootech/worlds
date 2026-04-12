@@ -9,6 +9,7 @@ export * from "./worlds/local.ts";
 export * from "./worlds/remote.ts";
 export * from "./worlds/worlds.ts";
 export * from "./core/ontology.ts";
+export * from "./core/resource-path.ts";
 export * from "./core/types.ts";
 export * from "./core/engine-context.ts";
 export * from "./core/factory.ts";

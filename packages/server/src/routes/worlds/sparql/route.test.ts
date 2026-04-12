@@ -18,7 +18,7 @@ Deno.test("SPARQL API routes", async (t) => {
   const worldsRepository = new WorldsRepository(testContext.libsql.database);
 
   await t.step(
-    "GET /worlds/:world/sparql (Admin)",
+    "POST /worlds/:slug/sparql (Admin)",
     async () => {
       const { apiKey } = await createTestNamespace(
         testContext,
@@ -43,11 +43,14 @@ Deno.test("SPARQL API routes", async (t) => {
 
       const resp = await app.fetch(
         new Request(`http://localhost/worlds/${slug}/sparql`, {
-          method: "GET",
+          method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
-            "query": "SELECT * WHERE { ?s ?p ?o } LIMIT 1",
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            query: "SELECT * WHERE { ?s ?p ?o } LIMIT 1",
+          }),
         }),
       );
 
@@ -56,7 +59,7 @@ Deno.test("SPARQL API routes", async (t) => {
   );
 
   await t.step(
-    "GET /worlds/:world/sparql - Service Description",
+    "POST /worlds/:slug/sparql - Service Description",
     async () => {
       const { apiKey } = await createTestNamespace(
         testContext,
@@ -79,14 +82,15 @@ Deno.test("SPARQL API routes", async (t) => {
         slug,
       });
 
-      // Request without query parameter should return Service Description
       const resp = await app.fetch(
         new Request(`http://localhost/worlds/${slug}/sparql`, {
-          method: "GET",
+          method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
             "Accept": "text/turtle",
           },
+          body: JSON.stringify({}),
         }),
       );
 
@@ -94,7 +98,6 @@ Deno.test("SPARQL API routes", async (t) => {
       assertEquals(resp.headers.get("Content-Type"), "text/turtle");
 
       const body = await resp.text();
-      // Check for Service Description triples
       assert(
         body.includes(
           "http://www.w3.org/ns/sparql-service-description#Service",
@@ -105,17 +108,15 @@ Deno.test("SPARQL API routes", async (t) => {
           "http://www.w3.org/ns/sparql-service-description#endpoint",
         ),
       );
-      // Check for advertised languages (SPARQL 1.1 and 1.2)
       assert(body.includes("SPARQL11Query"));
       assert(body.includes("SPARQL12Query"));
-      // Check for advertised features
       assert(body.includes("DereferencesURIs"));
       assert(body.includes("TripleTerms"));
     },
   );
 
   await t.step(
-    "GET /worlds/:world/sparql - Service Description (N-Triples)",
+    "POST /worlds/:slug/sparql - Service Description (N-Triples)",
     async () => {
       const { apiKey } = await createTestNamespace(
         testContext,
@@ -138,14 +139,15 @@ Deno.test("SPARQL API routes", async (t) => {
         slug,
       });
 
-      // Request with N-Triples Accept header
       const resp = await app.fetch(
         new Request(`http://localhost/worlds/${slug}/sparql`, {
-          method: "GET",
+          method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
             "Accept": "application/n-triples",
           },
+          body: JSON.stringify({}),
         }),
       );
 
@@ -153,7 +155,6 @@ Deno.test("SPARQL API routes", async (t) => {
       assertEquals(resp.headers.get("Content-Type"), "application/n-triples");
 
       const body = await resp.text();
-      // N-Triples should not have prefixes, only full IRIs in brackets
       assert(
         body.includes(
           "<http://www.w3.org/ns/sparql-service-description#Service>",
@@ -168,7 +169,7 @@ Deno.test("SPARQL API routes", async (t) => {
   );
 
   await t.step(
-    "GET /worlds/:world/sparql - Weighted Content Negotiation",
+    "POST /worlds/:slug/sparql - Weighted Content Negotiation",
     async () => {
       const { apiKey } = await createTestNamespace(
         testContext,
@@ -191,14 +192,15 @@ Deno.test("SPARQL API routes", async (t) => {
         slug,
       });
 
-      // Request with weighted Accept header: prefer NTriples over Turtle
       const resp = await app.fetch(
         new Request(`http://localhost/worlds/${slug}/sparql`, {
-          method: "GET",
+          method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
             "Accept": "application/n-triples;q=1.0, text/turtle;q=0.5",
           },
+          body: JSON.stringify({}),
         }),
       );
 

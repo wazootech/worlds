@@ -28,7 +28,7 @@ export async function sparql(
     // For updates, ensure all targeted sources are writable
     for (const source of targetSources) {
       const { slug } = resolveSource(source);
-      
+
       const s = sources.find((src) => {
         const resolved = resolveSource(src);
         return resolved.slug === slug;

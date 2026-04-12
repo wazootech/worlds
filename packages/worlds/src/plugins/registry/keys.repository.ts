@@ -66,7 +66,11 @@ export class RegistryRepository {
         ASK {
           ?world a <${WORLDS.World}> ;
                  <${WORLDS.belongsTo}> <${escapeSparqlUri(namespaceId)}> .
-          FILTER(STR(?world) = "${escapeSparqlLiteral(worldId)}" || STR(?world) = "${WORLDS.BASE}worlds/${escapeSparqlLiteral(worldId)}")
+          FILTER(STR(?world) = "${
+        escapeSparqlLiteral(worldId)
+      }" || STR(?world) = "${WORLDS.BASE}worlds/${
+        escapeSparqlLiteral(worldId)
+      }")
         }
       `,
     });
