@@ -28,7 +28,8 @@ async function main() {
   console.log("Verifying SPARQL query...");
   const sparqlResult = await worlds.sparql({
     sources: [slug],
-    query: `SELECT ?o WHERE { <http://example.org/subject> <http://example.org/predicate> ?o }`,
+    query:
+      `SELECT ?o WHERE { <http://example.org/subject> <http://example.org/predicate> ?o }`,
   });
   assertExists(sparqlResult);
   console.log("SPARQL query successful.");

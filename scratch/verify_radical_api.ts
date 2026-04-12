@@ -25,7 +25,8 @@ async function main() {
   console.log("Importing data into world 1...");
   await worlds.import({
     source: slug1,
-    data: `<https://example.org/subject1> <https://example.org/predicate> "Value 1" .`,
+    data:
+      `<https://example.org/subject1> <https://example.org/predicate> "Value 1" .`,
     contentType: "application/n-triples",
   });
 
@@ -33,7 +34,8 @@ async function main() {
   console.log("Importing data into world 2...");
   await worlds.import({
     source: slug2,
-    data: `<https://example.org/subject2> <https://example.org/predicate> "Value 2" .`,
+    data:
+      `<https://example.org/subject2> <https://example.org/predicate> "Value 2" .`,
     contentType: "application/n-triples",
   });
 
@@ -48,7 +50,10 @@ async function main() {
     query: `SELECT ?s ?v WHERE { ?s <https://example.org/predicate> ?v }`,
   });
 
-  if (sparqlResult && "results" in sparqlResult && (sparqlResult.results as any).bindings) {
+  if (
+    sparqlResult && "results" in sparqlResult &&
+    (sparqlResult.results as any).bindings
+  ) {
     const bindings = (sparqlResult.results as any).bindings;
     console.log(`Global SPARQL found ${bindings.length} results.`);
     bindings.forEach((b: any) => {
@@ -57,11 +62,13 @@ async function main() {
 
     const hasBoth = bindings.some((b: any) => b.v.value === "Value 1") &&
       bindings.some((b: any) => b.v.value === "Value 2");
-    
+
     if (hasBoth) {
       console.log("✅ Global SPARQL success: Data from both worlds returned.");
     } else {
-      console.error("❌ Global SPARQL failed: Data missing from one or more worlds.");
+      console.error(
+        "❌ Global SPARQL failed: Data missing from one or more worlds.",
+      );
     }
   }
 
@@ -74,13 +81,15 @@ async function main() {
   });
 
   console.log(`Global Search found ${searchResults.length} results.`);
-  const worldsInSearch = new Set(searchResults.map(r => r.world.slug));
+  const worldsInSearch = new Set(searchResults.map((r) => r.world.slug));
   console.log("Worlds found in search:", worldsInSearch);
 
   if (worldsInSearch.has(slug1) && worldsInSearch.has(slug2)) {
     console.log("✅ Global Search success: Results from both worlds returned.");
   } else {
-    console.error("❌ Global Search failed: Results missing from one or more worlds.");
+    console.error(
+      "❌ Global Search failed: Results missing from one or more worlds.",
+    );
   }
 
   // 6. Cleanup

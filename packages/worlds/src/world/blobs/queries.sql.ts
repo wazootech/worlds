@@ -4,15 +4,17 @@
  * blobsTable is a singleton table to store the world's blob.
  * id=1 is enforced to ensure it's a singleton.
  */
-export const blobsTable = "CREATE TABLE IF NOT EXISTS blobs (\r\n  id INTEGER PRIMARY KEY CHECK (id = 1),\r\n  blob BLOB,\r\n  updated_at INTEGER NOT NULL\r\n);";
+export const blobsTable =
+  "CREATE TABLE IF NOT EXISTS blobs (\r\n  id INTEGER PRIMARY KEY CHECK (id = 1),\r\n  blob BLOB,\r\n  updated_at INTEGER NOT NULL\r\n);";
 
 /**
  * selectBlob fetches the singleton world blob.
  */
-export const selectBlob = "SELECT\r\n  blob,\r\n  updated_at\r\nFROM\r\n  blobs\r\nWHERE\r\n  id = 1;";
+export const selectBlob =
+  "SELECT\r\n  blob,\r\n  updated_at\r\nFROM\r\n  blobs\r\nWHERE\r\n  id = 1;";
 
 /**
  * upsertBlob inserts or updates the singleton world blob.
  */
-export const upsertBlob = "INSERT INTO\r\n  blobs (id, blob, updated_at)\r\nVALUES\r\n  (1, ?, ?) ON CONFLICT(id) DO\r\nUPDATE\r\nSET\r\n  blob = excluded.blob,\r\n  updated_at = excluded.updated_at;";
-
+export const upsertBlob =
+  "INSERT INTO\r\n  blobs (id, blob, updated_at)\r\nVALUES\r\n  (1, ?, ?) ON CONFLICT(id) DO\r\nUPDATE\r\nSET\r\n  blob = excluded.blob,\r\n  updated_at = excluded.updated_at;";

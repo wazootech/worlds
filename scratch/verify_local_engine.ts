@@ -7,7 +7,7 @@ async function main() {
 
   const client = createClient({ url: ":memory:" });
   const dimensions = 1536;
-  
+
   // Minimal setup for WorldsContext
   const appContext = {
     libsql: {
@@ -15,13 +15,16 @@ async function main() {
       manager: new MemoryDatabaseManager(dimensions),
     },
     embeddings: {
-      embed: async (texts: string[]) => texts.map(() => new Array(dimensions).fill(0)),
+      embed: async (texts: string[]) =>
+        texts.map(() => new Array(dimensions).fill(0)),
     },
     namespace: "default",
   } as any;
 
   // Initialize DB tables
-  await client.execute(`CREATE TABLE IF NOT EXISTS worlds (namespace_id TEXT, slug TEXT, label TEXT, description TEXT, db_hostname TEXT, db_token TEXT, created_at INTEGER, updated_at INTEGER, deleted_at INTEGER, PRIMARY KEY(namespace_id, slug))`);
+  await client.execute(
+    `CREATE TABLE IF NOT EXISTS worlds (namespace_id TEXT, slug TEXT, label TEXT, description TEXT, db_hostname TEXT, db_token TEXT, created_at INTEGER, updated_at INTEGER, deleted_at INTEGER, PRIMARY KEY(namespace_id, slug))`,
+  );
 
   const engine = new LocalWorlds(appContext);
 
@@ -49,12 +52,15 @@ async function main() {
   console.log("Executing global SPARQL...");
   const sparqlResult = await engine.sparql({
     query: `SELECT ?s ?v WHERE { ?s <https://example.org/p> ?v }`,
-    namespace: ns
+    namespace: ns,
   });
 
   console.log("Global SPARQL Results:", JSON.stringify(sparqlResult, null, 2));
-  
-  if (sparqlResult && "results" in sparqlResult && (sparqlResult.results as any).bindings) {
+
+  if (
+    sparqlResult && "results" in sparqlResult &&
+    (sparqlResult.results as any).bindings
+  ) {
     const bindings = (sparqlResult.results as any).bindings;
     if (bindings.length >= 2) {
       console.log("✅ Global SPARQL success!");
@@ -66,7 +72,7 @@ async function main() {
   console.log("Executing global search...");
   const searchResults = await engine.search({
     query: "V",
-    namespace: ns
+    namespace: ns,
   });
 
   console.log("Global Search Results count:", searchResults.length);
@@ -78,6 +84,6 @@ async function main() {
 }
 
 main().catch((err) => {
-    console.error(err);
-    process.exit(1);
+  console.error(err);
+  process.exit(1);
 });
