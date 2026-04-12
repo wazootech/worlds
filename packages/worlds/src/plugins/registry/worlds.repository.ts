@@ -1,5 +1,4 @@
 import type { Client } from "@libsql/client";
-import { DEFAULT_NAMESPACE } from "#/core/ontology.ts";
 import {
   deleteWorld,
   insertWorld,
@@ -30,17 +29,19 @@ export class WorldsRepository {
    * @param namespaceId The namespace ID (optional - uses internal lookup if not provided).
    * @returns The world row or null if not found.
    */
-  async get(slug: string, namespaceId?: string): Promise<WorldRow | null> {
-    if (namespaceId) {
-      const result = await this.db.execute({
-        sql: selectWorldBySlug,
-        args: [slug, namespaceId],
-      });
-      const row = result.rows[0] as Record<string, unknown> | undefined;
-      if (!row) return null;
-      return this.mapRow(row);
-    }
-    return this.getInternal(slug);
+  async get(
+    slug: string | null,
+    namespaceId?: string | null,
+  ): Promise<WorldRow | null> {
+    const s = slug ?? "_";
+    const ns = namespaceId ?? "_";
+    const result = await this.db.execute({
+      sql: selectWorldBySlug,
+      args: [s, ns],
+    });
+    const row = result.rows[0] as Record<string, unknown> | undefined;
+    if (!row) return null;
+    return this.mapRow(row);
   }
 
   /**
@@ -49,10 +50,11 @@ export class WorldsRepository {
    * @param slug The world identifier.
    * @returns The world row or null if not found.
    */
-  async getInternal(slug: string): Promise<WorldRow | null> {
+  async getInternal(slug: string | null): Promise<WorldRow | null> {
+    const s = slug ?? "_";
     const result = await this.db.execute({
       sql: selectWorldBySlugInternal,
-      args: [slug],
+      args: [s],
     });
     const row = result.rows[0] as Record<string, unknown> | undefined;
     if (!row) return null;
@@ -63,9 +65,11 @@ export class WorldsRepository {
    * mapRow maps a database row to a WorldRow.
    */
   private mapRow(row: Record<string, unknown>): WorldRow {
+    const ns = row.namespace_id as string;
+    const slug = row.slug as string;
     return {
-      namespace_id: row.namespace_id as string,
-      slug: row.slug as string,
+      namespace_id: ns === "_" ? null : ns,
+      slug: slug === "_" ? null : slug,
       label: row.label as string,
       description: row.description as string | null,
       db_hostname: row.db_hostname as string | null,
@@ -84,30 +88,23 @@ export class WorldsRepository {
    * @returns An array of world rows.
    */
   async list(
-    namespaceId: string | undefined,
+    namespaceId: string | null | undefined,
     limit: number,
     offset: number,
   ): Promise<WorldRow[]> {
-    const result = namespaceId
+    const ns = namespaceId ?? "_";
+    const result = (ns !== "-")
       ? await this.db.execute({
         sql: selectAllWorlds,
-        args: [namespaceId, limit, offset],
+        args: [ns, limit, offset],
       })
       : await this.db.execute({
         sql: `SELECT * FROM worlds ORDER BY created_at DESC LIMIT ? OFFSET ?`,
         args: [limit, offset],
       });
-    return (result.rows as Record<string, unknown>[]).map((row) => ({
-      namespace_id: row.namespace_id as string,
-      slug: row.slug as string,
-      label: row.label as string,
-      description: row.description as string | null,
-      db_hostname: row.db_hostname as string | null,
-      db_token: row.db_token as string | null,
-      created_at: row.created_at as number,
-      updated_at: row.updated_at as number,
-      deleted_at: row.deleted_at as number | null,
-    }));
+    return (result.rows as Record<string, unknown>[]).map((row) =>
+      this.mapRow(row)
+    );
   }
 
   /**
@@ -115,11 +112,13 @@ export class WorldsRepository {
    * @param world The world data to insert.
    */
   async insert(world: WorldTableInsert): Promise<void> {
+    const ns = world.namespace_id ?? "_";
+    const slug = world.slug ?? "_";
     await this.db.execute({
       sql: insertWorld,
       args: [
-        world.namespace_id,
-        world.slug,
+        ns,
+        slug,
         world.label,
         world.description,
         world.db_hostname,
@@ -138,13 +137,14 @@ export class WorldsRepository {
    * @param updates The fields to update.
    */
   async update(
-    slug: string,
-    namespaceId: string | undefined,
+    slug: string | null,
+    namespaceId: string | null | undefined,
     updates: WorldTableUpdate,
   ): Promise<void> {
     const row = await this.get(slug, namespaceId);
     if (!row) return;
-    const ns = namespaceId ?? DEFAULT_NAMESPACE;
+    const s = slug ?? "_";
+    const ns = namespaceId ?? "_";
     await this.db.execute({
       sql: updateWorld,
       args: [
@@ -154,7 +154,7 @@ export class WorldsRepository {
         updates.db_hostname ?? row.db_hostname,
         updates.db_token ?? row.db_token,
         updates.deleted_at ?? row.deleted_at,
-        slug,
+        s,
         ns,
       ],
     });
@@ -165,8 +165,12 @@ export class WorldsRepository {
    * @param slug The world identifier.
    * @param namespaceId The namespace ID (optional).
    */
-  async delete(slug: string, namespaceId: string | undefined): Promise<void> {
-    const ns = namespaceId ?? DEFAULT_NAMESPACE;
-    await this.db.execute({ sql: deleteWorld, args: [slug, ns] });
+  async delete(
+    slug: string | null,
+    namespaceId: string | null | undefined,
+  ): Promise<void> {
+    const s = slug ?? "_";
+    const ns = namespaceId ?? "_";
+    await this.db.execute({ sql: deleteWorld, args: [s, ns] });
   }
 }

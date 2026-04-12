@@ -22,7 +22,9 @@ import { exportWorld, worldsExportTool } from "./tools/export.ts";
 function createMockWorld(overrides?: Partial<World>): World {
   const now = Date.now();
   return {
+    name: "worlds/test",
     slug: "test",
+    namespace: undefined,
     label: "Test",
     description: undefined,
     createdAt: now,

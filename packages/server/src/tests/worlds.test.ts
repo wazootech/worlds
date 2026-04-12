@@ -23,7 +23,7 @@ Deno.test("World routes", async (t) => {
       server.fetch(new Request(url, init)),
   });
 
-  let slug: string;
+  let slug: string | null;
 
   await t.step("create world", async () => {
     const world = await worlds.create({
@@ -61,17 +61,17 @@ Deno.test("World routes", async (t) => {
   });
 
   await t.step("get world", async () => {
-    const world = await worlds.get({ source: slug });
+    const world = await worlds.get({ source: { slug } });
     assert(world !== null);
     assertEquals(world.label, "SDK World");
   });
 
   await t.step("update world", async () => {
     await worlds.update({
-      source: slug,
+      source: { slug },
       description: "Updated Description",
     });
-    const world = await worlds.get({ source: slug });
+    const world = await worlds.get({ source: { slug } });
     assert(world !== null);
     assertEquals(world.description, "Updated Description");
   });
@@ -82,7 +82,10 @@ Deno.test("World routes", async (t) => {
       <http://example.org/subject> <http://example.org/predicate> "Update Object" .
     }
   `;
-    const result = await worlds.sparql({ sources: [slug], query: updateQuery });
+    const result = await worlds.sparql({
+      sources: [{ slug }],
+      query: updateQuery,
+    });
     assertEquals(result, null);
   });
 
@@ -93,7 +96,7 @@ Deno.test("World routes", async (t) => {
     }
   `;
     const result = (await worlds.sparql({
-      sources: [slug],
+      sources: [{ slug }],
       query: selectQuery,
     })) as SparqlSelectResults;
     assert(result.results.bindings.length > 0);
@@ -103,7 +106,7 @@ Deno.test("World routes", async (t) => {
   await t.step("search world", async () => {
     // Add more diverse data for testing search params
     await worlds.sparql({
-      sources: [slug],
+      sources: [{ slug }],
       query: `
     INSERT DATA {
       <http://example.org/alice> a <http://example.org/Person> ;
@@ -121,7 +124,7 @@ Deno.test("World routes", async (t) => {
 
     // 1. Basic search
     const results = await worlds.search({
-      sources: [slug],
+      sources: [{ slug }],
       query: "Update Object",
     });
     assert(results.length > 0);
@@ -129,7 +132,7 @@ Deno.test("World routes", async (t) => {
 
     // 2. Search with limit
     const limitResults = await worlds.search({
-      sources: [slug],
+      sources: [{ slug }],
       query: "",
       limit: 1,
     });
@@ -137,7 +140,7 @@ Deno.test("World routes", async (t) => {
 
     // 3. Search with subjects filter
     const subjectResults = await worlds.search({
-      sources: [slug],
+      sources: [{ slug }],
       query: "",
       subjects: ["http://example.org/alice"],
     });
@@ -148,7 +151,7 @@ Deno.test("World routes", async (t) => {
 
     // 4. Search with predicates filter
     const predicateResults = await worlds.search({
-      sources: [slug],
+      sources: [{ slug }],
       query: "",
       predicates: ["http://example.org/name"],
     });
@@ -159,7 +162,7 @@ Deno.test("World routes", async (t) => {
 
     // 5. Search with types filter
     const typeResults = await worlds.search({
-      sources: [slug],
+      sources: [{ slug }],
       query: "",
       types: ["http://example.org/Vehicle"],
     });
@@ -168,7 +171,7 @@ Deno.test("World routes", async (t) => {
 
     // 6. Search with combined filters
     const combinedResults = await worlds.search({
-      sources: [slug],
+      sources: [{ slug }],
       query: "Tesla",
       types: ["http://example.org/Vehicle"],
       predicates: ["http://example.org/model"],
@@ -180,13 +183,13 @@ Deno.test("World routes", async (t) => {
   await t.step("export world", async () => {
     // 1. Add some data if not already there (should be there from previous steps)
     // 2. Export in default format (N-Quads)
-    const nQuadsBuffer = await worlds.export({ source: slug });
+    const nQuadsBuffer = await worlds.export({ source: { slug } });
     const nQuads = new TextDecoder().decode(nQuadsBuffer);
     assert(nQuads.includes("http://example.org/subject"));
 
     // 3. Export in Turtle format
     const turtleBuffer = await worlds.export({
-      source: slug,
+      source: { slug },
       contentType: "text/turtle",
     });
     const turtle = new TextDecoder().decode(turtleBuffer);
@@ -197,20 +200,20 @@ Deno.test("World routes", async (t) => {
     const turtleData =
       '<http://example.org/subject2> <http://example.org/predicate> "Imported Object" .';
     await worlds.import({
-      source: slug,
+      source: { slug },
       data: turtleData,
       contentType: "text/turtle",
     });
 
-    const nQuadsBuffer = await worlds.export({ source: slug });
+    const nQuadsBuffer = await worlds.export({ source: { slug } });
     const nQuads = new TextDecoder().decode(nQuadsBuffer);
     assert(nQuads.includes("http://example.org/subject2"));
     assert(nQuads.includes("Imported Object"));
   });
 
   await t.step("delete world", async () => {
-    await worlds.delete({ source: slug });
-    const world = await worlds.get({ source: slug });
+    await worlds.delete({ source: { slug } });
+    const world = await worlds.get({ source: { slug } });
     assertEquals(world, null);
   });
 });

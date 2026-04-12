@@ -41,7 +41,7 @@ export class MemoryDatabaseManager implements DatabaseManager {
     options: WorldOptions,
     url: string,
   ): Promise<ManagedDatabase> {
-    const key = `${options.namespace ?? ""}:${options.slug}`;
+    const key = `${options.namespace ?? "_"}:${options.slug ?? "_"}`;
     const client = this.databases.get(key) ?? createClient({ url });
     this.databases.set(key, client);
 
@@ -60,7 +60,7 @@ export class MemoryDatabaseManager implements DatabaseManager {
   }
 
   public delete(options: WorldOptions): Promise<void> {
-    const key = `${options.namespace ?? ""}:${options.slug}`;
+    const key = `${options.namespace ?? "_"}:${options.slug ?? "_"}`;
     this.databases.delete(key);
     this.initialized.delete(key);
     return Promise.resolve();

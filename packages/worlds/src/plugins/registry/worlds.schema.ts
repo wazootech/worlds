@@ -4,8 +4,8 @@ import { z } from "zod";
  * worldTableSchema is the Zod schema for the worlds database table.
  */
 const worldTableShape = z.object({
-  namespace_id: z.string(),
-  slug: z.string(),
+  namespace_id: z.string().nullable(),
+  slug: z.string().nullable(),
   label: z.string(),
   description: z.string().nullable(),
   db_hostname: z.string().nullable(),
@@ -24,12 +24,12 @@ export interface WorldTable {
   /**
    * namespace_id is the identifier of the namespace that owns the world.
    */
-  namespace_id: string;
+  namespace_id: string | null;
 
   /**
    * slug is the unique identifier (within a namespace) for the world.
    */
-  slug: string;
+  slug: string | null;
 
   /**
    * label is the human-readable title of the world.

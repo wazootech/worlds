@@ -4,11 +4,8 @@ import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  WORLDS_WORLD_NAMESPACE,
   type WorldsContext,
-  WorldsRepository,
 } from "@wazoo/worlds-sdk";
-import createRoute from "./route.ts";
 
 Deno.test("Worlds API routes", async (t) => {
   await using testContext = (await createTestContext()) as WorldsContext;
@@ -17,10 +14,12 @@ Deno.test("Worlds API routes", async (t) => {
   await worlds.init();
 
   const worldsRepository = new WorldsRepository(testContext.libsql.database);
-  const app = createRoute(testContext);
+  // Import createServer properly if not already there, or just use the one from server.ts
+  const { createServer } = await import("../../server.ts");
+  const app = await createServer(testContext);
 
   await t.step(
-    "GET /worlds/:slug returns world metadata (Admin)",
+    "POST /worlds/rpc/get returns world metadata (Admin)",
     async () => {
       const { apiKey } = await createTestNamespace(
         testContext,
@@ -28,7 +27,7 @@ Deno.test("Worlds API routes", async (t) => {
       const slug = "test-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: WORLDS_WORLD_NAMESPACE,
+        namespace_id: "_",
         slug,
         label: "Test World",
         description: "Test Description",
@@ -39,16 +38,18 @@ Deno.test("Worlds API routes", async (t) => {
         deleted_at: null,
       });
       await testContext.libsql.manager.create({
-        namespace: WORLDS_WORLD_NAMESPACE,
+        namespace: "_",
         slug,
       });
 
       const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${slug}`, {
-          method: "GET",
+        new Request(`http://localhost/worlds/rpc/get`, {
+          method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify({ source: { slug } }),
         }),
       );
 
@@ -84,7 +85,7 @@ Deno.test("Worlds API routes", async (t) => {
   });
 
   await t.step(
-    "POST /worlds/:slug/export - Content Negotiation (Turtle)",
+    "POST /worlds/rpc/export - Content Negotiation (Turtle)",
     async () => {
       const { apiKey } = await createTestNamespace(
         testContext,
@@ -92,7 +93,7 @@ Deno.test("Worlds API routes", async (t) => {
       const slug = "export-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: WORLDS_WORLD_NAMESPACE,
+        namespace_id: "_",
         slug,
         label: "Export World",
         description: null,
@@ -103,19 +104,22 @@ Deno.test("Worlds API routes", async (t) => {
         deleted_at: null,
       });
       await testContext.libsql.manager.create({
-        namespace: WORLDS_WORLD_NAMESPACE,
+        namespace: "_",
         slug,
       });
 
       const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${slug}/export`, {
+        new Request(`http://localhost/worlds/rpc/export`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
             "Content-Type": "application/json",
             "Accept": "text/turtle",
           },
-          body: JSON.stringify({ contentType: "text/turtle" }),
+          body: JSON.stringify({
+            source: { slug },
+            contentType: "text/turtle",
+          }),
         }),
       );
       assertEquals(resp.status, 200);
@@ -124,7 +128,7 @@ Deno.test("Worlds API routes", async (t) => {
   );
 
   await t.step(
-    "GET /worlds/:slug returns 200 without Auth if no apiKey is set",
+    "POST /worlds/rpc/get returns 200 without Auth if no apiKey is set",
     async () => {
       await using unprotectedContext = await createTestContext();
       await using unprotectedWorlds = new LocalWorlds(unprotectedContext);
@@ -132,14 +136,14 @@ Deno.test("Worlds API routes", async (t) => {
       await unprotectedWorlds.init();
 
       unprotectedContext.apiKey = undefined;
-      const unprotectedApp = createRoute(unprotectedContext);
+      const appUnprotected = await createServer(unprotectedContext);
       const slug = "unprotected-world-" + ulid();
       const now = Date.now();
       const unprotectedWorldsRepository = new WorldsRepository(
         unprotectedContext.libsql.database,
       );
       await unprotectedWorldsRepository.insert({
-        namespace_id: WORLDS_WORLD_NAMESPACE,
+        namespace_id: "_",
         slug,
         label: "Unprotected World",
         description: null,
@@ -150,13 +154,17 @@ Deno.test("Worlds API routes", async (t) => {
         deleted_at: null,
       });
       await unprotectedContext.libsql.manager.create({
-        namespace: WORLDS_WORLD_NAMESPACE,
+        namespace: "_",
         slug,
       });
 
-      const resp = await unprotectedApp.fetch(
-        new Request(`http://localhost/worlds/${slug}`, {
-          method: "GET",
+      const resp = await appUnprotected.fetch(
+        new Request(`http://localhost/worlds/rpc/get`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ source: { slug } }),
         }),
       );
 

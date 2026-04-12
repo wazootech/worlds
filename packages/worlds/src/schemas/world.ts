@@ -8,14 +8,19 @@ import { type WorldSource, worldSourceSchema } from "./source.ts";
  */
 export interface World {
   /**
+   * name is the full canonical resource name: namespaces/{namespace}/worlds/{slug}.
+   */
+  name: string;
+
+  /**
    * slug is the URL-friendly identifier (resource ID segment).
    */
-  slug: string;
+  slug: string | null;
 
   /**
    * namespace is the optional parent namespace (optional - for multi-tenant).
    */
-  namespace?: string;
+  namespace?: string | null;
 
   /**
    * label is the human-readable name of the world.
@@ -47,8 +52,11 @@ export interface World {
  * worldSchema is the Zod schema for World.
  */
 export const worldSchema: z.ZodType<World> = z.object({
-  slug: z.string().describe("The slug identifier."),
-  namespace: z.string().optional().describe("The namespace (optional)."),
+  name: z.string().describe("The canonical resource name."),
+  slug: z.string().nullable().describe("The slug identifier."),
+  namespace: z.string().nullable().optional().describe(
+    "The namespace (optional).",
+  ),
   label: z.string().optional().describe("The display label."),
   description: z.string().optional().describe("The description."),
   createdAt: z.number(),
@@ -63,12 +71,12 @@ export interface WorldsCreateInput {
   /**
    * slug is the URL-friendly identifier for the new world.
    */
-  slug: string;
+  slug: string | null;
 
   /**
    * namespace is the parent namespace (optional - for multi-tenant).
    */
-  namespace?: string;
+  namespace?: string | null;
 
   /**
    * label is the human-readable name for the new world.
@@ -85,8 +93,10 @@ export interface WorldsCreateInput {
  * worldsCreateInputSchema is the Zod schema for WorldsCreateInput.
  */
 export const worldsCreateInputSchema = z.object({
-  slug: z.string().describe("The slug identifier."),
-  namespace: z.string().optional().describe("The namespace (optional)."),
+  slug: z.string().nullable().describe("The slug identifier."),
+  namespace: z.string().nullable().optional().describe(
+    "The namespace (optional).",
+  ),
   label: z.string().optional().describe("The display label."),
   description: z.string().optional().describe("The description."),
 }).superRefine((data, ctx) => {

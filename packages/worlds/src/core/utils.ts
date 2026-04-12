@@ -67,16 +67,18 @@ export function isSparqlUpdate(query: string): boolean {
  */
 export function parseSourceName(name: string): {
   namespace?: string;
-  slug: string;
+  slug: string | null;
 } {
   const trimmed = name.trim();
   if (trimmed === "") {
     return { slug: DEFAULT_SLUG };
   }
+
   const parts = trimmed.split("/");
   if (parts.length === 2 && parts[0] && parts[1]) {
     return { namespace: parts[0], slug: parts[1] };
   }
+
   return { slug: trimmed };
 }
 
@@ -87,26 +89,30 @@ export function resolveSource(
   source: WorldSource,
   defaultNamespace?: string,
 ): {
-  slug: string;
-  namespace?: string;
+  slug: string | null;
+  namespace?: string | null;
 } {
-  let resolved: { slug: string; namespace?: string };
+  let resolved: { slug: string | null; namespace?: string | null };
   if (typeof source === "string") {
     resolved = parseSourceName(source);
   } else if (
     typeof source === "object" && source !== null && "name" in source
   ) {
     resolved = parseSourceName(source.name);
-  } else {
-    const o = source as { slug?: string; namespace?: string };
+  } else if (typeof source === "object" && source !== null) {
+    const o = source as { slug?: string | null; namespace?: string | null };
     const rawSlug = o.slug;
     resolved = {
       slug: rawSlug !== undefined && rawSlug !== "" ? rawSlug : DEFAULT_SLUG,
       namespace: o.namespace,
     };
+  } else {
+    resolved = { slug: DEFAULT_SLUG };
   }
 
-  const slug = resolved.slug === "" ? DEFAULT_SLUG : resolved.slug;
+  const slug = (resolved.slug === "" || resolved.slug === undefined)
+    ? DEFAULT_SLUG
+    : resolved.slug;
 
   return {
     slug,
@@ -121,8 +127,8 @@ export function parseSources(
   sources: WorldSource[],
   defaultNamespace?: string,
 ): Array<{
-  slug: string;
-  namespace?: string;
+  slug: string | null;
+  namespace?: string | null;
 }> {
   return sources.map((s) => resolveSource(s, defaultNamespace));
 }

@@ -51,15 +51,15 @@ export const WORLDS_WORLD_SLUG: string = Deno.env.get("WORLDS_WORLD_SLUG") ??
  * WORLDS_WORLD_NAMESPACE is the default namespace for the platform worlds.
  */
 export const WORLDS_WORLD_NAMESPACE: string =
-  Deno.env.get("WORLDS_WORLD_NAMESPACE") ?? "https://wazoo.dev/worlds";
+  Deno.env.get("WORLDS_WORLD_NAMESPACE") ?? "_";
 
 /**
- * DEFAULT_NAMESPACE is the reserved URL path segment for the default namespace.
+ * DEFAULT_NAMESPACE is the reserved identifier for the default namespace.
  * It expands to the caller's tenant namespace or {@link WORLDS_WORLD_NAMESPACE}.
  */
-export const DEFAULT_NAMESPACE = "_";
+export const DEFAULT_NAMESPACE: string | null = null;
 
 /**
  * DEFAULT_SLUG is the reserved default world slug when a path omits the slug segment.
  */
-export const DEFAULT_SLUG = "_";
+export const DEFAULT_SLUG: string | null = null;

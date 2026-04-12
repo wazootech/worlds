@@ -7,7 +7,12 @@ import { worldsContentTypeSchema } from "./rdf-content-type.ts";
  */
 export type WorldSource =
   | string
-  | { slug: string; namespace?: string; write?: boolean; schema?: boolean }
+  | {
+    slug: string | null;
+    namespace?: string | null;
+    write?: boolean;
+    schema?: boolean;
+  }
   | { name: string; write?: boolean; schema?: boolean };
 
 /**
@@ -22,8 +27,8 @@ export type Source = WorldSource;
 export const worldSourceSchema: z.ZodType<WorldSource> = z.union([
   z.string().describe("A qualified source name: <namespace>/<slug>"),
   z.object({
-    slug: z.string().describe("The slug of the target world."),
-    namespace: z.string().optional().describe(
+    slug: z.string().nullable().describe("The slug of the target world."),
+    namespace: z.string().nullable().optional().describe(
       "The optional namespace of the target world.",
     ),
     write: z.boolean().optional().describe("Whether write access is enabled."),

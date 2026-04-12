@@ -10,7 +10,7 @@
   "deno.enable": false,
   "deno.enablePaths": [
     "packages/server",
-    "packages/sdk",
+    "packages/worlds",
     "packages/ai-sdk",
     "packages/cli"
   ],

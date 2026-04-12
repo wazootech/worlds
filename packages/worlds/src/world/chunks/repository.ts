@@ -9,6 +9,7 @@ import {
   type SearchRow,
   searchRowSchema,
 } from "./schema.ts";
+import { worldResourcePath } from "#/core/resource-path.ts";
 
 /**
  * ChunksRepository handles the persistence of text chunks and their vector embeddings.
@@ -185,12 +186,11 @@ export class ChunksSearchRepository {
           ftsRank: row.fts_rank,
           score: row.combined_rank,
           world: {
+            name: worldResourcePath(world.namespace_id, world.slug).slice(1),
             slug: world.slug,
-            namespace: world.namespace_id,
+            namespace: world.namespace_id ?? undefined,
             label: world.label ?? undefined,
             description: world.description ?? undefined,
-            dbHostname: world.db_hostname ?? undefined,
-            dbToken: world.db_token ?? undefined,
             createdAt: world.created_at,
             updatedAt: world.updated_at,
             deletedAt: world.deleted_at ?? undefined,

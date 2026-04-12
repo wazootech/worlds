@@ -67,7 +67,7 @@ export function validateCreateToolsOptions(options: CreateToolsOptions) {
   }
 
   let writable = false;
-  const seen = new Set<string>();
+  const seen = new Set<string | null>();
   for (const source of options.sources) {
     const { slug } = resolveSource(source);
     if (seen.has(slug)) {

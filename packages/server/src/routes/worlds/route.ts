@@ -6,9 +6,8 @@ import type {
   WorldSource,
 } from "@wazoo/worlds-sdk";
 import {
-  DEFAULT_NAMESPACE,
   expandPathNamespace,
-  expandPathSlug,
+  resolveSource,
   worldsCreateInputSchema,
   worldsListInputSchema,
   worldsUpdateInputSchema,
@@ -19,220 +18,74 @@ import { getNamespacedEngine } from "#/utils/engine.ts";
 import { handleETagRequest } from "#/utils/http/etag.ts";
 import { negotiateSerialization } from "#/utils/http/negotiation.ts";
 import { assertNamespacePathAllowed } from "#/utils/namespace-access.ts";
-
-function pathGroup(
-  params: URLPatternResult | undefined,
-  name: string,
-): string | undefined {
-  const g = params?.pathname.groups as
-    | Record<string, string | undefined>
-    | undefined;
-  return g?.[name];
-}
+import { handleSparql } from "./sparql/route.ts";
+import { handleSearch } from "./search/route.ts";
 
 /**
  * worldsRouter creates a router for the Worlds API.
  */
 export default (appContext: WorldsContext) => {
   return new Router()
-    .post(
-      "/namespaces/:namespace/worlds/:slug/export",
-      async (ctx) => {
-        const pathNs = pathGroup(ctx.params, "namespace");
-        const pathSlug = pathGroup(ctx.params, "slug");
-        if (!pathNs || !pathSlug) {
-          return ErrorResponse.BadRequest("Namespace and world slug required");
-        }
-        return await handleExport(
-          appContext,
-          ctx,
-          pathNs,
-          pathSlug,
-        );
-      },
-    )
-    .post(
-      "/namespaces/:namespace/worlds/:slug/import",
-      async (ctx) => {
-        const pathNs = pathGroup(ctx.params, "namespace");
-        const pathSlug = pathGroup(ctx.params, "slug");
-        if (!pathNs || !pathSlug) {
-          return ErrorResponse.BadRequest("Namespace and world slug required");
-        }
-        return await handleImport(
-          appContext,
-          ctx,
-          pathNs,
-          pathSlug,
-        );
-      },
-    )
-    .post(
-      "/worlds/:slug/export",
-      async (ctx) => {
-        const pathSlug = pathGroup(ctx.params, "slug");
-        if (!pathSlug) {
-          return ErrorResponse.BadRequest("World slug required");
-        }
-        return await handleExport(
-          appContext,
-          ctx,
-          DEFAULT_NAMESPACE,
-          pathSlug,
-        );
-      },
-    )
-    .post(
-      "/worlds/:slug/import",
-      async (ctx) => {
-        const pathSlug = pathGroup(ctx.params, "slug");
-        if (!pathSlug) {
-          return ErrorResponse.BadRequest("World slug required");
-        }
-        return await handleImport(
-          appContext,
-          ctx,
-          DEFAULT_NAMESPACE,
-          pathSlug,
-        );
-      },
-    )
-    .get(
-      "/namespaces/:namespace/worlds/:slug",
-      async (ctx) => {
-        const pathNs = pathGroup(ctx.params, "namespace");
-        const pathSlug = pathGroup(ctx.params, "slug");
-        if (!pathNs || pathSlug === undefined) {
-          return ErrorResponse.BadRequest("Namespace and world slug required");
-        }
-        return await handleGetWorld(appContext, ctx, pathNs, pathSlug);
-      },
-    )
-    .put(
-      "/namespaces/:namespace/worlds/:slug",
-      async (ctx) => {
-        const pathNs = pathGroup(ctx.params, "namespace");
-        const pathSlug = pathGroup(ctx.params, "slug");
-        if (!pathNs || pathSlug === undefined) {
-          return ErrorResponse.BadRequest("Namespace and world slug required");
-        }
-        return await handlePutWorld(appContext, ctx, pathNs, pathSlug);
-      },
-    )
-    .delete(
-      "/namespaces/:namespace/worlds/:slug",
-      async (ctx) => {
-        const pathNs = pathGroup(ctx.params, "namespace");
-        const pathSlug = pathGroup(ctx.params, "slug");
-        if (!pathNs || pathSlug === undefined) {
-          return ErrorResponse.BadRequest("Namespace and world slug required");
-        }
-        return await handleDeleteWorld(appContext, ctx, pathNs, pathSlug);
-      },
-    )
-    .get(
-      "/worlds/:slug",
-      async (ctx) => {
-        const pathSlug = pathGroup(ctx.params, "slug");
-        if (pathSlug === undefined) {
-          return ErrorResponse.BadRequest("World slug required");
-        }
-        return await handleGetWorld(
-          appContext,
-          ctx,
-          DEFAULT_NAMESPACE,
-          pathSlug,
-        );
-      },
-    )
-    .put(
-      "/worlds/:slug",
-      async (ctx) => {
-        const pathSlug = pathGroup(ctx.params, "slug");
-        if (pathSlug === undefined) {
-          return ErrorResponse.BadRequest("World slug required");
-        }
-        return await handlePutWorld(
-          appContext,
-          ctx,
-          DEFAULT_NAMESPACE,
-          pathSlug,
-        );
-      },
-    )
-    .delete(
-      "/worlds/:slug",
-      async (ctx) => {
-        const pathSlug = pathGroup(ctx.params, "slug");
-        if (pathSlug === undefined) {
-          return ErrorResponse.BadRequest("World slug required");
-        }
-        return await handleDeleteWorld(
-          appContext,
-          ctx,
-          DEFAULT_NAMESPACE,
-          pathSlug,
-        );
-      },
-    )
-    .get(
-      "/namespaces/:namespace/worlds",
-      async (ctx) => {
-        const pathNs = pathGroup(ctx.params, "namespace");
-        if (!pathNs) {
-          return ErrorResponse.BadRequest("Namespace required");
-        }
-        return await handleListWorlds(appContext, ctx, pathNs);
-      },
-    )
-    .post(
-      "/namespaces/:namespace/worlds",
-      async (ctx) => {
-        const pathNs = pathGroup(ctx.params, "namespace");
-        if (!pathNs) {
-          return ErrorResponse.BadRequest("Namespace required");
-        }
-        return await handleCreateWorld(appContext, ctx, pathNs);
-      },
-    )
+    .post("/worlds/rpc/export", async (ctx) => {
+      return await handleExport(appContext, ctx);
+    })
+    .post("/worlds/rpc/import", async (ctx) => {
+      return await handleImport(appContext, ctx);
+    })
+    .post("/worlds/rpc/get", async (ctx) => {
+      return await handleGetWorld(appContext, ctx);
+    })
+    .post("/worlds/rpc/update", async (ctx) => {
+      return await handlePutWorld(appContext, ctx);
+    })
+    .post("/worlds/rpc/delete", async (ctx) => {
+      return await handleDeleteWorld(appContext, ctx);
+    })
+    .post("/worlds/rpc/sparql", async (ctx) => {
+      return await handleSparql(appContext, ctx);
+    })
+    .post("/worlds/rpc/search", async (ctx) => {
+      return await handleSearch(appContext, ctx);
+    })
     .get(
       "/worlds",
       async (ctx) => {
-        return await handleListWorlds(appContext, ctx, DEFAULT_NAMESPACE);
+        return await handleListWorlds(appContext, ctx);
       },
     )
     .post(
       "/worlds",
       async (ctx) => {
-        return await handleCreateWorld(appContext, ctx, DEFAULT_NAMESPACE);
+        return await handleCreateWorld(appContext, ctx);
       },
     );
 };
 
-async function handleExport(
+export async function handleExport(
   appContext: WorldsContext,
   ctx: { request: Request; params?: URLPatternResult },
-  pathNamespaceRaw: string,
-  pathSlugRaw: string,
 ): Promise<Response> {
   const authorized = await authorizeRequest(appContext, ctx.request);
   if (!authorized.admin && !authorized.namespaceId) {
     return ErrorResponse.Unauthorized();
   }
 
+  const body = await ctx.request.json().catch(() => ({}));
+  const sourceRaw: WorldSource | undefined = body.source;
+  if (!sourceRaw) {
+    return ErrorResponse.BadRequest("Resource source required in body");
+  }
+
+  const source = resolveSource(sourceRaw, authorized.namespaceId);
   const effectiveNs = expandPathNamespace(
-    decodeURIComponent(pathNamespaceRaw),
+    source.namespace ?? null,
     authorized.namespaceId,
   );
   const denied = assertNamespacePathAllowed(authorized, effectiveNs);
   if (denied) return denied;
 
-  const body = await ctx.request.json().catch(() => ({}));
-  const slug = expandPathSlug(decodeURIComponent(pathSlugRaw));
-  const pathSource: WorldSource = { namespace: effectiveNs, slug };
   const { contentType: contentTypeParam } = body as {
     contentType?: string;
-    source?: WorldSource;
   };
 
   let serialization;
@@ -253,7 +106,7 @@ async function handleExport(
   try {
     const engine = getNamespacedEngine(appContext, effectiveNs);
     const buffer = await engine.export({
-      source: body.source ?? pathSource,
+      source,
       contentType: serialization.contentType,
     });
     return await handleETagRequest(
@@ -269,43 +122,44 @@ async function handleExport(
   }
 }
 
-async function handleImport(
+export async function handleImport(
   appContext: WorldsContext,
   ctx: { request: Request; params?: URLPatternResult },
-  pathNamespaceRaw: string,
-  pathSlugRaw: string,
 ): Promise<Response> {
   const authorized = await authorizeRequest(appContext, ctx.request);
   if (!authorized.admin && !authorized.namespaceId) {
     return ErrorResponse.Unauthorized();
   }
 
+  const body = await ctx.request.json();
+  const { source: sourceRaw, data, contentType = "application/n-quads" } =
+    body as {
+      source?: WorldSource;
+      data?: string;
+      contentType?: string;
+    };
+  if (!sourceRaw) {
+    return ErrorResponse.BadRequest("Resource source required in body");
+  }
+  if (!data) {
+    return ErrorResponse.BadRequest("Import data required");
+  }
+
+  const source = resolveSource(sourceRaw, authorized.namespaceId);
   const effectiveNs = expandPathNamespace(
-    decodeURIComponent(pathNamespaceRaw),
+    source.namespace ?? null,
     authorized.namespaceId,
   );
   const denied = assertNamespacePathAllowed(authorized, effectiveNs);
   if (denied) return denied;
 
-  const body = await ctx.request.json();
-  const { data, contentType = "application/n-quads" } = body as {
-    data?: string;
-    contentType?: string;
-  };
-  if (!data) {
-    return ErrorResponse.BadRequest("Import data required");
-  }
-
-  const slug = expandPathSlug(decodeURIComponent(pathSlugRaw));
-  const pathSource: WorldSource = { namespace: effectiveNs, slug };
   const binaryData = Uint8Array.from(atob(data), (c) => c.charCodeAt(0))
     .buffer;
 
   try {
     const engine = getNamespacedEngine(appContext, effectiveNs);
-    const bodyTyped = body as { source?: WorldSource };
     await engine.import({
-      source: bodyTyped.source ?? pathSource,
+      source,
       data: binaryData as ArrayBuffer,
       contentType: contentType as WorldsContentType,
     });
@@ -317,29 +171,32 @@ async function handleImport(
   }
 }
 
-async function handleGetWorld(
+export async function handleGetWorld(
   appContext: WorldsContext,
   ctx: { request: Request; params?: URLPatternResult },
-  pathNamespaceRaw: string,
-  pathSlugRaw: string,
 ): Promise<Response> {
+  console.log(`[DEBUG] handleGetWorld reached: ${ctx.request.url}`);
   const authorized = await authorizeRequest(appContext, ctx.request);
   if (!authorized.admin && !authorized.namespaceId) {
     return ErrorResponse.Unauthorized();
   }
 
+  const body = await ctx.request.json().catch(() => ({}));
+  const sourceRaw: WorldSource | undefined = body.source;
+  if (!sourceRaw) {
+    return ErrorResponse.BadRequest("Resource source required in body");
+  }
+
+  const source = resolveSource(sourceRaw, authorized.namespaceId);
   const effectiveNs = expandPathNamespace(
-    decodeURIComponent(pathNamespaceRaw),
+    source.namespace ?? null,
     authorized.namespaceId,
   );
   const denied = assertNamespacePathAllowed(authorized, effectiveNs);
   if (denied) return denied;
 
-  const slug = expandPathSlug(decodeURIComponent(pathSlugRaw));
   const engine = getNamespacedEngine(appContext, effectiveNs);
-  const world = await engine.get({
-    source: { namespace: effectiveNs, slug },
-  });
+  const world = await engine.get({ source });
   if (!world) {
     return ErrorResponse.NotFound("World not found");
   }
@@ -347,23 +204,14 @@ async function handleGetWorld(
   return await handleETagRequest(ctx.request, Response.json(world));
 }
 
-async function handlePutWorld(
+export async function handlePutWorld(
   appContext: WorldsContext,
   ctx: { request: Request; params?: URLPatternResult },
-  pathNamespaceRaw: string,
-  pathSlugRaw: string,
 ): Promise<Response> {
   const authorized = await authorizeRequest(appContext, ctx.request);
   if (!authorized.admin && !authorized.namespaceId) {
     return ErrorResponse.Unauthorized();
   }
-
-  const effectiveNs = expandPathNamespace(
-    decodeURIComponent(pathNamespaceRaw),
-    authorized.namespaceId,
-  );
-  const denied = assertNamespacePathAllowed(authorized, effectiveNs);
-  if (denied) return denied;
 
   let body: unknown;
   try {
@@ -372,12 +220,20 @@ async function handlePutWorld(
     return ErrorResponse.BadRequest("Invalid JSON");
   }
 
-  const slug = expandPathSlug(decodeURIComponent(pathSlugRaw));
-  const updateResult = worldsUpdateInputSchema.safeParse({
-    ...(body as object),
-    source: (body as { source?: unknown; slug?: string }).source ??
-      { namespace: effectiveNs, slug },
-  });
+  const sourceRaw = (body as { source?: WorldSource }).source;
+  if (!sourceRaw) {
+    return ErrorResponse.BadRequest("Resource source required in body");
+  }
+
+  const source = resolveSource(sourceRaw, authorized.namespaceId);
+  const effectiveNs = expandPathNamespace(
+    source.namespace ?? null,
+    authorized.namespaceId,
+  );
+  const denied = assertNamespacePathAllowed(authorized, effectiveNs);
+  if (denied) return denied;
+
+  const updateResult = worldsUpdateInputSchema.safeParse(body);
   if (!updateResult.success) {
     return ErrorResponse.BadRequest("Invalid parameters");
   }
@@ -393,34 +249,32 @@ async function handlePutWorld(
   }
 }
 
-async function handleDeleteWorld(
+export async function handleDeleteWorld(
   appContext: WorldsContext,
   ctx: { request: Request; params?: URLPatternResult },
-  pathNamespaceRaw: string,
-  pathSlugRaw: string,
 ): Promise<Response> {
   const authorized = await authorizeRequest(appContext, ctx.request);
   if (!authorized.admin && !authorized.namespaceId) {
     return ErrorResponse.Unauthorized();
   }
 
+  const body = await ctx.request.json().catch(() => ({}));
+  const sourceRaw: WorldSource | undefined = body.source;
+  if (!sourceRaw) {
+    return ErrorResponse.BadRequest("Resource source required in body");
+  }
+
+  const source = resolveSource(sourceRaw, authorized.namespaceId);
   const effectiveNs = expandPathNamespace(
-    decodeURIComponent(pathNamespaceRaw),
+    source.namespace ?? null,
     authorized.namespaceId,
   );
   const denied = assertNamespacePathAllowed(authorized, effectiveNs);
   if (denied) return denied;
 
-  const slug = expandPathSlug(decodeURIComponent(pathSlugRaw));
-  const pathSource: WorldSource = { namespace: effectiveNs, slug };
-
   try {
-    const body = await ctx.request.json().catch(() => ({}));
     const engine = getNamespacedEngine(appContext, effectiveNs);
-    const bodyTyped = body as { source?: WorldSource };
-    await engine.delete({
-      source: bodyTyped.source ?? pathSource,
-    });
+    await engine.delete({ source });
     return new Response(null, { status: STATUS_CODE.NoContent });
   } catch (error) {
     return ErrorResponse.NotFound(
@@ -429,26 +283,27 @@ async function handleDeleteWorld(
   }
 }
 
-async function handleListWorlds(
+export async function handleListWorlds(
   appContext: WorldsContext,
   ctx: { request: Request; params?: URLPatternResult },
-  pathNamespaceRaw: string,
 ): Promise<Response> {
   const authorized = await authorizeRequest(appContext, ctx.request);
   if (!authorized.admin && !authorized.namespaceId) {
     return ErrorResponse.Unauthorized();
   }
 
+  const url = new URL(ctx.request.url);
+  const pageString = url.searchParams.get("page") ?? "1";
+  const pageSizeString = url.searchParams.get("pageSize") ?? "20";
+  const namespace = url.searchParams.get("namespace") ?? authorized.namespaceId;
+
   const effectiveNs = expandPathNamespace(
-    decodeURIComponent(pathNamespaceRaw),
+    namespace ?? null,
     authorized.namespaceId,
   );
   const denied = assertNamespacePathAllowed(authorized, effectiveNs);
   if (denied) return denied;
 
-  const url = new URL(ctx.request.url);
-  const pageString = url.searchParams.get("page") ?? "1";
-  const pageSizeString = url.searchParams.get("pageSize") ?? "20";
   const paginationResult = worldsListInputSchema.safeParse({
     page: parseInt(pageString),
     pageSize: parseInt(pageSizeString),
@@ -469,24 +324,26 @@ async function handleListWorlds(
   return await handleETagRequest(ctx.request, Response.json(results));
 }
 
-async function handleCreateWorld(
+export async function handleCreateWorld(
   appContext: WorldsContext,
   ctx: { request: Request; params?: URLPatternResult },
-  pathNamespaceRaw: string,
 ): Promise<Response> {
   const authorized = await authorizeRequest(appContext, ctx.request);
   if (!authorized.admin && !authorized.namespaceId) {
     return ErrorResponse.Forbidden("Forbidden");
   }
 
+  const body = await ctx.request.json().catch(() => ({}));
+  const namespace = (body as { namespace?: string }).namespace ??
+    authorized.namespaceId;
+
   const effectiveNs = expandPathNamespace(
-    decodeURIComponent(pathNamespaceRaw),
+    namespace ?? null,
     authorized.namespaceId,
   );
   const denied = assertNamespacePathAllowed(authorized, effectiveNs);
   if (denied) return denied;
 
-  const body = await ctx.request.json();
   const parseResult = worldsCreateInputSchema.safeParse(body);
   if (!parseResult.success) {
     return ErrorResponse.BadRequest("Invalid parameters");

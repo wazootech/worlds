@@ -27,12 +27,12 @@ export interface WorldOptions {
   /**
    * slug is the world identifier.
    */
-  slug: string;
+  slug: string | null;
 
   /**
    * namespace is the optional namespace (uses internal lookup if not provided).
    */
-  namespace?: string;
+  namespace?: string | null;
 }
 
 /**

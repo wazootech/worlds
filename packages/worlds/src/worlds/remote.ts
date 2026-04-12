@@ -1,20 +1,6 @@
-import {
-  worldResourcePath,
-  worldsCollectionSearchPath,
-  worldsCollectionSparqlPath,
-  worldsShorthandCollectionSearchPath,
-  worldsShorthandCollectionSparqlPath,
-  worldsShorthandUnaryExportPath,
-  worldsShorthandUnaryImportPath,
-  worldsShorthandUnarySearchPath,
-  worldsShorthandUnarySparqlPath,
-  worldsUnaryExportPath,
-  worldsUnaryImportPath,
-  worldsUnarySearchPath,
-  worldsUnarySparqlPath,
-} from "#/core/resource-path.ts";
+import { worldsActionPath } from "#/core/resource-path.ts";
 import type { WorldsInterface, WorldsOptions } from "#/core/types.ts";
-import { parseError, resolveSource } from "#/core/utils.ts";
+import { parseError } from "#/core/utils.ts";
 import type {
   World,
   WorldsCreateInput,
@@ -50,14 +36,14 @@ export class RemoteWorlds implements WorldsInterface {
    * list paginates all worlds from the Worlds API.
    */
   public async list(input?: WorldsListInput): Promise<World[]> {
-    const path = input?.namespace
-      ? `/namespaces/${encodeURIComponent(input.namespace)}/worlds`
-      : "/worlds";
-    const url = new URL(`${this.options.baseUrl}${path}`);
+    const url = new URL(`${this.options.baseUrl}/worlds`);
 
     if (input?.page) url.searchParams.set("page", input.page.toString());
     if (input?.pageSize) {
       url.searchParams.set("pageSize", input.pageSize.toString());
+    }
+    if (input?.namespace) {
+      url.searchParams.set("namespace", input.namespace);
     }
 
     const response = await this.fetch(url, {
@@ -77,20 +63,19 @@ export class RemoteWorlds implements WorldsInterface {
    * get fetches a single world from the Worlds API.
    */
   public async get(input: WorldsGetInput): Promise<World | null> {
-    const { source } = input;
-    const resolvedSource = resolveSource(source, undefined);
-    const path = worldResourcePath(
-      resolvedSource.namespace,
-      resolvedSource.slug,
+    const url = new URL(
+      `${this.options.baseUrl}${worldsActionPath("get")}`,
     );
-    const url = new URL(`${this.options.baseUrl}${path}`);
 
     const response = await this.fetch(
       url,
       {
+        method: "POST",
         headers: {
           Authorization: `Bearer ${this.options.apiKey}`,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify(input),
       },
     );
     if (response.status === 404) {
@@ -109,10 +94,7 @@ export class RemoteWorlds implements WorldsInterface {
    * create creates a world in the Worlds API.
    */
   public async create(input: WorldsCreateInput): Promise<World> {
-    const path = input.namespace
-      ? `/namespaces/${encodeURIComponent(input.namespace)}/worlds`
-      : "/worlds";
-    const url = new URL(`${this.options.baseUrl}${path}`);
+    const url = new URL(`${this.options.baseUrl}/worlds`);
 
     const response = await this.fetch(
       url,
@@ -137,23 +119,19 @@ export class RemoteWorlds implements WorldsInterface {
    * update updates a world in the Worlds API.
    */
   public async update(input: WorldsUpdateInput): Promise<void> {
-    const { source, ...data } = input;
-    const resolvedSource = resolveSource(source, undefined);
-    const path = worldResourcePath(
-      resolvedSource.namespace,
-      resolvedSource.slug,
+    const url = new URL(
+      `${this.options.baseUrl}${worldsActionPath("update")}`,
     );
-    const url = new URL(`${this.options.baseUrl}${path}`);
 
     const response = await this.fetch(
       url,
       {
-        method: "PUT",
+        method: "POST",
         headers: {
           Authorization: `Bearer ${this.options.apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...data, source }),
+        body: JSON.stringify(input),
       },
     );
     if (!response.ok) {
@@ -166,21 +144,19 @@ export class RemoteWorlds implements WorldsInterface {
    * delete deletes a world from the Worlds API.
    */
   public async delete(input: WorldsDeleteInput): Promise<void> {
-    const { source } = input;
-    const resolvedSource = resolveSource(source, undefined);
-    const path = worldResourcePath(
-      resolvedSource.namespace,
-      resolvedSource.slug,
+    const url = new URL(
+      `${this.options.baseUrl}${worldsActionPath("delete")}`,
     );
-    const url = new URL(`${this.options.baseUrl}${path}`);
 
     const response = await this.fetch(
       url,
       {
-        method: "DELETE",
+        method: "POST",
         headers: {
           Authorization: `Bearer ${this.options.apiKey}`,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify(input),
       },
     );
     if (!response.ok) {
@@ -194,7 +170,7 @@ export class RemoteWorlds implements WorldsInterface {
    */
   public async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
     const url = new URL(
-      `${this.options.baseUrl}${RemoteWorlds.sparqlPath(input)}`,
+      `${this.options.baseUrl}${worldsActionPath("sparql")}`,
     );
 
     const response = await this.fetch(
@@ -226,7 +202,7 @@ export class RemoteWorlds implements WorldsInterface {
    */
   public async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
     const url = new URL(
-      `${this.options.baseUrl}${RemoteWorlds.searchPath(input)}`,
+      `${this.options.baseUrl}${worldsActionPath("search")}`,
     );
 
     const response = await this.fetch(url, {
@@ -249,12 +225,10 @@ export class RemoteWorlds implements WorldsInterface {
    * import ingests RDF data into a world.
    */
   public async import(input: WorldsImportInput): Promise<void> {
-    const { source, data, contentType } = input;
-    const resolvedSource = resolveSource(source, undefined);
-    const path = resolvedSource.namespace
-      ? worldsUnaryImportPath(resolvedSource.namespace, resolvedSource.slug)
-      : worldsShorthandUnaryImportPath(resolvedSource.slug);
-    const url = new URL(`${this.options.baseUrl}${path}`);
+    const { data, contentType } = input;
+    const url = new URL(
+      `${this.options.baseUrl}${worldsActionPath("import")}`,
+    );
 
     const rdfContentType = contentType ?? "application/n-quads";
 
@@ -265,15 +239,14 @@ export class RemoteWorlds implements WorldsInterface {
     // Convert to base64
     const base64Data = btoa(String.fromCharCode(...binaryData));
 
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${this.options.apiKey}`,
-      "Content-Type": "application/json",
-    };
-
     const response = await this.fetch(url, {
       method: "POST",
-      headers,
+      headers: {
+        Authorization: `Bearer ${this.options.apiKey}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
+        ...input,
         data: base64Data,
         contentType: rdfContentType,
       }),
@@ -289,22 +262,17 @@ export class RemoteWorlds implements WorldsInterface {
    * export exports a world in the specified RDF content type.
    */
   public async export(input: WorldsExportInput): Promise<ArrayBuffer> {
-    const { source, contentType } = input;
-    const resolvedSource = resolveSource(source, undefined);
-    const path = resolvedSource.namespace
-      ? worldsUnaryExportPath(resolvedSource.namespace, resolvedSource.slug)
-      : worldsShorthandUnaryExportPath(resolvedSource.slug);
-    const url = new URL(`${this.options.baseUrl}${path}`);
-
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${this.options.apiKey}`,
-      "Content-Type": "application/json",
-    };
+    const url = new URL(
+      `${this.options.baseUrl}${worldsActionPath("export")}`,
+    );
 
     const response = await this.fetch(url, {
       method: "POST",
-      headers,
-      body: JSON.stringify({ contentType }),
+      headers: {
+        Authorization: `Bearer ${this.options.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
     });
 
     if (!response.ok) {
@@ -321,16 +289,8 @@ export class RemoteWorlds implements WorldsInterface {
   public async getServiceDescription(
     input: WorldsServiceDescriptionInput,
   ): Promise<string> {
-    const { contentType } = input;
-    const sparqlInput: WorldsSparqlInput = {
-      query: "",
-      sources: input.sources,
-      namespace: input.namespace,
-      defaultGraphUris: undefined,
-      namedGraphUris: undefined,
-    };
     const url = new URL(
-      `${this.options.baseUrl}${RemoteWorlds.sparqlPath(sparqlInput)}`,
+      `${this.options.baseUrl}${worldsActionPath("sparql")}`,
     );
 
     const response = await this.fetch(url, {
@@ -338,9 +298,12 @@ export class RemoteWorlds implements WorldsInterface {
       headers: {
         Authorization: `Bearer ${this.options.apiKey}`,
         "Content-Type": "application/json",
-        Accept: contentType ?? "application/n-quads",
+        Accept: input.contentType ?? "application/n-quads",
       },
-      body: JSON.stringify(input),
+      body: JSON.stringify({
+        ...input,
+        query: "", // Service description is requested with an empty query
+      }),
     });
 
     if (!response.ok) {
@@ -370,47 +333,5 @@ export class RemoteWorlds implements WorldsInterface {
    */
   public [Symbol.asyncDispose](): Promise<void> {
     return this.close();
-  }
-
-  private static sparqlPath(input: WorldsSparqlInput): string {
-    const { sources, namespace: inputNamespace } = input;
-    if (sources?.length === 1) {
-      const resolvedSource = resolveSource(sources[0], inputNamespace);
-      if (
-        resolvedSource.namespace !== undefined &&
-        resolvedSource.namespace !== ""
-      ) {
-        return worldsUnarySparqlPath(
-          resolvedSource.namespace,
-          resolvedSource.slug,
-        );
-      }
-      return worldsShorthandUnarySparqlPath(resolvedSource.slug);
-    }
-    if (inputNamespace !== undefined && inputNamespace !== "") {
-      return worldsCollectionSparqlPath(inputNamespace);
-    }
-    return worldsShorthandCollectionSparqlPath();
-  }
-
-  private static searchPath(input: WorldsSearchInput): string {
-    const { sources, namespace: inputNamespace } = input;
-    if (sources?.length === 1) {
-      const resolvedSource = resolveSource(sources[0], inputNamespace);
-      if (
-        resolvedSource.namespace !== undefined &&
-        resolvedSource.namespace !== ""
-      ) {
-        return worldsUnarySearchPath(
-          resolvedSource.namespace,
-          resolvedSource.slug,
-        );
-      }
-      return worldsShorthandUnarySearchPath(resolvedSource.slug);
-    }
-    if (inputNamespace !== undefined && inputNamespace !== "") {
-      return worldsCollectionSearchPath(inputNamespace);
-    }
-    return worldsShorthandCollectionSearchPath();
   }
 }

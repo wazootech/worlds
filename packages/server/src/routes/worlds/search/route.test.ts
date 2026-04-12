@@ -16,14 +16,15 @@ Deno.test("World Search API routes", async (t) => {
   await worlds.init();
 
   const worldsRepository = new WorldsRepository(testContext.libsql.database);
-  const app = createRoute(testContext);
+  const { createServer } = await import("../../../server.ts");
+  const app = await createServer(testContext);
 
-  await t.step("POST /worlds/:slug/search (Admin)", async () => {
+  await t.step("POST /worlds-search (Admin)", async () => {
     const { apiKey } = await createTestNamespace(testContext);
     const slug = "search-world-" + ulid();
     const now = Date.now();
     await worldsRepository.insert({
-      namespace_id: WORLDS_WORLD_NAMESPACE,
+      namespace_id: "_",
       slug,
       label: "Search World",
       description: "A world for searching",
@@ -34,18 +35,18 @@ Deno.test("World Search API routes", async (t) => {
       deleted_at: null,
     });
     await testContext.libsql.manager.create({
-      namespace: WORLDS_WORLD_NAMESPACE,
+      namespace: "_",
       slug,
     });
 
     const resp = await app.fetch(
-      new Request(`http://localhost/worlds/${slug}/search`, {
+      new Request(`http://localhost/worlds/rpc/search`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ query: "test" }),
+        body: JSON.stringify({ sources: [slug], query: "test" }),
       }),
     );
 
