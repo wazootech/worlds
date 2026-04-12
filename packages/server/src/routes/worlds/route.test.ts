@@ -1,10 +1,11 @@
 import { assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
+import type { WorldsContext } from "@wazoo/worlds-sdk";
 import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  type WorldsContext,
+  WorldsRepository,
 } from "@wazoo/worlds-sdk";
 
 Deno.test("Worlds API routes", async (t) => {
@@ -42,7 +43,7 @@ Deno.test("Worlds API routes", async (t) => {
         slug,
       });
 
-      const resp = await app.fetch(
+      const response = await app.fetch(
         new Request(`http://localhost/worlds/rpc/get`, {
           method: "POST",
           headers: {
@@ -53,8 +54,8 @@ Deno.test("Worlds API routes", async (t) => {
         }),
       );
 
-      assertEquals(resp.status, 200);
-      const world = await resp.json();
+      assertEquals(response.status, 200);
+      const world = await response.json();
       assertEquals(world.label, "Test World");
       assertEquals(world.slug, slug);
     },
@@ -76,10 +77,10 @@ Deno.test("Worlds API routes", async (t) => {
         description: "New Description",
       }),
     });
-    const res = await app.fetch(req);
-    assertEquals(res.status, 201);
+    const response = await app.fetch(req);
+    assertEquals(response.status, 201);
 
-    const world = await res.json();
+    const world = await response.json();
     assertEquals(world.label, "New World");
     assertEquals(world.slug, slug);
   });
@@ -108,7 +109,7 @@ Deno.test("Worlds API routes", async (t) => {
         slug,
       });
 
-      const resp = await app.fetch(
+      const response = await app.fetch(
         new Request(`http://localhost/worlds/rpc/export`, {
           method: "POST",
           headers: {
@@ -122,8 +123,8 @@ Deno.test("Worlds API routes", async (t) => {
           }),
         }),
       );
-      assertEquals(resp.status, 200);
-      assertEquals(resp.headers.get("Content-Type"), "text/turtle");
+      assertEquals(response.status, 200);
+      assertEquals(response.headers.get("Content-Type"), "text/turtle");
     },
   );
 
@@ -158,7 +159,7 @@ Deno.test("Worlds API routes", async (t) => {
         slug,
       });
 
-      const resp = await appUnprotected.fetch(
+      const response = await appUnprotected.fetch(
         new Request(`http://localhost/worlds/rpc/get`, {
           method: "POST",
           headers: {
@@ -168,8 +169,8 @@ Deno.test("Worlds API routes", async (t) => {
         }),
       );
 
-      assertEquals(resp.status, 200);
-      const world = await resp.json();
+      assertEquals(response.status, 200);
+      const world = await response.json();
       assertEquals(world.label, "Unprotected World");
       assertEquals(world.slug, slug);
     },

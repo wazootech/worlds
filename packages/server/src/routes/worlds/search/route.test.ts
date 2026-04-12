@@ -4,10 +4,8 @@ import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  WORLDS_WORLD_NAMESPACE,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
-import createRoute from "./route.ts";
 
 Deno.test("World Search API routes", async (t) => {
   await using testContext = await createTestContext();
@@ -39,7 +37,7 @@ Deno.test("World Search API routes", async (t) => {
       slug,
     });
 
-    const resp = await app.fetch(
+    const response = await app.fetch(
       new Request(`http://localhost/worlds/rpc/search`, {
         method: "POST",
         headers: {
@@ -50,8 +48,8 @@ Deno.test("World Search API routes", async (t) => {
       }),
     );
 
-    assertEquals(resp.status, 200);
-    const results = await resp.json();
+    assertEquals(response.status, 200);
+    const results = await response.json();
     assert(Array.isArray(results));
   });
 });

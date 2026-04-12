@@ -180,8 +180,9 @@ export class LocalWorlds implements WorldsInterface {
       offset,
     );
     return rows
-      .filter((w) =>
-        w.slug !== WORLDS_WORLD_SLUG || this.appContext.namespace !== undefined
+      .filter((world) =>
+        world.slug !== WORLDS_WORLD_SLUG ||
+        this.appContext.namespace === undefined
       )
       .map((world) =>
         worldSchema.parse({
@@ -351,7 +352,9 @@ export class LocalWorlds implements WorldsInterface {
     let targetWorlds = [];
     if (sources.length === 1 && sources[0] === "*") {
       targetWorlds = await this.worldsRepository.list(namespace, 100, 0);
-      targetWorlds = targetWorlds.filter((w) => w.slug !== WORLDS_WORLD_SLUG);
+      targetWorlds = targetWorlds.filter((world) =>
+        world.slug !== WORLDS_WORLD_SLUG
+      );
     } else {
       const worldPromises = sources.map((s) => {
         const parsed = resolveSource(s, namespace);
@@ -421,7 +424,9 @@ export class LocalWorlds implements WorldsInterface {
     let targetWorlds = [];
     if (sources.length === 1 && sources[0] === "*") {
       targetWorlds = await this.worldsRepository.list(namespace, 100, 0);
-      targetWorlds = targetWorlds.filter((w) => w.slug !== WORLDS_WORLD_SLUG);
+      targetWorlds = targetWorlds.filter((world) =>
+        world.slug !== WORLDS_WORLD_SLUG
+      );
     } else {
       const worldPromises = sources.map((s) => {
         const parsed = resolveSource(s, namespace);
@@ -584,16 +589,21 @@ export class LocalWorlds implements WorldsInterface {
     return new Promise((resolve, reject) => {
       const writer = new Writer({ format: serialization.format });
 
-      const sd = "http://www.w3.org/ns/sparql-service-description#";
-      const rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+      const serviceDescriptionSuffix =
+        "http://www.w3.org/ns/sparql-service-description#";
+      const rdfNamespace = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
       const endpoint = namedNode(endpointUrl);
-      const serviceType = namedNode(`${sd}Service`);
-      const endpointProperty = namedNode(`${sd}endpoint`);
+      const serviceType = namedNode(`${serviceDescriptionSuffix}Service`);
+      const endpointProperty = namedNode(`${serviceDescriptionSuffix}endpoint`);
 
-      writer.addQuad(quad(endpoint, namedNode(`${rdf}type`), serviceType));
+      writer.addQuad(
+        quad(endpoint, namedNode(`${rdfNamespace}type`), serviceType),
+      );
       writer.addQuad(quad(endpoint, endpointProperty, endpoint));
 
-      const supportedFormat = namedNode(`${sd}supportedFormat`);
+      const supportedFormat = namedNode(
+        `${serviceDescriptionSuffix}supportedFormat`,
+      );
       const jsonFormat = namedNode(
         "http://www.w3.org/ns/formats/SPARQL_Results_JSON",
       );
@@ -603,19 +613,33 @@ export class LocalWorlds implements WorldsInterface {
       writer.addQuad(quad(endpoint, supportedFormat, jsonFormat));
       writer.addQuad(quad(endpoint, supportedFormat, turtleFormat));
 
-      const supportedLanguage = namedNode(`${sd}supportedLanguage`);
-      const sparql11Query = namedNode(`${sd}SPARQL11Query`);
-      const sparql11Update = namedNode(`${sd}SPARQL11Update`);
-      const sparql12Query = namedNode(`${sd}SPARQL12Query`);
-      const sparql12Update = namedNode(`${sd}SPARQL12Update`);
+      const supportedLanguage = namedNode(
+        `${serviceDescriptionSuffix}supportedLanguage`,
+      );
+      const sparql11Query = namedNode(
+        `${serviceDescriptionSuffix}SPARQL11Query`,
+      );
+      const sparql11Update = namedNode(
+        `${serviceDescriptionSuffix}SPARQL11Update`,
+      );
+      const sparql12Query = namedNode(
+        `${serviceDescriptionSuffix}SPARQL12Query`,
+      );
+      const sparql12Update = namedNode(
+        `${serviceDescriptionSuffix}SPARQL12Update`,
+      );
       writer.addQuad(quad(endpoint, supportedLanguage, sparql11Query));
       writer.addQuad(quad(endpoint, supportedLanguage, sparql11Update));
       writer.addQuad(quad(endpoint, supportedLanguage, sparql12Query));
       writer.addQuad(quad(endpoint, supportedLanguage, sparql12Update));
 
-      const feature = namedNode(`${sd}feature`);
-      const unionDefaultGraph = namedNode(`${sd}UnionDefaultGraph`);
-      const dereferencesURIs = namedNode(`${sd}DereferencesURIs`);
+      const feature = namedNode(`${serviceDescriptionSuffix}feature`);
+      const unionDefaultGraph = namedNode(
+        `${serviceDescriptionSuffix}UnionDefaultGraph`,
+      );
+      const dereferencesURIs = namedNode(
+        `${serviceDescriptionSuffix}DereferencesURIs`,
+      );
       const tripleTerms = namedNode(
         "http://www.w3.org/ns/sparql-service-description#TripleTerms",
       );

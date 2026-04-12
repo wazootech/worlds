@@ -4,10 +4,8 @@ import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  WORLDS_WORLD_NAMESPACE,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
-import createRoute from "./route.ts";
 
 Deno.test("SPARQL API routes", async (t) => {
   await using testContext = await createTestContext();
@@ -42,7 +40,7 @@ Deno.test("SPARQL API routes", async (t) => {
         slug,
       });
 
-      const resp = await app.fetch(
+      const response = await app.fetch(
         new Request(`http://localhost/worlds/rpc/sparql`, {
           method: "POST",
           headers: {
@@ -56,7 +54,7 @@ Deno.test("SPARQL API routes", async (t) => {
         }),
       );
 
-      assertEquals(resp.status, 200);
+      assertEquals(response.status, 200);
     },
   );
 
@@ -84,7 +82,7 @@ Deno.test("SPARQL API routes", async (t) => {
         slug,
       });
 
-      const resp = await app.fetch(
+      const response = await app.fetch(
         new Request(`http://localhost/worlds/rpc/sparql`, {
           method: "POST",
           headers: {
@@ -98,10 +96,10 @@ Deno.test("SPARQL API routes", async (t) => {
         }),
       );
 
-      assertEquals(resp.status, 200);
-      assertEquals(resp.headers.get("Content-Type"), "text/turtle");
+      assertEquals(response.status, 200);
+      assertEquals(response.headers.get("Content-Type"), "text/turtle");
 
-      const body = await resp.text();
+      const body = await response.text();
       assert(
         body.includes(
           "http://www.w3.org/ns/sparql-service-description#Service",
@@ -143,7 +141,7 @@ Deno.test("SPARQL API routes", async (t) => {
         slug,
       });
 
-      const resp = await app.fetch(
+      const response = await app.fetch(
         new Request(`http://localhost/worlds/rpc/sparql`, {
           method: "POST",
           headers: {
@@ -157,10 +155,13 @@ Deno.test("SPARQL API routes", async (t) => {
         }),
       );
 
-      assertEquals(resp.status, 200);
-      assertEquals(resp.headers.get("Content-Type"), "application/n-triples");
+      assertEquals(response.status, 200);
+      assertEquals(
+        response.headers.get("Content-Type"),
+        "application/n-triples",
+      );
 
-      const body = await resp.text();
+      const body = await response.text();
       assert(
         body.includes(
           "<http://www.w3.org/ns/sparql-service-description#Service>",
@@ -198,7 +199,7 @@ Deno.test("SPARQL API routes", async (t) => {
         slug,
       });
 
-      const resp = await app.fetch(
+      const response = await app.fetch(
         new Request(`http://localhost/worlds/rpc/sparql`, {
           method: "POST",
           headers: {
@@ -212,8 +213,11 @@ Deno.test("SPARQL API routes", async (t) => {
         }),
       );
 
-      assertEquals(resp.status, 200);
-      assertEquals(resp.headers.get("Content-Type"), "application/n-triples");
+      assertEquals(response.status, 200);
+      assertEquals(
+        response.headers.get("Content-Type"),
+        "application/n-triples",
+      );
     },
   );
 });

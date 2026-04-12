@@ -66,12 +66,12 @@ export function isSparqlUpdate(query: string): boolean {
  * The name format is optional: "<namespace>/<slug>" or just "<slug>".
  */
 export function parseSourceName(name: string): {
-  namespace?: string;
+  namespace: string | null;
   slug: string | null;
 } {
   const trimmed = name.trim();
   if (trimmed === "") {
-    return { slug: DEFAULT_SLUG };
+    return { namespace: null, slug: DEFAULT_SLUG };
   }
 
   const parts = trimmed.split("/");
@@ -79,7 +79,7 @@ export function parseSourceName(name: string): {
     return { namespace: parts[0], slug: parts[1] };
   }
 
-  return { slug: trimmed };
+  return { namespace: null, slug: trimmed };
 }
 
 /**
@@ -90,7 +90,7 @@ export function resolveSource(
   defaultNamespace?: string,
 ): {
   slug: string | null;
-  namespace?: string | null;
+  namespace: string | null;
 } {
   let resolved: { slug: string | null; namespace?: string | null };
   if (typeof source === "string") {
@@ -100,11 +100,14 @@ export function resolveSource(
   ) {
     resolved = parseSourceName(source.name);
   } else if (typeof source === "object" && source !== null) {
-    const o = source as { slug?: string | null; namespace?: string | null };
-    const rawSlug = o.slug;
+    const sourceObject = source as {
+      slug?: string | null;
+      namespace?: string | null;
+    };
+    const rawSlug = sourceObject.slug;
     resolved = {
       slug: rawSlug !== undefined && rawSlug !== "" ? rawSlug : DEFAULT_SLUG,
-      namespace: o.namespace,
+      namespace: sourceObject.namespace,
     };
   } else {
     resolved = { slug: DEFAULT_SLUG };
@@ -116,7 +119,7 @@ export function resolveSource(
 
   return {
     slug,
-    namespace: resolved.namespace ?? defaultNamespace,
+    namespace: (resolved.namespace ?? defaultNamespace) ?? null,
   };
 }
 
@@ -128,7 +131,7 @@ export function parseSources(
   defaultNamespace?: string,
 ): Array<{
   slug: string | null;
-  namespace?: string | null;
+  namespace: string | null;
 }> {
   return sources.map((s) => resolveSource(s, defaultNamespace));
 }
