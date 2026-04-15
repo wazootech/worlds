@@ -45,62 +45,62 @@ Deno.test({
     await using worldsB = new LocalWorlds(ctxB);
     await worldsB.init();
 
-    const sharedSlug = "shared-slug";
+    const sharedWorld = "shared-world";
 
     await t.step("NS A can create and see its own world", async () => {
       const world = await worldsA.create({
-        slug: sharedSlug,
+        world: sharedWorld,
         label: "World A",
       });
-      assertEquals(world.slug, sharedSlug);
+      assertEquals(world.world, sharedWorld);
 
       const list = await worldsA.list();
-      assertEquals(list.some((world) => world.slug === sharedSlug), true);
+      assertEquals(list.some((world) => world.world === sharedWorld), true);
     });
 
     await t.step("NS B cannot see NS A's world in list", async () => {
       const list = await worldsB.list();
-      assertEquals(list.some((world) => world.slug === sharedSlug), false);
+      assertEquals(list.some((world) => world.world === sharedWorld), false);
     });
 
-    await t.step("NS B cannot get NS A's world by slug", async () => {
-      const world = await worldsB.get({ source: sharedSlug });
+    await t.step("NS B cannot get NS A's world by world", async () => {
+      const world = await worldsB.get({ source: sharedWorld });
       assertEquals(world, null);
     });
 
-    await t.step("NS B can use the same slug in its own scope", async () => {
+    await t.step("NS B can use the same world in its own scope", async () => {
       const world = await worldsB.create({
-        slug: sharedSlug,
+        world: sharedWorld,
         label: "World B",
       });
-      assertEquals(world.slug, sharedSlug);
-      assertEquals(world.slug, sharedSlug);
+      assertEquals(world.world, sharedWorld);
+      assertEquals(world.world, sharedWorld);
 
-      const worldB = await worldsB.get({ source: sharedSlug });
+      const worldB = await worldsB.get({ source: sharedWorld });
       assertEquals(worldB?.label, "World B");
 
-      const worldA = await worldsA.get({ source: sharedSlug });
+      const worldA = await worldsA.get({ source: sharedWorld });
       assertEquals(worldA?.label, "World A");
     });
 
-    await t.step("Data isolation between worlds with same slug", async () => {
+    await t.step("Data isolation between worlds with same world", async () => {
       // Insert into A
       await worldsA.sparql({
-        sources: [sharedSlug],
+        sources: [sharedWorld],
         query:
           `INSERT DATA { <http://example.org/s> <http://example.org/p> "Value A" . }`,
       });
 
       // Insert into B
       await worldsB.sparql({
-        sources: [sharedSlug],
+        sources: [sharedWorld],
         query:
           `INSERT DATA { <http://example.org/s> <http://example.org/p> "Value B" . }`,
       });
 
       // Check A
       const resA = await worldsA.sparql({
-        sources: [sharedSlug],
+        sources: [sharedWorld],
         query:
           `SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }`,
       }) as SparqlSelectResults;
@@ -108,7 +108,7 @@ Deno.test({
 
       // Check B
       const resB = await worldsB.sparql({
-        sources: [sharedSlug],
+        sources: [sharedWorld],
         query:
           `SELECT ?o WHERE { <http://example.org/s> <http://example.org/p> ?o }`,
       }) as SparqlSelectResults;
@@ -122,7 +122,7 @@ Deno.test({
         await assertRejects(
           () =>
             worldsB.get({
-              source: { slug: sharedSlug, namespace: ctxA.namespace },
+              source: { world: sharedWorld, namespace: ctxA.namespace },
             }),
           Error,
           "Unauthorized access to namespace",
@@ -132,7 +132,7 @@ Deno.test({
         await assertRejects(
           () =>
             worldsB.sparql({
-              sources: [{ slug: sharedSlug, namespace: ctxA.namespace }],
+              sources: [{ world: sharedWorld, namespace: ctxA.namespace }],
               query: "SELECT ?s WHERE { ?s ?p ?o }",
             }),
           Error,

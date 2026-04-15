@@ -1,4 +1,4 @@
-import { DEFAULT_SLUG } from "#/core/ontology.ts";
+import { DEFAULT_WORLD } from "#/core/ontology.ts";
 import type { WorldSource } from "#/schemas/mod.ts";
 import { errorResponseDataSchema } from "#/schemas/mod.ts";
 
@@ -62,37 +62,37 @@ export function isSparqlUpdate(query: string): boolean {
 }
 
 /**
- * parseSourceName parses a source name into a namespace and slug.
- * The name format is optional: "<namespace>/<slug>" or just "<slug>".
+ * parseSourceName parses a source name into a namespace and world.
+ * The name format is optional: "<namespace>/<world>" or just "<world>".
  */
 export function parseSourceName(name: string): {
   namespace: string | null;
-  slug: string | null;
+  world: string | null;
 } {
   const trimmed = name.trim();
   if (trimmed === "") {
-    return { namespace: null, slug: DEFAULT_SLUG };
+    return { namespace: null, world: DEFAULT_WORLD };
   }
 
   const parts = trimmed.split("/");
   if (parts.length === 2 && parts[0] && parts[1]) {
-    return { namespace: parts[0], slug: parts[1] };
+    return { namespace: parts[0], world: parts[1] };
   }
 
-  return { namespace: null, slug: trimmed };
+  return { namespace: null, world: trimmed };
 }
 
 /**
- * resolveSource resolves a WorldSource into slug and namespace components.
+ * resolveSource resolves a WorldSource into world and namespace components.
  */
 export function resolveSource(
   source: WorldSource,
   defaultNamespace?: string,
 ): {
-  slug: string | null;
+  world: string | null;
   namespace: string | null;
 } {
-  let resolved: { slug: string | null; namespace?: string | null };
+  let resolved: { world: string | null; namespace?: string | null };
   if (typeof source === "string") {
     resolved = parseSourceName(source);
   } else if (
@@ -101,24 +101,24 @@ export function resolveSource(
     resolved = parseSourceName(source.name);
   } else if (typeof source === "object" && source !== null) {
     const sourceObject = source as {
-      slug?: string | null;
+      world?: string | null;
       namespace?: string | null;
     };
-    const rawSlug = sourceObject.slug;
+    const rawWorld = sourceObject.world;
     resolved = {
-      slug: rawSlug !== undefined && rawSlug !== "" ? rawSlug : DEFAULT_SLUG,
+      world: rawWorld !== undefined && rawWorld !== "" ? rawWorld : DEFAULT_WORLD,
       namespace: sourceObject.namespace,
     };
   } else {
-    resolved = { slug: DEFAULT_SLUG };
+    resolved = { world: DEFAULT_WORLD };
   }
 
-  const slug = (resolved.slug === "" || resolved.slug === undefined)
-    ? DEFAULT_SLUG
-    : resolved.slug;
+  const world = (resolved.world === "" || resolved.world === undefined)
+    ? DEFAULT_WORLD
+    : resolved.world;
 
   return {
-    slug,
+    world,
     namespace: (resolved.namespace ?? defaultNamespace) ?? null,
   };
 }
@@ -130,7 +130,7 @@ export function parseSources(
   sources: WorldSource[],
   defaultNamespace?: string,
 ): Array<{
-  slug: string | null;
+  world: string | null;
   namespace: string | null;
 }> {
   return sources.map((s) => resolveSource(s, defaultNamespace));

@@ -33,7 +33,7 @@ export class FileDatabaseManager implements DatabaseManager {
    * getStorageKey generates a filesystem-safe identifier for a world.
    */
   private async getStorageKey(options: WorldOptions): Promise<string> {
-    const raw = `${options.namespace ?? "_"}:${options.slug ?? "_"}`;
+    const raw = `${options.namespace ?? "_"}:${options.world ?? "_"}`;
     const encoder = new TextEncoder();
     const data = encoder.encode(raw);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
@@ -57,7 +57,7 @@ export class FileDatabaseManager implements DatabaseManager {
   public async get(options: WorldOptions): Promise<ManagedDatabase> {
     const key = await this.getStorageKey(options);
     const worldsRepository = new WorldsRepository(this.database);
-    const world = await worldsRepository.get(options.slug, options.namespace);
+    const world = await worldsRepository.get(options.world, options.namespace);
     let url = world?.db_hostname;
 
     if (!url) {

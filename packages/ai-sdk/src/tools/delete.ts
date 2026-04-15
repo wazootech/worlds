@@ -46,7 +46,7 @@ export const worldsDeleteTool: WorldsTool<
 > = {
   name: "worlds_delete",
   description:
-    "Permanently deletes a world and all its associated data. This action is irreversible. Use this tool only when you are certain the world and its data are no longer needed. Input must be a 'slug'. Returns a success indicator.",
+    "Permanently deletes a world and all its associated data. This action is irreversible. Use this tool only when you are certain the world and its data are no longer needed. Input must be a 'world'. Returns a success indicator.",
   inputSchema: worldsDeleteInputSchema,
   outputSchema: worldsDeleteOutputSchema,
   isWrite: true,

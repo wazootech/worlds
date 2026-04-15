@@ -19,11 +19,11 @@ Deno.test("World Search API routes", async (t) => {
 
   await t.step("POST /worlds-search (Admin)", async () => {
     const { apiKey } = await createTestNamespace(testContext);
-    const slug = "search-world-" + ulid();
+    const world = "search-world-" + ulid();
     const now = Date.now();
     await worldsRepository.insert({
       namespace: "_",
-      slug,
+      world,
       label: "Search World",
       description: "A world for searching",
       db_hostname: null,
@@ -34,7 +34,7 @@ Deno.test("World Search API routes", async (t) => {
     });
     await testContext.libsql.manager.create({
       namespace: "_",
-      slug,
+      world,
     });
 
     const response = await app.fetch(
@@ -44,7 +44,7 @@ Deno.test("World Search API routes", async (t) => {
           "Authorization": `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ sources: [slug], query: "test" }),
+        body: JSON.stringify({ sources: [world], query: "test" }),
       }),
     );
 

@@ -101,7 +101,7 @@ export interface WorldsInterface {
   list(input?: WorldsListInput): Promise<World[]>;
 
   /**
-   * get fetches a single world by its ID or slug.
+   * get fetches a single world by its ID or world.
    */
   get(input: WorldsGetInput): Promise<World | null>;
 

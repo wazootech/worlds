@@ -60,6 +60,6 @@ export const WORLDS_WORLD_NAMESPACE: string =
 export const DEFAULT_NAMESPACE: string | null = null;
 
 /**
- * DEFAULT_SLUG is the reserved default world slug when a path omits the slug segment.
+ * DEFAULT_WORLD is the reserved default world identifier when a path omits the world segment.
  */
-export const DEFAULT_SLUG: string | null = null;
+export const DEFAULT_WORLD: string | null = null;

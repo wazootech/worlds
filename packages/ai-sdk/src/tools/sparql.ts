@@ -27,17 +27,17 @@ export async function sparql(
   if (isSparqlUpdate(query)) {
     // For updates, ensure all targeted sources are writable
     for (const source of targetSources) {
-      const { slug } = resolveSource(source);
+      const { world } = resolveSource(source);
 
       const s = sources.find((src) => {
         const resolved = resolveSource(src);
-        return resolved.slug === slug;
+        return resolved.world === world;
       });
       const isWritable = typeof s === "object" ? s.write : false;
 
       if (!isWritable) {
         throw new Error(
-          `Write operations are disabled for source: ${slug}. ` +
+          `Write operations are disabled for source: ${world}. ` +
             "Only SELECT, ASK, CONSTRUCT, and DESCRIBE queries are allowed.",
         );
       }

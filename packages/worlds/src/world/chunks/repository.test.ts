@@ -31,10 +31,10 @@ Deno.test("ChunksSearchRepository", async (t) => {
     updated_at: now,
   });
 
-  const slug = "test-world";
+  const world = "test-world";
   await worldsRepository.insert({
     namespace: namespaceId,
-    slug,
+    world,
     label: "Test World",
     description: "Test Description",
     db_hostname: null,
@@ -43,10 +43,10 @@ Deno.test("ChunksSearchRepository", async (t) => {
     updated_at: now,
     deleted_at: null,
   });
-  await testContext.libsql.manager.create({ slug, namespace: namespaceId });
+  await testContext.libsql.manager.create({ world, namespace: namespaceId });
 
   const worldManaged = await testContext.libsql.manager.get({
-    slug,
+    world,
     namespace: namespaceId,
   });
   const triplesRepository = new TriplesRepository(worldManaged.database);
@@ -54,7 +54,7 @@ Deno.test("ChunksSearchRepository", async (t) => {
   await t.step("search with no results", async () => {
     const results = await chunksSearchRepository.search({
       query: "nonexistent",
-      worldSlug: slug,
+      world: world,
     });
     assertEquals(results.length, 0);
   });
@@ -81,7 +81,7 @@ Deno.test("ChunksSearchRepository", async (t) => {
 
     const results = await chunksSearchRepository.search({
       query: "apples",
-      worldSlug: slug,
+      world: world,
       namespace: namespaceId,
     });
 

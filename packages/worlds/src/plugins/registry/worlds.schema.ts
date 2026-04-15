@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 /**
- * worldTableSchema is the Zod schema for the worlds database table.
+ * worldRowSchema is the Zod schema for the worlds database table.
  */
-const worldTableShape = z.object({
+const worldRowShape = z.object({
   namespace: z.string().nullable(),
-  slug: z.string(),
+  world: z.string(),
   label: z.string(),
   description: z.string().nullable(),
   db_hostname: z.string().nullable(),
@@ -15,12 +15,12 @@ const worldTableShape = z.object({
   deleted_at: z.number().nullable(),
 });
 
-export const worldTableSchema: z.ZodType<WorldTable> = worldTableShape;
+export const worldRowSchema: z.ZodType<WorldRow> = worldRowShape;
 
 /**
- * WorldTable represents a full world record as stored in the database.
+ * WorldRow represents a full world record as stored in the database.
  */
-export interface WorldTable {
+export type WorldRow = {
   /**
    * namespace is the identifier of the namespace that owns the world.
    * Null indicates the default namespace.
@@ -28,9 +28,9 @@ export interface WorldTable {
   namespace: string | null;
 
   /**
-   * slug is the unique identifier (within a namespace) for the world.
+   * world is the unique identifier (within a namespace) for the world.
    */
-  slug: string;
+  world: string;
 
   /**
    * label is the human-readable title of the world.
@@ -66,45 +66,34 @@ export interface WorldTable {
    * deleted_at is the unix timestamp of deletion, if any.
    */
   deleted_at: number | null;
-}
+};
 
 /**
- * worldRowSchema is the Zod schema for a world record as returned by the SELECT queries.
+ * worldRowInsertSchema is the Zod schema for inserting a new world.
  */
-export const worldRowSchema: z.ZodType<WorldRow> = worldTableShape;
+export const worldRowInsertSchema: z.ZodType<WorldRowInsert> = worldRowShape;
 
 /**
- * WorldRow represents a world record.
+ * WorldRowInsert represents the data needed to insert a new world.
  */
-export type WorldRow = WorldTable;
+export type WorldRowInsert = WorldRow;
 
 /**
- * worldTableInsertSchema is the Zod schema for inserting a new world.
+ * worldRowUpdateSchema is the Zod schema for updating a world.
  */
-export const worldTableInsertSchema: z.ZodType<WorldTableInsert> =
-  worldTableShape;
-
-/**
- * WorldTableInsert represents the data needed to insert a new world.
- */
-export type WorldTableInsert = WorldTable;
-
-/**
- * worldTableUpdateSchema is the Zod schema for updating a world.
- */
-export const worldTableUpdateSchema: z.ZodType<
-  WorldTableUpdate
-> = worldTableShape
+export const worldRowUpdateSchema: z.ZodType<
+  WorldRowUpdate
+> = worldRowShape
   .omit({
     namespace: true,
-    slug: true,
+    world: true,
     created_at: true,
   })
   .partial();
 
 /**
- * WorldTableUpdate represents the data needed to update a world.
+ * WorldRowUpdate represents the data needed to update a world.
  */
-export type WorldTableUpdate = Partial<
-  Omit<WorldTable, "namespace" | "slug" | "created_at">
+export type WorldRowUpdate = Partial<
+  Omit<WorldRow, "namespace" | "world" | "created_at">
 >;

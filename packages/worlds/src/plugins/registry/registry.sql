@@ -41,7 +41,7 @@ DELETE FROM api_keys WHERE key_hash = ?;
 -- worlds table: stores world metadata per namespace
 CREATE TABLE IF NOT EXISTS worlds (
   namespace TEXT NOT NULL,
-  slug TEXT NOT NULL,
+  world TEXT NOT NULL,
   label TEXT NOT NULL,
   description TEXT,
   db_hostname TEXT,
@@ -49,35 +49,35 @@ CREATE TABLE IF NOT EXISTS worlds (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
-  PRIMARY KEY (namespace, slug),
+  PRIMARY KEY (namespace, world),
   FOREIGN KEY (namespace) REFERENCES namespaces(id) ON DELETE CASCADE
 );
 
--- selectWorldBySlug retrieves a world by slug and namespace.
-SELECT namespace, slug, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
+-- selectWorldByWorld retrieves a world by world and namespace.
+SELECT namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
 FROM worlds
-WHERE slug = ? AND namespace = ? AND deleted_at IS NULL;
+WHERE world = ? AND namespace = ? AND deleted_at IS NULL;
 
--- selectWorldBySlugInternal retrieves a world by slug without namespace scoping.
-SELECT namespace, slug, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
+-- selectWorldByWorldInternal retrieves a world by world without namespace scoping.
+SELECT namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
 FROM worlds
-WHERE slug = ? AND deleted_at IS NULL;
+WHERE world = ? AND deleted_at IS NULL;
 
 -- selectAllWorlds retrieves worlds for a specific namespace with pagination.
-SELECT namespace, slug, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
+SELECT namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
 FROM worlds
 WHERE namespace = ? AND deleted_at IS NULL
 ORDER BY created_at DESC
 LIMIT ? OFFSET ?;
 
 -- insertWorld creates a new world.
-INSERT INTO worlds (namespace, slug, label, description, db_hostname, db_token, created_at, updated_at, deleted_at)
+INSERT INTO worlds (namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- updateWorld updates world fields.
 UPDATE worlds
 SET label = ?, description = ?, db_hostname = ?, db_token = ?, updated_at = ?, deleted_at = ?
-WHERE slug = ? AND namespace = ?;
+WHERE world = ? AND namespace = ?;
 
--- deleteWorld removes a world by slug and namespace.
-DELETE FROM worlds WHERE slug = ? AND namespace = ?;
+-- deleteWorld removes a world by world and namespace.
+DELETE FROM worlds WHERE world = ? AND namespace = ?;

@@ -4,18 +4,18 @@ import { type WorldSource, worldSourceSchema } from "./source.ts";
 
 /**
  * World represents a world in the Worlds API.
- * Resource name format: {namespace}/{slug} (computed, not stored)
+ * Resource name format: {namespace}/{world} (computed, not stored)
  */
 export interface World {
   /**
-   * name is the full canonical resource name: namespaces/{namespace}/worlds/{slug}.
+   * name is the full canonical resource name: namespaces/{namespace}/worlds/{world}.
    */
   name: string;
 
   /**
-   * slug is the URL-friendly identifier (resource ID segment).
+   * world is the URL-friendly identifier (resource ID segment).
    */
-  slug: string | null;
+  world: string | null;
 
   /**
    * namespace is the optional parent namespace (optional - for multi-tenant).
@@ -53,7 +53,7 @@ export interface World {
  */
 export const worldSchema: z.ZodType<World> = z.object({
   name: z.string().describe("The canonical resource name."),
-  slug: z.string().nullable().describe("The slug identifier."),
+  world: z.string().nullable().describe("The world identifier."),
   namespace: z.string().nullable().optional().describe(
     "The namespace (optional).",
   ),
@@ -69,9 +69,9 @@ export const worldSchema: z.ZodType<World> = z.object({
  */
 export interface WorldsCreateInput {
   /**
-   * slug is the URL-friendly identifier for the new world.
+   * world is the URL-friendly identifier for the new world.
    */
-  slug: string | null;
+  world: string | null;
 
   /**
    * namespace is the parent namespace (optional - for multi-tenant).
@@ -93,7 +93,7 @@ export interface WorldsCreateInput {
  * worldsCreateInputSchema is the Zod schema for WorldsCreateInput.
  */
 export const worldsCreateInputSchema = z.object({
-  slug: z.string().nullable().describe("The slug identifier."),
+  world: z.string().nullable().describe("The world identifier."),
   namespace: z.string().nullable().optional().describe(
     "The namespace (optional).",
   ),

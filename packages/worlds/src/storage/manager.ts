@@ -25,9 +25,9 @@ export interface ManagedDatabase {
  */
 export interface WorldOptions {
   /**
-   * slug is the world identifier.
+   * world is the world identifier.
    */
-  slug: string | null;
+  world: string | null;
 
   /**
    * namespace is the optional namespace (uses internal lookup if not provided).
@@ -45,12 +45,12 @@ export interface DatabaseManager {
   create(options: WorldOptions): Promise<ManagedDatabase>;
 
   /**
-   * get returns the LibSQL database for the given namespace and slug.
+   * get returns the LibSQL database for the given namespace and world.
    */
   get(options: WorldOptions): Promise<ManagedDatabase>;
 
   /**
-   * delete deletes the LibSQL database for the given namespace and slug.
+   * delete deletes the LibSQL database for the given namespace and world.
    */
   delete(options: WorldOptions): Promise<void>;
 

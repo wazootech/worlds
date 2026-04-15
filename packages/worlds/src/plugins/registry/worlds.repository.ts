@@ -3,14 +3,14 @@ import {
   deleteWorld,
   insertWorld,
   selectAllWorlds,
-  selectWorldBySlug,
-  selectWorldBySlugInternal,
+  selectWorldByWorld,
+  selectWorldByWorldInternal,
   updateWorld,
 } from "./registry.sql.ts";
 import type {
   WorldRow,
-  WorldTableInsert,
-  WorldTableUpdate,
+  WorldRowInsert,
+  WorldRowUpdate,
 } from "./worlds.schema.ts";
 
 /**
@@ -25,19 +25,19 @@ export class WorldsRepository {
 
   /**
    * get retrieves a world by its identifier and optional namespace.
-   * @param slug The world identifier.
+   * @param world The world identifier.
    * @param namespace The namespace (optional - defaults to "_" if not provided).
    * @returns The world row or null if not found.
    */
   async get(
-    slug: string | null,
+    world: string | null,
     namespace?: string | null,
   ): Promise<WorldRow | null> {
-    const s = slug ?? "_";
+    const w = world ?? "_";
     const ns = namespace ?? "_";
     const result = await this.db.execute({
-      sql: selectWorldBySlug,
-      args: [s, ns],
+      sql: selectWorldByWorld,
+      args: [w, ns],
     });
     const row = result.rows[0] as Record<string, unknown> | undefined;
     if (!row) return null;
@@ -47,14 +47,14 @@ export class WorldsRepository {
   /**
    * getInternal retrieves a world by its identifier without namespace scoping.
    * Use this ONLY for internal system operations.
-   * @param slug The world identifier.
+   * @param world The world identifier.
    * @returns The world row or null if not found.
    */
-  async getInternal(slug: string | null): Promise<WorldRow | null> {
-    const s = slug ?? "_";
+  async getInternal(world: string | null): Promise<WorldRow | null> {
+    const w = world ?? "_";
     const result = await this.db.execute({
-      sql: selectWorldBySlugInternal,
-      args: [s],
+      sql: selectWorldByWorldInternal,
+      args: [w],
     });
     const row = result.rows[0] as Record<string, unknown> | undefined;
     if (!row) return null;
@@ -66,10 +66,10 @@ export class WorldsRepository {
    */
   private mapRow(row: Record<string, unknown>): WorldRow {
     const ns = row.namespace as string;
-    const slug = row.slug as string;
+    const world = row.world as string;
     return {
       namespace: ns,
-      slug: slug,
+      world: world,
       label: row.label as string,
       description: row.description as string | null,
       db_hostname: row.db_hostname as string | null,
@@ -111,14 +111,14 @@ export class WorldsRepository {
    * insert creates a new world record.
    * @param world The world data to insert.
    */
-  async insert(world: WorldTableInsert): Promise<void> {
+  async insert(world: WorldRowInsert): Promise<void> {
     const ns = world.namespace;
-    const slug = world.slug;
+    const w = world.world;
     await this.db.execute({
       sql: insertWorld,
       args: [
         ns,
-        slug,
+        w,
         world.label,
         world.description,
         world.db_hostname ?? null,
@@ -132,18 +132,18 @@ export class WorldsRepository {
 
   /**
    * update modifies an existing world record.
-   * @param slug The world identifier.
+   * @param world The world identifier.
    * @param namespace The namespace.
    * @param updates The fields to update.
    */
   async update(
-    slug: string | null,
+    world: string | null,
     namespace: string | null | undefined,
-    updates: WorldTableUpdate,
+    updates: WorldRowUpdate,
   ): Promise<void> {
-    const row = await this.get(slug, namespace);
+    const row = await this.get(world, namespace);
     if (!row) return;
-    const s = slug ?? "_";
+    const w = world ?? "_";
     const ns = namespace ?? "_";
     await this.db.execute({
       sql: updateWorld,
@@ -154,7 +154,7 @@ export class WorldsRepository {
         updates.db_token ?? row.db_token,
         updates.updated_at ?? row.updated_at,
         updates.deleted_at ?? row.deleted_at,
-        s,
+        w,
         ns,
       ],
     });
@@ -162,15 +162,15 @@ export class WorldsRepository {
 
   /**
    * delete removes a world record by its identifier and namespace.
-   * @param slug The world identifier.
+   * @param world The world identifier.
    * @param namespace The namespace (optional).
    */
   async delete(
-    slug: string | null,
+    world: string | null,
     namespace: string | null | undefined,
   ): Promise<void> {
-    const s = slug ?? "_";
+    const w = world ?? "_";
     const ns = namespace ?? "_";
-    await this.db.execute({ sql: deleteWorld, args: [s, ns] });
+    await this.db.execute({ sql: deleteWorld, args: [w, ns] });
   }
 }

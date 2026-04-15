@@ -36,7 +36,7 @@ export function createTools(options: CreateToolsOptions): {
   export: WorldsExportTool;
 } {
   const normalizedSources: Source[] = options.sources.map((source) =>
-    typeof source === "string" ? { slug: source } : source
+    typeof source === "string" ? { world: source } : source
   );
   const normalizedOptions: CreateToolsOptions = {
     ...options,
@@ -69,12 +69,12 @@ export function validateCreateToolsOptions(options: CreateToolsOptions) {
   let writable = false;
   const seen = new Set<string | null>();
   for (const source of options.sources) {
-    const { slug } = resolveSource(source);
-    if (seen.has(slug)) {
-      throw new Error(`Duplicate source: ${slug}`);
+    const { world } = resolveSource(source);
+    if (seen.has(world)) {
+      throw new Error(`Duplicate source: ${world}`);
     }
 
-    seen.add(slug);
+    seen.add(world);
 
     if (typeof source === "object" && source !== null && source.write) {
       if (writable) {

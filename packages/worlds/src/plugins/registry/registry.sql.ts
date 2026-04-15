@@ -53,35 +53,35 @@ export const deleteApiKey = "DELETE FROM api_keys WHERE key_hash = ?;";
 /**
  * worlds table: stores world metadata per namespace
  */
-export const worlds = "CREATE TABLE IF NOT EXISTS worlds (\n  namespace TEXT NOT NULL,\n  slug TEXT NOT NULL,\n  label TEXT NOT NULL,\n  description TEXT,\n  db_hostname TEXT,\n  db_token TEXT,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  deleted_at INTEGER,\n  PRIMARY KEY (namespace, slug),\n  FOREIGN KEY (namespace) REFERENCES namespaces(id) ON DELETE CASCADE\n);";
+export const worlds = "CREATE TABLE IF NOT EXISTS worlds (\n  namespace TEXT NOT NULL,\n  world TEXT NOT NULL,\n  label TEXT NOT NULL,\n  description TEXT,\n  db_hostname TEXT,\n  db_token TEXT,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  deleted_at INTEGER,\n  PRIMARY KEY (namespace, world),\n  FOREIGN KEY (namespace) REFERENCES namespaces(id) ON DELETE CASCADE\n);";
 
 /**
- * selectWorldBySlug retrieves a world by slug and namespace.
+ * selectWorldByWorld retrieves a world by world and namespace.
  */
-export const selectWorldBySlug = "SELECT namespace, slug, label, description, db_hostname, db_token, created_at, updated_at, deleted_at\nFROM worlds\nWHERE slug = ? AND namespace = ? AND deleted_at IS NULL;";
+export const selectWorldByWorld = "SELECT namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at\nFROM worlds\nWHERE world = ? AND namespace = ? AND deleted_at IS NULL;";
 
 /**
- * selectWorldBySlugInternal retrieves a world by slug without namespace scoping.
+ * selectWorldByWorldInternal retrieves a world by world without namespace scoping.
  */
-export const selectWorldBySlugInternal = "SELECT namespace, slug, label, description, db_hostname, db_token, created_at, updated_at, deleted_at\nFROM worlds\nWHERE slug = ? AND deleted_at IS NULL;";
+export const selectWorldByWorldInternal = "SELECT namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at\nFROM worlds\nWHERE world = ? AND deleted_at IS NULL;";
 
 /**
  * selectAllWorlds retrieves worlds for a specific namespace with pagination.
  */
-export const selectAllWorlds = "SELECT namespace, slug, label, description, db_hostname, db_token, created_at, updated_at, deleted_at\nFROM worlds\nWHERE namespace = ? AND deleted_at IS NULL\nORDER BY created_at DESC\nLIMIT ? OFFSET ?;";
+export const selectAllWorlds = "SELECT namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at\nFROM worlds\nWHERE namespace = ? AND deleted_at IS NULL\nORDER BY created_at DESC\nLIMIT ? OFFSET ?;";
 
 /**
  * insertWorld creates a new world.
  */
-export const insertWorld = "INSERT INTO worlds (namespace, slug, label, description, db_hostname, db_token, created_at, updated_at, deleted_at)\nVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+export const insertWorld = "INSERT INTO worlds (namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at)\nVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
 /**
  * updateWorld updates world fields.
  */
-export const updateWorld = "UPDATE worlds\nSET label = ?, description = ?, db_hostname = ?, db_token = ?, updated_at = ?, deleted_at = ?\nWHERE slug = ? AND namespace = ?;";
+export const updateWorld = "UPDATE worlds\nSET label = ?, description = ?, db_hostname = ?, db_token = ?, updated_at = ?, deleted_at = ?\nWHERE world = ? AND namespace = ?;";
 
 /**
- * deleteWorld removes a world by slug and namespace.
+ * deleteWorld removes a world by world and namespace.
  */
-export const deleteWorld = "DELETE FROM worlds WHERE slug = ? AND namespace = ?;";
+export const deleteWorld = "DELETE FROM worlds WHERE world = ? AND namespace = ?;";
 

@@ -25,11 +25,11 @@ Deno.test("Worlds API routes", async (t) => {
       const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const slug = "test-world-" + ulid();
+      const world = "test-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
         namespace: "_",
-        slug,
+        world,
         label: "Test World",
         description: "Test Description",
         db_hostname: null,
@@ -40,7 +40,7 @@ Deno.test("Worlds API routes", async (t) => {
       });
       await testContext.libsql.manager.create({
         namespace: "_",
-        slug,
+        world,
       });
 
       const response = await app.fetch(
@@ -50,21 +50,21 @@ Deno.test("Worlds API routes", async (t) => {
             "Authorization": `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ source: { slug } }),
+          body: JSON.stringify({ source: { world } }),
         }),
       );
 
       assertEquals(response.status, 200);
-      const world = await response.json();
-      assertEquals(world.label, "Test World");
-      assertEquals(world.slug, slug);
+      const worldResult = await response.json();
+      assertEquals(worldResult.label, "Test World");
+      assertEquals(worldResult.world, world);
     },
   );
 
   await t.step("POST /worlds creates a new world (Admin Only)", async () => {
     const { apiKey } = await createTestNamespace(testContext);
 
-    const slug = ("new-world-" + ulid()).toLowerCase();
+    const world = ("new-world-" + ulid()).toLowerCase();
     const req = new Request("http://localhost/worlds", {
       method: "POST",
       headers: {
@@ -72,7 +72,7 @@ Deno.test("Worlds API routes", async (t) => {
         "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        slug,
+        world,
         label: "New World",
         description: "New Description",
       }),
@@ -80,9 +80,9 @@ Deno.test("Worlds API routes", async (t) => {
     const response = await app.fetch(req);
     assertEquals(response.status, 201);
 
-    const world = await response.json();
-    assertEquals(world.label, "New World");
-    assertEquals(world.slug, slug);
+    const worldResult = await response.json();
+    assertEquals(worldResult.label, "New World");
+    assertEquals(worldResult.world, world);
   });
 
   await t.step(
@@ -91,11 +91,11 @@ Deno.test("Worlds API routes", async (t) => {
       const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const slug = "export-world-" + ulid();
+      const world = "export-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
         namespace: "_",
-        slug,
+        world,
         label: "Export World",
         description: null,
         db_hostname: null,
@@ -106,7 +106,7 @@ Deno.test("Worlds API routes", async (t) => {
       });
       await testContext.libsql.manager.create({
         namespace: "_",
-        slug,
+        world,
       });
 
       const response = await app.fetch(
@@ -118,7 +118,7 @@ Deno.test("Worlds API routes", async (t) => {
             "Accept": "text/turtle",
           },
           body: JSON.stringify({
-            source: { slug },
+            source: { world },
             contentType: "text/turtle",
           }),
         }),
@@ -138,14 +138,14 @@ Deno.test("Worlds API routes", async (t) => {
 
       unprotectedContext.apiKey = undefined;
       const appUnprotected = await createServer(unprotectedContext);
-      const slug = "unprotected-world-" + ulid();
+      const world = "unprotected-world-" + ulid();
       const now = Date.now();
       const unprotectedWorldsRepository = new WorldsRepository(
         unprotectedContext.libsql.database,
       );
       await unprotectedWorldsRepository.insert({
         namespace: "_",
-        slug,
+        world,
         label: "Unprotected World",
         description: null,
         db_hostname: null,
@@ -156,7 +156,7 @@ Deno.test("Worlds API routes", async (t) => {
       });
       await unprotectedContext.libsql.manager.create({
         namespace: "_",
-        slug,
+        world,
       });
 
       const response = await appUnprotected.fetch(
@@ -165,14 +165,14 @@ Deno.test("Worlds API routes", async (t) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ source: { slug } }),
+          body: JSON.stringify({ source: { world } }),
         }),
       );
 
       assertEquals(response.status, 200);
-      const world = await response.json();
-      assertEquals(world.label, "Unprotected World");
-      assertEquals(world.slug, slug);
+      const worldResult = await response.json();
+      assertEquals(worldResult.label, "Unprotected World");
+      assertEquals(worldResult.world, world);
     },
   );
 });

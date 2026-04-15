@@ -39,10 +39,10 @@ Deno.test({
           namespace: "tenant",
         };
         await using tenantWorlds = new LocalWorlds(tenantContext);
-        await tenantWorlds.create({ slug: "tenant-world", label: "Tenant World" });
+        await tenantWorlds.create({ world: "tenant-world", label: "Tenant World" });
 
         const list = await tenantWorlds.list();
-        const tenantWorld = list.find((w) => w.slug === "tenant-world");
+        const tenantWorld = list.find((w) => w.world === "tenant-world");
         assertExists(tenantWorld);
         assertEquals(tenantWorld!.namespace, "tenant");
       },

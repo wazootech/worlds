@@ -70,8 +70,8 @@ export class LocalWorlds implements WorldsInterface {
   private async getStore(
     options: WorldOptions,
   ): Promise<Store> {
-    const { slug, namespace } = options;
-    const cacheKey = `${namespace ?? "default"}:${slug}`;
+    const { world, namespace } = options;
+    const cacheKey = `${namespace ?? "default"}:${world}`;
     let store = this.storeCache.get(cacheKey);
 
     if (!store) {
@@ -84,8 +84,8 @@ export class LocalWorlds implements WorldsInterface {
   }
 
   private invalidateStore(options: WorldOptions): void {
-    const { slug, namespace } = options;
-    const cacheKey = `${namespace ?? "default"}:${slug}`;
+    const { world, namespace } = options;
+    const cacheKey = `${namespace ?? "default"}:${world}`;
     this.storeCache.delete(cacheKey);
   }
 
@@ -193,11 +193,11 @@ export class LocalWorlds implements WorldsInterface {
       offset,
     );
     return rows
-      .filter((world) => world.slug !== WORLDS_WORLD_SLUG || isAdmin)
+      .filter((world) => world.world !== WORLDS_WORLD_SLUG || isAdmin)
       .map((world) =>
         worldSchema.parse({
-          name: worldResourcePath(world.namespace, world.slug).slice(1),
-          slug: world.slug,
+          name: worldResourcePath(world.namespace, world.world).slice(1),
+          world: world.world,
           namespace: world.namespace,
           label: world.label ?? undefined,
           description: world.description ?? undefined,
@@ -209,32 +209,32 @@ export class LocalWorlds implements WorldsInterface {
   }
 
   /**
-   * get fetches a single world by its slug.
+   * get fetches a single world by its world.
    */
   async get(input: WorldsGetInput): Promise<World | null> {
     await this.ensureInitialized();
-    const { slug, namespace } = resolveSource(
+    const { world: sourceWorld, namespace } = resolveSource(
       input.source,
       this.appContext.namespace,
     );
-    this.assertSourceAuthorized(slug, namespace);
-    const world = await this.worldsRepository.get(
-      slug ?? "",
-      slug === WORLDS_WORLD_SLUG ? undefined : namespace,
+    this.assertSourceAuthorized(sourceWorld, namespace);
+    const worldRow = await this.worldsRepository.get(
+      sourceWorld ?? "",
+      sourceWorld === WORLDS_WORLD_SLUG ? undefined : namespace,
     );
-    if (!world || world.deleted_at !== null) {
+    if (!worldRow || worldRow.deleted_at !== null) {
       return null;
     }
 
     return worldSchema.parse({
-      name: worldResourcePath(world.namespace, world.slug).slice(1),
-      slug: world.slug,
-      namespace: world.namespace,
-      label: world.label ?? undefined,
-      description: world.description ?? undefined,
-      createdAt: world.created_at,
-      updatedAt: world.updated_at,
-      deletedAt: world.deleted_at ?? undefined,
+      name: worldResourcePath(worldRow.namespace, worldRow.world).slice(1),
+      world: worldRow.world,
+      namespace: worldRow.namespace,
+      label: worldRow.label ?? undefined,
+      description: worldRow.description ?? undefined,
+      createdAt: worldRow.created_at,
+      updatedAt: worldRow.updated_at,
+      deletedAt: worldRow.deleted_at ?? undefined,
     });
   }
 
@@ -243,23 +243,23 @@ export class LocalWorlds implements WorldsInterface {
    */
   async create(data: WorldsCreateInput): Promise<World> {
     await this.ensureInitialized();
-    const { slug, namespace: inputNamespace, label, description } = data;
+    const { world, namespace: inputNamespace, label, description } = data;
 
     const namespace = inputNamespace ?? this.appContext.namespace ??
       DEFAULT_NAMESPACE;
-    this.assertSourceAuthorized(slug, namespace);
+    this.assertSourceAuthorized(world, namespace);
     const existingBySlug = await this.worldsRepository.get(
-      slug,
+      world,
       namespace,
     );
     if (existingBySlug) {
-      throw new Error("World slug already exists");
+      throw new Error("World world already exists");
     }
 
     const now = Date.now();
-    const worldLabel = label ?? slug ?? "Untitled";
+    const worldLabel = label ?? world ?? "Untitled";
     const worldNamespace = namespace ?? "_";
-    const worldSlug = slug ?? "default";
+    const worldSlug = world ?? "default";
 
     if (worldNamespace !== "_") {
       await this.ensureNamespace(worldNamespace);
@@ -267,7 +267,7 @@ export class LocalWorlds implements WorldsInterface {
 
     const worldRow = {
       namespace: worldNamespace,
-      slug: worldSlug,
+      world: worldSlug,
       label: worldLabel,
       description: description ?? null,
       db_hostname: null,
@@ -279,13 +279,13 @@ export class LocalWorlds implements WorldsInterface {
 
     await this.worldsRepository.insert(worldRow);
     await this.appContext.libsql.manager.create({
-      slug: worldSlug,
+      world: worldSlug,
       namespace: worldNamespace,
     });
 
     return worldSchema.parse({
       name: worldResourcePath(worldNamespace, worldSlug).slice(1),
-      slug: worldSlug,
+      world: worldSlug,
       namespace,
       label: worldRow.label,
       description: worldRow.description ?? undefined,
@@ -301,22 +301,22 @@ export class LocalWorlds implements WorldsInterface {
   async update(input: WorldsUpdateInput): Promise<void> {
     await this.ensureInitialized();
     const { source, label, description } = input;
-    const { slug, namespace } = resolveSource(
+    const { world: sourceWorld, namespace } = resolveSource(
       source,
       this.appContext.namespace,
     );
-    this.assertSourceAuthorized(slug, namespace);
-    const world = await this.worldsRepository.get(
-      slug ?? "",
-      slug === WORLDS_WORLD_SLUG ? undefined : namespace,
+    this.assertSourceAuthorized(sourceWorld, namespace);
+    const worldRow = await this.worldsRepository.get(
+      sourceWorld ?? "",
+      sourceWorld === WORLDS_WORLD_SLUG ? undefined : namespace,
     );
-    if (!world) {
+    if (!worldRow) {
       throw new Error("World not found");
     }
 
-    await this.worldsRepository.update(slug, world.namespace, {
-      label: label ?? world.label,
-      description: description !== undefined ? description : world.description,
+    await this.worldsRepository.update(worldRow.world, worldRow.namespace, {
+      label: label ?? worldRow.label,
+      description: description !== undefined ? description : worldRow.description,
       updated_at: Date.now(),
     });
   }
@@ -326,28 +326,28 @@ export class LocalWorlds implements WorldsInterface {
    */
   async delete(input: WorldsDeleteInput): Promise<void> {
     await this.ensureInitialized();
-    const { slug, namespace } = resolveSource(
+    const { world: sourceWorld, namespace } = resolveSource(
       input.source,
       this.appContext.namespace,
     );
-    this.assertSourceAuthorized(slug, namespace);
-    const world = await this.worldsRepository.get(
-      slug ?? "",
-      slug === WORLDS_WORLD_SLUG ? undefined : namespace,
+    this.assertSourceAuthorized(sourceWorld, namespace);
+    const worldRow = await this.worldsRepository.get(
+      sourceWorld ?? "",
+      sourceWorld === WORLDS_WORLD_SLUG ? undefined : namespace,
     );
-    if (!world) {
+    if (!worldRow) {
       throw new Error("World not found");
     }
 
-    this.invalidateStore({ slug: world.slug, namespace: world.namespace });
-    await this.worldsRepository.update(slug ?? "", world.namespace, {
+    this.invalidateStore({ world: worldRow.world, namespace: worldRow.namespace });
+    await this.worldsRepository.update(worldRow.world, worldRow.namespace, {
       deleted_at: Date.now(),
     });
 
     // Delete the actual Turso database to avoid orphaned resources
     await this.appContext.libsql.manager.delete({
-      slug: world.slug,
-      namespace: world.namespace ?? undefined,
+      world: worldRow.world,
+      namespace: worldRow.namespace ?? undefined,
     });
   }
 
@@ -357,12 +357,12 @@ export class LocalWorlds implements WorldsInterface {
   async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
     await this.ensureInitialized();
     const { query } = input;
-    const sources = input.sources ?? [{ slug: null }];
+    const sources = input.sources ?? [{ world: null }];
     const namespace = input.namespace ?? this.appContext.namespace;
 
     if (isSparqlUpdate(query) && sources.length !== 1) {
       throw new Error(
-        "SPARQL Update is not supported for global or multi-source queries. Please specify a single target slug.",
+        "SPARQL Update is not supported for global or multi-source queries. Please specify a single target world.",
       );
     }
 
@@ -370,17 +370,17 @@ export class LocalWorlds implements WorldsInterface {
     if (sources.length === 1 && sources[0] === "*") {
       targetWorlds = await this.worldsRepository.list(namespace, 100, 0);
       targetWorlds = targetWorlds.filter((world) =>
-        world.slug !== WORLDS_WORLD_SLUG
+        world.world !== WORLDS_WORLD_SLUG
       );
     } else {
       const worldPromises = sources.map((s) => {
         const parsed = resolveSource(s, namespace);
-        this.assertSourceAuthorized(parsed.slug, parsed.namespace);
-        const targetNamespace = parsed.slug === WORLDS_WORLD_SLUG
+        this.assertSourceAuthorized(parsed.world, parsed.namespace);
+        const targetNamespace = parsed.world === WORLDS_WORLD_SLUG
           ? undefined
           : (parsed.namespace ?? namespace);
         return this.worldsRepository.get(
-          parsed.slug ?? "",
+          parsed.world ?? "",
           targetNamespace ?? undefined,
         );
       });
@@ -390,14 +390,14 @@ export class LocalWorlds implements WorldsInterface {
 
     const worldStores = await Promise.all(
       targetWorlds.map((w) =>
-        this.getStore({ slug: w.slug, namespace: w.namespace })
+        this.getStore({ world: w.world, namespace: w.namespace })
       ),
     );
 
     if (worldStores.length === 1) {
       const w = targetWorlds[0];
       const managed = await this.appContext.libsql.manager.get({
-        slug: w.slug,
+        world: w.world,
         namespace: w.namespace ?? undefined,
       });
       const patchHandler: PatchHandler = {
@@ -410,7 +410,7 @@ export class LocalWorlds implements WorldsInterface {
       };
       const { result } = await sparql(worldStores, query, patchHandler);
       if (isSparqlUpdate(query)) {
-        this.invalidateStore({ slug: w.slug, namespace: w.namespace });
+        this.invalidateStore({ world: w.world, namespace: w.namespace });
       }
       return worldsSparqlOutputSchema.parse(result);
     }
@@ -425,7 +425,7 @@ export class LocalWorlds implements WorldsInterface {
   async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
     await this.ensureInitialized();
     const { query, limit, subjects, predicates, types } = input;
-    const sources = input.sources ?? [{ slug: null }];
+    const sources = input.sources ?? [{ world: null }];
     const requestedLimit = limit ?? 20;
 
     const chunksSearchRepository = new ChunksSearchRepository(
@@ -440,17 +440,17 @@ export class LocalWorlds implements WorldsInterface {
     if (sources.length === 1 && sources[0] === "*") {
       targetWorlds = await this.worldsRepository.list(namespace, 100, 0);
       targetWorlds = targetWorlds.filter((world) =>
-        world.slug !== WORLDS_WORLD_SLUG
+        world.world !== WORLDS_WORLD_SLUG
       );
     } else {
       const worldPromises = sources.map((s) => {
         const parsed = resolveSource(s, namespace);
-        this.assertSourceAuthorized(parsed.slug, parsed.namespace);
-        const targetNamespace = parsed.slug === WORLDS_WORLD_SLUG
+        this.assertSourceAuthorized(parsed.world, parsed.namespace);
+        const targetNamespace = parsed.world === WORLDS_WORLD_SLUG
           ? undefined
           : (parsed.namespace ?? namespace);
         return this.worldsRepository.get(
-          parsed.slug ?? "",
+          parsed.world ?? "",
           targetNamespace ?? undefined,
         );
       });
@@ -465,9 +465,9 @@ export class LocalWorlds implements WorldsInterface {
     const searchTasks = targetWorlds.map((world) =>
       chunksSearchRepository.search({
         query,
-        world: {
+        worldRow: {
           namespace: world.namespace,
-          slug: world.slug,
+          world: world.world,
           label: world.label,
           description: world.description,
           db_hostname: world.db_hostname,
@@ -493,16 +493,16 @@ export class LocalWorlds implements WorldsInterface {
   async import(input: WorldsImportInput): Promise<void> {
     await this.ensureInitialized();
     const { source, data, contentType } = input;
-    const { slug, namespace } = resolveSource(
+    const { world: sourceWorld, namespace } = resolveSource(
       source,
       this.appContext.namespace,
     );
-    this.assertSourceAuthorized(slug, namespace);
-    const world = await this.worldsRepository.get(
-      slug,
-      slug === WORLDS_WORLD_SLUG ? undefined : namespace,
+    this.assertSourceAuthorized(sourceWorld, namespace);
+    const worldRow = await this.worldsRepository.get(
+      sourceWorld,
+      sourceWorld === WORLDS_WORLD_SLUG ? undefined : namespace,
     );
-    if (!world) {
+    if (!worldRow) {
       throw new Error("World not found");
     }
 
@@ -521,8 +521,8 @@ export class LocalWorlds implements WorldsInterface {
     store.addQuads(parser.parse(body));
 
     const managed = await this.appContext.libsql.manager.get({
-      namespace: world.namespace,
-      slug,
+      namespace: worldRow.namespace,
+      world: worldRow.world,
     });
     const now = Date.now();
 
@@ -535,8 +535,8 @@ export class LocalWorlds implements WorldsInterface {
       }],
     );
 
-    this.invalidateStore({ slug, namespace: world.namespace });
-    await this.worldsRepository.update(slug, world.namespace, {
+    this.invalidateStore({ world: worldRow.world, namespace: worldRow.namespace });
+    await this.worldsRepository.update(worldRow.world, worldRow.namespace, {
       updated_at: now,
     });
   }
@@ -547,17 +547,17 @@ export class LocalWorlds implements WorldsInterface {
   async export(input: WorldsExportInput): Promise<ArrayBuffer> {
     await this.ensureInitialized();
     const { source, contentType } = input;
-    const { slug, namespace } = resolveSource(
+    const { world: sourceWorld, namespace } = resolveSource(
       source,
       this.appContext.namespace,
     );
-    this.assertSourceAuthorized(slug, namespace);
-    const world = await this.worldsRepository.get(
-      slug,
-      slug === WORLDS_WORLD_SLUG ? undefined : namespace,
+    this.assertSourceAuthorized(sourceWorld, namespace);
+    const worldRow = await this.worldsRepository.get(
+      sourceWorld,
+      sourceWorld === WORLDS_WORLD_SLUG ? undefined : namespace,
     );
-    if (!world) {
-      throw new Error(`World not found: ${slug} in namespace ${namespace}`);
+    if (!worldRow) {
+      throw new Error(`World not found: ${sourceWorld} in namespace ${namespace}`);
     }
 
     const serialization = contentType
@@ -567,7 +567,7 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error(`Unsupported content type: ${contentType}`);
     }
 
-    const store = await this.getStore({ slug, namespace: world.namespace });
+    const store = await this.getStore({ world: worldRow.world, namespace: worldRow.namespace });
     const quads = store.getQuads(null, null, null, null);
 
     if (serialization.format === DEFAULT_SERIALIZATION.format) {
@@ -702,14 +702,14 @@ export class LocalWorlds implements WorldsInterface {
    * assertSourceAuthorized ensures the caller is authorized for the given resource.
    */
   private assertSourceAuthorized(
-    slug: string | null,
+    world: string | null,
     namespace: string | null,
   ): void {
     if (this.registryBootstrapping) {
       return;
     }
 
-    const isRegistryWorld = slug === WORLDS_WORLD_SLUG;
+    const isRegistryWorld = world === WORLDS_WORLD_SLUG;
     const isAdmin = this.appContext.namespace === undefined ||
       this.appContext.namespace === WORLDS_WORLD_NAMESPACE;
 

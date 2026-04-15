@@ -32,7 +32,7 @@ export type WorldsGetTool = Tool<WorldsGetInput, World>;
 export const worldsGetTool: WorldsTool<WorldsGetInput, World> = {
   name: "worlds_get",
   description:
-    "Retrieves detailed metadata for a specific world. Use this tool when you have a slug and need to check its configuration, labels, or creation date. Input must be a 'slug'. Returns a world metadata object.",
+    "Retrieves detailed metadata for a specific world. Use this tool when you have a world and need to check its configuration, labels, or creation date. Input must be a 'world'. Returns a world metadata object.",
   inputSchema: worldsGetInputSchema,
   outputSchema: worldsGetOutputSchema,
   isWrite: false,

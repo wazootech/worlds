@@ -3,12 +3,12 @@ import type { WorldsContentType } from "./rdf-content-type.ts";
 import { worldsContentTypeSchema } from "./rdf-content-type.ts";
 
 /**
- * WorldSource represents a target world by slug, qualified name, or name object.
+ * WorldSource represents a target world by world identifier, qualified name, or name object.
  */
 export type WorldSource =
   | string
   | {
-    slug: string | null;
+    world: string | null;
     namespace?: string | null;
     write?: boolean;
     schema?: boolean;
@@ -25,9 +25,9 @@ export type Source = WorldSource;
  * worldSourceSchema is the Zod schema for WorldSource.
  */
 export const worldSourceSchema: z.ZodType<WorldSource> = z.union([
-  z.string().describe("A qualified source name: <namespace>/<slug>"),
+  z.string().describe("A qualified source name: <namespace>/<world>"),
   z.object({
-    slug: z.string().nullable().describe("The slug of the target world."),
+    world: z.string().nullable().describe("The world identifier."),
     namespace: z.string().nullable().optional().describe(
       "The optional namespace of the target world.",
     ),
@@ -37,7 +37,7 @@ export const worldSourceSchema: z.ZodType<WorldSource> = z.union([
     ),
   }),
   z.object({
-    name: z.string().describe("A qualified source name: <namespace>/<slug>"),
+    name: z.string().describe("A qualified source name: <namespace>/<world>"),
     write: z.boolean().optional().describe("Whether write access is enabled."),
     schema: z.boolean().optional().describe(
       "Whether this source should be treated as a schema source.",

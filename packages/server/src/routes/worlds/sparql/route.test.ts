@@ -22,11 +22,11 @@ Deno.test("SPARQL API routes", async (t) => {
       const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const slug = "sparql-world-" + ulid();
+      const world = "sparql-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
         namespace: "_",
-        slug,
+        world,
         label: "SPARQL World",
         description: null,
         db_hostname: null,
@@ -37,7 +37,7 @@ Deno.test("SPARQL API routes", async (t) => {
       });
       await testContext.libsql.manager.create({
         namespace: "_",
-        slug,
+        world,
       });
 
       const response = await app.fetch(
@@ -48,7 +48,7 @@ Deno.test("SPARQL API routes", async (t) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            sources: [slug],
+            sources: [world],
             query: "SELECT * WHERE { ?s ?p ?o } LIMIT 1",
           }),
         }),
@@ -64,11 +64,11 @@ Deno.test("SPARQL API routes", async (t) => {
       const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const slug = "sd-world-" + ulid();
+      const world = "sd-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
         namespace: "_",
-        slug,
+        world,
         label: "SD World",
         description: null,
         db_hostname: null,
@@ -79,7 +79,7 @@ Deno.test("SPARQL API routes", async (t) => {
       });
       await testContext.libsql.manager.create({
         namespace: "_",
-        slug,
+        world,
       });
 
       const response = await app.fetch(
@@ -91,7 +91,7 @@ Deno.test("SPARQL API routes", async (t) => {
             "Accept": "text/turtle",
           },
           body: JSON.stringify({
-            sources: [slug],
+            sources: [world],
           }),
         }),
       );
@@ -123,11 +123,11 @@ Deno.test("SPARQL API routes", async (t) => {
       const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const slug = "nt-world-" + ulid();
+      const world = "nt-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
         namespace: "_",
-        slug,
+        world,
         label: "NT World",
         description: null,
         db_hostname: null,
@@ -138,7 +138,7 @@ Deno.test("SPARQL API routes", async (t) => {
       });
       await testContext.libsql.manager.create({
         namespace: "_",
-        slug,
+        world,
       });
 
       const response = await app.fetch(
@@ -150,7 +150,7 @@ Deno.test("SPARQL API routes", async (t) => {
             "Accept": "application/n-triples",
           },
           body: JSON.stringify({
-            sources: [slug],
+            sources: [world],
           }),
         }),
       );
@@ -181,11 +181,11 @@ Deno.test("SPARQL API routes", async (t) => {
       const { apiKey } = await createTestNamespace(
         testContext,
       );
-      const slug = "post-sd-world-" + ulid();
+      const world = "post-sd-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
         namespace: "_",
-        slug,
+        world,
         label: "Weighted World",
         description: null,
         db_hostname: null,
@@ -196,7 +196,7 @@ Deno.test("SPARQL API routes", async (t) => {
       });
       await testContext.libsql.manager.create({
         namespace: "_",
-        slug,
+        world,
       });
 
       const response = await app.fetch(
@@ -208,7 +208,7 @@ Deno.test("SPARQL API routes", async (t) => {
             "Accept": "application/n-triples;q=1.0, text/turtle;q=0.5",
           },
           body: JSON.stringify({
-            sources: [slug],
+            sources: [world],
           }),
         }),
       );

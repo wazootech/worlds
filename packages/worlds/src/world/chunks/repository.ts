@@ -50,14 +50,14 @@ export interface SearchParams {
   query: string;
 
   /**
-   * worldSlug is the slug of the world to search within.
+   * world is the world identifier to search within.
    */
-  worldSlug?: string;
+  world?: string;
 
   /**
-   * world is the optional pre-fetched world record.
+   * worldRow is the optional pre-fetched world record.
    */
-  world?: WorldRow;
+  worldRow?: WorldRow;
 
   /**
    * subjects is an optional list of subject URIs to filter by.
@@ -107,7 +107,7 @@ export class ChunksSearchRepository {
   async search(params: SearchParams): Promise<WorldsSearchOutput[]> {
     const {
       query,
-      worldSlug,
+      world,
       subjects,
       predicates,
       types,
@@ -123,24 +123,24 @@ export class ChunksSearchRepository {
       : new Array(1536).fill(0);
 
     // Procure world record if not provided
-    let world = params.world;
-    if (!world && worldSlug) {
-      world = await this.worlds.get(worldSlug, namespace) ?? undefined;
+    let worldRow = params.worldRow;
+    if (!worldRow && world) {
+      worldRow = await this.worlds.get(world, namespace) ?? undefined;
     }
 
     if (!this.ctx.libsql.manager) {
       throw new Error("Search manager not available");
     }
 
-    if (!world) {
+    if (!worldRow) {
       return [];
     }
 
     // Search across the target world
     try {
       const managed = await this.ctx.libsql.manager.get({
-        slug: world.slug,
-        namespace: world.namespace,
+        world: worldRow.world,
+        namespace: worldRow.namespace,
       });
 
       const subjectsParam = subjects && subjects.length > 0
@@ -186,14 +186,14 @@ export class ChunksSearchRepository {
           ftsRank: row.fts_rank,
           score: row.combined_rank,
           world: {
-            name: worldResourcePath(world.namespace, world.slug).slice(1),
-            slug: world.slug,
-            namespace: world.namespace ?? undefined,
-            label: world.label ?? undefined,
-            description: world.description ?? undefined,
-            createdAt: world.created_at,
-            updatedAt: world.updated_at,
-            deletedAt: world.deleted_at ?? undefined,
+            name: worldResourcePath(worldRow.namespace, worldRow.world).slice(1),
+            world: worldRow.world,
+            namespace: worldRow.namespace ?? undefined,
+            label: worldRow.label ?? undefined,
+            description: worldRow.description ?? undefined,
+            createdAt: worldRow.created_at,
+            updatedAt: worldRow.updated_at,
+            deletedAt: worldRow.deleted_at ?? undefined,
           },
         } as WorldsSearchOutput;
       });
@@ -203,7 +203,7 @@ export class ChunksSearchRepository {
         .sort((a, b) => b.score - a.score)
         .slice(0, limit);
     } catch (error) {
-      console.error(`Search error for world ${world.slug}:`, error);
+      console.error(`Search error for world ${worldRow.world}:`, error);
       return [];
     }
   }

@@ -46,7 +46,7 @@ export const worldsExportTool: WorldsTool<
 > = {
   name: "worlds_export",
   description:
-    "Retrieves the entire collection of facts from a world in RDF format. Use this tool when you need to back up a dataset or move data between environments. Input must be a 'slug'. Returns a string containing the world's facts in N-Quads format.",
+    "Retrieves the entire collection of facts from a world in RDF format. Use this tool when you need to back up a dataset or move data between environments. Input must be a 'world'. Returns a string containing the world's facts in N-Quads format.",
   inputSchema: worldsExportInputSchema,
   outputSchema: worldsExportOutputSchema,
   isWrite: false,

@@ -1,4 +1,4 @@
-import { DEFAULT_SLUG, WORLDS_WORLD_NAMESPACE } from "./ontology.ts";
+import { DEFAULT_WORLD, WORLDS_WORLD_NAMESPACE } from "./ontology.ts";
 
 /**
  * worldsActionPath returns the URL pathname for an RPC-style action.
@@ -16,21 +16,21 @@ export function worldPrimaryPath(): string {
 
 /**
  * worldResourcePath returns the URL pathname for a single world resource.
- * Unqualified namespaces use the "/worlds/:slug" shorthand.
+ * Unqualified namespaces use the "/worlds/:world" shorthand.
  */
 export function worldResourcePath(
   resolvedNamespace: string | undefined | null,
-  slug: string | null,
+  world: string | null,
 ): string {
   if (
     (resolvedNamespace === undefined || resolvedNamespace === null ||
       resolvedNamespace === "" || resolvedNamespace === "_") &&
-    (slug === undefined || slug === null || slug === "" || slug === "_")
+    (world === undefined || world === null || world === "" || world === "_")
   ) {
     return worldPrimaryPath();
   }
 
-  const s = encodeURIComponent(slug ?? DEFAULT_SLUG ?? "_");
+  const s = encodeURIComponent(world ?? DEFAULT_WORLD ?? "_");
   if (
     resolvedNamespace === undefined || resolvedNamespace === null ||
     resolvedNamespace === "" || resolvedNamespace === "_"
@@ -58,16 +58,16 @@ export function expandPathNamespace(
 }
 
 /**
- * expandPathSlug maps the reserved path segment to the default slug.
+ * expandPathWorld maps the reserved path segment to the default world.
  */
-export function expandPathSlug(
-  pathSlugSegment: string | null,
+export function expandPathWorld(
+  pathWorldSegment: string | null,
 ): string | null {
   if (
-    pathSlugSegment === undefined || pathSlugSegment === "" ||
-    pathSlugSegment === "_"
+    pathWorldSegment === undefined || pathWorldSegment === "" ||
+    pathWorldSegment === "_"
   ) {
-    return DEFAULT_SLUG;
+    return DEFAULT_WORLD;
   }
-  return pathSlugSegment;
+  return pathWorldSegment;
 }
