@@ -1,116 +1,71 @@
 import { Router } from "@fartlabs/rt";
-import type { WorldsContentType } from "@wazoo/worlds-sdk";
+import type { WorldsContentType, WorldsContext } from "@wazoo/worlds-sdk";
+import { expandPathNamespace } from "@wazoo/worlds-sdk";
 import { authorizeRequest } from "#/middleware/auth.ts";
-import type { WorldsContext } from "@wazoo/worlds-sdk";
-import {
-  ErrorResponse,
-  LocalWorlds,
-  negotiateSerialization,
-} from "@wazoo/worlds-sdk";
+import { ErrorResponse } from "#/utils/errors/errors.ts";
+import { getNamespacedEngine } from "#/utils/engine.ts";
+import { negotiateSerialization } from "#/utils/http/negotiation.ts";
+import { assertNamespacePathAllowed } from "#/utils/namespace-access.ts";
 
 /**
- * parseQuery parses the query and dataset parameters from the request.
+ * sparqlRouter creates a router for the SPARQL API.
  */
-async function parseQuery(request: Request) {
-  const url = new URL(request.url);
-  const contentType = request.headers.get("content-type") || "";
-  const method = request.method;
+export default (appContext: WorldsContext) => {
+  return new Router()
+    .post(
+      "/worlds/rpc/sparql",
+      async (ctx) => {
+        return await handleSparql(appContext, ctx);
+      },
+    );
+};
 
-  const defaultGraphUris = url.searchParams.getAll("default-graph-uri");
-  const namedGraphUris = url.searchParams.getAll("named-graph-uri");
-
-  let query: string | null = null;
-
-  if (method === "GET") {
-    query = url.searchParams.get("query");
-  } else if (method === "POST") {
-    const queryParam = url.searchParams.get("query");
-    if (queryParam) {
-      query = queryParam;
-    } else if (contentType.includes("application/x-www-form-urlencoded")) {
-      const formData = await request.formData();
-      query = formData.get("query") as string | null;
-    } else if (
-      contentType.includes("application/sparql-query") ||
-      contentType.includes("application/sparql-update")
-    ) {
-      query = await request.text();
-    }
+export async function handleSparql(
+  appContext: WorldsContext,
+  ctx: { request: Request; params?: URLPatternResult },
+): Promise<Response> {
+  const authorized = await authorizeRequest(appContext, ctx.request);
+  if (!authorized.admin && !authorized.namespaceId) {
+    return ErrorResponse.Unauthorized();
   }
 
-  return { query, defaultGraphUris, namedGraphUris };
-}
+  try {
+    const input = await ctx.request.json();
+    const { query } = input;
 
-export default (appContext: WorldsContext) => {
-  const worlds = new LocalWorlds(appContext);
+    // Resolve effective namespace from input/authorized context instead of path
+    const namespace = input.namespace ?? input.source?.namespace ??
+      authorized.namespaceId;
+    const effectiveNs = expandPathNamespace(
+      namespace,
+      authorized.namespaceId,
+    );
+    const denied = assertNamespacePathAllowed(authorized, effectiveNs);
+    if (denied) return denied;
 
-  return new Router()
-    .get("/worlds/:world/sparql", async (ctx) => {
-      const worldId = ctx.params?.pathname.groups.world;
-      if (!worldId) return ErrorResponse.BadRequest("World ID required");
+    const engine = getNamespacedEngine(appContext, effectiveNs);
 
-      const authorized = authorizeRequest(appContext, ctx.request);
-      if (!authorized.admin) return ErrorResponse.Unauthorized();
+    if (!query) {
+      const serialization = negotiateSerialization(ctx.request);
+      const description = await engine.getServiceDescription({
+        ...input,
+        endpointUrl: ctx.request.url,
+        contentType: serialization.contentType as WorldsContentType,
+      });
+      return new Response(description, {
+        headers: { "Content-Type": serialization.contentType },
+      });
+    }
 
-      const { query, defaultGraphUris, namedGraphUris } = await parseQuery(
-        ctx.request,
-      );
+    const result = await engine.sparql(input);
 
-      if (!query) {
-        const serialization = negotiateSerialization(ctx.request);
-        const description = await worlds.getServiceDescription({
-          world: worldId,
-          endpointUrl: ctx.request.url,
-          contentType: serialization.contentType as WorldsContentType,
-        });
-        return new Response(description, {
-          headers: { "Content-Type": serialization.contentType },
-        });
-      }
-
-      try {
-        const result = await worlds.sparql({
-          world: worldId,
-          query,
-          defaultGraphUris,
-          namedGraphUris,
-        });
-        return Response.json(result, {
-          headers: { "Content-Type": "application/sparql-results+json" },
-        });
-      } catch (error) {
-        return ErrorResponse.BadRequest(
-          error instanceof Error ? error.message : "Query failed",
-        );
-      }
-    })
-    .post("/worlds/:world/sparql", async (ctx) => {
-      const worldId = ctx.params?.pathname.groups.world;
-      if (!worldId) return ErrorResponse.BadRequest("World ID required");
-
-      const authorized = authorizeRequest(appContext, ctx.request);
-      if (!authorized.admin) return ErrorResponse.Unauthorized();
-
-      const { query, defaultGraphUris, namedGraphUris } = await parseQuery(
-        ctx.request,
-      );
-      if (!query) return ErrorResponse.BadRequest("Query required");
-
-      try {
-        const result = await worlds.sparql({
-          world: worldId,
-          query,
-          defaultGraphUris,
-          namedGraphUris,
-        });
-        if (result === null) return new Response(null, { status: 204 });
-        return Response.json(result, {
-          headers: { "Content-Type": "application/sparql-results+json" },
-        });
-      } catch (error) {
-        return ErrorResponse.BadRequest(
-          error instanceof Error ? error.message : "Query/update failed",
-        );
-      }
+    if (result === null) return new Response(null, { status: 204 });
+    return Response.json(result, {
+      headers: { "Content-Type": "application/sparql-results+json" },
     });
-};
+  } catch (error) {
+    return ErrorResponse.BadRequest(
+      error instanceof Error ? error.message : "Query/update failed",
+    );
+  }
+}

@@ -138,7 +138,7 @@ export function WorldLogsContent() {
 
         while (hasMore && page <= maxPages) {
           const result = await listWorldLogs(
-            world.id,
+            world.slug,
             page,
             currentPageSize,
             currentLevel === "all" ? undefined : currentLevel,
@@ -184,7 +184,7 @@ export function WorldLogsContent() {
         setLoading(false);
       }
     },
-    [world.id],
+    [world.slug],
   );
 
   useEffect(() => {

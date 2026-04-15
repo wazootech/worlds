@@ -2,25 +2,31 @@ import { assert, assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
 import {
   createTestContext,
-  createTestOrganization,
+  createTestNamespace,
+  LocalWorlds,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
-import createRoute from "./route.ts";
 
 Deno.test("SPARQL API routes", async (t) => {
-  const testContext = await createTestContext();
-  const app = createRoute(testContext);
+  await using testContext = await createTestContext();
+  await using worlds = new LocalWorlds(testContext);
+  testContext.engine = worlds;
+  await worlds.init();
+  const { createServer } = await import("../../../server.ts");
+  const app = await createServer(testContext);
   const worldsRepository = new WorldsRepository(testContext.libsql.database);
 
   await t.step(
-    "GET /worlds/:world/sparql (Admin)",
+    "POST /worlds-sparql (Admin)",
     async () => {
-      const { apiKey } = await createTestOrganization(testContext);
-      const worldId = ulid();
+      const { apiKey } = await createTestNamespace(
+        testContext,
+      );
+      const world = "sparql-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        id: worldId,
-        slug: "sparql-world-" + worldId,
+        namespace: "_",
+        world,
         label: "SPARQL World",
         description: null,
         db_hostname: null,
@@ -29,31 +35,40 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(worldId);
+      await testContext.libsql.manager.create({
+        namespace: "_",
+        world,
+      });
 
-      const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${worldId}/sparql`, {
-          method: "GET",
+      const response = await app.fetch(
+        new Request(`http://localhost/worlds/rpc/sparql`, {
+          method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
-            "query": "SELECT * WHERE { ?s ?p ?o } LIMIT 1",
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            sources: [world],
+            query: "SELECT * WHERE { ?s ?p ?o } LIMIT 1",
+          }),
         }),
       );
 
-      assertEquals(resp.status, 200);
+      assertEquals(response.status, 200);
     },
   );
 
   await t.step(
-    "GET /worlds/:world/sparql - Service Description",
+    "POST /worlds:sparql - Service Description",
     async () => {
-      const { apiKey } = await createTestOrganization(testContext);
-      const worldId = ulid();
+      const { apiKey } = await createTestNamespace(
+        testContext,
+      );
+      const world = "sd-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        id: worldId,
-        slug: "sd-world-" + worldId,
+        namespace: "_",
+        world,
         label: "SD World",
         description: null,
         db_hostname: null,
@@ -62,24 +77,29 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(worldId);
+      await testContext.libsql.manager.create({
+        namespace: "_",
+        world,
+      });
 
-      // Request without query parameter should return Service Description
-      const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${worldId}/sparql`, {
-          method: "GET",
+      const response = await app.fetch(
+        new Request(`http://localhost/worlds/rpc/sparql`, {
+          method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
             "Accept": "text/turtle",
           },
+          body: JSON.stringify({
+            sources: [world],
+          }),
         }),
       );
 
-      assertEquals(resp.status, 200);
-      assertEquals(resp.headers.get("Content-Type"), "text/turtle");
+      assertEquals(response.status, 200);
+      assertEquals(response.headers.get("Content-Type"), "text/turtle");
 
-      const body = await resp.text();
-      // Check for Service Description triples
+      const body = await response.text();
       assert(
         body.includes(
           "http://www.w3.org/ns/sparql-service-description#Service",
@@ -90,24 +110,24 @@ Deno.test("SPARQL API routes", async (t) => {
           "http://www.w3.org/ns/sparql-service-description#endpoint",
         ),
       );
-      // Check for advertised languages (SPARQL 1.1 and 1.2)
       assert(body.includes("SPARQL11Query"));
       assert(body.includes("SPARQL12Query"));
-      // Check for advertised features
       assert(body.includes("DereferencesURIs"));
       assert(body.includes("TripleTerms"));
     },
   );
 
   await t.step(
-    "GET /worlds/:world/sparql - Service Description (N-Triples)",
+    "POST /worlds:sparql - Service Description (N-Triples)",
     async () => {
-      const { apiKey } = await createTestOrganization(testContext);
-      const worldId = ulid();
+      const { apiKey } = await createTestNamespace(
+        testContext,
+      );
+      const world = "nt-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        id: worldId,
-        slug: "nt-world-" + worldId,
+        namespace: "_",
+        world,
         label: "NT World",
         description: null,
         db_hostname: null,
@@ -116,24 +136,32 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(worldId);
+      await testContext.libsql.manager.create({
+        namespace: "_",
+        world,
+      });
 
-      // Request with N-Triples Accept header
-      const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${worldId}/sparql`, {
-          method: "GET",
+      const response = await app.fetch(
+        new Request(`http://localhost/worlds/rpc/sparql`, {
+          method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
             "Accept": "application/n-triples",
           },
+          body: JSON.stringify({
+            sources: [world],
+          }),
         }),
       );
 
-      assertEquals(resp.status, 200);
-      assertEquals(resp.headers.get("Content-Type"), "application/n-triples");
+      assertEquals(response.status, 200);
+      assertEquals(
+        response.headers.get("Content-Type"),
+        "application/n-triples",
+      );
 
-      const body = await resp.text();
-      // N-Triples should not have prefixes, only full IRIs in brackets
+      const body = await response.text();
       assert(
         body.includes(
           "<http://www.w3.org/ns/sparql-service-description#Service>",
@@ -148,14 +176,16 @@ Deno.test("SPARQL API routes", async (t) => {
   );
 
   await t.step(
-    "GET /worlds/:world/sparql - Weighted Content Negotiation",
+    "POST /worlds:sparql - Weighted Content Negotiation",
     async () => {
-      const { apiKey } = await createTestOrganization(testContext);
-      const worldId = ulid();
+      const { apiKey } = await createTestNamespace(
+        testContext,
+      );
+      const world = "post-sd-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        id: worldId,
-        slug: "post-sd-world-" + worldId,
+        namespace: "_",
+        world,
         label: "Weighted World",
         description: null,
         db_hostname: null,
@@ -164,21 +194,30 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create(worldId);
+      await testContext.libsql.manager.create({
+        namespace: "_",
+        world,
+      });
 
-      // Request with weighted Accept header: prefer NTriples over Turtle
-      const resp = await app.fetch(
-        new Request(`http://localhost/worlds/${worldId}/sparql`, {
-          method: "GET",
+      const response = await app.fetch(
+        new Request(`http://localhost/worlds/rpc/sparql`, {
+          method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
             "Accept": "application/n-triples;q=1.0, text/turtle;q=0.5",
           },
+          body: JSON.stringify({
+            sources: [world],
+          }),
         }),
       );
 
-      assertEquals(resp.status, 200);
-      assertEquals(resp.headers.get("Content-Type"), "application/n-triples");
+      assertEquals(response.status, 200);
+      assertEquals(
+        response.headers.get("Content-Type"),
+        "application/n-triples",
+      );
     },
   );
 });

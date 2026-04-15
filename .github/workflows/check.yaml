@@ -10,11 +10,17 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      - name: Configure Git (LF-friendly checkout)
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v5
       - uses: denoland/setup-deno@v2
+        with:
+          deno-version-file: .tool-versions
       - name: Format
-        run: deno fmt && git diff-index --quiet HEAD
+        run: deno fmt --check
       - name: Lint
-        run: deno lint && git diff-index --quiet HEAD
+        run: deno lint
+      - name: Environment Info
+        run: deno --version && deno info
       - name: Test
-        run: deno task test
+        run: deno cache --reload packages/worlds/src/mod.ts && deno task test --trace-leaks

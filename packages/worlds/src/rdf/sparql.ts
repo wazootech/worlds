@@ -1,4 +1,5 @@
 import { QueryEngine } from "@comunica/query-sparql-rdfjs-lite";
+import type { Store } from "n3";
 import type { PatchHandler } from "./patch/mod.ts";
 import { connectSearchStoreToN3Store } from "./patch/mod.ts";
 import { generateBlobFromN3Store, generateN3StoreFromBlob } from "./n3.ts";
@@ -8,6 +9,14 @@ import type {
   SparqlValue,
   WorldsSparqlOutput,
 } from "#/schemas/mod.ts";
+import { WORLDS } from "#/core/ontology.ts";
+
+/**
+ * queryEngine is a shared instance of the Comunica QueryEngine.
+ * Using a singleton avoids the high overhead of instantiation per call
+ * and prevents resource leaks/dangling timers in test environments.
+ */
+const queryEngine = new QueryEngine();
 
 /**
  * DatasetParams are the parameters for a SPARQL query.
@@ -37,13 +46,91 @@ export class NoopPatchHandler implements PatchHandler {
 }
 
 /**
- * sparql executes a SPARQL query and returns the result.
+ * sparql executes a SPARQL query against an N3 Store (or multiple) and returns the result.
+ * @param stores The N3 Store(s) to query against.
+ * @param query The SPARQL query or update.
+ * @param handler The patch handler for monitoring changes.
+ * @returns The updated stores and the query result.
+ */
+export async function sparql(
+  stores: Store[],
+  query: string,
+  handler: PatchHandler = new NoopPatchHandler(),
+): Promise<{ stores: Store[]; result: WorldsSparqlOutput }> {
+  if (stores.length > 1) {
+    const queryType = await queryEngine.query(query, {
+      sources: stores,
+      baseIRI: WORLDS.BASE,
+    });
+
+    if (queryType.resultType === "void") {
+      throw new Error(
+        "Updates are not supported in multi-source SPARQL queries.",
+      );
+    }
+
+    if (queryType.resultType === "bindings") {
+      const result = await handleBindings(queryType);
+      return { stores, result };
+    }
+
+    if (queryType.resultType === "boolean") {
+      const result = await handleBoolean(queryType);
+      return { stores, result };
+    }
+
+    if (queryType.resultType === "quads") {
+      const result = await handleQuads(queryType);
+      return { stores, result };
+    }
+
+    throw new Error("Unsupported query type");
+  }
+
+  const store = stores[0];
+  const { store: proxiedStore, sync } = connectSearchStoreToN3Store(
+    handler,
+    store,
+  );
+
+  const queryType = await queryEngine.query(query, {
+    sources: [proxiedStore],
+    baseIRI: WORLDS.BASE,
+  });
+
+  if (queryType.resultType === "void") {
+    await queryType.execute();
+    await sync();
+    return { stores, result: null };
+  }
+
+  if (queryType.resultType === "bindings") {
+    const result = await handleBindings(queryType);
+    return { stores, result };
+  }
+
+  if (queryType.resultType === "boolean") {
+    const result = await handleBoolean(queryType);
+    return { stores, result };
+  }
+
+  if (queryType.resultType === "quads") {
+    const result = await handleQuads(queryType);
+    return { stores, result };
+  }
+
+  throw new Error("Unsupported query type");
+}
+
+/**
+ * sparqlBlob executes a SPARQL query against a Blob (legacy API).
  * @param blob The RDF data as a blob.
  * @param query The SPARQL query or update.
  * @param handler The patch handler for monitoring changes.
  * @returns The new blob and the query result.
+ * @deprecated Use sparql() with a Store for better performance.
  */
-export async function sparql(
+export async function sparqlBlob(
   blob: Blob,
   query: string,
   handler: PatchHandler = new NoopPatchHandler(),
@@ -54,8 +141,10 @@ export async function sparql(
     store,
   );
 
-  const queryEngine = new QueryEngine();
-  const queryType = await queryEngine.query(query, { sources: [proxiedStore] });
+  const queryType = await queryEngine.query(query, {
+    sources: [proxiedStore],
+    baseIRI: WORLDS.BASE,
+  });
 
   // If the query is an update, we need to execute it and then sync the search store.
   if (queryType.resultType === "void") {
@@ -89,24 +178,48 @@ async function handleBindings(queryType: any): Promise<WorldsSparqlOutput> {
   const bindingsStream = await queryType.execute();
   // deno-lint-ignore no-explicit-any
   const vars = (await queryType.metadata()).variables.map((v: any) => v.value);
-  const bindings = await new Promise<SparqlBinding[]>(
-    (resolve, reject) => {
-      const b: SparqlBinding[] = [];
-      // deno-lint-ignore no-explicit-any
-      bindingsStream.on("data", (binding: any) => {
-        const bindingObj: SparqlBinding = {};
-        for (const v of vars) {
-          const term = binding.get(v);
-          if (term) {
-            bindingObj[v] = toSparqlValue(term);
-          }
+  const bindings = await new Promise<SparqlBinding[]>((resolve, reject) => {
+    const b: SparqlBinding[] = [];
+    let finished = false;
+
+    // deno-lint-ignore no-explicit-any
+    const onData = (binding: any) => {
+      if (finished) return;
+      const bindingObj: SparqlBinding = {};
+      for (const v of vars) {
+        const term = binding.get(v);
+        if (term) {
+          bindingObj[v] = toSparqlValue(term);
         }
-        b.push(bindingObj);
-      });
-      bindingsStream.on("end", () => resolve(b));
-      bindingsStream.on("error", reject);
-    },
-  );
+      }
+      b.push(bindingObj);
+    };
+
+    const onEnd = () => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      resolve(b);
+    };
+
+    // deno-lint-ignore no-explicit-any
+    const onError = (err: any) => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      reject(err);
+    };
+
+    const cleanup = () => {
+      bindingsStream.off("data", onData);
+      bindingsStream.off("end", onEnd);
+      bindingsStream.off("error", onError);
+    };
+
+    bindingsStream.on("data", onData);
+    bindingsStream.on("end", onEnd);
+    bindingsStream.on("error", onError);
+  });
 
   return {
     head: { vars, link: null },
@@ -128,8 +241,11 @@ async function handleQuads(queryType: any): Promise<WorldsSparqlOutput> {
   const quadsStream = await queryType.execute();
   const quads = await new Promise<SparqlQuad[]>((resolve, reject) => {
     const q: SparqlQuad[] = [];
+    let finished = false;
+
     // deno-lint-ignore no-explicit-any
-    quadsStream.on("data", (quad: any) => {
+    const onData = (quad: any) => {
+      if (finished) return;
       q.push({
         subject: {
           type: quad.subject.termType === "NamedNode" ? "uri" : "bnode",
@@ -145,9 +261,32 @@ async function handleQuads(queryType: any): Promise<WorldsSparqlOutput> {
           value: quad.graph.value,
         },
       });
-    });
-    quadsStream.on("end", () => resolve(q));
-    quadsStream.on("error", reject);
+    };
+
+    const onEnd = () => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      resolve(q);
+    };
+
+    // deno-lint-ignore no-explicit-any
+    const onError = (err: any) => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      reject(err);
+    };
+
+    const cleanup = () => {
+      quadsStream.off("data", onData);
+      quadsStream.off("end", onEnd);
+      quadsStream.off("error", onError);
+    };
+
+    quadsStream.on("data", onData);
+    quadsStream.on("end", onEnd);
+    quadsStream.on("error", onError);
   });
 
   return {

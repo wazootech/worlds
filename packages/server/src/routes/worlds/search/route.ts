@@ -1,42 +1,50 @@
 import { Router } from "@fartlabs/rt";
-import { authorizeRequest } from "#/middleware/auth.ts";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
-import { ErrorResponse, LocalWorlds } from "@wazoo/worlds-sdk";
+import { expandPathNamespace } from "@wazoo/worlds-sdk";
+import { authorizeRequest } from "#/middleware/auth.ts";
+import { ErrorResponse } from "#/utils/errors/errors.ts";
+import { getNamespacedEngine } from "#/utils/engine.ts";
+import { assertNamespacePathAllowed } from "#/utils/namespace-access.ts";
 
+/**
+ * searchRouter creates a router for the World Search API.
+ */
 export default (appContext: WorldsContext) => {
-  const worlds = new LocalWorlds(appContext);
-
-  return new Router().get(
-    "/worlds/:world/search",
-    async (ctx) => {
-      const worldId = ctx.params?.pathname.groups.world;
-      if (!worldId) return ErrorResponse.BadRequest("World ID required");
-
-      const authorized = authorizeRequest(appContext, ctx.request);
-      if (!authorized.admin) return ErrorResponse.Unauthorized();
-
-      const url = new URL(ctx.request.url);
-      const query = url.searchParams.get("query") ?? "";
-      const subjects = url.searchParams.getAll("subjects");
-      const predicates = url.searchParams.getAll("predicates");
-      const types = url.searchParams.getAll("types");
-      const limit = parseInt(url.searchParams.get("limit") ?? "20", 10);
-
-      try {
-        const results = await worlds.search({
-          world: worldId,
-          query,
-          limit,
-          subjects: subjects.length > 0 ? subjects : undefined,
-          predicates: predicates.length > 0 ? predicates : undefined,
-          types: types.length > 0 ? types : undefined,
-        });
-        return Response.json(results);
-      } catch (error) {
-        return ErrorResponse.NotFound(
-          error instanceof Error ? error.message : "World not found",
-        );
-      }
-    },
-  );
+  return new Router()
+    .post(
+      "/worlds/rpc/search",
+      async (ctx) => {
+        return await handleSearch(appContext, ctx);
+      },
+    );
 };
+
+export async function handleSearch(
+  appContext: WorldsContext,
+  ctx: { request: Request; params?: URLPatternResult },
+): Promise<Response> {
+  const authorized = await authorizeRequest(appContext, ctx.request);
+  if (!authorized.admin && !authorized.namespaceId) {
+    return ErrorResponse.Unauthorized();
+  }
+
+  try {
+    const body = await ctx.request.json();
+    const namespace = body.namespace ?? body.source?.namespace ??
+      authorized.namespaceId;
+    const effectiveNs = expandPathNamespace(
+      namespace,
+      authorized.namespaceId,
+    );
+    const denied = assertNamespacePathAllowed(authorized, effectiveNs);
+    if (denied) return denied;
+
+    const engine = getNamespacedEngine(appContext, effectiveNs);
+    const results = await engine.search(body);
+    return Response.json(results);
+  } catch (error) {
+    return ErrorResponse.BadRequest(
+      error instanceof Error ? error.message : "Search failed",
+    );
+  }
+}

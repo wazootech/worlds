@@ -3,16 +3,15 @@
   "version": "0.0.1",
   "exports": {
     ".": "./src/mod.ts",
-    "./engine": "./src/local.ts",
-    "./remote": "./src/remote.ts",
+    "./engine": "./src/worlds/local.ts",
+    "./remote": "./src/worlds/remote.ts",
     "./schema": "./src/schemas/mod.ts",
     "./schema/world": "./src/schemas/world.ts",
     "./schema/sparql": "./src/schemas/sparql.ts",
     "./schema/search": "./src/schemas/search.ts",
-    "./schema/log": "./src/schemas/log.ts",
     "./schema/source": "./src/schemas/source.ts",
-    "./types": "./src/types.ts",
-    "./testing": "./src/engine-context.ts"
+    "./types": "./src/core/types.ts",
+    "./testing": "./src/core/engine-context.ts"
   },
   "imports": {
     "#/": "./src/",
@@ -26,11 +25,12 @@
     "ollama-ai-provider": "npm:ollama-ai-provider@^1.2.0",
     "rdf-canonize": "npm:rdf-canonize@^5.0.0",
     "@std/encoding": "jsr:@std/encoding@^1.0.5",
-    "n3": "npm:n3@^1.21.0",
+    "n3": "npm:n3@^2.0.3",
     "zod": "npm:zod@^4.3.6"
   },
   "tasks": {
-    "test": "deno test -A"
+    "test": "deno test -A",
+    "generate": "deno -A jsr:@fartlabs/sql-embedder@0.0.5 ./"
   },
   "publish": {
     "exclude": ["**/*.test.ts", "**/*_test.ts"]

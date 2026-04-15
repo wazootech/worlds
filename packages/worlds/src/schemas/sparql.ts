@@ -1,4 +1,10 @@
 import { z } from "zod";
+import type { WorldsContentType } from "./rdf-content-type.ts";
+import { worldsContentTypeSchema } from "./rdf-content-type.ts";
+import type { WorldSource } from "./source.ts";
+import { worldSourceSchema } from "./source.ts";
+
+export { type WorldsContentType, worldsContentTypeSchema };
 
 /**
  * SparqlValue represents a value in a SPARQL result.
@@ -306,9 +312,14 @@ export const sparqlQuadsResultsSchema: z.ZodType<SparqlQuadsResults> = z
  */
 export interface WorldsSparqlInput {
   /**
-   * world is the ID or slug of the target world.
+   * sources is the optional list of target worlds.
    */
-  world: string;
+  sources?: WorldSource[];
+
+  /**
+   * namespace is the optional namespace of the target world.
+   */
+  namespace?: string;
 
   /**
    * query is the SPARQL query or update string.
@@ -330,7 +341,12 @@ export interface WorldsSparqlInput {
  * worldsSparqlInputSchema is the Zod schema for WorldsSparqlInput.
  */
 export const worldsSparqlInputSchema: z.ZodType<WorldsSparqlInput> = z.object({
-  world: z.string().describe("The ID or slug of the target world."),
+  sources: z.array(worldSourceSchema).optional().describe(
+    "The optional list of target worlds.",
+  ),
+  namespace: z.string().optional().describe(
+    "The optional namespace of the target world.",
+  ),
   query: z.string().describe("The SPARQL query or update string."),
   defaultGraphUris: z.array(z.string()).optional().describe(
     "Optional list of default graphs to query.",
@@ -341,32 +357,18 @@ export const worldsSparqlInputSchema: z.ZodType<WorldsSparqlInput> = z.object({
 });
 
 /**
- * WorldsContentType represents the supported RDF serialization content types.
- */
-export type WorldsContentType =
-  | "text/turtle"
-  | "application/n-quads"
-  | "application/n-triples"
-  | "text/n3";
-
-/**
- * worldsContentTypeSchema is the Zod schema for WorldsContentType.
- */
-export const worldsContentTypeSchema: z.ZodType<WorldsContentType> = z.enum([
-  "text/turtle",
-  "application/n-quads",
-  "application/n-triples",
-  "text/n3",
-]);
-
-/**
  * WorldsServiceDescriptionInput represents the parameters for retrieving a SPARQL service description.
  */
 export interface WorldsServiceDescriptionInput {
   /**
-   * world is the ID or slug of the target world.
+   * sources is the optional list of target worlds.
    */
-  world: string;
+  sources?: WorldSource[];
+
+  /**
+   * namespace is the optional namespace of the target world.
+   */
+  namespace?: string;
 
   /**
    * endpointUrl is the URL of the SPARQL endpoint.
@@ -385,7 +387,12 @@ export interface WorldsServiceDescriptionInput {
 export const worldsServiceDescriptionInputSchema: z.ZodType<
   WorldsServiceDescriptionInput
 > = z.object({
-  world: z.string().describe("The ID or slug of the target world."),
+  sources: z.array(worldSourceSchema).optional().describe(
+    "The optional list of target worlds.",
+  ),
+  namespace: z.string().optional().describe(
+    "The optional namespace of the target world.",
+  ),
   endpointUrl: z.string().url().describe("The URL of the SPARQL endpoint."),
   contentType: worldsContentTypeSchema.optional().describe(
     "Optional RDF serialization content type.",

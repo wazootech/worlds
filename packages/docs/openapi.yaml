@@ -2,7 +2,13 @@ openapi: 3.0.0
 info:
   title: Worlds API
   version: 1.0.0
-  description: API for managing and querying RDF-based "worlds".
+  description: |
+    API for managing and querying RDF-based worlds.
+
+    **Namespaces:** Routes under `/namespaces/{namespace}/...` target a specific tenant namespace.
+    The path segment `_` is reserved: it expands to the authenticated tenant default namespace
+    (or the platform namespace when no tenant applies). Shorthand routes under `/worlds/...`
+    use the default namespace and omit the `/namespaces/...` prefix.
 
 servers:
   - url: https://api.wazoo.dev
@@ -33,15 +39,49 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
 
   schemas:
+    WorldSource:
+      description: |
+        Target world: a qualified string (`namespace/slug`), `{ slug, namespace? }`, or `{ name }`
+        (same qualified form as `name`).
+      oneOf:
+        - type: string
+        - type: object
+          required: [slug]
+          properties:
+            slug:
+              type: string
+            namespace:
+              type: string
+            write:
+              type: boolean
+            schema:
+              type: boolean
+        - type: object
+          required: [name]
+          properties:
+            name:
+              type: string
+            write:
+              type: boolean
+            schema:
+              type: boolean
+
     World:
       type: object
       properties:
-        id:
-          type: string
         slug:
           type: string
+        namespace:
+          type: string
+          description: Parent namespace for this world in multitenancy contexts.
         label:
           type: string
         description:
@@ -55,9 +95,7 @@ components:
           type: number
           nullable: true
       required:
-        - id
         - slug
-        - label
         - createdAt
         - updatedAt
 
@@ -66,6 +104,9 @@ components:
       properties:
         slug:
           type: string
+        namespace:
+          type: string
+          description: Optional in body; the path namespace wins for `/namespaces/...` routes. The reserved `_` value is rejected here.
         label:
           type: string
         description:
@@ -73,42 +114,100 @@ components:
           nullable: true
       required:
         - slug
-        - label
 
     UpdateWorldParams:
       type: object
       properties:
-        slug:
-          type: string
+        source:
+          $ref: "#/components/schemas/WorldSource"
+          description: Optional; defaults to the world identified by the URL path.
         label:
           type: string
         description:
           type: string
           nullable: true
 
-    Log:
+    ExportPostBody:
       type: object
       properties:
-        id:
+        contentType:
           type: string
-        worldId:
+          description: RDF serialization MIME type. If omitted, the server negotiates from `Accept` (default `application/n-quads`).
+        source:
+          $ref: "#/components/schemas/WorldSource"
+          description: Optional; defaults to the world identified by the URL path.
+
+    ImportPostBody:
+      type: object
+      required: [data]
+      properties:
+        data:
           type: string
-        timestamp:
-          type: number
-        level:
+          description: Base64-encoded RDF document.
+        contentType:
           type: string
-          enum: [info, warn, error, debug]
-        message:
+          default: application/n-quads
+        source:
+          $ref: "#/components/schemas/WorldSource"
+          description: Optional; defaults to the world identified by the URL path.
+
+    SparqlPostBody:
+      type: object
+      properties:
+        query:
           type: string
-        metadata:
-          type: object
-          nullable: true
-      required:
-        - id
-        - worldId
-        - timestamp
-        - level
-        - message
+          description: |
+            SPARQL 1.1 query or update string. If omitted or empty, the server returns a SPARQL 1.1
+            service description (RDF), with serialization negotiated from `Accept`.
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorldSource"
+        namespace:
+          type: string
+        defaultGraphUris:
+          type: array
+          items:
+            type: string
+        namedGraphUris:
+          type: array
+          items:
+            type: string
+
+    SearchPostBody:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorldSource"
+        namespace:
+          type: string
+        limit:
+          type: integer
+          minimum: 1
+        subjects:
+          type: array
+          items:
+            type: string
+        predicates:
+          type: array
+          items:
+            type: string
+        types:
+          type: array
+          items:
+            type: string
+
+    DeleteWorldBody:
+      type: object
+      properties:
+        source:
+          $ref: "#/components/schemas/WorldSource"
+          description: Optional; defaults to the world identified by the URL path.
 
     TripleSearchResult:
       type: object
@@ -127,13 +226,16 @@ components:
           nullable: true
         score:
           type: number
-        worldId:
-          type: string
+        world:
+          $ref: "#/components/schemas/World"
       required:
         - subject
         - predicate
         - object
+        - vecRank
+        - ftsRank
         - score
+        - world
 
     SparqlResults:
       type: object
@@ -231,7 +333,7 @@ components:
           enum: [literal]
         value:
           type: string
-        xml:lang:
+        "xml:lang":
           type: string
         datatype:
           type: string
@@ -310,7 +412,9 @@ security:
 paths:
   /worlds:
     get:
-      summary: List worlds
+      operationId: listWorldsDefaultNamespace
+      summary: List worlds (default namespace)
+      description: Lists worlds in the default namespace for the authenticated principal.
       parameters:
         - name: page
           in: query
@@ -325,7 +429,7 @@ paths:
             default: 20
       responses:
         "200":
-          description: A list of worlds
+          description: Worlds in the namespace
           content:
             application/json:
               schema:
@@ -334,9 +438,9 @@ paths:
                   $ref: "#/components/schemas/World"
         "401":
           $ref: "#/components/responses/Unauthorized"
-
     post:
-      summary: Create a world
+      operationId: createWorldDefaultNamespace
+      summary: Create a world (default namespace)
       requestBody:
         required: true
         content:
@@ -352,8 +456,8 @@ paths:
                 $ref: "#/components/schemas/World"
         "400":
           $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "409":
           description: Conflict
           content:
@@ -361,15 +465,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /worlds/{world}:
+  /worlds/{slug}:
     parameters:
-      - name: world
+      - name: slug
         in: path
         required: true
         schema:
           type: string
     get:
-      summary: Get a world
+      operationId: getWorldDefaultNamespace
+      summary: Get a world (default namespace)
       responses:
         "200":
           description: Success
@@ -381,9 +486,9 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-
     put:
-      summary: Update a world
+      operationId: updateWorldDefaultNamespace
+      summary: Update a world (default namespace)
       requestBody:
         required: true
         content:
@@ -399,9 +504,16 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-
     delete:
-      summary: Delete a world
+      operationId: deleteWorldDefaultNamespace
+      summary: Delete a world (default namespace)
+      description: Optional JSON body can override the target `source`; otherwise the path identifies the world.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteWorldBody"
       responses:
         "204":
           description: No Content
@@ -410,45 +522,61 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  /worlds/{world}/export:
-    get:
-      summary: Export world data
+  /worlds/{slug}/export:
+    post:
+      operationId: exportWorldDefaultNamespace
+      summary: Export RDF from a world (default namespace)
       parameters:
-        - name: world
+        - name: slug
           in: path
           required: true
           schema:
             type: string
-        - name: format
-          in: query
-          schema:
-            type: string
-            enum: [turtle, n-quads, n-triples, n3]
-            default: n-quads
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportPostBody"
       responses:
         "200":
-          description: Exported data
+          description: Exported RDF (per `contentType` or negotiated `Accept`)
           content:
             text/turtle:
-              schema: { type: string }
+              schema:
+                type: string
+                format: binary
             application/n-quads:
-              schema: { type: string }
+              schema:
+                type: string
+                format: binary
             application/n-triples:
-              schema: { type: string }
+              schema:
+                type: string
+                format: binary
             text/n3:
-              schema: { type: string }
+              schema:
+                type: string
+                format: binary
+            application/trig:
+              schema:
+                type: string
+                format: binary
+            application/ld+json:
+              schema:
+                type: string
+                format: binary
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
 
-  /worlds/{world}/import:
+  /worlds/{slug}/import:
     post:
-      summary: Import world data
+      operationId: importWorldDefaultNamespace
+      summary: Import RDF into a world (default namespace)
       parameters:
-        - name: world
+        - name: slug
           in: path
           required: true
           schema:
@@ -456,14 +584,9 @@ paths:
       requestBody:
         required: true
         content:
-          text/turtle:
-            schema: { type: string }
-          application/n-quads:
-            schema: { type: string }
-          application/n-triples:
-            schema: { type: string }
-          text/n3:
-            schema: { type: string }
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportPostBody"
       responses:
         "204":
           description: No Content
@@ -471,18 +594,154 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
 
-  /worlds/{world}/logs:
-    get:
-      summary: List world logs
+  /worlds/sparql:
+    post:
+      operationId: sparqlCollectionDefaultNamespace
+      summary: SPARQL over the default namespace collection
+      description: |
+        JSON body matches `WorldsSparqlInput`. Path scope supplies the default namespace; no world slug is implied.
+        Omit or leave `query` empty to retrieve a SPARQL 1.1 service description (RDF).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SparqlPostBody"
+      responses:
+        "200":
+          description: SPARQL JSON results, or RDF service description when `query` is absent
+          content:
+            application/sparql-results+json:
+              schema:
+                $ref: "#/components/schemas/SparqlResults"
+            text/turtle:
+              schema:
+                type: string
+            application/rdf+xml:
+              schema:
+                type: string
+            application/trig:
+              schema:
+                type: string
+            application/ld+json:
+              schema:
+                type: string
+        "204":
+          description: SPARQL update succeeded with no result body
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /worlds/{slug}/sparql:
+    post:
+      operationId: sparqlUnaryDefaultNamespace
+      summary: SPARQL scoped to one world (default namespace)
       parameters:
-        - name: world
+        - name: slug
           in: path
           required: true
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SparqlPostBody"
+      responses:
+        "200":
+          description: SPARQL JSON results, or RDF service description when `query` is absent
+          content:
+            application/sparql-results+json:
+              schema:
+                $ref: "#/components/schemas/SparqlResults"
+            text/turtle:
+              schema:
+                type: string
+            application/rdf+xml:
+              schema:
+                type: string
+            application/trig:
+              schema:
+                type: string
+            application/ld+json:
+              schema:
+                type: string
+        "204":
+          description: SPARQL update succeeded with no result body
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /worlds/search:
+    post:
+      operationId: searchCollectionDefaultNamespace
+      summary: Search triples in the default namespace collection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchPostBody"
+      responses:
+        "200":
+          description: Ranked triple hits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripleSearchResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /worlds/{slug}/search:
+    post:
+      operationId: searchUnaryDefaultNamespace
+      summary: Search triples scoped to one world (default namespace)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchPostBody"
+      responses:
+        "200":
+          description: Ranked triple hits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripleSearchResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /namespaces/{namespace}/worlds:
+    parameters:
+      - name: namespace
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Target namespace, or `_` for the caller default namespace.
+    get:
+      operationId: listWorldsNamespaced
+      summary: List worlds in a namespace
+      parameters:
         - name: page
           in: query
           schema:
@@ -494,66 +753,313 @@ paths:
             type: integer
             maximum: 100
             default: 20
-        - name: level
-          in: query
-          schema:
-            type: string
-            enum: [info, warn, error, debug]
       responses:
         "200":
-          description: A list of logs
+          description: Worlds in the namespace
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Log"
+                  $ref: "#/components/schemas/World"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createWorldNamespaced
+      summary: Create a world in a namespace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWorldParams"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/World"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /namespaces/{namespace}/worlds/{slug}:
+    parameters:
+      - name: namespace
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Target namespace, or `_` for the caller default namespace.
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getWorldNamespaced
+      summary: Get a world
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/World"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateWorldNamespaced
+      summary: Update a world
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWorldParams"
+      responses:
+        "204":
+          description: No Content
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteWorldNamespaced
+      summary: Delete a world
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteWorldBody"
+      responses:
+        "204":
+          description: No Content
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
 
-  /worlds/{world}/search:
-    get:
-      summary: Semantic search
+  /namespaces/{namespace}/worlds/{slug}/export:
+    post:
+      operationId: exportWorldNamespaced
+      summary: Export RDF from a world
       parameters:
-        - name: world
+        - name: namespace
           in: path
           required: true
           schema:
             type: string
-        - name: query
-          in: query
+        - name: slug
+          in: path
           required: true
           schema:
             type: string
-        - name: subjects
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-        - name: predicates
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-        - name: types
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            maximum: 100
-            default: 20
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportPostBody"
       responses:
         "200":
-          description: Search results
+          description: Exported RDF
+          content:
+            text/turtle:
+              schema:
+                type: string
+                format: binary
+            application/n-quads:
+              schema:
+                type: string
+                format: binary
+            application/n-triples:
+              schema:
+                type: string
+                format: binary
+            text/n3:
+              schema:
+                type: string
+                format: binary
+            application/trig:
+              schema:
+                type: string
+                format: binary
+            application/ld+json:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /namespaces/{namespace}/worlds/{slug}/import:
+    post:
+      operationId: importWorldNamespaced
+      summary: Import RDF into a world
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportPostBody"
+      responses:
+        "204":
+          description: No Content
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /namespaces/{namespace}/worlds/sparql:
+    post:
+      operationId: sparqlCollectionNamespaced
+      summary: SPARQL over all worlds in a namespace
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SparqlPostBody"
+      responses:
+        "200":
+          description: SPARQL JSON results, or RDF service description when `query` is absent
+          content:
+            application/sparql-results+json:
+              schema:
+                $ref: "#/components/schemas/SparqlResults"
+            text/turtle:
+              schema:
+                type: string
+            application/rdf+xml:
+              schema:
+                type: string
+            application/trig:
+              schema:
+                type: string
+            application/ld+json:
+              schema:
+                type: string
+        "204":
+          description: SPARQL update succeeded with no result body
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /namespaces/{namespace}/worlds/{slug}/sparql:
+    post:
+      operationId: sparqlUnaryNamespaced
+      summary: SPARQL scoped to one world
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SparqlPostBody"
+      responses:
+        "200":
+          description: SPARQL JSON results, or RDF service description when `query` is absent
+          content:
+            application/sparql-results+json:
+              schema:
+                $ref: "#/components/schemas/SparqlResults"
+            text/turtle:
+              schema:
+                type: string
+            application/rdf+xml:
+              schema:
+                type: string
+            application/trig:
+              schema:
+                type: string
+            application/ld+json:
+              schema:
+                type: string
+        "204":
+          description: SPARQL update succeeded with no result body
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /namespaces/{namespace}/worlds/search:
+    post:
+      operationId: searchCollectionNamespaced
+      summary: Search triples across a namespace
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchPostBody"
+      responses:
+        "200":
+          description: Ranked triple hits
           content:
             application/json:
               schema:
@@ -564,92 +1070,42 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
-  /worlds/{world}/sparql:
-    get:
-      summary: Execute SPARQL query or get service description
+  /namespaces/{namespace}/worlds/{slug}/search:
+    post:
+      operationId: searchUnaryNamespaced
+      summary: Search triples scoped to one world
       parameters:
-        - name: world
+        - name: namespace
           in: path
           required: true
           schema:
             type: string
-        - name: query
-          in: query
-          schema:
-            type: string
-        - name: default-graph-uri
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-        - name: named-graph-uri
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        "200":
-          description: Success
-          content:
-            application/sparql-results+json:
-              schema:
-                $ref: "#/components/schemas/SparqlResults"
-            text/turtle:
-              schema: { type: string }
-            application/rdf+xml:
-              schema: { type: string }
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
-
-    post:
-      summary: Execute SPARQL query or update
-      parameters:
-        - name: world
+        - name: slug
           in: path
           required: true
           schema:
             type: string
       requestBody:
+        required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
-              type: object
-              properties:
-                query:
-                  type: string
-                default-graph-uri:
-                  type: array
-                  items:
-                    type: string
-                named-graph-uri:
-                  type: array
-                  items:
-                    type: string
-          application/sparql-query:
-            schema: { type: string }
-          application/sparql-update:
-            schema: { type: string }
+              $ref: "#/components/schemas/SearchPostBody"
       responses:
         "200":
-          description: Success
+          description: Ranked triple hits
           content:
-            application/sparql-results+json:
+            application/json:
               schema:
-                $ref: "#/components/schemas/SparqlResults"
-        "204":
-          description: Update success
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripleSearchResult"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
+        "403":
+          $ref: "#/components/responses/Forbidden"

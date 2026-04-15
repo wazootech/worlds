@@ -38,7 +38,7 @@ export function WorldItem({
     }
   };
 
-  const seed = getSeedFromId(world.id);
+  const seed = getSeedFromId(world.slug);
 
   return (
     <div className="overflow-hidden rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm transition-shadow hover:shadow-md group">
@@ -55,13 +55,13 @@ export function WorldItem({
             <div className="flex flex-col justify-center min-w-0">
               <h3
                 className="text-lg font-semibold text-stone-900 dark:text-white truncate"
-                title={world.label || world.id}
+                title={world.label || world.slug}
               >
                 <Link
                   href={`/${organizationId}/${world.slug}`}
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
-                  {world.label || world.id}
+                  {world.label || world.slug}
                 </Link>
               </h3>
             </div>

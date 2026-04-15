@@ -98,10 +98,9 @@ export default async function WorldLayout({
 
   // Canonical redirect
   if (
-    (organizationId === organization.id &&
-      organization.slug &&
-      organization.slug !== organization.id) ||
-    (worldId === world.id && world.slug && world.slug !== world.id)
+    organizationId === organization.id &&
+    organization.slug &&
+    organization.slug !== organization.id
   ) {
     redirect(`/${organization.slug}/${world.slug}`);
   }
@@ -144,7 +143,7 @@ const worlds = new Worlds({
   apiKey: "${apiKey}"
 });
 
-// Resolve a world by its ID or slug.
+// Resolve a world by its slug.
 const world = await worlds.get("${worldIdSnippet}");
 console.log("Connected to world:", world.label);`;
 
@@ -160,7 +159,7 @@ const worlds = new Worlds({
   apiKey: "${maskedApiKey}"
 });
 
-// Resolve a world by its ID or slug.
+// Resolve a world by its slug.
 const world = await worlds.get("${worldIdSnippet}");
 console.log("Connected to world:", world.label);`;
 

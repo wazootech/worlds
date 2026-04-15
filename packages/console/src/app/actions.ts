@@ -9,6 +9,25 @@ import {
   teardownOrganization,
 } from "@/lib/platform";
 import { getWorldsByOrgMetadata } from "@/lib/worlds";
+import type { Log, SparqlSelectResults, SparqlValue } from "@wazoo/worlds-sdk";
+
+/** Ontology namespace IRI (matches server; inlined until console uses published slug/namespace SDK). */
+const WORLDS_ONTOLOGY_NAMESPACE = "https://schema.wazoo.dev/worlds#";
+
+function sparqlTermToString(term: SparqlValue | undefined): string {
+  if (!term) return "";
+  if (term.type === "literal" || term.type === "uri" || term.type === "bnode") {
+    return term.value;
+  }
+  return "";
+}
+
+function parseLogLevel(raw: string): Log["level"] {
+  if (raw === "info" || raw === "warn" || raw === "error" || raw === "debug") {
+    return raw;
+  }
+  return "info";
+}
 
 function getActiveOrgId(user: WorkOSUser) {
   return user.metadata?.activeOrganizationId as string | undefined;
@@ -39,13 +58,17 @@ export async function updateWorld(
   if (!organization) throw new Error("Organization not found");
   const worlds = getWorldsByOrgMetadata(organization);
 
-  // Resolve world to ensure we have the actual ID for mutation
+  // Resolve world to ensure we have it
   const world = await worlds.get(worldId);
   if (!world) {
     throw new Error("World not found");
   }
 
-  await worlds.update(world.id, updates);
+  await worlds.update(world.id, {
+    slug: updates.slug,
+    label: updates.label,
+    description: updates.description,
+  });
 
   if (organization) {
     const finalWorldSlug = updates.slug ?? world.slug;
@@ -72,7 +95,7 @@ export async function deleteWorld(organizationId: string, worldId: string) {
   if (!organization) throw new Error("Organization not found");
   const worlds = getWorldsByOrgMetadata(organization);
 
-  // Resolve world to ensure we have the actual ID for mutation
+  // Resolve world
   const world = await worlds.get(worldId);
   if (!world) {
     throw new Error("World not found");
@@ -165,7 +188,7 @@ export async function createWorld(
       slug,
     });
 
-    console.log("World created successfully:", world.id);
+    console.log("World created successfully:", world.slug);
 
     // Artificial delay to allow for eventual consistency in DB
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -173,7 +196,7 @@ export async function createWorld(
     revalidatePath(`/${organization.id}`);
     revalidatePath(`/${organization.slug}`);
 
-    return { success: true, worldId: world.id, slug: world.slug };
+    return { success: true, worldId: world.slug, slug: world.slug };
   } catch (error) {
     console.error("Failed to create world:", error);
     return {
@@ -211,7 +234,7 @@ export async function deleteOrganization(organizationId: string) {
       try {
         await worlds.delete(world.id);
       } catch (e) {
-        console.error(`Failed to cleanup world ${world.id}:`, e);
+        console.error(`Failed to cleanup world ${world.slug}:`, e);
       }
     }
   } catch (error) {
@@ -415,7 +438,7 @@ export async function executeSparqlQuery(worldId: string, query: string) {
     if (!organization) throw new Error("Organization not found");
     const worlds = getWorldsByOrgMetadata(organization);
 
-    // Resolve world to ensure we have the actual ID for sub-resource call
+    // Resolve world
     const world = await worlds.get(worldId);
     if (!world) {
       throw new Error("World not found");
@@ -427,43 +450,6 @@ export async function executeSparqlQuery(worldId: string, query: string) {
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to execute query",
-    };
-  }
-}
-
-/**
- * searchTriples searches for triples in a world using a keyword or filters.
- */
-export async function searchTriples(
-  worldId: string,
-  query: string,
-  options?: { limit?: number; subjects?: string[]; predicates?: string[] },
-) {
-  const { user } = await withAuth();
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
-
-  try {
-    const workos = await getWorkOS();
-    const activeOrgId = await getActiveOrgId(user);
-    if (!activeOrgId) throw new Error("No active organization");
-    const organization = await workos.getOrganization(activeOrgId);
-    if (!organization) throw new Error("Organization not found");
-    const worlds = getWorldsByOrgMetadata(organization);
-
-    // Resolve world to ensure we have the actual ID for sub-resource call
-    const world = await worlds.get(worldId);
-    if (!world) {
-      throw new Error("World not found");
-    }
-    const results = await worlds.search(world.id, query, options);
-    return { success: true, results };
-  } catch (error) {
-    console.error("Failed to search triples:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to search",
     };
   }
 }
@@ -490,12 +476,46 @@ export async function listWorldLogs(
     if (!organization) throw new Error("Organization not found");
     const worlds = getWorldsByOrgMetadata(organization);
 
-    // Resolve world to ensure we have the actual ID for sub-resource call
+    // Resolve world
     const world = await worlds.get(worldId);
     if (!world) {
       throw new Error("World not found");
     }
-    const logs = await worlds.listLogs(world.id, { page, pageSize, level });
+
+    const query = `
+      PREFIX worlds: <${WORLDS_ONTOLOGY_NAMESPACE}>
+      SELECT ?level ?message ?timestamp ?metadata WHERE {
+        ?log a worlds:LogEntry ;
+             worlds:hasLevel ?level ;
+             worlds:hasMessage ?message ;
+             worlds:createdAt ?timestamp .
+        OPTIONAL { ?log worlds:hasMetadata ?metadata }
+        ${level && level !== "all" ? `FILTER(?level = "${level}")` : ""}
+      } ORDER BY DESC(?timestamp) LIMIT ${pageSize ?? 50} OFFSET ${((page ?? 1) - 1) * (pageSize ?? 50)}
+    `;
+
+    const result = await worlds.sparql(world.id, query);
+
+    const logs: Log[] = [];
+    const select = result as SparqlSelectResults | null;
+    if (select?.results?.bindings) {
+      let i = 0;
+      for (const binding of select.results.bindings) {
+        const metadataRaw = sparqlTermToString(binding.metadata);
+        logs.push({
+          id: `${world.id}-${sparqlTermToString(binding.timestamp)}-${i++}`,
+          worldId: world.id,
+          level: parseLogLevel(sparqlTermToString(binding.level)),
+          message: sparqlTermToString(binding.message),
+          timestamp: Number(
+            sparqlTermToString(binding.timestamp) || Date.now(),
+          ),
+          metadata: metadataRaw
+            ? (JSON.parse(metadataRaw) as Record<string, unknown>)
+            : null,
+        });
+      }
+    }
 
     return { success: true, logs };
   } catch (error) {
@@ -503,6 +523,47 @@ export async function listWorldLogs(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to list logs",
+    };
+  }
+}
+
+/**
+ * searchTriples searches for triples in a world using a keyword or filters.
+ */
+export async function searchTriples(
+  worldId: string,
+  query: string,
+  options?: { limit?: number; subjects?: string[]; predicates?: string[] },
+) {
+  const { user } = await withAuth();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    const workos = await getWorkOS();
+    const activeOrgId = await getActiveOrgId(user);
+    if (!activeOrgId) throw new Error("No active organization");
+    const organization = await workos.getOrganization(activeOrgId);
+    if (!organization) throw new Error("Organization not found");
+    const worlds = getWorldsByOrgMetadata(organization);
+
+    // Resolve world
+    const world = await worlds.get(worldId);
+    if (!world) {
+      throw new Error("World not found");
+    }
+    const results = await worlds.search(world.id, query, {
+      limit: options?.limit,
+      subjects: options?.subjects,
+      predicates: options?.predicates,
+    });
+    return { success: true, results };
+  } catch (error) {
+    console.error("Failed to search triples:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to search",
     };
   }
 }

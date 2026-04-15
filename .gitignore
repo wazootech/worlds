@@ -1,3 +1,7 @@
+node_modules/
 .env
 *.db
 packages/archived-docs
+
+# Local experiments and one-off scripts (not part of the published workspace)
+scratch/

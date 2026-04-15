@@ -8,12 +8,10 @@ import type {
   WorldsGetInput,
   WorldsImportInput,
   WorldsListInput,
-  WorldsLogsInput,
   WorldsSearchInput,
   WorldsSparqlInput,
   WorldsUpdateInput,
 } from "@wazoo/worlds-sdk";
-import { LocalWorlds } from "@wazoo/worlds-sdk";
 import type {
   CreateToolsOptions,
   SourceInput,
@@ -37,7 +35,6 @@ import {
   exportWorld,
   worldsExportTool,
 } from "@wazoo/worlds-ai-sdk/tools/export";
-import { listLogs, worldsLogsTool } from "@wazoo/worlds-ai-sdk/tools/logs";
 
 type McpToolOptions = {
   name: string;
@@ -132,15 +129,6 @@ const TOOLS: ToolDefinition[] = [
     },
     fn: (w, _s, a) => search(w, a as WorldsSearchInput),
   },
-  {
-    tool: {
-      ...worldsLogsTool,
-      title: "Logs",
-      readOnlyHint: true,
-      idempotentHint: true,
-    },
-    fn: (w, _s, a) => listLogs(w, a as WorldsLogsInput),
-  },
 ];
 
 type McpRequest = {
@@ -162,12 +150,19 @@ type McpResponse = {
 };
 
 /** mcpRouter defines the MCP server route and implements JSON-RPC methods. */
+/**
+ * mcpRouter creates a router for the MCP server.
+ */
 export default (appContext: WorldsContext) => {
-  const worlds = new LocalWorlds(appContext);
+  const engine = appContext.engine;
+  if (!engine) {
+    throw new Error("Engine not initialized in context");
+  }
+
   const sources: SourceInput[] = [];
 
   const handleMcpRequest = async (request: Request): Promise<Response> => {
-    const authorized = authorizeRequest(appContext, request);
+    const authorized = await authorizeRequest(appContext, request);
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });
     }
@@ -265,7 +260,7 @@ export default (appContext: WorldsContext) => {
           }
 
           try {
-            const result = await definition.fn(worlds, sources, args);
+            const result = await definition.fn(engine, sources, args);
             return Response.json(response({
               content: [
                 {

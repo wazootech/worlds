@@ -2,23 +2,28 @@ import { assert, assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
 import {
   createTestContext,
-  createTestOrganization,
+  createTestNamespace,
+  LocalWorlds,
   WorldsRepository,
 } from "@wazoo/worlds-sdk";
-import createRoute from "./route.ts";
 
 Deno.test("World Search API routes", async (t) => {
-  const testContext = await createTestContext();
-  const worldsRepository = new WorldsRepository(testContext.libsql.database);
-  const app = createRoute(testContext);
+  await using testContext = await createTestContext();
+  await using worlds = new LocalWorlds(testContext);
+  testContext.engine = worlds;
+  await worlds.init();
 
-  await t.step("GET /worlds/:world/search (Admin)", async () => {
-    const { apiKey } = await createTestOrganization(testContext);
-    const worldId = ulid();
+  const worldsRepository = new WorldsRepository(testContext.libsql.database);
+  const { createServer } = await import("../../../server.ts");
+  const app = await createServer(testContext);
+
+  await t.step("POST /worlds-search (Admin)", async () => {
+    const { apiKey } = await createTestNamespace(testContext);
+    const world = "search-world-" + ulid();
     const now = Date.now();
     await worldsRepository.insert({
-      id: worldId,
-      slug: "search-world-" + worldId,
+      namespace: "_",
+      world,
       label: "Search World",
       description: "A world for searching",
       db_hostname: null,
@@ -27,19 +32,24 @@ Deno.test("World Search API routes", async (t) => {
       updated_at: now,
       deleted_at: null,
     });
-    await testContext.libsql.manager.create(worldId);
+    await testContext.libsql.manager.create({
+      namespace: "_",
+      world,
+    });
 
-    const resp = await app.fetch(
-      new Request(`http://localhost/worlds/${worldId}/search?query=test`, {
-        method: "GET",
+    const response = await app.fetch(
+      new Request(`http://localhost/worlds/rpc/search`, {
+        method: "POST",
         headers: {
           "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({ sources: [world], query: "test" }),
       }),
     );
 
-    assertEquals(resp.status, 200);
-    const results = await resp.json();
+    assertEquals(response.status, 200);
+    const results = await response.json();
     assert(Array.isArray(results));
   });
 });

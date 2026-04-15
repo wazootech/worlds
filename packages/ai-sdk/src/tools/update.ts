@@ -46,7 +46,7 @@ export const worldsUpdateTool: WorldsTool<
 > = {
   name: "worlds_update",
   description:
-    "Updates an existing world's metadata, such as its label or slug. Input must include the 'world' ID and at least one field to change. Returns a success indicator.",
+    "Updates an existing world's metadata, such as its label or description. Input must include the 'world' and at least one field to change. Returns a success indicator.",
   inputSchema: worldsUpdateInputSchema,
   outputSchema: worldsUpdateOutputSchema,
   isWrite: true,

@@ -2,6 +2,7 @@ import type { Source } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "./types.ts";
 
 import type { WorldsSparqlTool } from "./tools/sparql.ts";
+import { resolveSource } from "@wazoo/worlds-sdk";
 import { createWorldsSparqlTool } from "./tools/sparql.ts";
 import type { WorldsSearchTool } from "./tools/search.ts";
 import { createWorldsSearchTool } from "./tools/search.ts";
@@ -19,8 +20,6 @@ import type { WorldsImportTool } from "./tools/import.ts";
 import { createWorldsImportTool } from "./tools/import.ts";
 import type { WorldsExportTool } from "./tools/export.ts";
 import { createWorldsExportTool } from "./tools/export.ts";
-import type { WorldsLogsTool } from "./tools/logs.ts";
-import { createWorldsLogsTool } from "./tools/logs.ts";
 
 /**
  * createTools creates a toolset from a CreateToolsOptions.
@@ -35,7 +34,6 @@ export function createTools(options: CreateToolsOptions): {
   delete: WorldsDeleteTool;
   import: WorldsImportTool;
   export: WorldsExportTool;
-  logs: WorldsLogsTool;
 } {
   const normalizedSources: Source[] = options.sources.map((source) =>
     typeof source === "string" ? { world: source } : source
@@ -57,7 +55,6 @@ export function createTools(options: CreateToolsOptions): {
     delete: createWorldsDeleteTool(normalizedOptions),
     import: createWorldsImportTool(normalizedOptions),
     export: createWorldsExportTool(normalizedOptions),
-    logs: createWorldsLogsTool(normalizedOptions),
   };
 }
 
@@ -70,16 +67,16 @@ export function validateCreateToolsOptions(options: CreateToolsOptions) {
   }
 
   let writable = false;
-  const seen = new Set<string>();
+  const seen = new Set<string | null>();
   for (const source of options.sources) {
-    const s = typeof source === "string" ? { world: source } : source;
-    if (seen.has(s.world)) {
-      throw new Error(`Duplicate source: ${s.world}`);
+    const { world } = resolveSource(source);
+    if (seen.has(world)) {
+      throw new Error(`Duplicate source: ${world}`);
     }
 
-    seen.add(s.world);
+    seen.add(world);
 
-    if (s.write) {
+    if (typeof source === "object" && source !== null && source.write) {
       if (writable) {
         throw new Error("Multiple writable sources are not allowed.");
       }

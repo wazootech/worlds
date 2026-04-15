@@ -30,7 +30,7 @@ export function WorldDetails({
     parseAsBoolean.withDefault(false),
   );
 
-  const seed = getSeedFromId(world.id);
+  const seed = getSeedFromId(world.slug);
 
   return (
     <div className="space-y-6">
@@ -71,15 +71,15 @@ export function WorldDetails({
               <div className="flex flex-wrap items-center gap-3 text-sm">
                 <div
                   onClick={() => {
-                    navigator.clipboard.writeText(world.id);
+                    navigator.clipboard.writeText(world.slug);
                     setIsCopied(true);
                     setTimeout(() => setIsCopied(false), 2000);
                   }}
                   className="inline-flex items-center gap-2 px-1.5 py-0.5 -ml-1.5 rounded-md text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 transition-colors cursor-pointer group select-none"
                   title="Click to copy ID"
                 >
-                  <span className="font-mono text-xs opacity-70">ID:</span>
-                  <span className="font-mono text-xs">{world.id}</span>
+                  <span className="font-mono text-xs opacity-70">SLUG:</span>
+                  <span className="font-mono text-xs">{world.slug}</span>
                   {isCopied ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

@@ -35,7 +35,7 @@ export const worldsCreateTool: WorldsTool<
 > = {
   name: "worlds_create",
   description:
-    "Creates a new isolated knowledge graph (world). Use this tool when the user wants to start a fresh dataset or project space. Input must include a unique 'slug' and a human-readable 'label'. Returns the newly created world object.",
+    "Creates a new isolated knowledge graph (world). Use this tool when the user wants to start a fresh dataset or project space. Input must include a unique 'world' and a human-readable 'label'. Returns the newly created world object.",
   inputSchema: worldsCreateInputSchema,
   outputSchema: worldsCreateOutputSchema,
   isWrite: true,

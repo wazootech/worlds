@@ -56,7 +56,7 @@ export function WorldList({
       label: "",
       className: "w-[48px]",
       render: (world) => {
-        const seed = getSeedFromId(world.id);
+        const seed = getSeedFromId(world.slug);
         return (
           <button
             onClick={(e) => handlePlanetClick(e, world.slug)}
@@ -81,12 +81,12 @@ export function WorldList({
       ),
     },
     {
-      key: "id",
-      label: "ID",
+      key: "slug",
+      label: "Slug",
       className: "hidden md:table-cell",
       render: (world) => (
         <span className="font-mono text-xs text-stone-500 dark:text-stone-500">
-          {world.id}
+          {world.slug}
         </span>
       ),
     },

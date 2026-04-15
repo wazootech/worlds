@@ -13,7 +13,7 @@
     "./tools/delete": "./src/tools/delete.ts",
     "./tools/import": "./src/tools/import.ts",
     "./tools/export": "./src/tools/export.ts",
-    "./tools/logs": "./src/tools/logs.ts",
+
     "./types": "./src/types.ts"
   },
   "imports": {

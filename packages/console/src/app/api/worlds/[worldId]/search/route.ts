@@ -44,7 +44,7 @@ export async function POST(
     const body = await request.text();
     const query = body;
 
-    // Resolve world to ensure we have the actual ID for sub-resource call
+    // Resolve world
     const world = await worlds.get(worldId);
     if (!world) {
       return NextResponse.json({ error: "World not found" }, { status: 404 });
