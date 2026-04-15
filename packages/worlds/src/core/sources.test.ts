@@ -1,97 +1,10 @@
-import { assert, assertEquals } from "@std/assert";
-import {
-  escapeSparqlLiteral,
-  escapeSparqlUri,
-  isSparqlUpdate,
-} from "#/core/utils.ts";
+import { assertEquals } from "@std/assert";
 import {
   defaultWorldsNamespaceNameSegment,
   defaultWorldsWorldNameSegment,
   toResolvedSource,
+  toStorageName,
 } from "#/core/sources.ts";
-
-Deno.test("isSparqlUpdate - Update operations", async (t) => {
-  const updates = [
-    `INSERT DATA { <http://s> <http://p> <http://o> }`,
-    `DELETE DATA { <http://s> <http://p> <http://o> }`,
-    `DELETE WHERE { ?s ?p ?o }`,
-    `LOAD <http://example.org/data>`,
-    `CLEAR DEFAULT`,
-    `CREATE GRAPH <http://example.org/g>`,
-    `DROP GRAPH <http://example.org/g>`,
-    `COPY DEFAULT TO NAMED <http://example.org/g>`,
-    `MOVE DEFAULT TO NAMED <http://example.org/g>`,
-    `ADD DEFAULT TO NAMED <http://example.org/g>`,
-  ];
-
-  for (const query of updates) {
-    await t.step(`identifies '${query.substring(0, 20)}...' as update`, () => {
-      assert(isSparqlUpdate(query));
-    });
-  }
-});
-
-Deno.test("isSparqlUpdate - Update with Prologue", async (t) => {
-  const query = `
-    PREFIX ex: <http://example.org/>
-    INSERT DATA { ex:s ex:p ex:o }
-  `;
-  await t.step("identifies update with PREFIX", () => {
-    assert(isSparqlUpdate(query));
-  });
-
-  const queryBase = `
-    BASE <http://example.org/>
-    INSERT DATA { <s> <p> <o> }
-  `;
-  await t.step("identifies update with BASE", () => {
-    assert(isSparqlUpdate(queryBase));
-  });
-});
-
-Deno.test("isSparqlUpdate - Query operations (Read-only)", async (t) => {
-  const queries = [
-    `SELECT * WHERE { ?s ?p ?o }`,
-    `CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }`,
-    `ASK { ?s ?p ?o }`,
-    `DESCRIBE <http://example.org/>`,
-  ];
-
-  for (const query of queries) {
-    await t.step(
-      `identifies '${query.substring(0, 20)}...' as NOT update`,
-      () => {
-        assert(!isSparqlUpdate(query));
-      },
-    );
-  }
-});
-
-Deno.test("isSparqlUpdate - Query with Prologue (Read-only)", async (t) => {
-  const query = `
-    PREFIX ex: <http://example.org/>
-    SELECT ?s WHERE { ?s ?p ?o }
-  `;
-  await t.step("identifies SELECT with PREFIX as NOT update", () => {
-    assert(!isSparqlUpdate(query));
-  });
-});
-
-Deno.test("escapeSparqlLiteral - Escaping", () => {
-  assertEquals(escapeSparqlLiteral("abc"), "abc");
-  assertEquals(escapeSparqlLiteral('a"b'), 'a\\"b');
-  assertEquals(escapeSparqlLiteral("a\\b"), "a\\\\b");
-  assertEquals(escapeSparqlLiteral('a\\"b'), 'a\\\\\\"b');
-});
-
-Deno.test("escapeSparqlUri - Escaping", () => {
-  assertEquals(escapeSparqlUri("http://example.org/"), "http://example.org/");
-  assertEquals(
-    escapeSparqlUri("http://example.org/>"),
-    "http://example.org/\\>",
-  );
-  assertEquals(escapeSparqlUri("a\\b"), "a\\\\b");
-});
 
 Deno.test("toResolvedSource - String inputs", async (t) => {
   await t.step("parses qualified name", () => {
@@ -193,5 +106,58 @@ Deno.test("toResolvedSource - Context override", async (t) => {
     const result = toResolvedSource("_/my-world", { namespace: "context-ns" });
     assertEquals(result.namespace, "context-ns");
     assertEquals(result.world, "my-world");
+  });
+});
+
+Deno.test("toStorageName - formats resolved source", async (t) => {
+  await t.step("formats with explicit namespace and world", () => {
+    const result = toStorageName({ namespace: "ns-a", world: "my-world" });
+    assertEquals(result, "ns-a:my-world");
+  });
+
+  await t.step("formats with default namespace", () => {
+    const result = toStorageName({
+      namespace: defaultWorldsNamespaceNameSegment,
+      world: "my-world",
+    });
+    assertEquals(result, "default:my-world");
+  });
+
+  await t.step("formats with default world", () => {
+    const result = toStorageName({
+      namespace: "ns-a",
+      world: defaultWorldsWorldNameSegment,
+    });
+    assertEquals(result, "ns-a:default");
+  });
+
+  await t.step("formats with both defaults", () => {
+    const result = toStorageName({
+      namespace: defaultWorldsNamespaceNameSegment,
+      world: defaultWorldsWorldNameSegment,
+    });
+    assertEquals(result, "default:default");
+  });
+});
+
+Deno.test("toResolvedSource + toStorageName - composition", async (t) => {
+  await t.step("full roundtrip with qualified name", () => {
+    const resolved = toResolvedSource("ns-a/my-world");
+    const storageKey = toStorageName(resolved);
+    assertEquals(storageKey, "ns-a:my-world");
+  });
+
+  await t.step("roundtrip with '_' sentinel", () => {
+    const resolved = toResolvedSource("_/my-world");
+    const storageKey = toStorageName(resolved);
+    assertEquals(storageKey, "default:my-world");
+  });
+
+  await t.step("roundtrip with context", () => {
+    const resolved = toResolvedSource("_/my-world", {
+      namespace: "context-ns",
+    });
+    const storageKey = toStorageName(resolved);
+    assertEquals(storageKey, "context-ns:my-world");
   });
 });

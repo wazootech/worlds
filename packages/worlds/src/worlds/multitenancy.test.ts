@@ -1,7 +1,6 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { LocalWorlds } from "#/worlds/local.ts";
 import { createTestContext } from "#/core/engine-context.ts";
-import { WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
 import type { SparqlSelectResults } from "#/schemas/mod.ts";
 import { NamespacesRepository } from "#/plugins/registry/namespaces.repository.ts";
 
@@ -12,7 +11,7 @@ Deno.test({
   async fn(t) {
     await using appContext = await createTestContext();
 
-    const namespacesRepo = new NamespacesRepository(appContext.libsql.database);
+    const namespacesRepo = new NamespacesRepository(appContext.system);
     const now = Date.now();
 
     // Seed two namespaces in the registry
@@ -141,22 +140,30 @@ Deno.test({
       },
     );
 
-    await t.step("Non-admin cannot access registry world", async () => {
-      await assertRejects(
-        () => worldsA.get({ source: WORLDS_WORLD_SLUG }),
-        Error,
-        "Unauthorized access to the registry world",
-      );
+    await t.step(
+      "NS B cannot access NS A's world using explicit namespace",
+      async () => {
+        // NS B tries to get NS A's world explicitly
+        await assertRejects(
+          () =>
+            worldsB.get({
+              source: { world: sharedWorld, namespace: ctxA.namespace },
+            }),
+          Error,
+          "Unauthorized access to namespace",
+        );
 
-      await assertRejects(
-        () =>
-          worldsA.sparql({
-            sources: [WORLDS_WORLD_SLUG],
-            query: "SELECT ?s WHERE { ?s ?p ?o }",
-          }),
-        Error,
-        "Unauthorized access to the registry world",
-      );
-    });
+        // NS B tries to SPARQL into NS A's world explicitly
+        await assertRejects(
+          () =>
+            worldsB.sparql({
+              sources: [{ world: sharedWorld, namespace: ctxA.namespace }],
+              query: "SELECT ?s WHERE { ?s ?p ?o }",
+            }),
+          Error,
+          "Unauthorized access to namespace",
+        );
+      },
+    );
   },
 });

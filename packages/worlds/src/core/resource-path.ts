@@ -1,4 +1,7 @@
-import { DEFAULT_WORLD, WORLDS_WORLD_NAMESPACE } from "./ontology.ts";
+import {
+  defaultWorldsNamespaceNameSegment,
+  defaultWorldsWorldNameSegment,
+} from "./ontology.ts";
 
 /**
  * worldsActionPath returns the URL pathname for an RPC-style action.
@@ -24,16 +27,19 @@ export function worldResourcePath(
 ): string {
   if (
     (resolvedNamespace === undefined || resolvedNamespace === null ||
-      resolvedNamespace === "" || resolvedNamespace === "_") &&
-    (world === undefined || world === null || world === "" || world === "_")
+      resolvedNamespace === "" ||
+      resolvedNamespace === defaultWorldsWorldNameSegment) &&
+    (world === undefined || world === null || world === "" ||
+      world === defaultWorldsWorldNameSegment)
   ) {
     return worldPrimaryPath();
   }
 
-  const s = encodeURIComponent(world ?? DEFAULT_WORLD ?? "_");
+  const s = encodeURIComponent(world ?? defaultWorldsWorldNameSegment);
   if (
     resolvedNamespace === undefined || resolvedNamespace === null ||
-    resolvedNamespace === "" || resolvedNamespace === "_"
+    resolvedNamespace === "" ||
+    resolvedNamespace === defaultWorldsWorldNameSegment
   ) {
     return `/worlds/${s}`;
   }
@@ -42,19 +48,19 @@ export function worldResourcePath(
 
 /**
  * expandPathNamespace maps the reserved path segment to the caller's
- * default namespace, or the platform namespace when none is provided.
+ * default namespace, or defaultWorldsNamespaceNameSegment when none is provided.
  */
 export function expandPathNamespace(
   pathNamespaceSegment: string | null,
   tenantDefaultNamespace?: string,
 ): string {
   if (
-    pathNamespaceSegment !== null && pathNamespaceSegment !== "_" &&
-    pathNamespaceSegment !== "-"
+    pathNamespaceSegment !== null &&
+    pathNamespaceSegment !== defaultWorldsNamespaceNameSegment
   ) {
     return pathNamespaceSegment;
   }
-  return tenantDefaultNamespace ?? WORLDS_WORLD_NAMESPACE;
+  return tenantDefaultNamespace ?? defaultWorldsNamespaceNameSegment;
 }
 
 /**
@@ -67,7 +73,7 @@ export function expandPathWorld(
     pathWorldSegment === undefined || pathWorldSegment === "" ||
     pathWorldSegment === "_"
   ) {
-    return DEFAULT_WORLD;
+    return null;
   }
   return pathWorldSegment;
 }

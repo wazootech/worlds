@@ -1,6 +1,36 @@
-import { DEFAULT_WORLD } from "#/core/ontology.ts";
+import { toResolvedSource } from "#/core/sources.ts";
 import type { WorldSource } from "#/schemas/mod.ts";
 import { errorResponseDataSchema } from "#/schemas/mod.ts";
+
+/**
+ * @deprecated Use toResolvedSource from #/core/sources.ts instead.
+ */
+export function resolveSource(
+  source: WorldSource,
+  contextNamespace?: string,
+): {
+  world: string | null;
+  namespace: string | null;
+} {
+  const resolved = toResolvedSource(source, { namespace: contextNamespace });
+  return {
+    world: resolved.world,
+    namespace: resolved.namespace,
+  };
+}
+
+/**
+ * @deprecated Use toResolvedSource from #/core/sources.ts instead.
+ */
+export function parseSources(
+  sources: WorldSource[],
+  contextNamespace?: string,
+): Array<{
+  world: string | null;
+  namespace: string | null;
+}> {
+  return sources.map((s) => resolveSource(s, contextNamespace));
+}
 
 /**
  * parseError parses an error response from the API.
@@ -31,14 +61,12 @@ export async function parseError(response: Response): Promise<string> {
  * isSparqlUpdate checks if a SPARQL query is an update operation.
  */
 export function isSparqlUpdate(query: string): boolean {
-  // Normalize the query: remove comments and normalize whitespace
   const normalized = query
-    .replace(/(^|\s)#[^\n]*/g, "$1") // Only remove comments that start after whitespace or at start of line
-    .replace(/\s+/g, " ") // Normalize whitespace
+    .replace(/(^|\s)#[^\n]*/g, "$1")
+    .replace(/\s+/g, " ")
     .trim()
     .toUpperCase();
 
-  // Check for update keywords at the start (after optional prefixes)
   const updateKeywords = [
     "INSERT",
     "DELETE",
@@ -51,7 +79,6 @@ export function isSparqlUpdate(query: string): boolean {
     "COPY",
   ];
 
-  // Check if query starts with any update keyword (accounting for PREFIX and BASE declarations)
   const prologueMatch = normalized.match(
     /^(?:(?:PREFIX\s+\w+:\s*<[^>]+>|BASE\s+<[^>]+>)\s*)*/,
   );
@@ -59,83 +86,6 @@ export function isSparqlUpdate(query: string): boolean {
     .trim();
 
   return updateKeywords.some((keyword) => afterPrologue.startsWith(keyword));
-}
-
-/**
- * parseSourceName parses a source name into a namespace and world.
- * The name format is optional: "<namespace>/<world>" or just "<world>".
- */
-export function parseSourceName(name: string): {
-  namespace: string | null;
-  world: string | null;
-} {
-  const trimmed = name.trim();
-  if (trimmed === "") {
-    return { namespace: null, world: DEFAULT_WORLD };
-  }
-
-  const parts = trimmed.split("/");
-  if (parts.length === 2 && parts[0] && parts[1]) {
-    return { namespace: parts[0], world: parts[1] };
-  }
-
-  return { namespace: null, world: trimmed };
-}
-
-/**
- * resolveSource resolves a WorldSource into world and namespace components.
- */
-export function resolveSource(
-  source: WorldSource,
-  defaultNamespace?: string,
-): {
-  world: string | null;
-  namespace: string | null;
-} {
-  let resolved: { world: string | null; namespace?: string | null };
-  if (typeof source === "string") {
-    resolved = parseSourceName(source);
-  } else if (
-    typeof source === "object" && source !== null && "name" in source
-  ) {
-    resolved = parseSourceName(source.name);
-  } else if (typeof source === "object" && source !== null) {
-    const sourceObject = source as {
-      world?: string | null;
-      namespace?: string | null;
-    };
-    const rawWorld = sourceObject.world;
-    resolved = {
-      world: rawWorld !== undefined && rawWorld !== ""
-        ? rawWorld
-        : DEFAULT_WORLD,
-      namespace: sourceObject.namespace,
-    };
-  } else {
-    resolved = { world: DEFAULT_WORLD };
-  }
-
-  const world = (resolved.world === "" || resolved.world === undefined)
-    ? DEFAULT_WORLD
-    : resolved.world;
-
-  return {
-    world,
-    namespace: (resolved.namespace ?? defaultNamespace) ?? null,
-  };
-}
-
-/**
- * parseSources validates and normalizes a list of sources.
- */
-export function parseSources(
-  sources: WorldSource[],
-  defaultNamespace?: string,
-): Array<{
-  world: string | null;
-  namespace: string | null;
-}> {
-  return sources.map((s) => resolveSource(s, defaultNamespace));
 }
 
 /**
