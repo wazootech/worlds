@@ -106,7 +106,9 @@ export function resolveSource(
     };
     const rawWorld = sourceObject.world;
     resolved = {
-      world: rawWorld !== undefined && rawWorld !== "" ? rawWorld : DEFAULT_WORLD,
+      world: rawWorld !== undefined && rawWorld !== ""
+        ? rawWorld
+        : DEFAULT_WORLD,
       namespace: sourceObject.namespace,
     };
   } else {

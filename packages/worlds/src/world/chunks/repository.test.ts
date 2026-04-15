@@ -13,7 +13,9 @@ import { ChunksSearchRepository } from "#/world/chunks/repository.ts";
 Deno.test("ChunksSearchRepository", async (t) => {
   const testContext = await createTestContext();
   const worldsRepository = new WorldsRepository(testContext.libsql.database);
-  const namespacesRepository = new NamespacesRepository(testContext.libsql.database);
+  const namespacesRepository = new NamespacesRepository(
+    testContext.libsql.database,
+  );
   const chunksSearchRepository = new ChunksSearchRepository(
     testContext,
     worldsRepository,

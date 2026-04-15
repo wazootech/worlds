@@ -125,7 +125,9 @@ export class LocalWorlds implements WorldsInterface {
   private async ensureRegistry(): Promise<void> {
     this.registryBootstrapping = true;
     try {
-      const namespaceRepo = new NamespacesRepository(this.appContext.libsql.database);
+      const namespaceRepo = new NamespacesRepository(
+        this.appContext.libsql.database,
+      );
       const existingNs = await namespaceRepo.get("_");
       if (existingNs) {
         return;
@@ -140,7 +142,9 @@ export class LocalWorlds implements WorldsInterface {
       });
 
       if (this.appContext.apiKey) {
-        const apiKeysRepo = new ApiKeysRepository(this.appContext.libsql.database);
+        const apiKeysRepo = new ApiKeysRepository(
+          this.appContext.libsql.database,
+        );
         await apiKeysRepo.create(this.appContext.apiKey, "_");
       }
     } finally {
@@ -152,7 +156,9 @@ export class LocalWorlds implements WorldsInterface {
    * ensureNamespace ensures a namespace exists in the registry.
    */
   private async ensureNamespace(ns: string): Promise<void> {
-    const namespaceRepo = new NamespacesRepository(this.appContext.libsql.database);
+    const namespaceRepo = new NamespacesRepository(
+      this.appContext.libsql.database,
+    );
     const existing = await namespaceRepo.get(ns);
     if (existing) {
       return;
@@ -316,7 +322,9 @@ export class LocalWorlds implements WorldsInterface {
 
     await this.worldsRepository.update(worldRow.world, worldRow.namespace, {
       label: label ?? worldRow.label,
-      description: description !== undefined ? description : worldRow.description,
+      description: description !== undefined
+        ? description
+        : worldRow.description,
       updated_at: Date.now(),
     });
   }
@@ -339,7 +347,10 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error("World not found");
     }
 
-    this.invalidateStore({ world: worldRow.world, namespace: worldRow.namespace });
+    this.invalidateStore({
+      world: worldRow.world,
+      namespace: worldRow.namespace,
+    });
     await this.worldsRepository.update(worldRow.world, worldRow.namespace, {
       deleted_at: Date.now(),
     });
@@ -535,7 +546,10 @@ export class LocalWorlds implements WorldsInterface {
       }],
     );
 
-    this.invalidateStore({ world: worldRow.world, namespace: worldRow.namespace });
+    this.invalidateStore({
+      world: worldRow.world,
+      namespace: worldRow.namespace,
+    });
     await this.worldsRepository.update(worldRow.world, worldRow.namespace, {
       updated_at: now,
     });
@@ -557,7 +571,9 @@ export class LocalWorlds implements WorldsInterface {
       sourceWorld === WORLDS_WORLD_SLUG ? undefined : namespace,
     );
     if (!worldRow) {
-      throw new Error(`World not found: ${sourceWorld} in namespace ${namespace}`);
+      throw new Error(
+        `World not found: ${sourceWorld} in namespace ${namespace}`,
+      );
     }
 
     const serialization = contentType
@@ -567,7 +583,10 @@ export class LocalWorlds implements WorldsInterface {
       throw new Error(`Unsupported content type: ${contentType}`);
     }
 
-    const store = await this.getStore({ world: worldRow.world, namespace: worldRow.namespace });
+    const store = await this.getStore({
+      world: worldRow.world,
+      namespace: worldRow.namespace,
+    });
     const quads = store.getQuads(null, null, null, null);
 
     if (serialization.format === DEFAULT_SERIALIZATION.format) {

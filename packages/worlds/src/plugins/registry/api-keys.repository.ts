@@ -1,5 +1,9 @@
 import type { Client } from "@libsql/client";
-import { deleteApiKey, insertApiKey, selectNamespaceByApiKey } from "./registry.sql.ts";
+import {
+  deleteApiKey,
+  insertApiKey,
+  selectNamespaceByApiKey,
+} from "./registry.sql.ts";
 
 const MAX_API_KEY_LENGTH = 1024;
 

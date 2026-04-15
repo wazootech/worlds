@@ -144,7 +144,10 @@ Deno.test("list tool", async (t) => {
 
 Deno.test("get tool", async (t) => {
   await t.step("returns world by ID", async () => {
-    const mockWorld = createMockWorld({ label: "Test World", world: "test-id" });
+    const mockWorld = createMockWorld({
+      label: "Test World",
+      world: "test-id",
+    });
     const mockWorlds = createMockWorlds({
       get: () => Promise.resolve(mockWorld),
     });

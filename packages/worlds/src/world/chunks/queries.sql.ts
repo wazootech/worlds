@@ -4,47 +4,56 @@
  * chunksTable is a table for overlapping text chunks with vector embeddings.
  * Note: F32_BLOB(1536) is a placeholder replaced at runtime (see init.ts)
  */
-export const chunksTable = "CREATE TABLE IF NOT EXISTS chunks (\r\n  id TEXT PRIMARY KEY,\r\n  triple_id TEXT NOT NULL,\r\n  subject TEXT NOT NULL,\r\n  predicate TEXT NOT NULL,\r\n  text TEXT NOT NULL,\r\n  vector F32_BLOB(1536),\r\n  FOREIGN KEY(triple_id) REFERENCES triples(id) ON DELETE CASCADE\r\n);";
+export const chunksTable =
+  "CREATE TABLE IF NOT EXISTS chunks (\r\n  id TEXT PRIMARY KEY,\r\n  triple_id TEXT NOT NULL,\r\n  subject TEXT NOT NULL,\r\n  predicate TEXT NOT NULL,\r\n  text TEXT NOT NULL,\r\n  vector F32_BLOB(1536),\r\n  FOREIGN KEY(triple_id) REFERENCES triples(id) ON DELETE CASCADE\r\n);";
 
 /**
  * chunksTripleIdIndex is an index on triple_id for efficient retrieval.
  */
-export const chunksTripleIdIndex = "CREATE INDEX IF NOT EXISTS idx_chunks_triple_id ON chunks(triple_id);";
+export const chunksTripleIdIndex =
+  "CREATE INDEX IF NOT EXISTS idx_chunks_triple_id ON chunks(triple_id);";
 
 /**
  * chunksSubjectIndex is an index on subject for efficient filtering.
  */
-export const chunksSubjectIndex = "CREATE INDEX IF NOT EXISTS idx_chunks_subject ON chunks(subject);";
+export const chunksSubjectIndex =
+  "CREATE INDEX IF NOT EXISTS idx_chunks_subject ON chunks(subject);";
 
 /**
  * chunksPredicateIndex is an index on predicate for efficient filtering.
  */
-export const chunksPredicateIndex = "CREATE INDEX IF NOT EXISTS idx_chunks_predicate ON chunks(predicate);";
+export const chunksPredicateIndex =
+  "CREATE INDEX IF NOT EXISTS idx_chunks_predicate ON chunks(predicate);";
 
 /**
  * chunksVectorIndex is a vector index for similarity search.
  */
-export const chunksVectorIndex = "CREATE INDEX IF NOT EXISTS idx_chunks_vector ON chunks(libsql_vector_idx(vector));";
+export const chunksVectorIndex =
+  "CREATE INDEX IF NOT EXISTS idx_chunks_vector ON chunks(libsql_vector_idx(vector));";
 
 /**
  * chunksFtsTable is an FTS5 virtual table for full-text search.
  */
-export const chunksFtsTable = "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(\r\n  text,\r\n  content = 'chunks',\r\n  content_rowid = 'rowid'\r\n);";
+export const chunksFtsTable =
+  "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(\r\n  text,\r\n  content = 'chunks',\r\n  content_rowid = 'rowid'\r\n);";
 
 /**
  * chunksFtsInsertTrigger is a trigger to sync FTS after insert.
  */
-export const chunksFtsInsertTrigger = "CREATE TRIGGER IF NOT EXISTS chunks_ai\r\nAFTER\r\nINSERT\r\n  ON chunks\r\nBEGIN\r\nINSERT INTO\r\n  chunks_fts(rowid, text)\r\nVALUES\r\n  (new.rowid, new.text);\r\n\r\nEND;";
+export const chunksFtsInsertTrigger =
+  "CREATE TRIGGER IF NOT EXISTS chunks_ai\r\nAFTER\r\nINSERT\r\n  ON chunks\r\nBEGIN\r\nINSERT INTO\r\n  chunks_fts(rowid, text)\r\nVALUES\r\n  (new.rowid, new.text);\r\n\r\nEND;";
 
 /**
  * chunksFtsDeleteTrigger is a trigger to sync FTS after delete.
  */
-export const chunksFtsDeleteTrigger = "CREATE TRIGGER IF NOT EXISTS chunks_ad\r\nAFTER\r\n  DELETE ON chunks\r\nBEGIN\r\nINSERT INTO\r\n  chunks_fts(chunks_fts, rowid, text)\r\nVALUES\r\n  ('delete', old.rowid, old.text);\r\n\r\nEND;";
+export const chunksFtsDeleteTrigger =
+  "CREATE TRIGGER IF NOT EXISTS chunks_ad\r\nAFTER\r\n  DELETE ON chunks\r\nBEGIN\r\nINSERT INTO\r\n  chunks_fts(chunks_fts, rowid, text)\r\nVALUES\r\n  ('delete', old.rowid, old.text);\r\n\r\nEND;";
 
 /**
  * chunksFtsUpdateTrigger is a trigger to sync FTS after update.
  */
-export const chunksFtsUpdateTrigger = "CREATE TRIGGER IF NOT EXISTS chunks_au\r\nAFTER\r\nUPDATE\r\n  ON chunks\r\nBEGIN\r\nINSERT INTO\r\n  chunks_fts(chunks_fts, rowid, text)\r\nVALUES\r\n  ('delete', old.rowid, old.text);\r\n\r\nINSERT INTO\r\n  chunks_fts(rowid, text)\r\nVALUES\r\n  (new.rowid, new.text);\r\n\r\nEND;";
+export const chunksFtsUpdateTrigger =
+  "CREATE TRIGGER IF NOT EXISTS chunks_au\r\nAFTER\r\nUPDATE\r\n  ON chunks\r\nBEGIN\r\nINSERT INTO\r\n  chunks_fts(chunks_fts, rowid, text)\r\nVALUES\r\n  ('delete', old.rowid, old.text);\r\n\r\nINSERT INTO\r\n  chunks_fts(rowid, text)\r\nVALUES\r\n  (new.rowid, new.text);\r\n\r\nEND;";
 
 /**
  * deleteChunks is a query that deletes a specific chunk by id.
@@ -55,11 +64,12 @@ export const deleteChunks = "DELETE FROM\r\n  chunks\r\nWHERE\r\n  id = ?;";
  * upsertChunks is a query that inserts or replaces a chunk with
  * embedding.
  */
-export const upsertChunks = "INSERT\r\n  OR REPLACE INTO chunks (id, triple_id, subject, predicate, text, vector)\r\nVALUES\r\n  (?, ?, ?, ?, ?, vector32(?));";
+export const upsertChunks =
+  "INSERT\r\n  OR REPLACE INTO chunks (id, triple_id, subject, predicate, text, vector)\r\nVALUES\r\n  (?, ?, ?, ?, ?, vector32(?));";
 
 /**
  * searchChunks is a query that performs hybrid search using RRF
  * (Reciprocal Rank Fusion) combining FTS and vector search.
  */
-export const searchChunks = "WITH vec_matches AS (\r\n  SELECT\r\n    id AS rowid,\r\n    row_number() OVER (PARTITION BY NULL) AS rank_number\r\n  FROM\r\n    vector_top_k('idx_chunks_vector', vector32(?), ?)\r\n  WHERE\r\n    ? != ''\r\n),\r\nfts_matches AS (\r\n  SELECT\r\n    rowid,\r\n    row_number() OVER (\r\n      ORDER BY\r\n        rank\r\n    ) AS rank_number,\r\n    rank AS score\r\n  FROM\r\n    chunks_fts\r\n  WHERE\r\n    ? != ''\r\n    AND chunks_fts MATCH ?\r\n  LIMIT\r\n    ?\r\n),\r\nfinal AS (\r\n  SELECT\r\n    chunks.id,\r\n    chunks.triple_id,\r\n    chunks.subject,\r\n    chunks.predicate,\r\n    chunks.text,\r\n    triples.object,\r\n    vec_matches.rank_number AS vec_rank,\r\n    fts_matches.rank_number AS fts_rank,\r\n    (\r\n      COALESCE(1.0 / (60 + fts_matches.rank_number), 0.0) * 1.0 + COALESCE(1.0 / (60 + vec_matches.rank_number), 0.0) * 1.0\r\n    ) AS combined_rank\r\n  FROM\r\n    chunks\r\n    LEFT JOIN fts_matches ON fts_matches.rowid = chunks.rowid\r\n    LEFT JOIN vec_matches ON vec_matches.rowid = chunks.rowid\r\n    JOIN triples ON triples.id = chunks.triple_id\r\n  WHERE\r\n    (\r\n      ? = ''\r\n      OR fts_matches.rowid IS NOT NULL\r\n      OR vec_matches.rowid IS NOT NULL\r\n    )\r\n    AND (\r\n      ? IS NULL\r\n      OR chunks.subject IN (\r\n        SELECT\r\n          value\r\n        FROM\r\n          json_each(?)\r\n      )\r\n    )\r\n    AND (\r\n      ? IS NULL\r\n      OR chunks.predicate IN (\r\n        SELECT\r\n          value\r\n        FROM\r\n          json_each(?)\r\n      )\r\n    )\r\n    AND (\r\n      ? IS NULL\r\n      OR EXISTS (\r\n        SELECT\r\n          1\r\n        FROM\r\n          item_types\r\n        WHERE\r\n          item_types.subject = chunks.subject\r\n          AND item_types.type IN (\r\n            SELECT\r\n              value\r\n            FROM\r\n              json_each(?)\r\n          )\r\n      )\r\n    )\r\n  ORDER BY\r\n    combined_rank DESC\r\n  LIMIT\r\n    ?\r\n)\r\nSELECT\r\n  *\r\nFROM\r\n  final;";
-
+export const searchChunks =
+  "WITH vec_matches AS (\r\n  SELECT\r\n    id AS rowid,\r\n    row_number() OVER (PARTITION BY NULL) AS rank_number\r\n  FROM\r\n    vector_top_k('idx_chunks_vector', vector32(?), ?)\r\n  WHERE\r\n    ? != ''\r\n),\r\nfts_matches AS (\r\n  SELECT\r\n    rowid,\r\n    row_number() OVER (\r\n      ORDER BY\r\n        rank\r\n    ) AS rank_number,\r\n    rank AS score\r\n  FROM\r\n    chunks_fts\r\n  WHERE\r\n    ? != ''\r\n    AND chunks_fts MATCH ?\r\n  LIMIT\r\n    ?\r\n),\r\nfinal AS (\r\n  SELECT\r\n    chunks.id,\r\n    chunks.triple_id,\r\n    chunks.subject,\r\n    chunks.predicate,\r\n    chunks.text,\r\n    triples.object,\r\n    vec_matches.rank_number AS vec_rank,\r\n    fts_matches.rank_number AS fts_rank,\r\n    (\r\n      COALESCE(1.0 / (60 + fts_matches.rank_number), 0.0) * 1.0 + COALESCE(1.0 / (60 + vec_matches.rank_number), 0.0) * 1.0\r\n    ) AS combined_rank\r\n  FROM\r\n    chunks\r\n    LEFT JOIN fts_matches ON fts_matches.rowid = chunks.rowid\r\n    LEFT JOIN vec_matches ON vec_matches.rowid = chunks.rowid\r\n    JOIN triples ON triples.id = chunks.triple_id\r\n  WHERE\r\n    (\r\n      ? = ''\r\n      OR fts_matches.rowid IS NOT NULL\r\n      OR vec_matches.rowid IS NOT NULL\r\n    )\r\n    AND (\r\n      ? IS NULL\r\n      OR chunks.subject IN (\r\n        SELECT\r\n          value\r\n        FROM\r\n          json_each(?)\r\n      )\r\n    )\r\n    AND (\r\n      ? IS NULL\r\n      OR chunks.predicate IN (\r\n        SELECT\r\n          value\r\n        FROM\r\n          json_each(?)\r\n      )\r\n    )\r\n    AND (\r\n      ? IS NULL\r\n      OR EXISTS (\r\n        SELECT\r\n          1\r\n        FROM\r\n          item_types\r\n        WHERE\r\n          item_types.subject = chunks.subject\r\n          AND item_types.type IN (\r\n            SELECT\r\n              value\r\n            FROM\r\n              json_each(?)\r\n          )\r\n      )\r\n    )\r\n  ORDER BY\r\n    combined_rank DESC\r\n  LIMIT\r\n    ?\r\n)\r\nSELECT\r\n  *\r\nFROM\r\n  final;";

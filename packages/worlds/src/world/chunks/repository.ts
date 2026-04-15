@@ -186,7 +186,9 @@ export class ChunksSearchRepository {
           ftsRank: row.fts_rank,
           score: row.combined_rank,
           world: {
-            name: worldResourcePath(worldRow.namespace, worldRow.world).slice(1),
+            name: worldResourcePath(worldRow.namespace, worldRow.world).slice(
+              1,
+            ),
             world: worldRow.world,
             namespace: worldRow.namespace ?? undefined,
             label: worldRow.label ?? undefined,
