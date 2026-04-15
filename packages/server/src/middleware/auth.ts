@@ -1,4 +1,4 @@
-import { RegistryRepository } from "@wazoo/worlds-sdk";
+import { ApiKeysRepository } from "@wazoo/worlds-sdk";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
 
 /**
@@ -39,9 +39,9 @@ export async function authorizeRequest(
     return { admin: true };
   }
 
-  // Resolve namespace via RegistryRepository
-  const registry = new RegistryRepository(engine);
-  const namespaceId = await registry.resolveNamespace(apiKey);
+  // Resolve namespace via ApiKeysRepository
+  const apiKeysRepo = new ApiKeysRepository(appContext.libsql.database);
+  const namespaceId = await apiKeysRepo.resolveNamespace(apiKey);
 
   if (namespaceId) {
     return { admin: false, namespaceId };

@@ -4,8 +4,8 @@ import { z } from "zod";
  * worldTableSchema is the Zod schema for the worlds database table.
  */
 const worldTableShape = z.object({
-  namespace_id: z.string().nullable(),
-  slug: z.string().nullable(),
+  namespace: z.string().nullable(),
+  slug: z.string(),
   label: z.string(),
   description: z.string().nullable(),
   db_hostname: z.string().nullable(),
@@ -22,14 +22,15 @@ export const worldTableSchema: z.ZodType<WorldTable> = worldTableShape;
  */
 export interface WorldTable {
   /**
-   * namespace_id is the identifier of the namespace that owns the world.
+   * namespace is the identifier of the namespace that owns the world.
+   * Null indicates the default namespace.
    */
-  namespace_id: string | null;
+  namespace: string | null;
 
   /**
    * slug is the unique identifier (within a namespace) for the world.
    */
-  slug: string | null;
+  slug: string;
 
   /**
    * label is the human-readable title of the world.
@@ -42,12 +43,12 @@ export interface WorldTable {
   description: string | null;
 
   /**
-   * db_hostname is the hostname of the remote database, if any.
+   * db_hostname is the hostname of the world database (for dedicated DBs).
    */
   db_hostname: string | null;
 
   /**
-   * db_token is the authentication token for the remote database.
+   * db_token is the auth token for the world database.
    */
   db_token: string | null;
 
@@ -70,7 +71,7 @@ export interface WorldTable {
 /**
  * worldRowSchema is the Zod schema for a world record as returned by the SELECT queries.
  */
-export const worldRowSchema: z.ZodType<WorldRow> = worldTableSchema;
+export const worldRowSchema: z.ZodType<WorldRow> = worldTableShape;
 
 /**
  * WorldRow represents a world record.
@@ -81,7 +82,7 @@ export type WorldRow = WorldTable;
  * worldTableInsertSchema is the Zod schema for inserting a new world.
  */
 export const worldTableInsertSchema: z.ZodType<WorldTableInsert> =
-  worldTableSchema;
+  worldTableShape;
 
 /**
  * WorldTableInsert represents the data needed to insert a new world.
@@ -95,7 +96,7 @@ export const worldTableUpdateSchema: z.ZodType<
   WorldTableUpdate
 > = worldTableShape
   .omit({
-    namespace_id: true,
+    namespace: true,
     slug: true,
     created_at: true,
   })
@@ -105,5 +106,5 @@ export const worldTableUpdateSchema: z.ZodType<
  * WorldTableUpdate represents the data needed to update a world.
  */
 export type WorldTableUpdate = Partial<
-  Omit<WorldTable, "namespace_id" | "slug" | "created_at">
+  Omit<WorldTable, "namespace" | "slug" | "created_at">
 >;

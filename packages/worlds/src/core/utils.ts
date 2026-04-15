@@ -147,5 +147,8 @@ export function escapeSparqlLiteral(value: string): string {
  * escapeSparqlUri escapes a string for use as a SPARQL URI.
  */
 export function escapeSparqlUri(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/>/g, "\\>");
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/</g, "\\<")
+    .replace(/>/g, "\\>");
 }

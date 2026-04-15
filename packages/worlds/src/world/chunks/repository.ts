@@ -140,7 +140,7 @@ export class ChunksSearchRepository {
     try {
       const managed = await this.ctx.libsql.manager.get({
         slug: world.slug,
-        namespace: world.namespace_id,
+        namespace: world.namespace,
       });
 
       const subjectsParam = subjects && subjects.length > 0
@@ -186,9 +186,9 @@ export class ChunksSearchRepository {
           ftsRank: row.fts_rank,
           score: row.combined_rank,
           world: {
-            name: worldResourcePath(world.namespace_id, world.slug).slice(1),
+            name: worldResourcePath(world.namespace, world.slug).slice(1),
             slug: world.slug,
-            namespace: world.namespace_id ?? undefined,
+            namespace: world.namespace ?? undefined,
             label: world.label ?? undefined,
             description: world.description ?? undefined,
             createdAt: world.created_at,

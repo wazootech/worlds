@@ -1,5 +1,9 @@
 import type { Client } from "@libsql/client";
-import { worldsTable } from "#/plugins/registry/worlds.queries.sql.ts";
+import {
+  api_keys,
+  namespaces,
+  worlds,
+} from "#/plugins/registry/registry.sql.ts";
 import {
   triplesGraphIndex,
   triplesTable,
@@ -29,7 +33,9 @@ import {
  * @param client The database client.
  */
 export async function initializeDatabase(client: Client): Promise<void> {
-  await client.execute(worldsTable);
+  await client.execute(namespaces);
+  await client.execute(api_keys);
+  await client.execute(worlds);
 }
 
 /**

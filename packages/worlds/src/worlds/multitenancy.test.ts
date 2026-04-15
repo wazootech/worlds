@@ -1,8 +1,9 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { LocalWorlds } from "#/worlds/local.ts";
 import { createTestContext } from "#/core/engine-context.ts";
-import { WORLDS, WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
+import { WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
 import type { SparqlSelectResults } from "#/schemas/mod.ts";
+import { NamespacesRepository } from "#/plugins/registry/namespaces.repository.ts";
 
 Deno.test({
   name: "Multi-tenant Isolation",
@@ -11,24 +12,22 @@ Deno.test({
   async fn(t) {
     await using appContext = await createTestContext();
 
-    // Seed two namespaces in the registry world
-    {
-      const engine = new LocalWorlds(appContext);
-      await engine.init();
+    const namespacesRepo = new NamespacesRepository(appContext.libsql.database);
+    const now = Date.now();
 
-      await engine.sparql({
-        sources: [WORLDS_WORLD_SLUG],
-        query: `
-        PREFIX registry: <${WORLDS.NAMESPACE}>
-        INSERT DATA {
-          <https://wazoo.dev/registry/namespaces/ns-a> a <${WORLDS.Namespace}> ;
-            <${WORLDS.hasLabel}> "NS A" .
-          <https://wazoo.dev/registry/namespaces/ns-b> a <${WORLDS.Namespace}> ;
-            <${WORLDS.hasLabel}> "NS B" .
-        }
-      `,
-      });
-    }
+    // Seed two namespaces in the registry
+    await namespacesRepo.insert({
+      id: "https://wazoo.dev/registry/namespaces/ns-a",
+      label: "NS A",
+      created_at: now,
+      updated_at: now,
+    });
+    await namespacesRepo.insert({
+      id: "https://wazoo.dev/registry/namespaces/ns-b",
+      label: "NS B",
+      created_at: now,
+      updated_at: now,
+    });
 
     // Create context for NS A
     const ctxA = {

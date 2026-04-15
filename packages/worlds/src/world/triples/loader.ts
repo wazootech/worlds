@@ -1,5 +1,6 @@
 import type { Client } from "@libsql/client";
-import { DataFactory, type Quad, Store } from "n3";
+import type { Quad } from "n3";
+import { DataFactory, Store } from "n3";
 import { skolemizeQuad } from "#/rdf/patch/skolem.ts";
 import { TriplesRepository } from "./repository.ts";
 import type { PatchHandler } from "#/rdf/patch/types.ts";

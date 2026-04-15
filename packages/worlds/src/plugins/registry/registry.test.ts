@@ -1,8 +1,8 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { createTestContext } from "#/core/engine-context.ts";
 import { LocalWorlds } from "#/worlds/local.ts";
-import { WORLDS, WORLDS_WORLD_SLUG } from "#/core/ontology.ts";
-import type { SparqlSelectResults } from "#/schemas/mod.ts";
+import { NamespacesRepository } from "#/plugins/registry/namespaces.repository.ts";
+import { ApiKeysRepository } from "#/plugins/registry/api-keys.repository.ts";
 
 Deno.test({
   name: "LocalWorlds Registry",
@@ -17,46 +17,34 @@ Deno.test({
     await using worlds = new LocalWorlds(appContext);
     await worlds.init();
 
-    await t.step("registry world auto-initialization", async () => {
-      const worldsWorld = await worlds.get({ source: WORLDS_WORLD_SLUG });
-      assertExists(worldsWorld);
-      assertEquals(worldsWorld!.slug, "worlds");
+    await t.step("registry auto-initialization", async () => {
+      const namespaces = new NamespacesRepository(appContext.libsql.database);
+      const ns = await namespaces.get("_");
+      assertExists(ns);
+      assertEquals(ns.id, "_");
+      assertEquals(ns.label, "Root Namespace");
     });
 
-    await t.step("registry world bootstrapping with API key", async () => {
-      const namespace = "https://wazoo.dev/worlds/namespaces/_";
-      const result = await worlds.sparql({
-        sources: [WORLDS_WORLD_SLUG],
-        query: `
-        PREFIX registry: <${WORLDS.NAMESPACE}>
-        SELECT ?ns ?key WHERE {
-          ?ns a <${WORLDS.Namespace}> .
-          ?key a <${WORLDS.ApiKey}> ;
-               <${WORLDS.belongsTo}> ?ns ;
-               <${WORLDS.hasSecret}> "${apiKey}" .
-        }
-      `,
-      }) as SparqlSelectResults;
-
-      assertExists(result.results.bindings[0]);
-      assertEquals(result.results.bindings[0].ns.value, namespace);
+    await t.step("registry bootstrapping with API key", async () => {
+      const apiKeys = new ApiKeysRepository(appContext.libsql.database);
+      const namespace = await apiKeys.resolveNamespace(apiKey);
+      assertEquals(namespace, "_");
     });
 
     await t.step(
-      "registry world is protected from normal listings",
+      "worlds are isolated per namespace",
       async () => {
         const tenantContext = {
           ...appContext,
-          namespace: "https://wazoo.dev/worlds/namespaces/tenant",
+          namespace: "tenant",
         };
         await using tenantWorlds = new LocalWorlds(tenantContext);
-        await tenantWorlds.create({ slug: "normal-world", label: "Normal" });
+        await tenantWorlds.create({ slug: "tenant-world", label: "Tenant World" });
 
         const list = await tenantWorlds.list();
-        assertEquals(
-          list.find((world) => world.slug === WORLDS_WORLD_SLUG),
-          undefined,
-        );
+        const tenantWorld = list.find((w) => w.slug === "tenant-world");
+        assertExists(tenantWorld);
+        assertEquals(tenantWorld!.namespace, "tenant");
       },
     );
   },

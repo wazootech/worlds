@@ -28,7 +28,7 @@ Deno.test("Worlds API routes", async (t) => {
       const slug = "test-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: "_",
+        namespace: "_",
         slug,
         label: "Test World",
         description: "Test Description",
@@ -94,7 +94,7 @@ Deno.test("Worlds API routes", async (t) => {
       const slug = "export-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: "_",
+        namespace: "_",
         slug,
         label: "Export World",
         description: null,
@@ -144,7 +144,7 @@ Deno.test("Worlds API routes", async (t) => {
         unprotectedContext.libsql.database,
       );
       await unprotectedWorldsRepository.insert({
-        namespace_id: "_",
+        namespace: "_",
         slug,
         label: "Unprotected World",
         description: null,

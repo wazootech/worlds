@@ -22,7 +22,7 @@ Deno.test("World Search API routes", async (t) => {
     const slug = "search-world-" + ulid();
     const now = Date.now();
     await worldsRepository.insert({
-      namespace_id: "_",
+      namespace: "_",
       slug,
       label: "Search World",
       description: "A world for searching",

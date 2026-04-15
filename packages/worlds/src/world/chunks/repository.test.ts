@@ -6,12 +6,14 @@ import {
 } from "#/core/engine-context.ts";
 import { TriplesRepository } from "#/world/triples/repository.ts";
 import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
+import { NamespacesRepository } from "#/plugins/registry/namespaces.repository.ts";
 import { ChunksRepository } from "#/world/chunks/repository.ts";
 import { ChunksSearchRepository } from "#/world/chunks/repository.ts";
 
 Deno.test("ChunksSearchRepository", async (t) => {
   const testContext = await createTestContext();
   const worldsRepository = new WorldsRepository(testContext.libsql.database);
+  const namespacesRepository = new NamespacesRepository(testContext.libsql.database);
   const chunksSearchRepository = new ChunksSearchRepository(
     testContext,
     worldsRepository,
@@ -21,10 +23,17 @@ Deno.test("ChunksSearchRepository", async (t) => {
     plan: "free",
   });
 
-  const slug = "test-world";
   const now = Date.now();
+  await namespacesRepository.insert({
+    id: namespaceId,
+    label: namespaceId,
+    created_at: now,
+    updated_at: now,
+  });
+
+  const slug = "test-world";
   await worldsRepository.insert({
-    namespace_id: namespaceId,
+    namespace: namespaceId,
     slug,
     label: "Test World",
     description: "Test Description",

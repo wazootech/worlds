@@ -25,7 +25,7 @@ Deno.test("SPARQL API routes", async (t) => {
       const slug = "sparql-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: "_",
+        namespace: "_",
         slug,
         label: "SPARQL World",
         description: null,
@@ -67,7 +67,7 @@ Deno.test("SPARQL API routes", async (t) => {
       const slug = "sd-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: "_",
+        namespace: "_",
         slug,
         label: "SD World",
         description: null,
@@ -126,7 +126,7 @@ Deno.test("SPARQL API routes", async (t) => {
       const slug = "nt-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: "_",
+        namespace: "_",
         slug,
         label: "NT World",
         description: null,
@@ -184,7 +184,7 @@ Deno.test("SPARQL API routes", async (t) => {
       const slug = "post-sd-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace_id: "_",
+        namespace: "_",
         slug,
         label: "Weighted World",
         description: null,

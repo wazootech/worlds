@@ -6,7 +6,7 @@ import {
   selectWorldBySlug,
   selectWorldBySlugInternal,
   updateWorld,
-} from "./worlds.queries.sql.ts";
+} from "./registry.sql.ts";
 import type {
   WorldRow,
   WorldTableInsert,
@@ -26,15 +26,15 @@ export class WorldsRepository {
   /**
    * get retrieves a world by its identifier and optional namespace.
    * @param slug The world identifier.
-   * @param namespaceId The namespace ID (optional - uses internal lookup if not provided).
+   * @param namespace The namespace (optional - defaults to "_" if not provided).
    * @returns The world row or null if not found.
    */
   async get(
     slug: string | null,
-    namespaceId?: string | null,
+    namespace?: string | null,
   ): Promise<WorldRow | null> {
     const s = slug ?? "_";
-    const ns = namespaceId ?? "_";
+    const ns = namespace ?? "_";
     const result = await this.db.execute({
       sql: selectWorldBySlug,
       args: [s, ns],
@@ -65,11 +65,11 @@ export class WorldsRepository {
    * mapRow maps a database row to a WorldRow.
    */
   private mapRow(row: Record<string, unknown>): WorldRow {
-    const ns = row.namespace_id as string;
+    const ns = row.namespace as string;
     const slug = row.slug as string;
     return {
-      namespace_id: ns === "_" ? null : ns,
-      slug: slug === "_" ? null : slug,
+      namespace: ns,
+      slug: slug,
       label: row.label as string,
       description: row.description as string | null,
       db_hostname: row.db_hostname as string | null,
@@ -82,17 +82,17 @@ export class WorldsRepository {
 
   /**
    * list retrieves a paginated list of worlds for a specific namespace.
-   * @param namespaceId The namespace ID (optional - if not provided, lists all worlds).
+   * @param namespace The namespace (optional - if not provided, lists all worlds).
    * @param limit The maximum number of worlds to return.
    * @param offset The number of worlds to skip.
    * @returns An array of world rows.
    */
   async list(
-    namespaceId: string | null | undefined,
+    namespace: string | null | undefined,
     limit: number,
     offset: number,
   ): Promise<WorldRow[]> {
-    const ns = namespaceId ?? "_";
+    const ns = namespace ?? "_";
     const result = (ns !== "-")
       ? await this.db.execute({
         sql: selectAllWorlds,
@@ -112,8 +112,8 @@ export class WorldsRepository {
    * @param world The world data to insert.
    */
   async insert(world: WorldTableInsert): Promise<void> {
-    const ns = world.namespace_id ?? "_";
-    const slug = world.slug ?? "_";
+    const ns = world.namespace;
+    const slug = world.slug;
     await this.db.execute({
       sql: insertWorld,
       args: [
@@ -121,8 +121,8 @@ export class WorldsRepository {
         slug,
         world.label,
         world.description,
-        world.db_hostname,
-        world.db_token,
+        world.db_hostname ?? null,
+        world.db_token ?? null,
         world.created_at,
         world.updated_at,
         world.deleted_at,
@@ -133,26 +133,26 @@ export class WorldsRepository {
   /**
    * update modifies an existing world record.
    * @param slug The world identifier.
-   * @param namespaceId The namespace ID.
+   * @param namespace The namespace.
    * @param updates The fields to update.
    */
   async update(
     slug: string | null,
-    namespaceId: string | null | undefined,
+    namespace: string | null | undefined,
     updates: WorldTableUpdate,
   ): Promise<void> {
-    const row = await this.get(slug, namespaceId);
+    const row = await this.get(slug, namespace);
     if (!row) return;
     const s = slug ?? "_";
-    const ns = namespaceId ?? "_";
+    const ns = namespace ?? "_";
     await this.db.execute({
       sql: updateWorld,
       args: [
         updates.label ?? row.label,
         updates.description ?? row.description,
-        updates.updated_at ?? row.updated_at,
         updates.db_hostname ?? row.db_hostname,
         updates.db_token ?? row.db_token,
+        updates.updated_at ?? row.updated_at,
         updates.deleted_at ?? row.deleted_at,
         s,
         ns,
@@ -163,14 +163,14 @@ export class WorldsRepository {
   /**
    * delete removes a world record by its identifier and namespace.
    * @param slug The world identifier.
-   * @param namespaceId The namespace ID (optional).
+   * @param namespace The namespace (optional).
    */
   async delete(
     slug: string | null,
-    namespaceId: string | null | undefined,
+    namespace: string | null | undefined,
   ): Promise<void> {
     const s = slug ?? "_";
-    const ns = namespaceId ?? "_";
+    const ns = namespace ?? "_";
     await this.db.execute({ sql: deleteWorld, args: [s, ns] });
   }
 }

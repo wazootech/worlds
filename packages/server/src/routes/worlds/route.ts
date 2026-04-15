@@ -175,7 +175,6 @@ export async function handleGetWorld(
   appContext: WorldsContext,
   ctx: { request: Request; params?: URLPatternResult },
 ): Promise<Response> {
-  console.log(`[DEBUG] handleGetWorld reached: ${ctx.request.url}`);
   const authorized = await authorizeRequest(appContext, ctx.request);
   if (!authorized.admin && !authorized.namespaceId) {
     return ErrorResponse.Unauthorized();
