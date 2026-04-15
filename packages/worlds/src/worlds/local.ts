@@ -19,12 +19,10 @@ import type { WorldOptions } from "#/storage/manager.ts";
 import type { WorldsContext } from "#/core/types.ts";
 import {
   DEFAULT_NAMESPACE,
-  WORLDS,
   WORLDS_WORLD_NAMESPACE,
   WORLDS_WORLD_SLUG,
 } from "#/core/ontology.ts";
 import { worldResourcePath } from "#/core/resource-path.ts";
-import type { NamespaceRow } from "#/plugins/registry/namespaces.repository.ts";
 import type { WorldRow } from "#/plugins/registry/worlds.schema.ts";
 import type {
   World,
