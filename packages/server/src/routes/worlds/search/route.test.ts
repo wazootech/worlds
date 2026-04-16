@@ -13,7 +13,7 @@ Deno.test("World Search API routes", async (t) => {
   testContext.engine = worlds;
   await worlds.init();
 
-  const worldsRepository = new WorldsRepository(testContext.libsql.database);
+  const worldsRepository = new WorldsRepository(testContext.system);
   const { createServer } = await import("../../../server.ts");
   const app = await createServer(testContext);
 
@@ -32,7 +32,7 @@ Deno.test("World Search API routes", async (t) => {
       updated_at: now,
       deleted_at: null,
     });
-    await testContext.libsql.manager.create({
+    await testContext.storage.create({
       namespace: "_",
       world,
     });

@@ -40,7 +40,7 @@ export async function authorizeRequest(
   }
 
   // Resolve namespace via ApiKeysRepository
-  const apiKeysRepo = new ApiKeysRepository(appContext.libsql.database);
+  const apiKeysRepo = new ApiKeysRepository(appContext.system);
   const namespaceId = await apiKeysRepo.resolveNamespace(apiKey);
 
   if (namespaceId) {

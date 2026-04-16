@@ -1,4 +1,4 @@
-import type { Source } from "@wazoo/worlds-sdk";
+import type { WorldsSource } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "./types.ts";
 
 import type { WorldsSparqlTool } from "./tools/sparql.ts";
@@ -35,7 +35,7 @@ export function createTools(options: CreateToolsOptions): {
   import: WorldsImportTool;
   export: WorldsExportTool;
 } {
-  const normalizedSources: Source[] = options.sources.map((source) =>
+  const normalizedSources: WorldsSource[] = options.sources.map((source) =>
     typeof source === "string" ? { world: source } : source
   );
   const normalizedOptions: CreateToolsOptions = {

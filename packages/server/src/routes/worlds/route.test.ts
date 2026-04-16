@@ -14,7 +14,7 @@ Deno.test("Worlds API routes", async (t) => {
   testContext.engine = worlds;
   await worlds.init();
 
-  const worldsRepository = new WorldsRepository(testContext.libsql.database);
+  const worldsRepository = new WorldsRepository(testContext.system);
   // Import createServer properly if not already there, or just use the one from server.ts
   const { createServer } = await import("../../server.ts");
   const app = await createServer(testContext);
@@ -38,7 +38,7 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({
+      await testContext.storage.create({
         namespace: "_",
         world,
       });
@@ -104,7 +104,7 @@ Deno.test("Worlds API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({
+      await testContext.storage.create({
         namespace: "_",
         world,
       });
