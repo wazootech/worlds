@@ -1,7 +1,8 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import {
   defaultWorldsNamespaceNameSegment,
   defaultWorldsWorldNameSegment,
+  SourceParseError,
   toResolvedSource,
   toStorageName,
 } from "#/core/sources.ts";
@@ -159,5 +160,54 @@ Deno.test("toResolvedSource + toStorageName - composition", async (t) => {
     });
     const storageKey = toStorageName(resolved);
     assertEquals(storageKey, "context-ns:my-world");
+  });
+});
+
+Deno.test("toResolvedSource - Context with world default", async (t) => {
+  await t.step("context world overrides default", () => {
+    const result = toResolvedSource("_", { world: "context-world" });
+    assertEquals(result.world, "context-world");
+    assertEquals(result.namespace, defaultWorldsNamespaceNameSegment);
+  });
+
+  await t.step("context namespace and world together", () => {
+    const result = toResolvedSource("_", {
+      namespace: "context-ns",
+      world: "context-world",
+    });
+    assertEquals(result.namespace, "context-ns");
+    assertEquals(result.world, "context-world");
+  });
+
+  await t.step("explicit source overrides context world", () => {
+    const result = toResolvedSource(
+      { world: "explicit-world", namespace: "explicit-ns" },
+      { world: "context-world", namespace: "context-ns" },
+    );
+    assertEquals(result.namespace, "explicit-ns");
+    assertEquals(result.world, "explicit-world");
+  });
+
+  await t.step("'_' in string with context world", () => {
+    const result = toResolvedSource("ns-a/_", { world: "context-world" });
+    assertEquals(result.namespace, "ns-a");
+    assertEquals(result.world, "context-world");
+  });
+});
+
+Deno.test("SourceParseError - thrown on invalid input", async (t) => {
+  await t.step("multiple slashes throws error", async () => {
+    try {
+      toResolvedSource("a/b/c");
+      throw new Error("Expected error to be thrown");
+    } catch (e) {
+      assertEquals((e as Error).message.includes("multiple slashes"), true);
+    }
+  });
+
+  await t.step("valid input does not throw", () => {
+    const result = toResolvedSource("a/b");
+    assertEquals(result.world, "b");
+    assertEquals(result.namespace, "a");
   });
 });

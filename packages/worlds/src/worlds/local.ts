@@ -189,10 +189,6 @@ export class LocalWorlds implements WorldsInterface {
       offset = (input.page - 1) * input.pageSize;
     }
 
-    const isAdmin = this.appContext.namespace === undefined ||
-      this.appContext.namespace === undefined ||
-      this.appContext.namespace === null;
-
     const namespaceForList = (input?.namespace ?? this.appContext.namespace) ??
       null;
     this.assertSourceAuthorized(null, namespaceForList);
@@ -720,13 +716,7 @@ export class LocalWorlds implements WorldsInterface {
       return;
     }
 
-    const isAdmin = this.appContext.namespace === undefined ||
-      this.appContext.namespace === null;
-
-    if (
-      !isAdmin &&
-      namespace !== this.appContext.namespace
-    ) {
+    if (namespace !== this.appContext.namespace) {
       throw new Error(
         `Unauthorized access to namespace: ${namespace ?? "system"}`,
       );

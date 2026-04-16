@@ -1,6 +1,6 @@
 import type { Client } from "@libsql/client";
-import type { Embeddings } from "#/embeddings/embeddings.ts";
-import type { DatabaseManager } from "#/storage/manager.ts";
+import type { Embeddings } from "#/vectors/embeddings.ts";
+import type { WorldsStorageManager } from "#/storage/worlds.ts";
 import type {
   World,
   WorldsCreateInput,
@@ -55,29 +55,29 @@ export interface WorldsContext {
   apiKey?: string;
 
   /**
-   * embeddings is the embedding strategy used for semantic search.
+   * vectors is the embedding strategy used for semantic search.
    */
-  embeddings: Embeddings;
+  vectors: Embeddings;
 
   /**
-   * libsql contains the database client and manager.
+   * system is the system database client for registry data (namespaces, api-keys, world metadata).
    */
-  libsql: {
-    /**
-     * database is the core LibSQL database client.
-     */
-    database: Client;
+  system: Client;
 
-    /**
-     * manager is the database manager for world-specific databases.
-     */
-    manager: DatabaseManager;
-  };
+  /**
+   * storage is the world storage manager for per-world databases.
+   */
+  storage: WorldsStorageManager;
 
   /**
    * namespace is the default namespace for this context.
    */
   namespace?: string;
+
+  /**
+   * world is the default world for this context.
+   */
+  world?: string;
 
   /**
    * engine is the core Worlds engine for this context.

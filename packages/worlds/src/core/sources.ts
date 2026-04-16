@@ -9,11 +9,21 @@ export { defaultWorldsNamespaceNameSegment, defaultWorldsWorldNameSegment };
 
 /**
  * ResolvedSource represents a fully resolved world + namespace pair.
- * Uses defaultWorldsNamespaceNameSegment and defaultWorldsWorldNameSegment as fallbacks.
+ * Uses context defaults or fallbacks.
  */
 export interface ResolvedSource {
   world: string;
   namespace: string;
+}
+
+/**
+ * SourceParseError is thrown when source parsing fails validation.
+ */
+export class SourceParseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SourceParseError";
+  }
 }
 
 /**
@@ -22,6 +32,8 @@ export interface ResolvedSource {
  *
  * String parsing: "_" returns null (use context defaults)
  * Object forms: null values use context defaults
+ *
+ * @throws SourceParseError on invalid input (multiple slashes, invalid format)
  */
 export function toResolvedSource(
   source: WorldSource | { world?: string | null; namespace?: string | null },
@@ -41,7 +53,7 @@ export function toResolvedSource(
   }
 
   return {
-    world: world ?? context?.namespace ?? defaultWorldsWorldNameSegment,
+    world: world ?? context?.world ?? defaultWorldsWorldNameSegment,
     namespace: namespace ?? context?.namespace ??
       defaultWorldsNamespaceNameSegment,
   };
@@ -58,6 +70,8 @@ export function toStorageName(resolved: ResolvedSource): string {
 /**
  * parseSourceName parses a "namespace/world" string into components.
  * Returns null for "_" segments (to be resolved by context).
+ *
+ * @throws SourceParseError on invalid format (multiple slashes)
  */
 function parseSourceName(
   source: string,
@@ -65,9 +79,20 @@ function parseSourceName(
   const trimmed = source.trim();
   if (!trimmed) return { world: null, namespace: null };
 
+  if (trimmed === "_") {
+    return { world: null, namespace: null };
+  }
+
   const slashIndex = trimmed.indexOf("/");
   if (slashIndex === -1) {
     return { world: trimmed, namespace: null };
+  }
+
+  const secondSlash = trimmed.indexOf("/", slashIndex + 1);
+  if (secondSlash !== -1) {
+    throw new SourceParseError(
+      `Invalid source format: multiple slashes in "${trimmed}"`,
+    );
   }
 
   const ns = trimmed.slice(0, slashIndex);
