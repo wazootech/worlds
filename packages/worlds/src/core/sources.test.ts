@@ -229,3 +229,51 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
     assertEquals(result.namespace, "a");
   });
 });
+
+Deno.test("resolveSource - Edge cases", async (t) => {
+  await t.step("name property with '_' sentinel", () => {
+    const result = resolveSource({ name: "_/my-world" });
+    assertEquals(result.namespace, defaultWorldsNamespaceNameSegment);
+    assertEquals(result.world, "my-world");
+  });
+
+  await t.step("name property with qualified name", () => {
+    const result = resolveSource({ name: "ns-a/my-world" });
+    assertEquals(result.namespace, "ns-a");
+    assertEquals(result.world, "my-world");
+  });
+
+  await t.step("special characters in world name", () => {
+    const result = resolveSource("ns-a/my-world_123");
+    assertEquals(result.namespace, "ns-a");
+    assertEquals(result.world, "my-world_123");
+  });
+
+  await t.step("trailing slash uses default world", () => {
+    const result = resolveSource("ns-a/");
+    assertEquals(result.namespace, "ns-a");
+    assertEquals(result.world, defaultWorldsWorldNameSegment);
+  });
+});
+
+Deno.test("toWorldName - Additional edge cases", async (t) => {
+  await t.step("string input directly", () => {
+    const result = toWorldName("ns-a/my-world");
+    assertEquals(result, "ns-a/my-world");
+  });
+
+  await t.step("world-only string converts to '_'", () => {
+    const result = toWorldName("my-world");
+    assertEquals(result, "_/my-world");
+  });
+
+  await t.step("string with '_' sentinel", () => {
+    const result = toWorldName("_/my-world");
+    assertEquals(result, "_/my-world");
+  });
+
+  await t.step("empty source uses defaults", () => {
+    const result = toWorldName("");
+    assertEquals(result, "_/_");
+  });
+});
