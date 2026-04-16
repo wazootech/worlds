@@ -10,7 +10,7 @@ Deno.test("ApiKeysRepository & Auth Middleware", async (t) => {
   appContext.engine = worlds;
   await worlds.init();
 
-  const repo = new ApiKeysRepository(appContext.libsql.database);
+  const repo = new ApiKeysRepository(appContext.system);
 
   await t.step("resolveNamespace finds namespaces", async () => {
     // The admin key is seeded by LocalWorlds.init()

@@ -119,7 +119,7 @@ export class ChunksSearchRepository {
 
     // Generate Embeddings
     const vector = query
-      ? await this.ctx.embeddings.embed(query)
+      ? await this.ctx.vectors.embed(query)
       : new Array(1536).fill(0);
 
     // Procure world record if not provided
@@ -128,7 +128,7 @@ export class ChunksSearchRepository {
       worldRow = await this.worlds.get(world, namespace) ?? undefined;
     }
 
-    if (!this.ctx.libsql.manager) {
+    if (!this.ctx.storage) {
       throw new Error("Search manager not available");
     }
 
@@ -138,7 +138,7 @@ export class ChunksSearchRepository {
 
     // Search across the target world
     try {
-      const managed = await this.ctx.libsql.manager.get({
+      const managed = await this.ctx.storage.get({
         world: worldRow.world,
         namespace: worldRow.namespace,
       });

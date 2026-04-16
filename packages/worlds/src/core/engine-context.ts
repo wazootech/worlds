@@ -1,18 +1,18 @@
 import { createClient } from "@libsql/client";
 import { ulid } from "@std/ulid/ulid";
 import { initializeDatabase } from "#/storage/init.ts";
-import { MemoryDatabaseManager } from "#/storage/memory-manager.ts";
-import type { Embeddings } from "#/embeddings/embeddings.ts";
+import { MemoryWorldsStorageManager } from "#/storage/memory.ts";
+import type { Embeddings } from "#/vectors/embeddings.ts";
 import type { WorldsContext } from "#/core/types.ts";
-import { WORLDS, WORLDS_WORLD_NAMESPACE } from "#/core/ontology.ts";
+import { WORLDS } from "#/core/ontology.ts";
 
 /**
  * createTestContext creates a test application context with an in-memory
  * database and mock embeddings.
  */
 export async function createTestContext(): Promise<WorldsContext> {
-  const client = createClient({ url: ":memory:" });
-  await initializeDatabase(client);
+  const system = createClient({ url: ":memory:" });
+  await initializeDatabase(system);
 
   const mockEmbeddings: Embeddings = {
     dimensions: 768,
@@ -24,19 +24,17 @@ export async function createTestContext(): Promise<WorldsContext> {
     },
   };
 
-  const databaseManager = new MemoryDatabaseManager();
+  const storage = new MemoryWorldsStorageManager();
 
   return {
-    embeddings: mockEmbeddings,
-    libsql: {
-      database: client,
-      manager: databaseManager,
-    },
+    vectors: mockEmbeddings,
+    system,
+    storage,
     apiKey: ulid(),
-    namespace: WORLDS_WORLD_NAMESPACE,
+    namespace: "test-admin",
     async [Symbol.asyncDispose]() {
-      await databaseManager.close();
-      client.close();
+      await storage.close();
+      system.close();
     },
   };
 }

@@ -1,8 +1,8 @@
 import { z } from "zod";
 import type { WorldsContentType } from "./rdf-content-type.ts";
 import { worldsContentTypeSchema } from "./rdf-content-type.ts";
-import type { WorldSource } from "./source.ts";
-import { worldSourceSchema } from "./source.ts";
+import type { WorldsSource } from "./source.ts";
+import { worldsSourceSchema } from "./source.ts";
 
 export { type WorldsContentType, worldsContentTypeSchema };
 
@@ -314,7 +314,7 @@ export interface WorldsSparqlInput {
   /**
    * sources is the optional list of target worlds.
    */
-  sources?: WorldSource[];
+  sources?: WorldsSource[];
 
   /**
    * namespace is the optional namespace of the target world.
@@ -341,7 +341,7 @@ export interface WorldsSparqlInput {
  * worldsSparqlInputSchema is the Zod schema for WorldsSparqlInput.
  */
 export const worldsSparqlInputSchema: z.ZodType<WorldsSparqlInput> = z.object({
-  sources: z.array(worldSourceSchema).optional().describe(
+  sources: z.array(worldsSourceSchema).optional().describe(
     "The optional list of target worlds.",
   ),
   namespace: z.string().optional().describe(
@@ -363,7 +363,7 @@ export interface WorldsServiceDescriptionInput {
   /**
    * sources is the optional list of target worlds.
    */
-  sources?: WorldSource[];
+  sources?: WorldsSource[];
 
   /**
    * namespace is the optional namespace of the target world.
@@ -387,7 +387,7 @@ export interface WorldsServiceDescriptionInput {
 export const worldsServiceDescriptionInputSchema: z.ZodType<
   WorldsServiceDescriptionInput
 > = z.object({
-  sources: z.array(worldSourceSchema).optional().describe(
+  sources: z.array(worldsSourceSchema).optional().describe(
     "The optional list of target worlds.",
   ),
   namespace: z.string().optional().describe(

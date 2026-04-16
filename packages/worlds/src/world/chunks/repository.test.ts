@@ -12,9 +12,9 @@ import { ChunksSearchRepository } from "#/world/chunks/repository.ts";
 
 Deno.test("ChunksSearchRepository", async (t) => {
   const testContext = await createTestContext();
-  const worldsRepository = new WorldsRepository(testContext.libsql.database);
+  const worldsRepository = new WorldsRepository(testContext.system);
   const namespacesRepository = new NamespacesRepository(
-    testContext.libsql.database,
+    testContext.system,
   );
   const chunksSearchRepository = new ChunksSearchRepository(
     testContext,
@@ -45,9 +45,9 @@ Deno.test("ChunksSearchRepository", async (t) => {
     updated_at: now,
     deleted_at: null,
   });
-  await testContext.libsql.manager.create({ world, namespace: namespaceId });
+  await testContext.storage.create({ world, namespace: namespaceId });
 
-  const worldManaged = await testContext.libsql.manager.get({
+  const worldManaged = await testContext.storage.get({
     world,
     namespace: namespaceId,
   });
@@ -92,6 +92,6 @@ Deno.test("ChunksSearchRepository", async (t) => {
     assertEquals(results[0].object, "o");
   });
 
-  await testContext.libsql.manager.close();
-  testContext.libsql.database.close();
+  await testContext.storage.close();
+  testContext.system.close();
 });

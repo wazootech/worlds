@@ -76,7 +76,25 @@ Deno.test("resolveSource - Object inputs", async (t) => {
     assertEquals(result.namespace, defaultWorldsNamespaceNameSegment);
   });
 
-  await t.step("empty object uses context defaults", () => {
+  await t.step("object with name property parses into components", () => {
+    const result = resolveSource({ name: "ns-a/world-b" });
+    assertEquals(result.namespace, "ns-a");
+    assertEquals(result.world, "world-b");
+  });
+
+  await t.step("partial object (world only)", () => {
+    const result = resolveSource({ world: "my-world" });
+    assertEquals(result.world, "my-world");
+    assertEquals(result.namespace, defaultWorldsNamespaceNameSegment);
+  });
+
+  await t.step("partial object (namespace only)", () => {
+    const result = resolveSource({ namespace: "ns-a" });
+    assertEquals(result.world, defaultWorldsWorldNameSegment);
+    assertEquals(result.namespace, "ns-a");
+  });
+
+  await t.step("empty object", () => {
     const result = resolveSource({});
     assertEquals(result.world, defaultWorldsWorldNameSegment);
     assertEquals(result.namespace, defaultWorldsNamespaceNameSegment);

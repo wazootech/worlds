@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { DEFAULT_NAMESPACE } from "#/core/ontology.ts";
-import { type WorldSource, worldSourceSchema } from "./source.ts";
+import { defaultWorldsNamespace } from "#/core/ontology.ts";
+import { type WorldsSource, worldsSourceSchema } from "./source.ts";
 
 /**
  * World represents a world in the Worlds API.
@@ -100,10 +100,10 @@ export const worldsCreateInputSchema = z.object({
   label: z.string().optional().describe("The display label."),
   description: z.string().optional().describe("The description."),
 }).superRefine((data, ctx) => {
-  if (data.namespace === DEFAULT_NAMESPACE) {
+  if (data.namespace === defaultWorldsNamespace) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: `Namespace "${DEFAULT_NAMESPACE}" is reserved.`,
+      message: `Namespace "${defaultWorldsNamespace}" is reserved.`,
       path: ["namespace"],
     });
   }
@@ -116,7 +116,7 @@ export interface WorldsUpdateInput {
   /**
    * source is the target world identification.
    */
-  source: WorldSource;
+  source: WorldsSource;
 
   /**
    * label is the updated human-readable name.
@@ -133,7 +133,7 @@ export interface WorldsUpdateInput {
  * worldsUpdateInputSchema is the Zod schema for WorldsUpdateInput.
  */
 export const worldsUpdateInputSchema: z.ZodType<WorldsUpdateInput> = z.object({
-  source: worldSourceSchema.describe("The target world identification."),
+  source: worldsSourceSchema.describe("The target world identification."),
   label: z.string().optional(),
   description: z.string().optional(),
 });
@@ -145,14 +145,14 @@ export interface WorldsGetInput {
   /**
    * source is the target world identification.
    */
-  source: WorldSource;
+  source: WorldsSource;
 }
 
 /**
  * worldsGetInputSchema is the Zod schema for WorldsGetInput.
  */
 export const worldsGetInputSchema: z.ZodType<WorldsGetInput> = z.object({
-  source: worldSourceSchema.describe("The target world identification."),
+  source: worldsSourceSchema.describe("The target world identification."),
 });
 
 /**
@@ -162,12 +162,12 @@ export interface WorldsDeleteInput {
   /**
    * source is the target world identification.
    */
-  source: WorldSource;
+  source: WorldsSource;
 }
 
 /**
  * worldsDeleteInputSchema is the Zod schema for WorldsDeleteInput.
  */
 export const worldsDeleteInputSchema: z.ZodType<WorldsDeleteInput> = z.object({
-  source: worldSourceSchema.describe("The target world identification."),
+  source: worldsSourceSchema.describe("The target world identification."),
 });

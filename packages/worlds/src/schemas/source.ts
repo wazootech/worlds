@@ -3,46 +3,38 @@ import type { WorldsContentType } from "./rdf-content-type.ts";
 import { worldsContentTypeSchema } from "./rdf-content-type.ts";
 
 /**
- * WorldSource represents a target world by world identifier, qualified name, or name object.
+ * WorldsSource represents a target world by world identifier, qualified name, or name object.
  */
-export type WorldSource =
-  | string
-  | {
-    world: string | null;
-    namespace?: string | null;
-    write?: boolean;
-    schema?: boolean;
-  }
-  | { name: string; write?: boolean; schema?: boolean };
+export type WorldsSource =
+  | string // Qualified name: <namespace>/<world>
+  | (
+    & { write?: boolean }
+    & (
+      | { world?: string | null; namespace?: string | null }
+      | { name?: string | null }
+    )
+  );
 
 /**
- * Source is a backward-compatibility alias for WorldSource.
- * @deprecated Use WorldSource instead.
+ * worldsSourceSchema is the Zod schema for WorldsSource.
  */
-export type Source = WorldSource;
-
-/**
- * worldSourceSchema is the Zod schema for WorldSource.
- */
-export const worldSourceSchema: z.ZodType<WorldSource> = z.union([
+export const worldsSourceSchema: z.ZodType<WorldsSource> = z.union([
   z.string().describe("A qualified source name: <namespace>/<world>"),
   z.object({
-    world: z.string().nullable().describe("The world identifier."),
-    namespace: z.string().nullable().optional().describe(
-      "The optional namespace of the target world.",
-    ),
     write: z.boolean().optional().describe("Whether write access is enabled."),
-    schema: z.boolean().optional().describe(
-      "Whether this source should be treated as a schema source.",
-    ),
-  }),
-  z.object({
-    name: z.string().describe("A qualified source name: <namespace>/<world>"),
-    write: z.boolean().optional().describe("Whether write access is enabled."),
-    schema: z.boolean().optional().describe(
-      "Whether this source should be treated as a schema source.",
-    ),
-  }),
+  }).and(z.union([
+    z.object({
+      world: z.string().nullable().optional().describe("The world identifier."),
+      namespace: z.string().nullable().optional().describe(
+        "The optional namespace of the target world.",
+      ),
+    }),
+    z.object({
+      name: z.string().nullable().optional().describe(
+        "A qualified source name: <namespace>/<world>",
+      ),
+    }),
+  ])),
 ]);
 
 /**
@@ -105,7 +97,7 @@ export interface WorldsImportInput {
   /**
    * source is the target world identification.
    */
-  source: WorldSource;
+  source: WorldsSource;
 
   /**
    * data is the RDF data to import (string or Buffer).
@@ -122,7 +114,7 @@ export interface WorldsImportInput {
  * worldsImportInputSchema is the Zod schema for WorldsImportInput.
  */
 export const worldsImportInputSchema: z.ZodType<WorldsImportInput> = z.object({
-  source: worldSourceSchema.describe("The target world identification."),
+  source: worldsSourceSchema.describe("The target world identification."),
   data: z.union([z.string(), z.instanceof(ArrayBuffer)]).describe(
     "The RDF data to import.",
   ),
@@ -138,7 +130,7 @@ export interface WorldsExportInput {
   /**
    * source is the target world identification.
    */
-  source: WorldSource;
+  source: WorldsSource;
 
   /**
    * contentType is the requested RDF content type.
@@ -150,7 +142,7 @@ export interface WorldsExportInput {
  * worldsExportInputSchema is the Zod schema for WorldsExportInput.
  */
 export const worldsExportInputSchema: z.ZodType<WorldsExportInput> = z.object({
-  source: worldSourceSchema.describe("The target world identification."),
+  source: worldsSourceSchema.describe("The target world identification."),
   contentType: worldsContentTypeSchema.optional().describe(
     "The requested RDF content type.",
   ),

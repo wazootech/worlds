@@ -18,7 +18,7 @@ Deno.test({
     await worlds.init();
 
     await t.step("registry auto-initialization", async () => {
-      const namespaces = new NamespacesRepository(appContext.libsql.database);
+      const namespaces = new NamespacesRepository(appContext.system);
       const ns = await namespaces.get("_");
       assertExists(ns);
       assertEquals(ns.id, "_");
@@ -26,7 +26,7 @@ Deno.test({
     });
 
     await t.step("registry bootstrapping with API key", async () => {
-      const apiKeys = new ApiKeysRepository(appContext.libsql.database);
+      const apiKeys = new ApiKeysRepository(appContext.system);
       const namespace = await apiKeys.resolveNamespace(apiKey);
       assertEquals(namespace, "_");
     });

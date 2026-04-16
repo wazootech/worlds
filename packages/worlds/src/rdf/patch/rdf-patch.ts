@@ -2,7 +2,7 @@ import type { Client } from "@libsql/client";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import type { Patch } from "./types.ts";
 import { skolemizeQuad } from "./skolem.ts";
-import type { Embeddings } from "#/embeddings/embeddings.ts";
+import type { Embeddings } from "#/vectors/embeddings.ts";
 import { TriplesRepository } from "#/world/triples/repository.ts";
 import { ChunksRepository } from "#/world/chunks/repository.ts";
 
