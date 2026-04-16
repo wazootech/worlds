@@ -87,10 +87,48 @@ Deno.test("MemoryWorldsStorageManager", async (t) => {
   await t.step("Symbol.asyncDispose closes storage", async () => {
     const mgr = new MemoryWorldsStorageManager();
     await mgr.create({ id: "test", namespace: "ns" });
-    
+
     await mgr[Symbol.asyncDispose]();
-    
+
     const storage = await mgr.get({ id: "test", namespace: "ns" });
     assertEquals(storage.store.getQuads(null, null, null, null).length, 0);
+  });
+});
+
+Deno.test("MemoryWorldsStorageManager - concurrent operations", async (t) => {
+  await t.step("concurrent get() returns same store", async () => {
+    const manager = new MemoryWorldsStorageManager();
+    await manager.create({ id: "concurrent-test", namespace: "ns-concurrent" });
+
+    const [storage1, storage2] = await Promise.all([
+      manager.get({ id: "concurrent-test", namespace: "ns-concurrent" }),
+      manager.get({ id: "concurrent-test", namespace: "ns-concurrent" }),
+    ]);
+
+    assertEquals(storage1.store === storage2.store, true);
+  });
+
+  await t.step("concurrent create() + get() no race", async () => {
+    const manager = new MemoryWorldsStorageManager();
+
+    const [storage1, storage2] = await Promise.all([
+      manager.create({ id: "race-test", namespace: "ns-race" }),
+      manager.get({ id: "race-test", namespace: "ns-race" }),
+    ]);
+
+    assertEquals(storage1 !== null, true);
+    assertEquals(storage2 !== null, true);
+  });
+
+  await t.step("delete() while get() in flight doesn't crash", async () => {
+    const manager = new MemoryWorldsStorageManager();
+    await manager.create({ id: "delete-race", namespace: "ns-delete" });
+
+    const getPromise = manager.get({ id: "delete-race", namespace: "ns-delete" });
+    const deletePromise = manager.delete({ id: "delete-race", namespace: "ns-delete" });
+
+    const [storage] = await Promise.all([getPromise, deletePromise]);
+
+    assertEquals(storage !== null, true);
   });
 });

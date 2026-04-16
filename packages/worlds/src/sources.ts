@@ -154,17 +154,43 @@ export function toWorldName(
   return `${resolved.namespace}/${resolved.world ?? ""}`;
 }
 
+const VALID_SOURCE_CHARS = /^[a-zA-Z0-9_-]*$/;
+
 /**
  * parseSourceName parses a "namespace/world" string into components.
  * Returns null for "_" segments (to be resolved by context).
  *
- * @throws SourceParseError on invalid format (multiple slashes)
+ * @throws SourceParseError on invalid format (multiple slashes, spaces, special chars)
  */
 function parseSourceName(
   source: string,
 ): ResolvedSource {
   const trimmed = source.trim();
   if (!trimmed || trimmed === "_") return {};
+
+  if (/[\\ ]/.test(trimmed)) {
+    throw new SourceParseError(
+      `Invalid source format: backslash and space characters are not allowed in "${trimmed}"`,
+    );
+  }
+
+  if (/[^a-zA-Z0-9_/\-]/.test(trimmed)) {
+    throw new SourceParseError(
+      `Invalid source format: only alphanumeric, hyphen, and underscore characters allowed in "${trimmed}"`,
+    );
+  }
+
+  if (/[^\x00-\x7F]/.test(trimmed)) {
+    throw new SourceParseError(
+      `Invalid source format: non-ASCII characters are not allowed in "${trimmed}"`,
+    );
+  }
+
+  if (trimmed.startsWith("/") || trimmed.endsWith("/")) {
+    throw new SourceParseError(
+      `Invalid source format: leading or trailing slash not allowed in "${trimmed}"`,
+    );
+  }
 
   const slashIndex = trimmed.indexOf("/");
   if (slashIndex === -1) {
