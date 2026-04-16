@@ -1,9 +1,5 @@
 import type { Client } from "@libsql/client";
-import {
-  api_keys,
-  namespaces,
-  worlds,
-} from "#/plugins/registry/registry.sql.ts";
+import { api_keys, namespaces, worlds } from "#/plugins/system/registry.sql.ts";
 import {
   triplesGraphIndex,
   triplesTable,

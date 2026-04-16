@@ -1,14 +1,11 @@
 import { join } from "@std/path";
 import type { Client } from "@libsql/client";
 import { createClient } from "@libsql/client";
-import type {
-  WorldOptions,
-  WorldsStorage,
-  WorldsStorageManager,
-} from "#/storage/worlds.ts";
+import type { WorldOptions, WorldsStorage } from "./types.ts";
+import type { WorldsStorageManager } from "./worlds.ts";
 import { toWorldName } from "#/core/sources.ts";
 
-import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
+import { WorldsRepository } from "#/plugins/system/worlds.repository.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
 
 /**
@@ -58,7 +55,10 @@ export class FileWorldsStorageManager implements WorldsStorageManager {
   public async get(options: WorldOptions): Promise<WorldsStorage> {
     const key = await this.getStorageKey(options);
     const worldsRepository = new WorldsRepository(this.system);
-    const world = await worldsRepository.get(options.world, options.namespace);
+    const world = await worldsRepository.get(
+      options.id,
+      options.namespace ?? undefined,
+    );
     let url = world?.db_hostname;
 
     if (!url) {

@@ -42,22 +42,15 @@ export const WORLDS = {
 } as const;
 
 /**
- * defaultWorldsNamespace is the sentinel for "derive namespace from context".
- * Use this as the default parameter value when a function accepts an optional namespace.
- * When null is passed, the caller should derive the namespace from request context.
- */
-export const defaultWorldsNamespace: string | null = null;
-
-/**
- * defaultWorldsNamespaceNameSegment is the fallback used when storing/looking up
+ * defaultNamespace is the fallback used when storing/looking up
  * namespace-agnostic data in storage or database keys.
  * In "namespace/world" parsing, "_" returns null to use context defaults.
  */
-export const defaultWorldsNamespaceNameSegment: string = "default";
+export const defaultNamespace: string | undefined = undefined;
 
 /**
- * defaultWorldsWorldNameSegment is the fallback used when storing/looking up
+ * defaultWorld is the fallback used when storing/looking up
  * world-agnostic data in storage or database keys.
  * In "namespace/world" parsing, "_" returns null to use context defaults.
  */
-export const defaultWorldsWorldNameSegment: string = "default";
+export const defaultWorld: string | undefined = undefined;

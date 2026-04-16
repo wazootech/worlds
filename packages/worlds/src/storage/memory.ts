@@ -1,9 +1,6 @@
 import { type Client, createClient } from "@libsql/client";
-import type {
-  WorldOptions,
-  WorldsStorage,
-  WorldsStorageManager,
-} from "#/storage/worlds.ts";
+import type { WorldOptions, WorldsStorage } from "./types.ts";
+import type { WorldsStorageManager } from "./worlds.ts";
 import { toWorldName } from "#/core/sources.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
 

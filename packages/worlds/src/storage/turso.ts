@@ -1,12 +1,9 @@
 import type { createClient as createTursoClient } from "@tursodatabase/api";
 import type { Client } from "@libsql/client";
 import { createClient } from "@libsql/client";
-import type {
-  WorldOptions,
-  WorldsStorage,
-  WorldsStorageManager,
-} from "#/storage/worlds.ts";
-import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
+import type { WorldOptions, WorldsStorage } from "./types.ts";
+import type { WorldsStorageManager } from "./worlds.ts";
+import { WorldsRepository } from "#/plugins/system/worlds.repository.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
 
 /**
@@ -37,7 +34,7 @@ export class TursoCloudWorldsStorageManager implements WorldsStorageManager {
    * getStorageKey generates a Turso-safe identifier for a world.
    */
   private async getStorageKey(options: WorldOptions): Promise<string> {
-    const raw = `${options.namespace ?? ""}:${options.world}`;
+    const raw = `${options.namespace ?? ""}:${options.id}`;
     const encoder = new TextEncoder();
     const data = encoder.encode(raw);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
@@ -63,7 +60,10 @@ export class TursoCloudWorldsStorageManager implements WorldsStorageManager {
   public async get(options: WorldOptions): Promise<WorldsStorage> {
     const key = await this.getStorageKey(options);
     const worldsRepository = new WorldsRepository(this.system);
-    const world = await worldsRepository.get(options.world, options.namespace);
+    const world = await worldsRepository.get(
+      options.id,
+      options.namespace ?? undefined,
+    );
 
     let url = "";
     let authToken = "";

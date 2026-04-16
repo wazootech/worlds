@@ -12,8 +12,8 @@ SELECT id, label, created_at, updated_at FROM namespaces WHERE id = ?;
 -- selectAllNamespaces retrieves all namespaces with pagination.
 SELECT id, label, created_at, updated_at FROM namespaces ORDER BY created_at DESC LIMIT ? OFFSET ?;
 
--- insertNamespace creates a new namespace.
-INSERT INTO namespaces (id, label, created_at, updated_at) VALUES (?, ?, ?, ?);
+-- insertNamespace creates a new namespace (idempotent).
+INSERT OR IGNORE INTO namespaces (id, label, created_at, updated_at) VALUES (?, ?, ?, ?);
 
 -- updateNamespace updates a namespace's label.
 UPDATE namespaces SET label = ?, updated_at = ? WHERE id = ?;
@@ -24,7 +24,7 @@ DELETE FROM namespaces WHERE id = ?;
 -- api_keys table: stores API keys (key_hash = SHA256 of the API key)
 CREATE TABLE IF NOT EXISTS api_keys (
   key_hash TEXT PRIMARY KEY,
-  namespace TEXT NOT NULL,
+  namespace TEXT,
   created_at INTEGER NOT NULL,
   FOREIGN KEY (namespace) REFERENCES namespaces(id) ON DELETE CASCADE
 );
@@ -32,16 +32,17 @@ CREATE TABLE IF NOT EXISTS api_keys (
 -- selectNamespaceByApiKey retrieves a namespace by hashed API key.
 SELECT namespace FROM api_keys WHERE key_hash = ?;
 
--- insertApiKey creates a new API key.
-INSERT INTO api_keys (key_hash, namespace, created_at) VALUES (?, ?, ?);
+-- insertApiKey creates a new API key (idempotent).
+INSERT OR IGNORE INTO api_keys (key_hash, namespace, created_at) VALUES (?, ?, ?);
 
 -- deleteApiKey removes an API key.
 DELETE FROM api_keys WHERE key_hash = ?;
 
 -- worlds table: stores world metadata per namespace
 CREATE TABLE IF NOT EXISTS worlds (
-  namespace TEXT NOT NULL,
-  world TEXT NOT NULL,
+  rowid INTEGER PRIMARY KEY,
+  namespace TEXT,
+  id TEXT,
   label TEXT NOT NULL,
   description TEXT,
   db_hostname TEXT,
@@ -49,35 +50,35 @@ CREATE TABLE IF NOT EXISTS worlds (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
-  PRIMARY KEY (namespace, world),
+  UNIQUE (namespace, id),
   FOREIGN KEY (namespace) REFERENCES namespaces(id) ON DELETE CASCADE
 );
 
--- selectWorldByWorld retrieves a world by world and namespace.
-SELECT namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
+-- selectWorldById retrieves a world by id and namespace.
+SELECT namespace, id, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
 FROM worlds
-WHERE world = ? AND namespace = ? AND deleted_at IS NULL;
+WHERE id IS ? AND namespace IS ? AND deleted_at IS NULL;
 
--- selectWorldByWorldInternal retrieves a world by world without namespace scoping.
-SELECT namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
+-- selectWorldByIdInternal retrieves a world by id without namespace scoping.
+SELECT namespace, id, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
 FROM worlds
-WHERE world = ? AND deleted_at IS NULL;
+WHERE id IS ? AND deleted_at IS NULL;
 
 -- selectAllWorlds retrieves worlds for a specific namespace with pagination.
-SELECT namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
+SELECT namespace, id, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
 FROM worlds
-WHERE namespace = ? AND deleted_at IS NULL
+WHERE namespace IS ? AND deleted_at IS NULL
 ORDER BY created_at DESC
 LIMIT ? OFFSET ?;
 
 -- insertWorld creates a new world.
-INSERT INTO worlds (namespace, world, label, description, db_hostname, db_token, created_at, updated_at, deleted_at)
+INSERT INTO worlds (namespace, id, label, description, db_hostname, db_token, created_at, updated_at, deleted_at)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- updateWorld updates world fields.
 UPDATE worlds
 SET label = ?, description = ?, db_hostname = ?, db_token = ?, updated_at = ?, deleted_at = ?
-WHERE world = ? AND namespace = ?;
+WHERE id IS ? AND namespace IS ?;
 
--- deleteWorld removes a world by world and namespace.
-DELETE FROM worlds WHERE world = ? AND namespace = ?;
+-- deleteWorld removes a world by id and namespace.
+DELETE FROM worlds WHERE id IS ? AND namespace IS ?;

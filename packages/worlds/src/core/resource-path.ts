@@ -1,79 +1,87 @@
-import {
-  defaultWorldsNamespaceNameSegment,
-  defaultWorldsWorldNameSegment,
-} from "./ontology.ts";
-
 /**
- * worldsActionPath returns the URL pathname for an RPC-style action.
- */
-export function worldsActionPath(action: string): string {
-  return `/worlds/rpc/${action}`;
-}
-
-/**
- * worldPrimaryPath returns the URL pathname for the default world.
- */
-export function worldPrimaryPath(): string {
-  return "/world";
-}
-
-/**
- * worldResourcePath returns the URL pathname for a single world resource.
- * Unqualified namespaces use the "/worlds/:world" shorthand.
+ * worldResourcePath generates a path for a world resource.
+ * Format: /worlds/{namespace}/{world}
  */
 export function worldResourcePath(
-  resolvedNamespace: string | undefined | null,
-  world: string | null,
+  namespace?: string,
+  world?: string,
 ): string {
-  if (
-    (resolvedNamespace === undefined || resolvedNamespace === null ||
-      resolvedNamespace === "" ||
-      resolvedNamespace === defaultWorldsWorldNameSegment) &&
-    (world === undefined || world === null || world === "" ||
-      world === defaultWorldsWorldNameSegment)
-  ) {
-    return worldPrimaryPath();
+  if (namespace === undefined && world === undefined) {
+    return "/worlds";
   }
 
-  const s = encodeURIComponent(world ?? defaultWorldsWorldNameSegment);
-  if (
-    resolvedNamespace === undefined || resolvedNamespace === null ||
-    resolvedNamespace === "" ||
-    resolvedNamespace === defaultWorldsWorldNameSegment
-  ) {
-    return `/worlds/${s}`;
+  if (namespace === undefined) {
+    return `/worlds/${world}`;
   }
-  return `/namespaces/${encodeURIComponent(resolvedNamespace)}/worlds/${s}`;
+
+  return `/worlds/${namespace}/${world ?? ""}`;
 }
 
 /**
- * expandPathNamespace maps the reserved path segment to the caller's
- * default namespace, or defaultWorldsNamespaceNameSegment when none is provided.
+ * worldsActionPath generates a path for a global world action.
  */
-export function expandPathNamespace(
-  pathNamespaceSegment: string | null,
-  tenantDefaultNamespace?: string,
-): string {
-  if (
-    pathNamespaceSegment !== null &&
-    pathNamespaceSegment !== defaultWorldsNamespaceNameSegment
-  ) {
-    return pathNamespaceSegment;
-  }
-  return tenantDefaultNamespace ?? defaultWorldsNamespaceNameSegment;
+export function worldsActionPath(action: string): string {
+  return `/worlds/${action}`;
 }
 
 /**
- * expandPathWorld maps the reserved path segment to the default world.
+ * worldFactPath generates a path for a world's facts.
  */
-export function expandPathWorld(
-  pathWorldSegment: string | null,
-): string | null {
-  if (
-    pathWorldSegment === undefined || pathWorldSegment === "" ||
-    pathWorldSegment === "_"
-  ) {
-    return null;
+export function worldFactPath(
+  namespace?: string,
+  world?: string,
+): string {
+  return `${worldResourcePath(namespace, world)}/facts`;
+}
+
+/**
+ * worldQueryPath generates a path for a world's SPARQL endpoint.
+ */
+export function worldQueryPath(
+  namespace?: string,
+  world?: string,
+): string {
+  return `${worldResourcePath(namespace, world)}/sparql`;
+}
+
+/**
+ * worldSearchPath generates a path for a world's search endpoint.
+ */
+export function worldSearchPath(
+  namespace?: string,
+  world?: string,
+): string {
+  return `${worldResourcePath(namespace, world)}/search`;
+}
+
+/**
+ * resolvePathSegments extracts world and namespace from a resource path.
+ */
+export function resolvePathSegments(path: string): {
+  namespace?: string;
+  world?: string;
+} {
+  const parts = path.split("/").filter(Boolean);
+  if (parts[0] !== "worlds") {
+    return {};
   }
-  return pathWorldSegment;
+
+  if (parts.length === 1) {
+    return {
+      namespace: undefined,
+      world: undefined,
+    };
+  }
+
+  if (parts.length === 2) {
+    return {
+      namespace: undefined,
+      world: parts[1],
+    };
+  }
+
+  return {
+    namespace: parts[1],
+    world: parts[2],
+  };
 }

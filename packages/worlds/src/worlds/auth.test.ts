@@ -15,7 +15,8 @@ Deno.test("ApiKeysRepository & Auth Middleware", async (t) => {
   await t.step("resolveNamespace finds namespaces", async () => {
     // The admin key is seeded by LocalWorlds.init()
     const namespaceId = await repo.resolveNamespace(appContext.apiKey!);
-    assertEquals(typeof namespaceId, "string");
+    // The root namespace is represented as undefined/NULL.
+    assertEquals(namespaceId, undefined);
   });
 
   await t.step("authorizeRequest validates keys", async () => {
@@ -24,6 +25,8 @@ Deno.test("ApiKeysRepository & Auth Middleware", async (t) => {
     });
     const auth = await authorizeRequest(appContext, req);
     assertEquals(auth.admin, true);
+    // root admin has undefined namespace
+    assertEquals(auth.namespaceId, undefined);
   });
 
   await t.step("authorizeRequest fails for invalid keys", async () => {

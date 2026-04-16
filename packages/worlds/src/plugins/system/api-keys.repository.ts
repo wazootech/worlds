@@ -46,9 +46,9 @@ export class ApiKeysRepository {
   /**
    * resolveNamespace finds the namespace ID linked to the provided API key.
    * @param apiKey The API key secret to resolve.
-   * @returns The namespace ID or null if not found.
+   * @returns The namespace ID (undefined for root namespace) or null if not found.
    */
-  async resolveNamespace(apiKey: string): Promise<string | null> {
+  async resolveNamespace(apiKey: string): Promise<string | undefined | null> {
     validateApiKey(apiKey);
     const keyHash = await hashApiKey(apiKey);
     const result = await this.db.execute({
@@ -56,7 +56,9 @@ export class ApiKeysRepository {
       args: [keyHash],
     });
     if (result.rows.length === 0) return null;
-    return result.rows[0].namespace as string;
+
+    const ns = result.rows[0].namespace;
+    return (ns === null) ? undefined : (ns as string);
   }
 
   /**
@@ -64,12 +66,12 @@ export class ApiKeysRepository {
    * @param apiKey The API key to store.
    * @param namespace The namespace to associate with the key.
    */
-  async create(apiKey: string, namespace: string): Promise<void> {
+  async create(apiKey: string, namespace?: string): Promise<void> {
     validateApiKey(apiKey);
     const keyHash = await hashApiKey(apiKey);
     await this.db.execute({
       sql: insertApiKey,
-      args: [keyHash, namespace, Date.now()],
+      args: [keyHash, namespace ?? null, Date.now()],
     });
   }
 

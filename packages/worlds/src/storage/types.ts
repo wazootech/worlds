@@ -5,14 +5,14 @@ import type { Client } from "@libsql/client";
  */
 export interface WorldOptions {
   /**
-   * world is the world identifier.
+   * id is the world identifier (optional for lookup).
    */
-  world: string | null;
+  id?: string;
 
   /**
    * namespace is the optional namespace (uses internal lookup if not provided).
    */
-  namespace?: string | null;
+  namespace?: string;
 }
 
 /**

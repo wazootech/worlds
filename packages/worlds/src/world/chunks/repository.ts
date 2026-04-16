@@ -2,14 +2,14 @@ import type { Client } from "@libsql/client";
 import type { WorldsContext } from "#/core/types.ts";
 import { searchChunks, upsertChunks } from "./queries.sql.ts";
 import type { WorldsSearchOutput } from "#/schemas/mod.ts";
-import type { WorldRow } from "#/plugins/registry/worlds.schema.ts";
-import type { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
+import type { WorldRow } from "#/plugins/system/worlds.schema.ts";
+import type { WorldsRepository } from "#/plugins/system/worlds.repository.ts";
+import { toWorldName } from "#/core/sources.ts";
 import {
   type ChunkTableUpsert,
   type SearchRow,
   searchRowSchema,
 } from "./schema.ts";
-import { worldResourcePath } from "#/core/resource-path.ts";
 
 /**
  * ChunksRepository handles the persistence of text chunks and their vector embeddings.
@@ -50,14 +50,9 @@ export interface SearchParams {
   query: string;
 
   /**
-   * world is the world identifier to search within.
+   * worlds is an optional list of pre-fetched world rows to search across.
    */
-  world?: string;
-
-  /**
-   * worldRow is the optional pre-fetched world record.
-   */
-  worldRow?: WorldRow;
+  worlds?: WorldRow[];
 
   /**
    * subjects is an optional list of subject URIs to filter by.
@@ -139,7 +134,7 @@ export class ChunksSearchRepository {
     // Search across the target world
     try {
       const managed = await this.ctx.storage.get({
-        world: worldRow.world,
+        id: worldRow.id,
         namespace: worldRow.namespace,
       });
 
@@ -186,10 +181,11 @@ export class ChunksSearchRepository {
           ftsRank: row.fts_rank,
           score: row.combined_rank,
           world: {
-            name: worldResourcePath(worldRow.namespace, worldRow.world).slice(
-              1,
-            ),
-            world: worldRow.world,
+            name: toWorldName({
+              namespace: worldRow.namespace ?? undefined,
+              world: worldRow.id ?? undefined,
+            }),
+            id: worldRow.id,
             namespace: worldRow.namespace ?? undefined,
             label: worldRow.label ?? undefined,
             description: worldRow.description ?? undefined,
@@ -205,7 +201,7 @@ export class ChunksSearchRepository {
         .sort((a, b) => b.score - a.score)
         .slice(0, limit);
     } catch (error) {
-      console.error(`Search error for world ${worldRow.world}:`, error);
+      console.error(`Search error for world ${worldRow.id}:`, error);
       return [];
     }
   }

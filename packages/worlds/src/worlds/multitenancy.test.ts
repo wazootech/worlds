@@ -14,15 +14,19 @@ Deno.test({
     const namespacesRepo = new NamespacesRepository(appContext.system);
     const now = Date.now();
 
+    // Use slugs for namespaces to ensure compatibility with shorthand parsing
+    const nsA = "ns-a";
+    const nsB = "ns-b";
+
     // Seed two namespaces in the registry
     await namespacesRepo.insert({
-      id: "https://wazoo.dev/registry/namespaces/ns-a",
+      id: nsA,
       label: "NS A",
       created_at: now,
       updated_at: now,
     });
     await namespacesRepo.insert({
-      id: "https://wazoo.dev/registry/namespaces/ns-b",
+      id: nsB,
       label: "NS B",
       created_at: now,
       updated_at: now,
@@ -31,7 +35,7 @@ Deno.test({
     // Create context for NS A
     const ctxA = {
       ...appContext,
-      namespace: "https://wazoo.dev/registry/namespaces/ns-a",
+      namespace: nsA,
     };
     await using worldsA = new LocalWorlds(ctxA);
     await worldsA.init();
@@ -39,7 +43,7 @@ Deno.test({
     // Create context for NS B
     const ctxB = {
       ...appContext,
-      namespace: "https://wazoo.dev/registry/namespaces/ns-b",
+      namespace: nsB,
     };
     await using worldsB = new LocalWorlds(ctxB);
     await worldsB.init();
@@ -72,7 +76,6 @@ Deno.test({
         world: sharedWorld,
         label: "World B",
       });
-      assertEquals(world.world, sharedWorld);
       assertEquals(world.world, sharedWorld);
 
       const worldB = await worldsB.get({ source: sharedWorld });
@@ -121,7 +124,7 @@ Deno.test({
         await assertRejects(
           () =>
             worldsB.get({
-              source: { name: `${ctxA.namespace}/${sharedWorld}` },
+              source: { name: `${nsA}/${sharedWorld}` },
             }),
           Error,
           "Unauthorized access to namespace",
@@ -131,33 +134,7 @@ Deno.test({
         await assertRejects(
           () =>
             worldsB.sparql({
-              sources: [{ name: `${ctxA.namespace}/${sharedWorld}` }],
-              query: "SELECT ?s WHERE { ?s ?p ?o }",
-            }),
-          Error,
-          "Unauthorized access to namespace",
-        );
-      },
-    );
-
-    await t.step(
-      "NS B cannot access NS A's world using explicit namespace",
-      async () => {
-        // NS B tries to get NS A's world explicitly
-        await assertRejects(
-          () =>
-            worldsB.get({
-              source: { name: `${ctxA.namespace}/${sharedWorld}` },
-            }),
-          Error,
-          "Unauthorized access to namespace",
-        );
-
-        // NS B tries to SPARQL into NS A's world explicitly
-        await assertRejects(
-          () =>
-            worldsB.sparql({
-              sources: [{ name: `${ctxA.namespace}/${sharedWorld}` }],
+              sources: [{ name: `${nsA}/${sharedWorld}` }],
               query: "SELECT ?s WHERE { ?s ?p ?o }",
             }),
           Error,

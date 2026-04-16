@@ -4,10 +4,10 @@ import { z } from "zod";
  * worldRowSchema is the Zod schema for the worlds database table.
  */
 const worldRowShape = z.object({
-  namespace: z.string().nullable(),
-  world: z.string(),
+  namespace: z.string().optional(),
+  id: z.string().optional(),
   label: z.string(),
-  description: z.string().nullable(),
+  description: z.string().optional(),
   db_hostname: z.string().nullable(),
   db_token: z.string().nullable(),
   created_at: z.number(),
@@ -23,14 +23,15 @@ export const worldRowSchema: z.ZodType<WorldRow> = worldRowShape;
 export type WorldRow = {
   /**
    * namespace is the identifier of the namespace that owns the world.
-   * Null indicates the default namespace.
+   * Undefined indicates the default namespace.
    */
-  namespace: string | null;
+  namespace?: string;
 
   /**
-   * world is the unique identifier (within a namespace) for the world.
+   * id is the unique identifier (within a namespace) for the world.
+   * Undefined indicates the default world.
    */
-  world: string;
+  id?: string;
 
   /**
    * label is the human-readable title of the world.
@@ -40,7 +41,7 @@ export type WorldRow = {
   /**
    * description is an optional summary of the world.
    */
-  description: string | null;
+  description?: string;
 
   /**
    * db_hostname is the hostname of the world database (for dedicated DBs).
@@ -86,7 +87,7 @@ export const worldRowUpdateSchema: z.ZodType<
 > = worldRowShape
   .omit({
     namespace: true,
-    world: true,
+    id: true,
     created_at: true,
   })
   .partial();
@@ -95,5 +96,5 @@ export const worldRowUpdateSchema: z.ZodType<
  * WorldRowUpdate represents the data needed to update a world.
  */
 export type WorldRowUpdate = Partial<
-  Omit<WorldRow, "namespace" | "world" | "created_at">
+  Omit<WorldRow, "namespace" | "id" | "created_at">
 >;

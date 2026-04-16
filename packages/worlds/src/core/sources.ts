@@ -1,21 +1,15 @@
-import {
-  defaultWorldsNamespaceNameSegment as defaultNamespace,
-  defaultWorldsWorldNameSegment as defaultWorld,
-} from "./ontology.ts";
+import { defaultNamespace, defaultWorld } from "./ontology.ts";
 import type { WorldsSource } from "#/schemas/mod.ts";
 import type { WorldsContext } from "#/core/types.ts";
 
-export {
-  defaultNamespace as defaultWorldsNamespaceNameSegment,
-  defaultWorld as defaultWorldsWorldNameSegment,
-};
+export { defaultNamespace, defaultWorld };
 
 /**
  * ResolvedSource represents a fully resolved world + namespace pair.
  */
 export interface ResolvedSource {
-  world: string;
-  namespace: string;
+  world?: string;
+  namespace?: string;
 }
 
 /**
@@ -45,6 +39,10 @@ export function resolveSource(
 ): ResolvedSource {
   let name: string | null = null;
 
+  if (source === null || source === undefined) {
+    return {};
+  }
+
   if (typeof source === "string") {
     name = source;
   } else if (typeof source === "object" && source !== null) {
@@ -62,8 +60,8 @@ export function resolveSource(
   const parsed = parseSourceName(name);
 
   return {
-    world: parsed.world ?? context?.world ?? defaultWorld,
-    namespace: parsed.namespace ?? context?.namespace ?? defaultNamespace,
+    world: parsed.world ?? defaultWorld,
+    namespace: parsed.namespace ?? defaultNamespace,
   };
 }
 
@@ -78,13 +76,16 @@ export function toWorldName(
     | WorldsSource
     | ResolvedSource
     | {
-        world?: string | null;
-        namespace?: string | null;
-      },
+      world?: string | null;
+      namespace?: string | null;
+    },
 ): string {
   let resolved: ResolvedSource;
 
-  if (typeof source === "string" || (typeof source === "object" && source !== null && "name" in source)) {
+  if (
+    typeof source === "string" ||
+    (typeof source === "object" && source !== null && "name" in source)
+  ) {
     resolved = resolveSource(source);
   } else {
     resolved = {
@@ -93,9 +94,15 @@ export function toWorldName(
     };
   }
 
-  const ns = resolved.namespace === defaultNamespace ? "_" : resolved.namespace;
-  const ws = resolved.world === defaultWorld ? "_" : resolved.world;
-  return `${ns}/${ws}`;
+  if (resolved.namespace === undefined && resolved.world === undefined) {
+    return "";
+  }
+
+  if (resolved.namespace === undefined) {
+    return resolved.world ?? "";
+  }
+
+  return `${resolved.namespace}/${resolved.world ?? ""}`;
 }
 
 /**
@@ -106,17 +113,13 @@ export function toWorldName(
  */
 function parseSourceName(
   source: string,
-): { world: string | null; namespace: string | null } {
+): ResolvedSource {
   const trimmed = source.trim();
-  if (!trimmed) return { world: null, namespace: null };
-
-  if (trimmed === "_") {
-    return { world: null, namespace: null };
-  }
+  if (!trimmed || trimmed === "_") return {};
 
   const slashIndex = trimmed.indexOf("/");
   if (slashIndex === -1) {
-    return { world: trimmed, namespace: null };
+    return { world: (trimmed === "" || trimmed === "_") ? undefined : trimmed };
   }
 
   const secondSlash = trimmed.indexOf("/", slashIndex + 1);
@@ -126,11 +129,18 @@ function parseSourceName(
     );
   }
 
-  const ns = trimmed.slice(0, slashIndex);
-  const ws = trimmed.slice(slashIndex + 1);
+  const namespaceInput = trimmed.slice(0, slashIndex);
+  const worldInput = trimmed.slice(slashIndex + 1);
+
+  const namespace = (namespaceInput === "" || namespaceInput === "_")
+    ? undefined
+    : namespaceInput;
+  const world = (worldInput === "" || worldInput === "_")
+    ? undefined
+    : worldInput;
 
   return {
-    namespace: ns === "_" ? null : ns || null,
-    world: ws === "_" ? null : ws || null,
+    namespace,
+    world,
   };
 }

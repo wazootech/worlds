@@ -58,14 +58,17 @@ export interface WorldsListInput {
   namespace?: string;
 
   /**
-   * page is the 1-indexed page number to fetch.
-   */
-  page?: number;
-
-  /**
-   * pageSize is the number of items per page.
+   * pageSize is the maximum number of items to return.
+   * If unspecified, defaults to a server-chosen value (typically 50).
+   * Maximum value is 1000; values above will be coerced to 1000.
    */
   pageSize?: number;
+
+  /**
+   * pageToken is a token received from a previous ListWorlds call.
+   * Use this to retrieve the next page.
+   */
+  pageToken?: string;
 }
 
 /**
@@ -73,8 +76,8 @@ export interface WorldsListInput {
  */
 export const worldsListInputSchema: z.ZodType<WorldsListInput> = z.object({
   namespace: z.string().optional(),
-  page: z.number().int().positive().optional(),
-  pageSize: z.number().int().positive().optional(),
+  pageSize: z.number().int().positive().max(1000).optional(),
+  pageToken: z.string().optional(),
 });
 
 /**
@@ -133,4 +136,27 @@ export const worldsExportInputSchema: z.ZodType<WorldsExportInput> = z.object({
   contentType: worldsContentTypeSchema.optional().describe(
     "The requested RDF content type.",
   ),
+});
+
+/**
+ * WorldsQueryInput represents the parameters for executing a query against a world.
+ */
+export interface WorldsQueryInput {
+  /**
+   * source is the target world identification.
+   */
+  source: WorldsSource;
+
+  /**
+   * query is the SPARQL query to execute.
+   */
+  query: string;
+}
+
+/**
+ * worldsQueryInputSchema is the Zod schema for WorldsQueryInput.
+ */
+export const worldsQueryInputSchema: z.ZodType<WorldsQueryInput> = z.object({
+  source: worldsSourceSchema.describe("The target world identification."),
+  query: z.string().describe("The SPARQL query to execute."),
 });
