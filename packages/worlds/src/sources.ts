@@ -14,33 +14,43 @@ export const defaultNamespace: string | undefined = undefined;
 export const defaultWorld: string | undefined = undefined;
 
 /**
- * expandPathNamespace resolves a namespace with fallback to a default.
- * If namespace is null/undefined, returns the defaultNamespace.
- * Otherwise returns the provided namespace.
+ * resolveNamespace parses a source and extracts the namespace component.
+ * Accepts source strings like "ns/id" or standalone names.
+ * Uses context as fallback for the namespace.
  */
-export function expandPathNamespace(
-  namespace: string | null | undefined,
-  defaultNs: string | null | undefined = defaultNamespace,
-): string | null {
-  if (namespace === null || namespace === undefined) {
-    return defaultNs ?? null;
+export function resolveNamespace(
+  source: WorldsSource,
+  defaultNs?: string | null,
+): string | undefined {
+  const parsed = typeof source === "string"
+    ? parseSourceName(source)
+    : resolveSource(source);
+
+  if (parsed.namespace !== undefined) {
+    return parsed.namespace;
   }
-  return namespace;
+
+  return defaultNs ?? undefined;
 }
 
 /**
- * expandPathWorld resolves a world identifier with fallback to a default.
- * If world is null/undefined, returns the defaultWorld.
- * Otherwise returns the provided world.
+ * resolveWorldId parses a source and extracts the world ID component.
+ * Accepts source strings like "ns/id" or standalone names.
+ * Uses ULID fallback if no world is specified.
  */
-export function expandPathWorld(
-  world: string | null | undefined,
-  defaultW: string | null | undefined = defaultWorld,
-): string | null {
-  if (world === null || world === undefined) {
-    return defaultW ?? null;
+export function resolveWorldId(
+  source: WorldsSource,
+  defaultW?: string | null,
+): string | undefined {
+  const parsed = typeof source === "string"
+    ? parseSourceName(source)
+    : resolveSource(source);
+
+  if (parsed.world !== undefined) {
+    return parsed.world;
   }
-  return world;
+
+  return defaultW ?? undefined;
 }
 
 /**

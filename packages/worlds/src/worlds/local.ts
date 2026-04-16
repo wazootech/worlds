@@ -1,8 +1,9 @@
 import { ulid } from "@std/ulid";
 import type { WorldsContext, WorldsInterface } from "#/types.ts";
 import {
-  expandPathNamespace,
-  expandPathWorld,
+  resolveNamespace,
+  resolveSource,
+  resolveWorldId,
   toWorldName,
 } from "#/sources.ts";
 import { FactsRepository } from "#/worlds/facts/repository.ts";
@@ -41,7 +42,7 @@ export class LocalWorlds implements WorldsInterface {
    * list paginates all available worlds.
    */
   public async list(input?: WorldsListInput): Promise<World[]> {
-    const namespace = input?.namespace ?? this.ctx.namespace;
+    const namespace = input?.namespace ?? this.ctx.namespace ?? undefined;
     const result = await this.ctx.worlds.list({
       namespace,
       pageSize: input?.pageSize,
@@ -68,8 +69,8 @@ export class LocalWorlds implements WorldsInterface {
    */
   public async get(input: WorldsGetInput): Promise<World | null> {
     const source = typeof input.source === "string" ? input.source : input.source.name;
-    const worldId = expandPathWorld(source);
-    const namespace = expandPathNamespace(source, this.ctx.namespace);
+    const worldId = resolveWorldId(source);
+    const namespace = resolveNamespace(source, this.ctx.namespace);
 
     const row = await this.ctx.worlds.get(worldId ?? undefined, namespace ?? undefined);
     if (!row) return null;
@@ -94,8 +95,8 @@ export class LocalWorlds implements WorldsInterface {
    */
   public async create(input: WorldsCreateInput): Promise<World> {
     const source = input.name;
-    const worldId = expandPathWorld(source) ?? ulid();
-    const namespace = expandPathNamespace(source, this.ctx.namespace);
+    const worldId = resolveWorldId(source) ?? ulid();
+    const namespace = resolveNamespace(source, this.ctx.namespace);
 
     const now = Date.now();
     const row = {
@@ -133,8 +134,8 @@ export class LocalWorlds implements WorldsInterface {
    */
   public async update(input: WorldsUpdateInput): Promise<void> {
     const source = typeof input.source === "string" ? input.source : input.source.name;
-    const worldId = expandPathWorld(source);
-    const namespace = expandPathNamespace(source, this.ctx.namespace);
+    const worldId = resolveWorldId(source);
+    const namespace = resolveNamespace(source, this.ctx.namespace);
 
     await this.ctx.worlds.update(worldId ?? undefined, namespace ?? undefined, {
       label: input.label ?? undefined,
@@ -149,8 +150,8 @@ export class LocalWorlds implements WorldsInterface {
    */
   public async delete(input: WorldsDeleteInput): Promise<void> {
     const source = typeof input.source === "string" ? input.source : input.source.name;
-    const worldId = expandPathWorld(source);
-    const namespace = expandPathNamespace(source, this.ctx.namespace);
+    const worldId = resolveWorldId(source);
+    const namespace = resolveNamespace(source, this.ctx.namespace);
 
     await this.ctx.worlds.delete(worldId ?? undefined, namespace ?? undefined);
     await this.ctx.storage.delete({ id: worldId ?? undefined, namespace: namespace ?? undefined });
@@ -162,8 +163,8 @@ export class LocalWorlds implements WorldsInterface {
   public async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
     const sourceInput = input.sources?.[0] ?? "";
     const source = typeof sourceInput === "string" ? sourceInput : sourceInput.name;
-    const worldId = expandPathWorld(source);
-    const namespace = expandPathNamespace(source, input.namespace ?? this.ctx.namespace);
+    const worldId = resolveWorldId(source);
+    const namespace = resolveNamespace(source, input.namespace ?? this.ctx.namespace);
 
     const storage = await this.ctx.storage.get({ id: worldId ?? undefined, namespace: namespace ?? undefined });
     const facts = new FactsRepository(storage);
@@ -188,8 +189,8 @@ export class LocalWorlds implements WorldsInterface {
   public async import(input: WorldsImportInput): Promise<void> {
     const sourceInput = input.source;
     const source = typeof sourceInput === "string" ? sourceInput : sourceInput.name;
-    const worldId = expandPathWorld(source);
-    const namespace = expandPathNamespace(source, this.ctx.namespace);
+    const worldId = resolveWorldId(source);
+    const namespace = resolveNamespace(source, this.ctx.namespace);
 
     const storage = await this.ctx.storage.get({ id: worldId ?? undefined, namespace: namespace ?? undefined });
     const facts = new FactsRepository(storage);
@@ -205,8 +206,8 @@ export class LocalWorlds implements WorldsInterface {
   public async export(input: WorldsExportInput): Promise<ArrayBuffer> {
     const sourceInput = input.source;
     const source = typeof sourceInput === "string" ? sourceInput : sourceInput.name;
-    const worldId = expandPathWorld(source);
-    const namespace = expandPathNamespace(source, this.ctx.namespace);
+    const worldId = resolveWorldId(source);
+    const namespace = resolveNamespace(source, this.ctx.namespace);
 
     const storage = await this.ctx.storage.get({ id: worldId ?? undefined, namespace: namespace ?? undefined });
     const facts = new FactsRepository(storage);

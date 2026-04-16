@@ -20,9 +20,9 @@ Deno.test({
         label: "Core World",
         description: "Test World from Core",
       });
-      assertExists(world.name);
+      assertExists(world.id);
       assertEquals(world.label, "Core World");
-      worldId = world.name;
+      worldId = world.id!;
     });
 
     await t.step("get world", async () => {
@@ -33,7 +33,8 @@ Deno.test({
 
     await t.step("list worlds", async () => {
       const list = await worlds.list({ pageSize: 10 });
-      assertExists(list.find((w) => w.name === worldId));
+      const found = list.find((w) => w.id === worldId);
+      assertExists(found);
     });
 
     await t.step("update world", async () => {

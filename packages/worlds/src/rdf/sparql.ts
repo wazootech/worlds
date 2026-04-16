@@ -3,8 +3,9 @@ import type { PatchHandler } from "./patch/mod.ts";
 import { connectSearchStoreToN3Store } from "./patch/mod.ts";
 import { generateBlobFromN3Store, generateN3StoreFromBlob } from "./n3.ts";
 import { executeSparql } from "./sparql-engine.ts";
-import type { WorldsSparqlOutput } from "#/schemas/mod.ts";
-import { WORLDS } from "#/core/ontology.ts";
+import type { WorldsSparqlOutput } from "#/worlds/sparql.schema.ts";
+
+const WORLDS_BASE = "https://wazoo.dev/worlds/";
 
 export interface DatasetParams {
   defaultGraphUris: string[];
@@ -23,7 +24,7 @@ export async function sparql(
   handler: PatchHandler = new NoopPatchHandler(),
 ): Promise<{ stores: Store[]; result: WorldsSparqlOutput }> {
   if (stores.length > 1) {
-    const result = await executeSparql(stores[0], query, WORLDS.BASE);
+    const result = await executeSparql(stores[0], query, WORLDS_BASE);
     return { stores, result };
   }
 
@@ -33,7 +34,7 @@ export async function sparql(
     store,
   );
 
-  const result = await executeSparql(proxiedStore, query, WORLDS.BASE);
+  const result = await executeSparql(proxiedStore, query, WORLDS_BASE);
   await sync();
 
   return { stores, result };
@@ -50,7 +51,7 @@ export async function sparqlBlob(
     store,
   );
 
-  const result = await executeSparql(proxiedStore, query, WORLDS.BASE);
+  const result = await executeSparql(proxiedStore, query, WORLDS_BASE);
   await sync();
 
   const newBlob = await generateBlobFromN3Store(store);

@@ -36,12 +36,17 @@ export class FactsRepository {
   async upsert(fact: FactTableUpsert): Promise<void> {
     const q = this.toQuad(fact);
     const key = quadToKey(q);
-    
+
     const existingId = this.idIndex.get(key);
     if (existingId) {
-      this.idIndex.delete(existingId);
+      this.idIndex.delete(key);
+      const existingQuad = this.storage.store.getQuads(null, null, null, null)
+        .find(existingQ => quadToKey(existingQ) === key);
+      if (existingQuad) {
+        this.storage.store.removeQuad(existingQuad);
+      }
     }
-    
+
     this.storage.store.addQuad(q);
     this.idIndex.set(key, fact.id);
   }
