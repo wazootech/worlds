@@ -14,6 +14,15 @@ export * from "./core/types.ts";
 export * from "./core/engine-context.ts";
 export * from "./core/factory.ts";
 export * from "./core/utils.ts";
+export {
+  defaultNamespace,
+  defaultWorld,
+  resolveSource,
+  toWorldName,
+} from "./core/sources.ts";
+export { expandPathNamespace } from "./core/sources.ts";
+export type { WorldsSource } from "#/schemas/mod.ts";
+export type { WorldsSource as WorldSource } from "#/schemas/mod.ts";
 export * from "#/schemas/mod.ts";
 export * from "#/schemas/world.ts";
 export * from "#/storage/init.ts";

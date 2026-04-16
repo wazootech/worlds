@@ -5,6 +5,21 @@ import type { WorldsContext } from "#/core/types.ts";
 export { defaultNamespace, defaultWorld };
 
 /**
+ * expandPathNamespace resolves a namespace with fallback to a default.
+ * If namespace is null/undefined, returns the defaultNamespace.
+ * Otherwise returns the provided namespace.
+ */
+export function expandPathNamespace(
+  namespace: string | null | undefined,
+  defaultNs: string | null | undefined = defaultNamespace,
+): string | null {
+  if (namespace === null || namespace === undefined) {
+    return defaultNs ?? null;
+  }
+  return namespace;
+}
+
+/**
  * ResolvedSource represents a fully resolved world + namespace pair.
  */
 export interface ResolvedSource {
@@ -35,7 +50,7 @@ export class SourceParseError extends Error {
  */
 export function resolveSource(
   source: WorldsSource,
-  context?: Partial<WorldsContext>,
+  _context?: Partial<WorldsContext>,
 ): ResolvedSource {
   let name: string | null = null;
 

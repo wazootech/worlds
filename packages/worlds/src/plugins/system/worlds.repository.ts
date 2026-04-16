@@ -1,4 +1,5 @@
 import type { Client } from "@libsql/client";
+import { decodeCursor, encodeCursor } from "#/core/utils.ts";
 import {
   deleteWorld,
   insertWorld,
@@ -12,6 +13,23 @@ import type {
   WorldRowInsert,
   WorldRowUpdate,
 } from "./worlds.schema.ts";
+
+/**
+ * WorldsListParams represents the parameters for listing worlds.
+ */
+export interface WorldsListParams {
+  namespace?: string;
+  pageSize?: number;
+  pageToken?: string;
+}
+
+/**
+ * WorldsListResult represents the result of listing worlds.
+ */
+export interface WorldsListResult {
+  worlds: WorldRow[];
+  nextPageToken?: string;
+}
 
 /**
  * WorldsRepository handles the persistence of world metadata in the system database.
@@ -77,23 +95,49 @@ export class WorldsRepository {
 
   /**
    * list retrieves a paginated list of worlds for a specific namespace.
-   * @param namespace The namespace (optional - if not provided, lists all worlds).
-   * @param limit The maximum number of worlds to return.
-   * @param offset The number of worlds to skip.
-   * @returns An array of world rows.
+   * @param params The list parameters including namespace, pageSize, and pageToken.
+   * @returns An array of world rows and an optional next page token.
    */
-  async list(
-    namespace: string | undefined,
-    limit: number,
-    offset: number,
-  ): Promise<WorldRow[]> {
+  async list(params: WorldsListParams): Promise<WorldsListResult> {
+    const { namespace, pageSize = 50, pageToken } = params;
+
+    let cursorCreatedAt: number | null = null;
+    let cursorId: string | null = null;
+
+    if (pageToken) {
+      const decoded = decodeCursor(pageToken);
+      if (decoded) {
+        cursorCreatedAt = decoded.created_at;
+        cursorId = decoded.id;
+      }
+    }
+
     const result = await this.db.execute({
       sql: selectAllWorlds,
-      args: [namespace ?? null, limit, offset],
+      args: [
+        namespace ?? null,
+        cursorCreatedAt,
+        cursorCreatedAt,
+        cursorId,
+        pageSize + 1,
+      ],
     });
-    return (result.rows as Record<string, unknown>[]).map((row) =>
+
+    const rows = (result.rows as Record<string, unknown>[]).map((row) =>
       this.mapRow(row)
     );
+
+    let nextPageToken: string | undefined;
+    if (rows.length > pageSize) {
+      const lastRow = rows[pageSize - 1];
+      nextPageToken = encodeCursor({
+        created_at: lastRow.created_at,
+        id: lastRow.id ?? "",
+      });
+      rows.length = pageSize;
+    }
+
+    return { worlds: rows, nextPageToken };
   }
 
   /**

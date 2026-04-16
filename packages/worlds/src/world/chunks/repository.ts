@@ -102,7 +102,7 @@ export class ChunksSearchRepository {
   async search(params: SearchParams): Promise<WorldsSearchOutput[]> {
     const {
       query,
-      world,
+      worlds,
       subjects,
       predicates,
       types,
@@ -117,92 +117,96 @@ export class ChunksSearchRepository {
       ? await this.ctx.vectors.embed(query)
       : new Array(1536).fill(0);
 
-    // Procure world record if not provided
-    let worldRow = params.worldRow;
-    if (!worldRow && world) {
-      worldRow = await this.worlds.get(world, namespace) ?? undefined;
+    // Use pre-fetched worlds or fetch all in namespace
+    let targetWorlds: WorldRow[] = [];
+    if (worlds && worlds.length > 0) {
+      targetWorlds = worlds;
+    } else {
+      const result = await this.worlds.list({ namespace, pageSize: 100 });
+      targetWorlds = result.worlds;
     }
 
     if (!this.ctx.storage) {
       throw new Error("Search manager not available");
     }
 
-    if (!worldRow) {
-      return [];
-    }
+    const allResults: WorldsSearchOutput[] = [];
 
-    // Search across the target world
-    try {
-      const managed = await this.ctx.storage.get({
-        id: worldRow.id,
-        namespace: worldRow.namespace,
-      });
+    // Search across each world
+    for (const worldRow of targetWorlds) {
+      try {
+        const managed = await this.ctx.storage.get({
+          id: worldRow.id,
+          namespace: worldRow.namespace,
+        });
 
-      const subjectsParam = subjects && subjects.length > 0
-        ? JSON.stringify(subjects)
-        : null;
-      const predicatesParam = predicates && predicates.length > 0
-        ? JSON.stringify(predicates)
-        : null;
-      const typesParam = types && types.length > 0
-        ? JSON.stringify(types)
-        : null;
-      const args = [
-        new Uint8Array(new Float32Array(vector).buffer),
-        limit,
-        query,
-        query,
-        query,
-        limit,
-        query,
-        subjectsParam,
-        subjectsParam,
-        predicatesParam,
-        predicatesParam,
-        typesParam,
-        typesParam,
-        limit,
-      ];
+        const subjectsParam = subjects && subjects.length > 0
+          ? JSON.stringify(subjects)
+          : null;
+        const predicatesParam = predicates && predicates.length > 0
+          ? JSON.stringify(predicates)
+          : null;
+        const typesParam = types && types.length > 0
+          ? JSON.stringify(types)
+          : null;
+        const args = [
+          new Uint8Array(new Float32Array(vector).buffer),
+          limit,
+          query,
+          query,
+          query,
+          limit,
+          query,
+          subjectsParam,
+          subjectsParam,
+          predicatesParam,
+          predicatesParam,
+          typesParam,
+          typesParam,
+          limit,
+        ];
 
-      const result = await managed.database.execute({
-        sql: searchChunks,
-        args,
-      });
+        const result = await managed.database.execute({
+          sql: searchChunks,
+          args,
+        });
 
-      const results: WorldsSearchOutput[] = (
-        result.rows as unknown as SearchRow[]
-      ).map((untrustedRow) => {
-        const row = searchRowSchema.parse(untrustedRow);
-        return {
-          subject: row.subject,
-          predicate: row.predicate,
-          object: row.object,
-          vecRank: row.vec_rank,
-          ftsRank: row.fts_rank,
-          score: row.combined_rank,
-          world: {
-            name: toWorldName({
+        const worldResults: WorldsSearchOutput[] = (
+          result.rows as unknown as SearchRow[]
+        ).map((untrustedRow) => {
+          const row = searchRowSchema.parse(untrustedRow);
+          return {
+            subject: row.subject,
+            predicate: row.predicate,
+            object: row.object,
+            vecRank: row.vec_rank,
+            ftsRank: row.fts_rank,
+            score: row.combined_rank,
+            world: {
+              name: toWorldName({
+                namespace: worldRow.namespace ?? undefined,
+                world: worldRow.id ?? undefined,
+              }),
+              id: worldRow.id,
               namespace: worldRow.namespace ?? undefined,
-              world: worldRow.id ?? undefined,
-            }),
-            id: worldRow.id,
-            namespace: worldRow.namespace ?? undefined,
-            label: worldRow.label ?? undefined,
-            description: worldRow.description ?? undefined,
-            createdAt: worldRow.created_at,
-            updatedAt: worldRow.updated_at,
-            deletedAt: worldRow.deleted_at ?? undefined,
-          },
-        } as WorldsSearchOutput;
-      });
+              label: worldRow.label ?? undefined,
+              description: worldRow.description ?? undefined,
+              createdAt: worldRow.created_at,
+              updatedAt: worldRow.updated_at,
+              deletedAt: worldRow.deleted_at ?? undefined,
+            },
+          } as WorldsSearchOutput;
+        });
 
-      // Sort by combined rank and limit
-      return results
-        .sort((a, b) => b.score - a.score)
-        .slice(0, limit);
-    } catch (error) {
-      console.error(`Search error for world ${worldRow.id}:`, error);
-      return [];
+        allResults.push(...worldResults);
+      } catch (error) {
+        console.error(`Search error for world ${worldRow.id}:`, error);
+      }
     }
+
+    // Sort by combined rank and limit
+    return allResults
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
   }
 }

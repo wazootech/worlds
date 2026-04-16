@@ -38,9 +38,11 @@ export class RemoteWorlds implements WorldsInterface {
   public async list(input?: WorldsListInput): Promise<World[]> {
     const url = new URL(`${this.options.baseUrl}/worlds`);
 
-    if (input?.page) url.searchParams.set("page", input.page.toString());
     if (input?.pageSize) {
       url.searchParams.set("pageSize", input.pageSize.toString());
+    }
+    if (input?.pageToken) {
+      url.searchParams.set("pageToken", input.pageToken);
     }
     if (input?.namespace) {
       url.searchParams.set("namespace", input.namespace);

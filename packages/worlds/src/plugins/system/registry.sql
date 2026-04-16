@@ -9,8 +9,12 @@ CREATE TABLE IF NOT EXISTS namespaces (
 -- selectNamespaceById retrieves a namespace by its ID.
 SELECT id, label, created_at, updated_at FROM namespaces WHERE id = ?;
 
--- selectAllNamespaces retrieves all namespaces with pagination.
-SELECT id, label, created_at, updated_at FROM namespaces ORDER BY created_at DESC LIMIT ? OFFSET ?;
+-- selectAllNamespaces retrieves all namespaces with cursor-based pagination.
+-- cursor is encoded as created_at:id
+SELECT id, label, created_at, updated_at FROM namespaces
+WHERE (? IS NULL OR (created_at < ? OR (created_at = ? AND id < ?)))
+ORDER BY created_at DESC, id DESC
+LIMIT ?;
 
 -- insertNamespace creates a new namespace (idempotent).
 INSERT OR IGNORE INTO namespaces (id, label, created_at, updated_at) VALUES (?, ?, ?, ?);
@@ -64,12 +68,14 @@ SELECT namespace, id, label, description, db_hostname, db_token, created_at, upd
 FROM worlds
 WHERE id IS ? AND deleted_at IS NULL;
 
--- selectAllWorlds retrieves worlds for a specific namespace with pagination.
+-- selectAllWorlds retrieves worlds for a specific namespace with cursor-based pagination.
+-- cursor is encoded as created_at:id
 SELECT namespace, id, label, description, db_hostname, db_token, created_at, updated_at, deleted_at
 FROM worlds
 WHERE namespace IS ? AND deleted_at IS NULL
-ORDER BY created_at DESC
-LIMIT ? OFFSET ?;
+AND (? IS NULL OR (created_at < ? OR (created_at = ? AND id < ?)))
+ORDER BY created_at DESC, id DESC
+LIMIT ?;
 
 -- insertWorld creates a new world.
 INSERT INTO worlds (namespace, id, label, description, db_hostname, db_token, created_at, updated_at, deleted_at)

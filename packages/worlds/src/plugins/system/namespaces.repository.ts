@@ -1,4 +1,5 @@
 import type { Client } from "@libsql/client";
+import { decodeCursor, encodeCursor } from "#/core/utils.ts";
 import {
   deleteNamespace,
   insertNamespace,
@@ -36,6 +37,22 @@ export interface NamespaceUpdate {
 }
 
 /**
+ * NamespacesListParams represents the parameters for listing namespaces.
+ */
+export interface NamespacesListParams {
+  pageSize?: number;
+  pageToken?: string;
+}
+
+/**
+ * NamespacesListResult represents the result of listing namespaces.
+ */
+export interface NamespacesListResult {
+  namespaces: NamespaceRow[];
+  nextPageToken?: string;
+}
+
+/**
  * NamespacesRepository handles the persistence of namespaces in the registry database.
  */
 export class NamespacesRepository {
@@ -62,18 +79,49 @@ export class NamespacesRepository {
 
   /**
    * list retrieves a paginated list of namespaces.
-   * @param limit The maximum number of namespaces to return.
-   * @param offset The number of namespaces to skip.
-   * @returns An array of namespace rows.
+   * @param params The list parameters including pageSize and pageToken.
+   * @returns An array of namespace rows and an optional next page token.
    */
-  async list(limit: number, offset: number): Promise<NamespaceRow[]> {
+  async list(params: NamespacesListParams): Promise<NamespacesListResult> {
+    const { pageSize = 50, pageToken } = params;
+
+    let cursorCreatedAt: number | null = null;
+    let cursorId: string | null = null;
+
+    if (pageToken) {
+      const decoded = decodeCursor(pageToken);
+      if (decoded) {
+        cursorCreatedAt = decoded.created_at;
+        cursorId = decoded.id;
+      }
+    }
+
     const result = await this.db.execute({
       sql: selectAllNamespaces,
-      args: [limit, offset],
+      args: [
+        cursorCreatedAt,
+        cursorCreatedAt,
+        cursorCreatedAt,
+        cursorId,
+        pageSize + 1,
+      ],
     });
-    return (result.rows as Record<string, unknown>[]).map((row) =>
+
+    const rows = (result.rows as Record<string, unknown>[]).map((row) =>
       this.mapRow(row)
     );
+
+    let nextPageToken: string | undefined;
+    if (rows.length > pageSize) {
+      const lastRow = rows[pageSize - 1];
+      nextPageToken = encodeCursor({
+        created_at: lastRow.created_at,
+        id: lastRow.id,
+      });
+      rows.length = pageSize;
+    }
+
+    return { namespaces: rows, nextPageToken };
   }
 
   /**

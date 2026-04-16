@@ -72,3 +72,36 @@ export function escapeSparqlUri(value: string): string {
     .replace(/</g, "\\<")
     .replace(/>/g, "\\>");
 }
+
+/**
+ * CursorParams represents the decoded cursor values.
+ */
+export interface CursorParams {
+  created_at: number;
+  id: string;
+}
+
+/**
+ * encodeCursor encodes cursor params into a base64 string.
+ */
+export function encodeCursor(params: CursorParams): string {
+  const str = `${params.created_at}:${params.id}`;
+  return btoa(str);
+}
+
+/**
+ * decodeCursor decodes a base64 cursor string into CursorParams.
+ * Returns null if the cursor is invalid.
+ */
+export function decodeCursor(cursor: string): CursorParams | null {
+  try {
+    const str = atob(cursor);
+    const parts = str.split(":");
+    if (parts.length !== 2) return null;
+    const created_at = parseInt(parts[0], 10);
+    if (isNaN(created_at)) return null;
+    return { created_at, id: parts[1] };
+  } catch {
+    return null;
+  }
+}

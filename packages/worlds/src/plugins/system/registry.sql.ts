@@ -13,10 +13,11 @@ export const selectNamespaceById =
   "SELECT id, label, created_at, updated_at FROM namespaces WHERE id = ?;";
 
 /**
- * selectAllNamespaces retrieves all namespaces with pagination.
+ * selectAllNamespaces retrieves all namespaces with cursor-based pagination.
+ * cursor is encoded as created_at:id
  */
 export const selectAllNamespaces =
-  "SELECT id, label, created_at, updated_at FROM namespaces ORDER BY created_at DESC LIMIT ? OFFSET ?;";
+  "SELECT id, label, created_at, updated_at FROM namespaces\nWHERE (? IS NULL OR (created_at < ? OR (created_at = ? AND id < ?)))\nORDER BY created_at DESC, id DESC\nLIMIT ?;";
 
 /**
  * insertNamespace creates a new namespace (idempotent).
@@ -77,10 +78,11 @@ export const selectWorldByIdInternal =
   "SELECT namespace, id, label, description, db_hostname, db_token, created_at, updated_at, deleted_at\nFROM worlds\nWHERE id IS ? AND deleted_at IS NULL;";
 
 /**
- * selectAllWorlds retrieves worlds for a specific namespace with pagination.
+ * selectAllWorlds retrieves worlds for a specific namespace with cursor-based pagination.
+ * cursor is encoded as created_at:id
  */
 export const selectAllWorlds =
-  "SELECT namespace, id, label, description, db_hostname, db_token, created_at, updated_at, deleted_at\nFROM worlds\nWHERE namespace IS ? AND deleted_at IS NULL\nORDER BY created_at DESC\nLIMIT ? OFFSET ?;";
+  "SELECT namespace, id, label, description, db_hostname, db_token, created_at, updated_at, deleted_at\nFROM worlds\nWHERE namespace IS ? AND deleted_at IS NULL\nAND (? IS NULL OR (created_at < ? OR (created_at = ? AND id < ?)))\nORDER BY created_at DESC, id DESC\nLIMIT ?;";
 
 /**
  * insertWorld creates a new world.

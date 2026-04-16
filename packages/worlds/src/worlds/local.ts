@@ -1,5 +1,4 @@
 import type { Client } from "@libsql/client";
-import type { WorldsSearchOutput } from "#/schemas/search.ts";
 import type {
   World,
   WorldsCreateInput,
@@ -13,17 +12,24 @@ import type {
   WorldsListInput,
   WorldsQueryInput,
 } from "#/schemas/source.ts";
-import type { WorldsSearchInput } from "#/schemas/search.ts";
+import type {
+  WorldsServiceDescriptionInput,
+  WorldsSparqlInput,
+  WorldsSparqlOutput,
+} from "#/schemas/sparql.ts";
+import type {
+  WorldsSearchInput,
+  WorldsSearchOutput,
+} from "#/schemas/search.ts";
 import { WorldsRepository } from "#/plugins/system/worlds.repository.ts";
 import { ApiKeysRepository } from "#/plugins/system/api-keys.repository.ts";
 import { NamespacesRepository } from "#/plugins/system/namespaces.repository.ts";
-import type { WorldOptions } from "#/storage/types.ts";
+import type { WorldOptions, WorldsStorage } from "#/storage/types.ts";
 import type { WorldsContext } from "#/core/types.ts";
 import { resolveSource, toWorldName } from "#/core/sources.ts";
 import type { WorldRow } from "#/plugins/system/worlds.schema.ts";
 import { ChunksRepository } from "../world/chunks/repository.ts";
 import { ChunksSearchRepository } from "../world/chunks/repository.ts";
-import { ItemTypesRepository } from "../world/item-types/repository.ts";
 import { TriplesRepository } from "../world/triples/repository.ts";
 
 /**
@@ -219,7 +225,8 @@ export class LocalWorlds implements AsyncDisposable {
    */
   async list(input: WorldsListInput = {}): Promise<World[]> {
     await this.ensureInitialized();
-    const { namespace = this.appContext.namespace, pageSize = 10 } = input;
+    const { namespace = this.appContext.namespace, pageSize = 10, pageToken } =
+      input;
 
     // Authorization check for namespace listing.
     if (
@@ -229,13 +236,18 @@ export class LocalWorlds implements AsyncDisposable {
       throw new Error(`Unauthorized access to namespace: ${namespace}`);
     }
 
-    const rows = await this.worldsRepository.list(namespace, pageSize, 0);
-    return rows.map((row) => ({
+    const result = await this.worldsRepository.list({
+      namespace,
+      pageSize,
+      pageToken,
+    });
+    return result.worlds.map((row) => ({
       name: toWorldName({ world: row.id, namespace: row.namespace }),
       label: row.label,
       description: row.description,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      nextPageToken: result.nextPageToken,
     }));
   }
 
@@ -305,7 +317,11 @@ export class LocalWorlds implements AsyncDisposable {
     let targetWorlds: WorldRow[] = [];
     if (!sources || sources.length === 0) {
       // Search across all worlds in the namespace.
-      targetWorlds = await this.worldsRepository.list(namespace, 100, 0);
+      const result = await this.worldsRepository.list({
+        namespace,
+        pageSize: 100,
+      });
+      targetWorlds = result.worlds;
     } else {
       const worldPromises = sources.map((s) => {
         const parsed = resolveSource(s, { namespace });
@@ -362,21 +378,6 @@ export class LocalWorlds implements AsyncDisposable {
   }
 
   /**
-   * itemTypes returns an ItemTypesRepository for a specific world.
-   */
-  async itemTypes(source: string): Promise<ItemTypesRepository> {
-    await this.ensureInitialized();
-    const { world, namespace } = resolveSource(source, {
-      namespace: this.appContext.namespace,
-    });
-
-    this.assertSourceAuthorized(world, namespace);
-
-    const client = await this.getInternal(world, namespace);
-    return new ItemTypesRepository(client);
-  }
-
-  /**
    * import loads data into a world.
    */
   async import(input: WorldsImportInput): Promise<void> {
@@ -391,7 +392,8 @@ export class LocalWorlds implements AsyncDisposable {
 
     const world = await this.getInternal(sourceWorld, namespace);
     const triples = new TriplesRepository(world);
-    await triples.import(data, contentType);
+    const importData = typeof data === "string" ? data : new Uint8Array(data);
+    await triples.import(importData, contentType ?? "application/n-quads");
   }
 
   /**
@@ -438,7 +440,8 @@ export class LocalWorlds implements AsyncDisposable {
       namespace: worldRow.namespace,
     };
 
-    return this.appContext.storage.get(options);
+    const storage = await this.appContext.storage.get(options);
+    return storage.database;
   }
 
   /**
@@ -460,5 +463,69 @@ export class LocalWorlds implements AsyncDisposable {
    */
   dispose(): void {
     // No-op for now.
+  }
+
+  /**
+   * sparql executes a SPARQL query or update against a world.
+   */
+  async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
+    await this.ensureInitialized();
+    const { sources, query } = input;
+
+    const sourceArray = Array.isArray(sources) ? sources : [sources];
+    if (sourceArray.length === 0) {
+      throw new Error("At least one source is required for SPARQL operations");
+    }
+
+    const source = sourceArray[0];
+    if (!source) {
+      throw new Error("Source is required for SPARQL operations");
+    }
+
+    const { world: sourceWorld, namespace } = resolveSource(
+      source,
+      { namespace: this.appContext.namespace },
+    );
+
+    this.assertSourceAuthorized(sourceWorld, namespace);
+
+    const world = await this.getInternal(sourceWorld, namespace);
+    const triples = new TriplesRepository(world);
+    const result = await triples.query(query);
+
+    return result as WorldsSparqlOutput;
+  }
+
+  /**
+   * getServiceDescription retrieves the SPARQL service description.
+   */
+  async getServiceDescription(
+    input: WorldsServiceDescriptionInput,
+  ): Promise<string> {
+    await this.ensureInitialized();
+    const { sources, contentType } = input;
+
+    if (!sources || sources.length === 0) {
+      throw new Error(
+        "At least one source is required for service description",
+      );
+    }
+
+    const source = sources[0];
+    if (!source) {
+      throw new Error("Source is required for service description");
+    }
+
+    const { world: sourceWorld, namespace } = resolveSource(
+      source,
+      { namespace: this.appContext.namespace },
+    );
+
+    this.assertSourceAuthorized(sourceWorld, namespace);
+
+    const world = await this.getInternal(sourceWorld, namespace);
+    const triples = new TriplesRepository(world);
+    const data = await triples.export(contentType ?? "application/n-quads");
+    return new TextDecoder().decode(data);
   }
 }
