@@ -368,7 +368,7 @@ export class LocalWorlds implements WorldsInterface {
   async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
     await this.ensureInitialized();
     const { query } = input;
-    const sources = input.sources ?? [{ world: null }];
+    const sources = input.sources ?? ["_"];
     const namespace = input.namespace ?? this.appContext.namespace;
 
     if (isSparqlUpdate(query) && sources.length !== 1) {
@@ -430,7 +430,7 @@ export class LocalWorlds implements WorldsInterface {
   async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
     await this.ensureInitialized();
     const { query, limit, subjects, predicates, types } = input;
-    const sources = input.sources ?? [{ world: null }];
+    const sources = input.sources ?? ["_"];
     const requestedLimit = limit ?? 20;
 
     const chunksSearchRepository = new ChunksSearchRepository(

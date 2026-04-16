@@ -51,53 +51,35 @@ Deno.test("resolveSource - String inputs", async (t) => {
   });
 });
 
-Deno.test("resolveSource - Object inputs", async (t) => {
-  await t.step("explicit world and namespace", () => {
-    const result = resolveSource({ world: "my-world", namespace: "ns-a" });
+Deno.test("resolveSource - Object inputs with name", async (t) => {
+  await t.step("explicit qualified name", () => {
+    const result = resolveSource({ name: "ns-a/my-world" });
     assertEquals(result.world, "my-world");
     assertEquals(result.namespace, "ns-a");
   });
 
-  await t.step("null world uses context or default", () => {
-    const result = resolveSource({ world: null, namespace: "ns-a" });
-    assertEquals(result.world, defaultWorldsWorldNameSegment);
-    assertEquals(result.namespace, "ns-a");
-  });
-
-  await t.step("null namespace uses context or default", () => {
-    const result = resolveSource({ world: "my-world", namespace: null });
+  await t.step("name with '_' in namespace uses context default", () => {
+    const result = resolveSource({ name: "_/my-world" });
     assertEquals(result.world, "my-world");
     assertEquals(result.namespace, defaultWorldsNamespaceNameSegment);
   });
 
-  await t.step("both null use context defaults", () => {
-    const result = resolveSource({ world: null, namespace: null });
+  await t.step("name with '_' in world uses context default", () => {
+    const result = resolveSource({ name: "ns-a/_" });
     assertEquals(result.world, defaultWorldsWorldNameSegment);
-    assertEquals(result.namespace, defaultWorldsNamespaceNameSegment);
-  });
-
-  await t.step("object with name property parses into components", () => {
-    const result = resolveSource({ name: "ns-a/world-b" });
     assertEquals(result.namespace, "ns-a");
-    assertEquals(result.world, "world-b");
   });
 
-  await t.step("partial object (world only)", () => {
-    const result = resolveSource({ world: "my-world" });
+  await t.step("name only (world-only)", () => {
+    const result = resolveSource({ name: "my-world" });
     assertEquals(result.world, "my-world");
     assertEquals(result.namespace, defaultWorldsNamespaceNameSegment);
   });
 
-  await t.step("partial object (namespace only)", () => {
-    const result = resolveSource({ namespace: "ns-a" });
-    assertEquals(result.world, defaultWorldsWorldNameSegment);
+  await t.step("name with write property", () => {
+    const result = resolveSource({ name: "ns-a/my-world", write: true });
+    assertEquals(result.world, "my-world");
     assertEquals(result.namespace, "ns-a");
-  });
-
-  await t.step("empty object", () => {
-    const result = resolveSource({});
-    assertEquals(result.world, defaultWorldsWorldNameSegment);
-    assertEquals(result.namespace, defaultWorldsNamespaceNameSegment);
   });
 });
 
@@ -113,16 +95,14 @@ Deno.test("resolveSource - Context override", async (t) => {
     assertEquals(result.namespace, defaultWorldsNamespaceNameSegment);
   });
 
-  await t.step("explicit source namespace overrides context", () => {
-    const result = resolveSource(
-      { world: "my-world", namespace: "explicit-ns" },
-      { namespace: "context-ns" },
-    );
-    assertEquals(result.namespace, "explicit-ns");
+  await t.step("'_' in string with context namespace", () => {
+    const result = resolveSource("_/my-world", { namespace: "context-ns" });
+    assertEquals(result.namespace, "context-ns");
+    assertEquals(result.world, "my-world");
   });
 
-  await t.step("string source with context namespace", () => {
-    const result = resolveSource("_/my-world", { namespace: "context-ns" });
+  await t.step("name object with context namespace", () => {
+    const result = resolveSource({ name: "_/my-world" }, { namespace: "context-ns" });
     assertEquals(result.namespace, "context-ns");
     assertEquals(result.world, "my-world");
   });
@@ -135,27 +115,28 @@ Deno.test("toWorldName - formats resolved source", async (t) => {
   });
 
   await t.step("formats with default namespace", () => {
-    const result = toWorldName({
-      namespace: defaultWorldsNamespaceNameSegment,
-      world: "my-world",
-    });
+    const result = toWorldName({ namespace: defaultWorldsNamespaceNameSegment, world: "my-world" });
     assertEquals(result, "_/my-world");
   });
 
   await t.step("formats with default world", () => {
-    const result = toWorldName({
-      namespace: "ns-a",
-      world: defaultWorldsWorldNameSegment,
-    });
+    const result = toWorldName({ namespace: "ns-a", world: defaultWorldsWorldNameSegment });
     assertEquals(result, "ns-a/_");
   });
 
   await t.step("formats with both defaults", () => {
-    const result = toWorldName({
-      namespace: defaultWorldsNamespaceNameSegment,
-      world: defaultWorldsWorldNameSegment,
-    });
+    const result = toWorldName({ namespace: defaultWorldsNamespaceNameSegment, world: defaultWorldsWorldNameSegment });
     assertEquals(result, "_/_");
+  });
+
+  await t.step("formats string input", () => {
+    const result = toWorldName("ns-a/my-world");
+    assertEquals(result, "ns-a/my-world");
+  });
+
+  await t.step("formats name object", () => {
+    const result = toWorldName({ name: "ns-a/my-world" });
+    assertEquals(result, "ns-a/my-world");
   });
 });
 
@@ -173,9 +154,7 @@ Deno.test("resolveSource + toWorldName - composition", async (t) => {
   });
 
   await t.step("roundtrip with context", () => {
-    const resolved = resolveSource("_/my-world", {
-      namespace: "context-ns",
-    });
+    const resolved = resolveSource("_/my-world", { namespace: "context-ns" });
     const worldName = toWorldName(resolved);
     assertEquals(worldName, "context-ns/my-world");
   });
@@ -189,21 +168,9 @@ Deno.test("resolveSource - Context with world default", async (t) => {
   });
 
   await t.step("context namespace and world together", () => {
-    const result = resolveSource("_", {
-      namespace: "context-ns",
-      world: "context-world",
-    });
+    const result = resolveSource("_", { namespace: "context-ns", world: "context-world" });
     assertEquals(result.namespace, "context-ns");
     assertEquals(result.world, "context-world");
-  });
-
-  await t.step("explicit source overrides context world", () => {
-    const result = resolveSource(
-      { world: "explicit-world", namespace: "explicit-ns" },
-      { world: "context-world", namespace: "context-ns" },
-    );
-    assertEquals(result.namespace, "explicit-ns");
-    assertEquals(result.world, "explicit-world");
   });
 
   await t.step("'_' in string with context world", () => {
@@ -228,21 +195,18 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
     assertEquals(result.world, "b");
     assertEquals(result.namespace, "a");
   });
+
+  await t.step("object without name throws error", async () => {
+    try {
+      resolveSource({ foo: "my-world" } as any);
+      throw new Error("Expected error to be thrown");
+    } catch (e) {
+      assertEquals((e as Error).message.includes("name"), true);
+    }
+  });
 });
 
 Deno.test("resolveSource - Edge cases", async (t) => {
-  await t.step("name property with '_' sentinel", () => {
-    const result = resolveSource({ name: "_/my-world" });
-    assertEquals(result.namespace, defaultWorldsNamespaceNameSegment);
-    assertEquals(result.world, "my-world");
-  });
-
-  await t.step("name property with qualified name", () => {
-    const result = resolveSource({ name: "ns-a/my-world" });
-    assertEquals(result.namespace, "ns-a");
-    assertEquals(result.world, "my-world");
-  });
-
   await t.step("special characters in world name", () => {
     const result = resolveSource("ns-a/my-world_123");
     assertEquals(result.namespace, "ns-a");
@@ -253,27 +217,5 @@ Deno.test("resolveSource - Edge cases", async (t) => {
     const result = resolveSource("ns-a/");
     assertEquals(result.namespace, "ns-a");
     assertEquals(result.world, defaultWorldsWorldNameSegment);
-  });
-});
-
-Deno.test("toWorldName - Additional edge cases", async (t) => {
-  await t.step("string input directly", () => {
-    const result = toWorldName("ns-a/my-world");
-    assertEquals(result, "ns-a/my-world");
-  });
-
-  await t.step("world-only string converts to '_'", () => {
-    const result = toWorldName("my-world");
-    assertEquals(result, "_/my-world");
-  });
-
-  await t.step("string with '_' sentinel", () => {
-    const result = toWorldName("_/my-world");
-    assertEquals(result, "_/my-world");
-  });
-
-  await t.step("empty source uses defaults", () => {
-    const result = toWorldName("");
-    assertEquals(result, "_/_");
   });
 });

@@ -12,7 +12,7 @@ import type {
   WorldRowInsert,
   WorldRowUpdate,
 } from "./worlds.schema.ts";
-import { resolveSource } from "#/core/sources.ts";
+import { resolveSource, defaultWorldsNamespaceNameSegment } from "#/core/sources.ts";
 
 /**
  * WorldsRepository handles the persistence of world metadata in the system database.
@@ -34,7 +34,9 @@ export class WorldsRepository {
     world: string | null,
     namespace?: string | null,
   ): Promise<WorldRow | null> {
-    const resolved = resolveSource({ world, namespace });
+    const resolved = resolveSource(
+      world && namespace ? `${namespace}/${world}` : (world ?? "_")
+    );
     const result = await this.db.execute({
       sql: selectWorldByWorld,
       args: [resolved.world, resolved.namespace],
@@ -92,10 +94,10 @@ export class WorldsRepository {
     limit: number,
     offset: number,
   ): Promise<WorldRow[]> {
-    const resolved = resolveSource({ namespace });
+    const ns = namespace ?? defaultWorldsNamespaceNameSegment;
     const result = await this.db.execute({
       sql: selectAllWorlds,
-      args: [resolved.namespace, limit, offset],
+      args: [ns, limit, offset],
     });
     return (result.rows as Record<string, unknown>[]).map((row) =>
       this.mapRow(row)
@@ -138,7 +140,9 @@ export class WorldsRepository {
   ): Promise<void> {
     const row = await this.get(world, namespace);
     if (!row) return;
-    const resolved = resolveSource({ world, namespace });
+    const resolved = resolveSource(
+      world && namespace ? `${namespace}/${world}` : (world ?? "_")
+    );
     await this.db.execute({
       sql: updateWorld,
       args: [
@@ -163,7 +167,9 @@ export class WorldsRepository {
     world: string | null,
     namespace: string | null | undefined,
   ): Promise<void> {
-    const resolved = resolveSource({ world, namespace });
+    const resolved = resolveSource(
+      world && namespace ? `${namespace}/${world}` : (world ?? "_")
+    );
     await this.db.execute({
       sql: deleteWorld,
       args: [resolved.world, resolved.namespace],

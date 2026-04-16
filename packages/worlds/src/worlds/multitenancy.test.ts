@@ -121,7 +121,7 @@ Deno.test({
         await assertRejects(
           () =>
             worldsB.get({
-              source: { world: sharedWorld, namespace: ctxA.namespace },
+              source: { name: `${ctxA.namespace}/${sharedWorld}` },
             }),
           Error,
           "Unauthorized access to namespace",
@@ -131,7 +131,7 @@ Deno.test({
         await assertRejects(
           () =>
             worldsB.sparql({
-              sources: [{ world: sharedWorld, namespace: ctxA.namespace }],
+              sources: [{ name: `${ctxA.namespace}/${sharedWorld}` }],
               query: "SELECT ?s WHERE { ?s ?p ?o }",
             }),
           Error,
@@ -147,7 +147,7 @@ Deno.test({
         await assertRejects(
           () =>
             worldsB.get({
-              source: { world: sharedWorld, namespace: ctxA.namespace },
+              source: { name: `${ctxA.namespace}/${sharedWorld}` },
             }),
           Error,
           "Unauthorized access to namespace",
@@ -157,7 +157,7 @@ Deno.test({
         await assertRejects(
           () =>
             worldsB.sparql({
-              sources: [{ world: sharedWorld, namespace: ctxA.namespace }],
+              sources: [{ name: `${ctxA.namespace}/${sharedWorld}` }],
               query: "SELECT ?s WHERE { ?s ?p ?o }",
             }),
           Error,

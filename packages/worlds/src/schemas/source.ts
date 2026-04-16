@@ -3,38 +3,25 @@ import type { WorldsContentType } from "./rdf-content-type.ts";
 import { worldsContentTypeSchema } from "./rdf-content-type.ts";
 
 /**
- * WorldsSource represents a target world by world identifier, qualified name, or name object.
+ * WorldsSource represents a target world by name.
+ * The name can be "world" (uses context namespace) or "namespace/world" (fully qualified).
  */
 export type WorldsSource =
-  | string // Qualified name: <namespace>/<world>
+  | string // "namespace/world" or "world"
   | (
     & { write?: boolean }
-    & (
-      | { world?: string | null; namespace?: string | null }
-      | { name?: string | null }
-    )
+    & { name: string } // "namespace/world" or "world"
   );
 
 /**
  * worldsSourceSchema is the Zod schema for WorldsSource.
  */
 export const worldsSourceSchema: z.ZodType<WorldsSource> = z.union([
-  z.string().describe("A qualified source name: <namespace>/<world>"),
+  z.string().describe("A source name: 'world' or 'namespace/world'"),
   z.object({
     write: z.boolean().optional().describe("Whether write access is enabled."),
-  }).and(z.union([
-    z.object({
-      world: z.string().nullable().optional().describe("The world identifier."),
-      namespace: z.string().nullable().optional().describe(
-        "The optional namespace of the target world.",
-      ),
-    }),
-    z.object({
-      name: z.string().nullable().optional().describe(
-        "A qualified source name: <namespace>/<world>",
-      ),
-    }),
-  ])),
+    name: z.string().describe("A source name: 'world' or 'namespace/world'"),
+  }),
 ]);
 
 /**

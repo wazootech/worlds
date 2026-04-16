@@ -12,11 +12,10 @@ export {
 
 /**
  * ResolvedSource represents a fully resolved world + namespace pair.
- * Uses context defaults or fallbacks.
  */
 export interface ResolvedSource {
-  world: string | null;
-  namespace: string | null;
+  world: string;
+  namespace: string;
 }
 
 /**
@@ -31,49 +30,40 @@ export class SourceParseError extends Error {
 
 /**
  * resolveSource converts various input forms into a ResolvedSource.
- * Handles: WorldsSource, { world, namespace }, "namespace/world" string
  *
- * String parsing: "_" returns null (use context defaults)
- * Object forms: null values use context defaults
- * Fallback chain: value → context → defaultWorlds* constants
+ * Input formats:
+ * - "world" - uses context namespace or default
+ * - "namespace/world" - explicit namespace and world
+ * - "_/world" - underscore means use context namespace
+ * - { name: "namespace/world" } - object form
  *
- * @throws SourceParseError on invalid input (multiple slashes, invalid format)
+ * @throws SourceParseError on invalid input (multiple slashes)
  */
 export function resolveSource(
-  source: WorldsSource | { world?: string | null; namespace?: string | null },
+  source: WorldsSource,
   context?: Partial<WorldsContext>,
 ): ResolvedSource {
-  let world: string | null = null;
-  let namespace: string | null = null;
+  let name: string | null = null;
 
   if (typeof source === "string") {
-    const parsed = parseSourceName(source);
-    world = parsed.world;
-    namespace = parsed.namespace;
+    name = source;
   } else if (typeof source === "object" && source !== null) {
     if ("name" in source && source.name) {
-      const parsed = parseSourceName(source.name);
-      world = parsed.world;
-      namespace = parsed.namespace;
-    } else if (
-      "world" in source || "namespace" in source ||
-      Object.keys(source).length === 0
-    ) {
-      const obj = source as {
-        world?: string | null;
-        namespace?: string | null;
-      };
-      world = obj.world ?? null;
-      namespace = obj.namespace ?? null;
+      name = source.name;
     } else {
-      throw new SourceParseError("Invalid source format");
+      throw new SourceParseError(
+        "Invalid source format: missing 'name' property",
+      );
     }
+  } else {
+    throw new SourceParseError("Invalid source format");
   }
 
+  const parsed = parseSourceName(name);
+
   return {
-    world: world ?? context?.world ?? defaultWorld,
-    namespace: namespace ?? context?.namespace ??
-      defaultNamespace,
+    world: parsed.world ?? context?.world ?? defaultWorld,
+    namespace: parsed.namespace ?? context?.namespace ?? defaultNamespace,
   };
 }
 
@@ -84,12 +74,25 @@ export function resolveSource(
  * @throws SourceParseError on invalid input
  */
 export function toWorldName(
-  source: WorldsSource | ResolvedSource | {
-    world?: string | null;
-    namespace?: string | null;
-  },
+  source:
+    | WorldsSource
+    | ResolvedSource
+    | {
+        world?: string | null;
+        namespace?: string | null;
+      },
 ): string {
-  const resolved = resolveSource(source);
+  let resolved: ResolvedSource;
+
+  if (typeof source === "string" || (typeof source === "object" && source !== null && "name" in source)) {
+    resolved = resolveSource(source);
+  } else {
+    resolved = {
+      world: source.world ?? defaultWorld,
+      namespace: source.namespace ?? defaultNamespace,
+    };
+  }
+
   const ns = resolved.namespace === defaultNamespace ? "_" : resolved.namespace;
   const ws = resolved.world === defaultWorld ? "_" : resolved.world;
   return `${ns}/${ws}`;
@@ -103,7 +106,7 @@ export function toWorldName(
  */
 function parseSourceName(
   source: string,
-): ResolvedSource {
+): { world: string | null; namespace: string | null } {
   const trimmed = source.trim();
   if (!trimmed) return { world: null, namespace: null };
 
