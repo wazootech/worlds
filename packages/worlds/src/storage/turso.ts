@@ -1,12 +1,9 @@
 import type { createClient as createTursoClient } from "@tursodatabase/api";
 import type { Client } from "@libsql/client";
 import { createClient } from "@libsql/client";
-import type {
-  DatabaseManager,
-  ManagedDatabase,
-  WorldOptions,
-} from "#/storage/manager.ts";
-import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
+import type { WorldOptions, WorldsStorage } from "./types.ts";
+import type { WorldsStorageManager } from "./worlds.ts";
+import { WorldsRepository } from "#/plugins/system/worlds.repository.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
 
 /**
@@ -14,18 +11,21 @@ import { initializeWorldDatabase } from "#/storage/init.ts";
  */
 export type TursoClient = ReturnType<typeof createTursoClient>;
 
-export class TursoCloudDatabaseManager implements DatabaseManager {
+/**
+ * TursoCloudWorldsStorageManager implements WorldsStorageManager for Turso Cloud.
+ */
+export class TursoCloudWorldsStorageManager implements WorldsStorageManager {
   private readonly initialized = new Set<string>();
   private readonly trackedDatabases = new Map<string, Client>();
 
   /**
-   * constructor initializes the TursoCloudDatabaseManager.
-   * @param database The system database client.
+   * constructor initializes the TursoCloudWorldsStorageManager.
+   * @param system The system database client.
    * @param client The Turso API client.
    * @param dimensions The vector dimensions for world databases.
    */
   public constructor(
-    private readonly database: Client,
+    private readonly system: Client,
     private readonly client: TursoClient,
     private readonly dimensions: number,
   ) {}
@@ -34,7 +34,7 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
    * getStorageKey generates a Turso-safe identifier for a world.
    */
   private async getStorageKey(options: WorldOptions): Promise<string> {
-    const raw = `${options.namespace ?? ""}:${options.world}`;
+    const raw = `${options.namespace ?? ""}:${options.id}`;
     const encoder = new TextEncoder();
     const data = encoder.encode(raw);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
@@ -47,20 +47,23 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
   /**
    * create provisions a new Turso database.
    */
-  public async create(options: WorldOptions): Promise<ManagedDatabase> {
+  public async create(options: WorldOptions): Promise<WorldsStorage> {
     const key = await this.getStorageKey(options);
     const database = await this.client.databases.create(key);
     const token = await this.client.databases.createToken(key);
-    return this.getManagedDatabase(key, database.hostname, token.jwt);
+    return this.getWorldsStorage(key, database.hostname, token.jwt);
   }
 
   /**
    * get retrieves an existing Turso database connection.
    */
-  public async get(options: WorldOptions): Promise<ManagedDatabase> {
+  public async get(options: WorldOptions): Promise<WorldsStorage> {
     const key = await this.getStorageKey(options);
-    const worldsRepository = new WorldsRepository(this.database);
-    const world = await worldsRepository.get(options.world, options.namespace);
+    const worldsRepository = new WorldsRepository(this.system);
+    const world = await worldsRepository.get(
+      options.id,
+      options.namespace ?? undefined,
+    );
 
     let url = "";
     let authToken = "";
@@ -75,14 +78,14 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
       authToken = token.jwt;
     }
 
-    return this.getManagedDatabase(key, url, authToken);
+    return this.getWorldsStorage(key, url, authToken);
   }
 
-  private async getManagedDatabase(
+  private async getWorldsStorage(
     key: string,
     url: string,
     authToken: string,
-  ): Promise<ManagedDatabase> {
+  ): Promise<WorldsStorage> {
     const client = this.trackedDatabases.get(key) ?? createClient({
       url: `libsql://${url}`,
       authToken,
@@ -114,7 +117,7 @@ export class TursoCloudDatabaseManager implements DatabaseManager {
       client.close();
     }
     this.trackedDatabases.clear();
-    this.database.close(); // Close the system database too
+    this.system.close(); // Close the system database too
     return Promise.resolve();
   }
 

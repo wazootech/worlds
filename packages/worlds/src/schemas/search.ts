@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { type World, worldSchema } from "./world.ts";
-import { type WorldSource, worldSourceSchema } from "./source.ts";
+import { type WorldsSource, worldsSourceSchema } from "./source.ts";
 
 /**
  * WorldsSearchOutput represents a search result from the TripleSearch service.
@@ -64,7 +64,7 @@ export interface WorldsSearchInput {
   /**
    * sources is the optional list of target worlds.
    */
-  sources?: WorldSource[];
+  sources?: WorldsSource[];
 
   /**
    * namespace is the optional namespace of the target world.
@@ -101,7 +101,7 @@ export interface WorldsSearchInput {
  * worldsSearchInputSchema is the Zod schema for WorldsSearchInput.
  */
 export const worldsSearchInputSchema: z.ZodType<WorldsSearchInput> = z.object({
-  sources: z.array(worldSourceSchema).optional().describe(
+  sources: z.array(worldsSourceSchema).optional().describe(
     "The list of target worlds.",
   ),
   namespace: z.string().optional().describe(

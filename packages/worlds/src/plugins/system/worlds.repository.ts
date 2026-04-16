@@ -1,10 +1,11 @@
 import type { Client } from "@libsql/client";
+import { decodeCursor, encodeCursor } from "#/core/utils.ts";
 import {
   deleteWorld,
   insertWorld,
   selectAllWorlds,
-  selectWorldByWorld,
-  selectWorldByWorldInternal,
+  selectWorldById,
+  selectWorldByIdInternal,
   updateWorld,
 } from "./registry.sql.ts";
 import type {
@@ -12,6 +13,23 @@ import type {
   WorldRowInsert,
   WorldRowUpdate,
 } from "./worlds.schema.ts";
+
+/**
+ * WorldsListParams represents the parameters for listing worlds.
+ */
+export interface WorldsListParams {
+  namespace?: string;
+  pageSize?: number;
+  pageToken?: string;
+}
+
+/**
+ * WorldsListResult represents the result of listing worlds.
+ */
+export interface WorldsListResult {
+  worlds: WorldRow[];
+  nextPageToken?: string;
+}
 
 /**
  * WorldsRepository handles the persistence of world metadata in the system database.
@@ -25,19 +43,17 @@ export class WorldsRepository {
 
   /**
    * get retrieves a world by its identifier and optional namespace.
-   * @param world The world identifier.
-   * @param namespace The namespace (optional - defaults to "_" if not provided).
+   * @param id The world identifier.
+   * @param namespace The namespace (optional - uses context default if null).
    * @returns The world row or null if not found.
    */
   async get(
-    world: string | null,
-    namespace?: string | null,
+    id?: string,
+    namespace?: string,
   ): Promise<WorldRow | null> {
-    const w = world ?? "_";
-    const ns = namespace ?? "_";
     const result = await this.db.execute({
-      sql: selectWorldByWorld,
-      args: [w, ns],
+      sql: selectWorldById,
+      args: [id ?? null, namespace ?? null],
     });
     const row = result.rows[0] as Record<string, unknown> | undefined;
     if (!row) return null;
@@ -47,14 +63,13 @@ export class WorldsRepository {
   /**
    * getInternal retrieves a world by its identifier without namespace scoping.
    * Use this ONLY for internal system operations.
-   * @param world The world identifier.
+   * @param id The world identifier.
    * @returns The world row or null if not found.
    */
-  async getInternal(world: string | null): Promise<WorldRow | null> {
-    const w = world ?? "_";
+  async getInternal(id?: string): Promise<WorldRow | null> {
     const result = await this.db.execute({
-      sql: selectWorldByWorldInternal,
-      args: [w],
+      sql: selectWorldByIdInternal,
+      args: [id ?? null],
     });
     const row = result.rows[0] as Record<string, unknown> | undefined;
     if (!row) return null;
@@ -65,13 +80,11 @@ export class WorldsRepository {
    * mapRow maps a database row to a WorldRow.
    */
   private mapRow(row: Record<string, unknown>): WorldRow {
-    const ns = row.namespace as string;
-    const world = row.world as string;
     return {
-      namespace: ns,
-      world: world,
+      namespace: (row.namespace as string | null) ?? undefined,
+      id: (row.id as string | null) ?? "",
       label: row.label as string,
-      description: row.description as string | null,
+      description: (row.description as string | null) ?? undefined,
       db_hostname: row.db_hostname as string | null,
       db_token: row.db_token as string | null,
       created_at: row.created_at as number,
@@ -82,29 +95,49 @@ export class WorldsRepository {
 
   /**
    * list retrieves a paginated list of worlds for a specific namespace.
-   * @param namespace The namespace (optional - if not provided, lists all worlds).
-   * @param limit The maximum number of worlds to return.
-   * @param offset The number of worlds to skip.
-   * @returns An array of world rows.
+   * @param params The list parameters including namespace, pageSize, and pageToken.
+   * @returns An array of world rows and an optional next page token.
    */
-  async list(
-    namespace: string | null | undefined,
-    limit: number,
-    offset: number,
-  ): Promise<WorldRow[]> {
-    const ns = namespace ?? "_";
-    const result = (ns !== "-")
-      ? await this.db.execute({
-        sql: selectAllWorlds,
-        args: [ns, limit, offset],
-      })
-      : await this.db.execute({
-        sql: `SELECT * FROM worlds ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-        args: [limit, offset],
-      });
-    return (result.rows as Record<string, unknown>[]).map((row) =>
+  async list(params: WorldsListParams): Promise<WorldsListResult> {
+    const { namespace, pageSize = 50, pageToken } = params;
+
+    let cursorCreatedAt: number | null = null;
+    let cursorId: string | null = null;
+
+    if (pageToken) {
+      const decoded = decodeCursor(pageToken);
+      if (decoded) {
+        cursorCreatedAt = decoded.created_at;
+        cursorId = decoded.id;
+      }
+    }
+
+    const result = await this.db.execute({
+      sql: selectAllWorlds,
+      args: [
+        namespace ?? null,
+        cursorCreatedAt,
+        cursorCreatedAt,
+        cursorId,
+        pageSize + 1,
+      ],
+    });
+
+    const rows = (result.rows as Record<string, unknown>[]).map((row) =>
       this.mapRow(row)
     );
+
+    let nextPageToken: string | undefined;
+    if (rows.length > pageSize) {
+      const lastRow = rows[pageSize - 1];
+      nextPageToken = encodeCursor({
+        created_at: lastRow.created_at,
+        id: lastRow.id ?? "",
+      });
+      rows.length = pageSize;
+    }
+
+    return { worlds: rows, nextPageToken };
   }
 
   /**
@@ -113,64 +146,63 @@ export class WorldsRepository {
    */
   async insert(world: WorldRowInsert): Promise<void> {
     const ns = world.namespace;
-    const w = world.world;
+    const w = world.id;
     await this.db.execute({
       sql: insertWorld,
       args: [
-        ns,
-        w,
+        ns ?? null,
+        w ?? null,
         world.label,
-        world.description,
+        world.description ?? null,
         world.db_hostname ?? null,
         world.db_token ?? null,
         world.created_at,
         world.updated_at,
-        world.deleted_at,
+        world.deleted_at ?? null,
       ],
     });
   }
 
   /**
    * update modifies an existing world record.
-   * @param world The world identifier.
+   * @param id The world identifier.
    * @param namespace The namespace.
    * @param updates The fields to update.
    */
   async update(
-    world: string | null,
-    namespace: string | null | undefined,
+    id: string | undefined,
+    namespace: string | undefined,
     updates: WorldRowUpdate,
   ): Promise<void> {
-    const row = await this.get(world, namespace);
+    const row = await this.get(id, namespace);
     if (!row) return;
-    const w = world ?? "_";
-    const ns = namespace ?? "_";
     await this.db.execute({
       sql: updateWorld,
       args: [
         updates.label ?? row.label,
-        updates.description ?? row.description,
+        updates.description ?? row.description ?? null,
         updates.db_hostname ?? row.db_hostname,
         updates.db_token ?? row.db_token,
         updates.updated_at ?? row.updated_at,
-        updates.deleted_at ?? row.deleted_at,
-        w,
-        ns,
+        updates.deleted_at ?? row.deleted_at ?? null,
+        id ?? null,
+        namespace ?? null,
       ],
     });
   }
 
   /**
    * delete removes a world record by its identifier and namespace.
-   * @param world The world identifier.
+   * @param id The world identifier.
    * @param namespace The namespace (optional).
    */
   async delete(
-    world: string | null,
-    namespace: string | null | undefined,
+    id?: string,
+    namespace?: string,
   ): Promise<void> {
-    const w = world ?? "_";
-    const ns = namespace ?? "_";
-    await this.db.execute({ sql: deleteWorld, args: [w, ns] });
+    await this.db.execute({
+      sql: deleteWorld,
+      args: [id ?? null, namespace ?? null],
+    });
   }
 }

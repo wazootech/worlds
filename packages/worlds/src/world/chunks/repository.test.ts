@@ -9,12 +9,13 @@ import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
 import { NamespacesRepository } from "#/plugins/registry/namespaces.repository.ts";
 import { ChunksRepository } from "#/world/chunks/repository.ts";
 import { ChunksSearchRepository } from "#/world/chunks/repository.ts";
+import { toWorldName } from "#/core/sources.ts";
 
 Deno.test("ChunksSearchRepository", async (t) => {
   const testContext = await createTestContext();
-  const worldsRepository = new WorldsRepository(testContext.libsql.database);
+  const worldsRepository = new WorldsRepository(testContext.system);
   const namespacesRepository = new NamespacesRepository(
-    testContext.libsql.database,
+    testContext.system,
   );
   const chunksSearchRepository = new ChunksSearchRepository(
     testContext,
@@ -45,9 +46,9 @@ Deno.test("ChunksSearchRepository", async (t) => {
     updated_at: now,
     deleted_at: null,
   });
-  await testContext.libsql.manager.create({ world, namespace: namespaceId });
+  await testContext.storage.create({ world, namespace: namespaceId });
 
-  const worldManaged = await testContext.libsql.manager.get({
+  const worldManaged = await testContext.storage.get({
     world,
     namespace: namespaceId,
   });
@@ -57,6 +58,7 @@ Deno.test("ChunksSearchRepository", async (t) => {
     const results = await chunksSearchRepository.search({
       query: "nonexistent",
       world: world,
+      namespace: namespaceId,
     });
     assertEquals(results.length, 0);
   });
@@ -72,13 +74,15 @@ Deno.test("ChunksSearchRepository", async (t) => {
     });
 
     const chunksRepository = new ChunksRepository(worldManaged.database);
+    // Use the dimensions from the test context (768)
+    const dims = testContext.vectors.dimensions;
     await chunksRepository.upsert({
       id: "c1",
       triple_id: tripleId,
       subject: "s",
       predicate: "p",
       text: "This is a test chunk about apples.",
-      vector: new Uint8Array(new Float32Array(768).fill(0).buffer),
+      vector: new Uint8Array(new Float32Array(dims).fill(0).buffer),
     });
 
     const results = await chunksSearchRepository.search({
@@ -90,8 +94,13 @@ Deno.test("ChunksSearchRepository", async (t) => {
     assertEquals(results.length, 1);
     assertEquals(results[0].subject, "s");
     assertEquals(results[0].object, "o");
+    // Verify resource name format
+    assertEquals(
+      results[0].world.name,
+      toWorldName({ world, namespace: namespaceId }),
+    );
   });
 
-  await testContext.libsql.manager.close();
-  testContext.libsql.database.close();
+  await testContext.storage.close();
+  testContext.system.close();
 });

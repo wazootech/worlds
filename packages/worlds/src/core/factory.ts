@@ -1,6 +1,6 @@
 import type { WorldsContext } from "#/core/types.ts";
-import type { DatabaseManager } from "#/storage/manager.ts";
-import type { Embeddings } from "#/embeddings/embeddings.ts";
+import type { WorldsStorageManager } from "#/storage/worlds.ts";
+import type { Embeddings } from "#/vectors/embeddings.ts";
 import { createClient } from "@libsql/client";
 import { createOllama } from "ollama-ai-provider";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
@@ -8,11 +8,11 @@ import { createClient as createTursoClient } from "@tursodatabase/api";
 import { dirname } from "@std/path";
 import { Worlds } from "#/worlds/worlds.ts";
 import { LocalWorlds } from "#/worlds/local.ts";
-import { TursoCloudDatabaseManager } from "#/storage/turso-cloud-manager.ts";
-import { FileDatabaseManager } from "#/storage/file-manager.ts";
+import { TursoCloudWorldsStorageManager } from "#/storage/turso.ts";
+import { FileWorldsStorageManager } from "#/storage/file.ts";
 import { initializeDatabase } from "#/storage/init.ts";
-import { OllamaEmbeddings } from "#/embeddings/ollama.ts";
-import { OpenRouterEmbeddings } from "#/embeddings/openrouter.ts";
+import { OllamaEmbeddings } from "#/vectors/ollama.ts";
+import { OpenRouterEmbeddings } from "#/vectors/openrouter.ts";
 
 /**
  * WorldsContextConfig is the configuration for a Worlds engine context.
@@ -138,16 +138,16 @@ export async function createWorldsContext(
   }
 
   // Resolve database strategy based on environment variables.
-  const database = createClient({
+  const system = createClient({
     url: config.envs.LIBSQL_URL!,
     authToken: config.envs.LIBSQL_AUTH_TOKEN,
   });
 
   // Initialize database tables.
-  await initializeDatabase(database);
+  await initializeDatabase(system);
 
   // Resolve embeddings strategy based on environment variables.
-  let embeddings: Embeddings;
+  let vectors: Embeddings;
   if (
     config.envs.OPENROUTER_API_KEY && config.envs.OPENROUTER_EMBEDDINGS_MODEL
   ) {
@@ -155,7 +155,7 @@ export async function createWorldsContext(
       apiKey: config.envs.OPENROUTER_API_KEY,
     });
 
-    embeddings = new OpenRouterEmbeddings({
+    vectors = new OpenRouterEmbeddings({
       model: openrouter.textEmbeddingModel(
         config.envs.OPENROUTER_EMBEDDINGS_MODEL,
       ),
@@ -166,14 +166,14 @@ export async function createWorldsContext(
       baseURL: config.envs.OLLAMA_BASE_URL!,
     });
 
-    embeddings = new OllamaEmbeddings({
+    vectors = new OllamaEmbeddings({
       model: ollama.textEmbeddingModel(config.envs.OLLAMA_EMBEDDINGS_MODEL!),
       dimensions,
     });
   }
 
-  // Resolve database manager strategy based on environment variables.
-  let manager: DatabaseManager;
+  // Resolve storage manager strategy based on environment variables.
+  let storage: WorldsStorageManager;
   if (config.envs.TURSO_API_TOKEN) {
     if (!config.envs.TURSO_ORG) {
       throw new Error("TURSO_ORG is required when TURSO_API_TOKEN is set");
@@ -183,28 +183,29 @@ export async function createWorldsContext(
       token: config.envs.TURSO_API_TOKEN,
       org: config.envs.TURSO_ORG,
     });
-    manager = new TursoCloudDatabaseManager(
-      database,
+    storage = new TursoCloudWorldsStorageManager(
+      system,
       tursoClient,
-      embeddings.dimensions,
+      vectors.dimensions,
     );
   } else {
-    manager = new FileDatabaseManager(
-      database,
+    storage = new FileWorldsStorageManager(
+      system,
       config.envs.WORLDS_BASE_DIR,
-      embeddings.dimensions,
+      vectors.dimensions,
     );
   }
 
   const context: WorldsContext = {
-    embeddings,
-    libsql: { database, manager },
+    vectors,
+    system,
+    storage,
     apiKey: config.envs.WORLDS_API_KEY,
     namespace: config.envs.WORLDS_WORLD_NAMESPACE,
     async [Symbol.asyncDispose]() {
       await this.engine?.close();
-      await manager.close();
-      database.close();
+      await storage.close();
+      system.close();
     },
   };
 

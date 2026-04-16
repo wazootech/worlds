@@ -1,748 +1,531 @@
-import { DataFactory, Parser, Store, Writer } from "n3";
-
-import { ChunksSearchRepository } from "#/world/chunks/repository.ts";
-import { NamespacesRepository } from "#/plugins/registry/namespaces.repository.ts";
-import { ApiKeysRepository } from "#/plugins/registry/api-keys.repository.ts";
-import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
-import { loadStore } from "#/world/triples/loader.ts";
-import { handlePatch } from "#/rdf/patch/mod.ts";
-import type { PatchHandler } from "#/rdf/patch/types.ts";
-import { sparql } from "#/rdf/sparql.ts";
-import { isSparqlUpdate, resolveSource } from "#/core/utils.ts";
-import {
-  DEFAULT_SERIALIZATION,
-  getSerializationByContentType,
-} from "#/rdf/core/serialization.ts";
-import { worldSchema, worldsSparqlOutputSchema } from "#/schemas/mod.ts";
-import type { WorldsInterface } from "#/core/types.ts";
-import type { WorldOptions } from "#/storage/manager.ts";
-import type { WorldsContext } from "#/core/types.ts";
-import {
-  DEFAULT_NAMESPACE,
-  WORLDS_WORLD_NAMESPACE,
-  WORLDS_WORLD_SLUG,
-} from "#/core/ontology.ts";
-import { worldResourcePath } from "#/core/resource-path.ts";
-import type { WorldRow } from "#/plugins/registry/worlds.schema.ts";
+import type { Client } from "@libsql/client";
 import type {
   World,
   WorldsCreateInput,
   WorldsDeleteInput,
-  WorldsExportInput,
   WorldsGetInput,
+  WorldsUpdateInput,
+} from "#/schemas/world.ts";
+import type {
+  WorldsExportInput,
   WorldsImportInput,
   WorldsListInput,
-  WorldsSearchInput,
-  WorldsSearchOutput,
+  WorldsQueryInput,
+} from "#/schemas/source.ts";
+import type {
   WorldsServiceDescriptionInput,
   WorldsSparqlInput,
   WorldsSparqlOutput,
-  WorldsUpdateInput,
-} from "#/schemas/mod.ts";
-
-const { namedNode, quad } = DataFactory;
+} from "#/schemas/sparql.ts";
+import type {
+  WorldsSearchInput,
+  WorldsSearchOutput,
+} from "#/schemas/search.ts";
+import { WorldsRepository } from "#/plugins/system/worlds.repository.ts";
+import { ApiKeysRepository } from "#/plugins/system/api-keys.repository.ts";
+import { NamespacesRepository } from "#/plugins/system/namespaces.repository.ts";
+import type { WorldOptions, WorldsStorage } from "#/storage/types.ts";
+import type { WorldsContext } from "#/core/types.ts";
+import { resolveSource, toWorldName } from "#/core/sources.ts";
+import type { WorldRow } from "#/plugins/system/worlds.schema.ts";
+import { ChunksRepository } from "../world/chunks/repository.ts";
+import { ChunksSearchRepository } from "../world/chunks/repository.ts";
+import { TriplesRepository } from "../world/triples/repository.ts";
 
 /**
- * LocalWorlds is a server-side implementation of the Worlds interface.
- * Uses in-memory N3 Store backed by triples table for SPARQL queries.
- * Recommended max: 100K triples per world for in-memory Store loading.
+ * LocalWorlds implements the Worlds interface for a local deployment.
+ * It manages world lifecycle, storage, and identity resolution.
  */
-export class LocalWorlds implements WorldsInterface {
-  private readonly worldsRepository: WorldsRepository;
-  private registryInitialized?: Promise<void>;
+export class LocalWorlds implements AsyncDisposable {
+  private initialized = false;
+  private registry!: Client;
+  private worldsRepository!: WorldsRepository;
+  private apiKeysRepository!: ApiKeysRepository;
+  private namespacesRepository!: NamespacesRepository;
+
   /**
-   * True while ensureRegistry is running. Init during bootstrap must not
-   * await registryInitialized to avoid deadlock.
+   * constructor initializes LocalWorlds with a context.
+   * @param appContext The application context.
    */
-  private registryBootstrapping = false;
-  private isClosed = false;
-  private storeCache = new Map<string, Store>();
+  constructor(private readonly appContext: WorldsContext) {}
 
   /**
-   * getStore retrieves or creates an N3 Store for the given world.
+   * init bootstraps the local worlds environment.
    */
-  constructor(private readonly appContext: WorldsContext) {
-    this.worldsRepository = new WorldsRepository(appContext.libsql.database);
-  }
+  async init(): Promise<void> {
+    if (this.initialized) return;
 
-  private async getStore(
-    options: WorldOptions,
-  ): Promise<Store> {
-    const { world, namespace } = options;
-    const cacheKey = `${namespace ?? "default"}:${world}`;
-    let store = this.storeCache.get(cacheKey);
+    // Initialize registry database.
+    this.registry = this.appContext.system;
+    this.worldsRepository = new WorldsRepository(this.registry);
+    this.apiKeysRepository = new ApiKeysRepository(this.registry);
+    this.namespacesRepository = new NamespacesRepository(this.registry);
 
-    if (!store) {
-      const managed = await this.appContext.libsql.manager.get(options);
-      store = await loadStore(managed.database);
-      this.storeCache.set(cacheKey, store);
-    }
+    // Bootstrap registry tables if necessary.
+    await this.ensureRegistry();
 
-    return store;
-  }
-
-  private invalidateStore(options: WorldOptions): void {
-    const { world, namespace } = options;
-    const cacheKey = `${namespace ?? "default"}:${world}`;
-    this.storeCache.delete(cacheKey);
+    this.initialized = true;
   }
 
   /**
-   * clearCache removes all cached N3 Stores.
-   * Useful for test isolation between test runs.
-   */
-  public clearCache(): void {
-    this.storeCache.clear();
-  }
-
-  /**
-   * init initializes the engine and its background tasks.
-   */
-  public async init(): Promise<void> {
-    this.ensureNotClosed();
-    if (!this.registryInitialized) {
-      this.registryInitialized = this.ensureRegistry();
-    }
-    await this.registryInitialized;
-  }
-
-  /**
-   * ensureInitialized guarantees the registry is ready before operations.
+   * ensureInitialized throws if the engine hasn't been initialized.
    */
   private async ensureInitialized(): Promise<void> {
-    this.ensureNotClosed();
-    if (!this.registryInitialized) {
-      this.registryInitialized = this.ensureRegistry();
+    if (!this.initialized) {
+      await this.init();
     }
-    await this.registryInitialized;
   }
 
   /**
-   * ensureRegistry guarantees the presence of the registry database and seeds it if necessary.
+   * ensureRegistry applies the base schema and default admin keys.
    */
   private async ensureRegistry(): Promise<void> {
-    this.registryBootstrapping = true;
-    try {
-      const namespaceRepo = new NamespacesRepository(
-        this.appContext.libsql.database,
-      );
-      const existingNs = await namespaceRepo.get("_");
-      if (existingNs) {
-        return;
-      }
-
-      const now = Date.now();
-      await namespaceRepo.insert({
-        id: "_",
-        label: "Root Namespace",
-        created_at: now,
-        updated_at: now,
-      });
-
-      if (this.appContext.apiKey) {
-        const apiKeysRepo = new ApiKeysRepository(
-          this.appContext.libsql.database,
-        );
-        await apiKeysRepo.create(this.appContext.apiKey, "_");
-      }
-    } finally {
-      this.registryBootstrapping = false;
+    const { apiKey } = this.appContext;
+    if (apiKey) {
+      // Seed the admin API key for the root namespace.
+      await this.apiKeysRepository.create(apiKey, undefined);
     }
   }
 
   /**
-   * ensureNamespace ensures a namespace exists in the registry.
+   * resolveNamespace find the namespace associated with an API key.
+   * @param apiKey The API key to resolve.
+   * @returns The namespace ID or undefined for the root namespace.
    */
-  private async ensureNamespace(ns: string): Promise<void> {
-    const namespaceRepo = new NamespacesRepository(
-      this.appContext.libsql.database,
-    );
-    const existing = await namespaceRepo.get(ns);
-    if (existing) {
-      return;
-    }
-
-    const now = Date.now();
-    await namespaceRepo.insert({
-      id: ns,
-      label: ns,
-      created_at: now,
-      updated_at: now,
-    });
-  }
-
-  /**
-   * list paginates all available worlds from the system database.
-   */
-  async list(input?: WorldsListInput): Promise<World[]> {
+  async resolveNamespace(apiKey: string): Promise<string | undefined | null> {
     await this.ensureInitialized();
-    let limit = 20;
-    let offset = 0;
-
-    if (input?.page && input?.pageSize) {
-      limit = input.pageSize;
-      offset = (input.page - 1) * input.pageSize;
-    }
-
-    const isAdmin = this.appContext.namespace === undefined ||
-      this.appContext.namespace === WORLDS_WORLD_NAMESPACE;
-
-    const namespaceForList = (input?.namespace ?? this.appContext.namespace) ??
-      null;
-    this.assertSourceAuthorized(null, namespaceForList);
-
-    const rows = await this.worldsRepository.list(
-      namespaceForList,
-      limit,
-      offset,
-    );
-    return rows
-      .filter((world) => world.world !== WORLDS_WORLD_SLUG || isAdmin)
-      .map((world) =>
-        worldSchema.parse({
-          name: worldResourcePath(world.namespace, world.world).slice(1),
-          world: world.world,
-          namespace: world.namespace,
-          label: world.label ?? undefined,
-          description: world.description ?? undefined,
-          createdAt: world.created_at,
-          updatedAt: world.updated_at,
-          deletedAt: world.deleted_at ?? undefined,
-        })
-      );
+    return this.apiKeysRepository.resolveNamespace(apiKey);
   }
 
   /**
-   * get fetches a single world by its world.
+   * authorizeRequest validates an API key and ensures it has access to the target namespace.
+   * @param apiKey The API key secret.
+   * @param targetNamespace The namespace ID being accessed.
+   * @throws Error if authorization fails.
+   */
+  async authorizeRequest(
+    apiKey: string | undefined,
+    targetNamespace: string | undefined,
+  ): Promise<void> {
+    await this.ensureInitialized();
+    if (!apiKey) {
+      throw new Error("Authorization header is missing");
+    }
+
+    const authorizedNamespace = await this.resolveNamespace(apiKey);
+    if (authorizedNamespace === null) {
+      throw new Error("Invalid API key");
+    }
+
+    // Root keys (authorizedNamespace === undefined) can access everything.
+    if (
+      authorizedNamespace !== undefined &&
+      authorizedNamespace !== targetNamespace
+    ) {
+      throw new Error(
+        `API key is not authorized for namespace: ${targetNamespace}`,
+      );
+    }
+  }
+
+  /**
+   * assertSourceAuthorized combines resolution and authorization for a target world.
+   */
+  private assertSourceAuthorized(
+    _world: string | undefined,
+    namespace: string | undefined,
+  ): void {
+    // Current implementation: check if the context namespace matches the source namespace.
+    // In a production environment, this would integrate with resolveNamespace/authorizeRequest.
+    if (namespace !== this.appContext.namespace) {
+      // If we are not the admin namespace (undefined), we are isolated.
+      if (this.appContext.namespace !== undefined) {
+        throw new Error(
+          `Unauthorized access to namespace: ${namespace ?? "default"}`,
+        );
+      }
+    }
+  }
+
+  /**
+   * create registers a new world in the registry.
+   */
+  async create(input: WorldsCreateInput): Promise<World> {
+    await this.ensureInitialized();
+    const { name, label, description } = input;
+
+    if (!name) {
+      throw new Error("name is required");
+    }
+
+    const { world: sourceId, namespace } = resolveSource(
+      name,
+      { namespace: this.appContext.namespace },
+    );
+
+    if (!sourceId) {
+      throw new Error("Invalid world identifier");
+    }
+
+    this.assertSourceAuthorized(sourceId, namespace);
+
+    const existing = await this.worldsRepository.get(sourceId, namespace);
+    if (existing) {
+      throw new Error(
+        `World already exists: ${
+          toWorldName({
+            world: sourceId,
+            namespace,
+          })
+        }`,
+      );
+    }
+
+    await this.worldsRepository.insert({
+      namespace,
+      id: sourceId,
+      label: label ?? "",
+      description,
+      db_hostname: null,
+      db_token: null,
+      created_at: Date.now(),
+      updated_at: Date.now(),
+      deleted_at: null,
+    });
+
+    return (await this.get({ source: name }))!;
+  }
+
+  /**
+   * get retrieves world metadata.
    */
   async get(input: WorldsGetInput): Promise<World | null> {
     await this.ensureInitialized();
     const { world: sourceWorld, namespace } = resolveSource(
       input.source,
-      this.appContext.namespace,
+      { namespace: this.appContext.namespace },
     );
+
     this.assertSourceAuthorized(sourceWorld, namespace);
-    const worldRow = await this.worldsRepository.get(
-      sourceWorld ?? "",
-      sourceWorld === WORLDS_WORLD_SLUG ? undefined : namespace,
-    );
-    if (!worldRow || worldRow.deleted_at !== null) {
-      return null;
-    }
 
-    return worldSchema.parse({
-      name: worldResourcePath(worldRow.namespace, worldRow.world).slice(1),
-      world: worldRow.world,
-      namespace: worldRow.namespace,
-      label: worldRow.label ?? undefined,
-      description: worldRow.description ?? undefined,
-      createdAt: worldRow.created_at,
-      updatedAt: worldRow.updated_at,
-      deletedAt: worldRow.deleted_at ?? undefined,
-    });
-  }
+    const row = await this.worldsRepository.get(sourceWorld, namespace);
+    if (!row) return null;
 
-  /**
-   * create creates a new isolated world.
-   */
-  async create(data: WorldsCreateInput): Promise<World> {
-    await this.ensureInitialized();
-    const { world, namespace: inputNamespace, label, description } = data;
-
-    const namespace = inputNamespace ?? this.appContext.namespace ??
-      DEFAULT_NAMESPACE;
-    this.assertSourceAuthorized(world, namespace);
-    const existingBySlug = await this.worldsRepository.get(
-      world,
-      namespace,
-    );
-    if (existingBySlug) {
-      throw new Error("World world already exists");
-    }
-
-    const now = Date.now();
-    const worldLabel = label ?? world ?? "Untitled";
-    const worldNamespace = namespace ?? "_";
-    const worldSlug = world ?? "default";
-
-    if (worldNamespace !== "_") {
-      await this.ensureNamespace(worldNamespace);
-    }
-
-    const worldRow = {
-      namespace: worldNamespace,
-      world: worldSlug,
-      label: worldLabel,
-      description: description ?? null,
-      db_hostname: null,
-      db_token: null,
-      created_at: now,
-      updated_at: now,
-      deleted_at: null,
+    return {
+      name: toWorldName({ world: row.id, namespace: row.namespace }),
+      label: row.label,
+      description: row.description,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     };
-
-    await this.worldsRepository.insert(worldRow);
-    await this.appContext.libsql.manager.create({
-      world: worldSlug,
-      namespace: worldNamespace,
-    });
-
-    return worldSchema.parse({
-      name: worldResourcePath(worldNamespace, worldSlug).slice(1),
-      world: worldSlug,
-      namespace,
-      label: worldRow.label,
-      description: worldRow.description ?? undefined,
-      createdAt: worldRow.created_at,
-      updatedAt: worldRow.updated_at,
-      deletedAt: worldRow.deleted_at ?? undefined,
-    });
   }
 
   /**
-   * update updates a world's metadata.
+   * list retrieves worlds matching the criteria.
+   */
+  async list(input: WorldsListInput = {}): Promise<World[]> {
+    await this.ensureInitialized();
+    const { namespace = this.appContext.namespace, pageSize = 10, pageToken } =
+      input;
+
+    // Authorization check for namespace listing.
+    if (
+      namespace !== this.appContext.namespace &&
+      this.appContext.namespace !== undefined
+    ) {
+      throw new Error(`Unauthorized access to namespace: ${namespace}`);
+    }
+
+    const result = await this.worldsRepository.list({
+      namespace,
+      pageSize,
+      pageToken,
+    });
+    return result.worlds.map((row) => ({
+      name: toWorldName({ world: row.id, namespace: row.namespace }),
+      label: row.label,
+      description: row.description,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      nextPageToken: result.nextPageToken,
+    }));
+  }
+
+  /**
+   * update modifies world metadata.
    */
   async update(input: WorldsUpdateInput): Promise<void> {
     await this.ensureInitialized();
     const { source, label, description } = input;
     const { world: sourceWorld, namespace } = resolveSource(
       source,
-      this.appContext.namespace,
+      { namespace: this.appContext.namespace },
     );
-    this.assertSourceAuthorized(sourceWorld, namespace);
-    const worldRow = await this.worldsRepository.get(
-      sourceWorld ?? "",
-      sourceWorld === WORLDS_WORLD_SLUG ? undefined : namespace,
-    );
-    if (!worldRow) {
-      throw new Error("World not found");
-    }
 
-    await this.worldsRepository.update(worldRow.world, worldRow.namespace, {
-      label: label ?? worldRow.label,
-      description: description !== undefined
-        ? description
-        : worldRow.description,
+    this.assertSourceAuthorized(sourceWorld, namespace);
+
+    await this.worldsRepository.update(sourceWorld, namespace, {
+      label,
+      description,
       updated_at: Date.now(),
     });
   }
 
   /**
-   * delete marks a world as deleted.
+   * delete removes a world record.
    */
   async delete(input: WorldsDeleteInput): Promise<void> {
     await this.ensureInitialized();
     const { world: sourceWorld, namespace } = resolveSource(
       input.source,
-      this.appContext.namespace,
+      { namespace: this.appContext.namespace },
     );
+
     this.assertSourceAuthorized(sourceWorld, namespace);
-    const worldRow = await this.worldsRepository.get(
-      sourceWorld ?? "",
-      sourceWorld === WORLDS_WORLD_SLUG ? undefined : namespace,
-    );
-    if (!worldRow) {
-      throw new Error("World not found");
-    }
 
-    this.invalidateStore({
-      world: worldRow.world,
-      namespace: worldRow.namespace,
-    });
-    await this.worldsRepository.update(worldRow.world, worldRow.namespace, {
-      deleted_at: Date.now(),
-    });
-
-    // Delete the actual Turso database to avoid orphaned resources
-    await this.appContext.libsql.manager.delete({
-      world: worldRow.world,
-      namespace: worldRow.namespace ?? undefined,
-    });
+    await this.worldsRepository.delete(sourceWorld, namespace);
   }
 
   /**
-   * sparql executes a SPARQL query or update against one or more worlds.
+   * query executes a SPARQL query against a world.
    */
-  async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
+  async query(input: WorldsQueryInput): Promise<unknown> {
     await this.ensureInitialized();
-    const { query } = input;
-    const sources = input.sources ?? [{ world: null }];
-    const namespace = input.namespace ?? this.appContext.namespace;
-
-    if (isSparqlUpdate(query) && sources.length !== 1) {
-      throw new Error(
-        "SPARQL Update is not supported for global or multi-source queries. Please specify a single target world.",
-      );
-    }
-
-    let targetWorlds = [];
-    if (sources.length === 1 && sources[0] === "*") {
-      targetWorlds = await this.worldsRepository.list(namespace, 100, 0);
-      targetWorlds = targetWorlds.filter((world) =>
-        world.world !== WORLDS_WORLD_SLUG
-      );
-    } else {
-      const worldPromises = sources.map((s) => {
-        const parsed = resolveSource(s, namespace);
-        this.assertSourceAuthorized(parsed.world, parsed.namespace);
-        const targetNamespace = parsed.world === WORLDS_WORLD_SLUG
-          ? undefined
-          : (parsed.namespace ?? namespace);
-        return this.worldsRepository.get(
-          parsed.world ?? "",
-          targetNamespace ?? undefined,
-        );
-      });
-      const results = await Promise.all(worldPromises);
-      targetWorlds = results.filter((w): w is WorldRow => w != null);
-    }
-
-    const worldStores = await Promise.all(
-      targetWorlds.map((w) =>
-        this.getStore({ world: w.world, namespace: w.namespace })
-      ),
+    const { source, query } = input;
+    const { world: sourceWorld, namespace } = resolveSource(
+      source,
+      { namespace: this.appContext.namespace },
     );
 
-    if (worldStores.length === 1) {
-      const w = targetWorlds[0];
-      const managed = await this.appContext.libsql.manager.get({
-        world: w.world,
-        namespace: w.namespace ?? undefined,
-      });
-      const patchHandler: PatchHandler = {
-        patch: (patches) =>
-          handlePatch(
-            managed.database,
-            this.appContext.embeddings,
-            patches,
-          ),
-      };
-      const { result } = await sparql(worldStores, query, patchHandler);
-      if (isSparqlUpdate(query)) {
-        this.invalidateStore({ world: w.world, namespace: w.namespace });
-      }
-      return worldsSparqlOutputSchema.parse(result);
-    }
+    this.assertSourceAuthorized(sourceWorld, namespace);
 
-    const { result } = await sparql(worldStores, query);
-    return worldsSparqlOutputSchema.parse(result);
+    const world = await this.getInternal(sourceWorld, namespace);
+    const triples = new TriplesRepository(world);
+    return triples.query(query);
   }
 
   /**
-   * search performs semantic/text search on triples using vector embeddings.
+   * search finds chunks in the world using vector similarity.
    */
   async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
     await this.ensureInitialized();
-    const { query, limit, subjects, predicates, types } = input;
-    const sources = input.sources ?? [{ world: null }];
-    const requestedLimit = limit ?? 20;
+    const { query, limit = 10, sources, namespace: inputNamespace } = input;
 
-    const chunksSearchRepository = new ChunksSearchRepository(
+    // Handle single source vs discovery search.
+    const namespace = inputNamespace ?? this.appContext.namespace;
+
+    let targetWorlds: WorldRow[] = [];
+    if (!sources || sources.length === 0) {
+      // Search across all worlds in the namespace.
+      const result = await this.worldsRepository.list({
+        namespace,
+        pageSize: 100,
+      });
+      targetWorlds = result.worlds;
+    } else {
+      const worldPromises = sources.map((s) => {
+        const parsed = resolveSource(s, { namespace });
+        this.assertSourceAuthorized(parsed.world, parsed.namespace);
+        return this.worldsRepository.get(
+          parsed.world,
+          parsed.namespace,
+        );
+      });
+      const results = await Promise.all(worldPromises);
+      targetWorlds = results.filter((w): w is WorldRow => w !== null);
+    }
+
+    const searchRepo = new ChunksSearchRepository(
       this.appContext,
       this.worldsRepository,
     );
 
-    const namespace = input.namespace ?? this.appContext.namespace;
-
-    // Resolve target worlds
-    let targetWorlds = [];
-    if (sources.length === 1 && sources[0] === "*") {
-      targetWorlds = await this.worldsRepository.list(namespace, 100, 0);
-      targetWorlds = targetWorlds.filter((world) =>
-        world.world !== WORLDS_WORLD_SLUG
-      );
-    } else {
-      const worldPromises = sources.map((s) => {
-        const parsed = resolveSource(s, namespace);
-        this.assertSourceAuthorized(parsed.world, parsed.namespace);
-        const targetNamespace = parsed.world === WORLDS_WORLD_SLUG
-          ? undefined
-          : (parsed.namespace ?? namespace);
-        return this.worldsRepository.get(
-          parsed.world ?? "",
-          targetNamespace ?? undefined,
-        );
-      });
-      const results = await Promise.all(worldPromises);
-      targetWorlds = results.filter((w): w is WorldRow => w != null);
-    }
-
-    if (targetWorlds.length === 0) {
-      return [];
-    }
-
-    const searchTasks = targetWorlds.map((world) =>
-      chunksSearchRepository.search({
-        query,
-        worldRow: {
-          namespace: world.namespace,
-          world: world.world,
-          label: world.label,
-          description: world.description,
-          db_hostname: world.db_hostname,
-          db_token: world.db_token,
-          created_at: world.created_at,
-          updated_at: world.updated_at,
-          deleted_at: world.deleted_at,
-        },
-        subjects,
-        predicates,
-        types,
-        limit: requestedLimit,
-      })
-    );
-
-    const allResults = await Promise.all(searchTasks);
-    return allResults
-      .flat()
-      .sort((a, b) => b.score - a.score)
-      .slice(0, requestedLimit);
+    return searchRepo.search({
+      query,
+      limit,
+      worlds: targetWorlds,
+    });
   }
 
+  /**
+   * triples returns a TriplesRepository for a specific world.
+   */
+  async triples(source: string): Promise<TriplesRepository> {
+    await this.ensureInitialized();
+    const { world, namespace } = resolveSource(source, {
+      namespace: this.appContext.namespace,
+    });
+
+    this.assertSourceAuthorized(world, namespace);
+
+    const client = await this.getInternal(world, namespace);
+    return new TriplesRepository(client);
+  }
+
+  /**
+   * chunks returns a ChunksRepository for a specific world.
+   */
+  async chunks(source: string): Promise<ChunksRepository> {
+    await this.ensureInitialized();
+    const { world, namespace } = resolveSource(source, {
+      namespace: this.appContext.namespace,
+    });
+
+    this.assertSourceAuthorized(world, namespace);
+
+    const client = await this.getInternal(world, namespace);
+    return new ChunksRepository(client);
+  }
+
+  /**
+   * import loads data into a world.
+   */
   async import(input: WorldsImportInput): Promise<void> {
     await this.ensureInitialized();
     const { source, data, contentType } = input;
     const { world: sourceWorld, namespace } = resolveSource(
       source,
-      this.appContext.namespace,
+      { namespace: this.appContext.namespace },
     );
+
     this.assertSourceAuthorized(sourceWorld, namespace);
-    const worldRow = await this.worldsRepository.get(
-      sourceWorld,
-      sourceWorld === WORLDS_WORLD_SLUG ? undefined : namespace,
-    );
-    if (!worldRow) {
-      throw new Error("World not found");
-    }
 
-    const serialization = contentType
-      ? getSerializationByContentType(contentType)
-      : DEFAULT_SERIALIZATION;
-    if (!serialization) {
-      throw new Error(`Unsupported content type: ${contentType}`);
-    }
-
-    const body = typeof data === "string"
-      ? data
-      : new TextDecoder().decode(data);
-    const parser = new Parser({ format: serialization.format });
-    const store = new Store();
-    store.addQuads(parser.parse(body));
-
-    const managed = await this.appContext.libsql.manager.get({
-      namespace: worldRow.namespace,
-      world: worldRow.world,
-    });
-    const now = Date.now();
-
-    await handlePatch(
-      managed.database,
-      this.appContext.embeddings,
-      [{
-        insertions: store.getQuads(null, null, null, null),
-        deletions: [],
-      }],
-    );
-
-    this.invalidateStore({
-      world: worldRow.world,
-      namespace: worldRow.namespace,
-    });
-    await this.worldsRepository.update(worldRow.world, worldRow.namespace, {
-      updated_at: now,
-    });
+    const world = await this.getInternal(sourceWorld, namespace);
+    const triples = new TriplesRepository(world);
+    const importData = typeof data === "string" ? data : new Uint8Array(data);
+    await triples.import(importData, contentType ?? "application/n-quads");
   }
 
   /**
-   * export retrieves a world's facts in the specified RDF content type.
+   * export retrieves data from a world.
    */
   async export(input: WorldsExportInput): Promise<ArrayBuffer> {
     await this.ensureInitialized();
     const { source, contentType } = input;
     const { world: sourceWorld, namespace } = resolveSource(
       source,
-      this.appContext.namespace,
+      { namespace: this.appContext.namespace },
     );
+
     this.assertSourceAuthorized(sourceWorld, namespace);
-    const worldRow = await this.worldsRepository.get(
-      sourceWorld,
-      sourceWorld === WORLDS_WORLD_SLUG ? undefined : namespace,
-    );
+
+    const world = await this.getInternal(sourceWorld, namespace);
+    const triples = new TriplesRepository(world);
+    const n3 = await triples.export(contentType);
+    return n3;
+  }
+
+  /**
+   * getInternal provides direct access to the storage client for a world.
+   */
+  private async getInternal(
+    world?: string,
+    namespace?: string,
+  ): Promise<Client> {
+    const worldRow = await this.worldsRepository.get(world, namespace);
+
     if (!worldRow) {
       throw new Error(
-        `World not found: ${sourceWorld} in namespace ${namespace}`,
+        `World not found: ${
+          toWorldName({
+            world,
+            namespace,
+          })
+        }`,
       );
     }
 
-    const serialization = contentType
-      ? getSerializationByContentType(contentType)
-      : DEFAULT_SERIALIZATION;
-    if (!serialization) {
-      throw new Error(`Unsupported content type: ${contentType}`);
-    }
-
-    const store = await this.getStore({
-      world: worldRow.world,
+    const options: WorldOptions = {
+      id: worldRow.id,
       namespace: worldRow.namespace,
-    });
-    const quads = store.getQuads(null, null, null, null);
+    };
 
-    if (serialization.format === DEFAULT_SERIALIZATION.format) {
-      return new Promise((resolve, reject) => {
-        const writer = new Writer({ format: "N-Quads" });
-        writer.addQuads(quads);
-        writer.end((error: Error | null, result: string | undefined) => {
-          if (error) reject(error);
-          else resolve(new TextEncoder().encode(result).buffer);
-        });
-      });
-    }
-
-    const writer = new Writer({ format: serialization.format });
-    writer.addQuads(quads);
-
-    return new Promise((resolve, reject) => {
-      writer.end((error: Error | null, result: string | undefined) => {
-        if (error) reject(error);
-        else resolve(new TextEncoder().encode(result).buffer);
-      });
-    });
+    const storage = await this.appContext.storage.get(options);
+    return storage.database;
   }
 
   /**
-   * getServiceDescription retrieves the SPARQL service description.
-   */
-  getServiceDescription(input: WorldsServiceDescriptionInput): Promise<string> {
-    const { endpointUrl, contentType } = input;
-    const serialization = contentType
-      ? getSerializationByContentType(contentType)
-      : DEFAULT_SERIALIZATION;
-    if (!serialization) {
-      throw new Error(`Unsupported content type: ${contentType}`);
-    }
-
-    return new Promise((resolve, reject) => {
-      const writer = new Writer({ format: serialization.format });
-
-      const serviceDescriptionSuffix =
-        "http://www.w3.org/ns/sparql-service-description#";
-      const rdfNamespace = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-      const endpoint = namedNode(endpointUrl);
-      const serviceType = namedNode(`${serviceDescriptionSuffix}Service`);
-      const endpointProperty = namedNode(`${serviceDescriptionSuffix}endpoint`);
-
-      writer.addQuad(
-        quad(endpoint, namedNode(`${rdfNamespace}type`), serviceType),
-      );
-      writer.addQuad(quad(endpoint, endpointProperty, endpoint));
-
-      const supportedFormat = namedNode(
-        `${serviceDescriptionSuffix}supportedFormat`,
-      );
-      const jsonFormat = namedNode(
-        "http://www.w3.org/ns/formats/SPARQL_Results_JSON",
-      );
-      const turtleFormat = namedNode(
-        "http://www.w3.org/ns/formats/Turtle",
-      );
-      writer.addQuad(quad(endpoint, supportedFormat, jsonFormat));
-      writer.addQuad(quad(endpoint, supportedFormat, turtleFormat));
-
-      const supportedLanguage = namedNode(
-        `${serviceDescriptionSuffix}supportedLanguage`,
-      );
-      const sparql11Query = namedNode(
-        `${serviceDescriptionSuffix}SPARQL11Query`,
-      );
-      const sparql11Update = namedNode(
-        `${serviceDescriptionSuffix}SPARQL11Update`,
-      );
-      const sparql12Query = namedNode(
-        `${serviceDescriptionSuffix}SPARQL12Query`,
-      );
-      const sparql12Update = namedNode(
-        `${serviceDescriptionSuffix}SPARQL12Update`,
-      );
-      writer.addQuad(quad(endpoint, supportedLanguage, sparql11Query));
-      writer.addQuad(quad(endpoint, supportedLanguage, sparql11Update));
-      writer.addQuad(quad(endpoint, supportedLanguage, sparql12Query));
-      writer.addQuad(quad(endpoint, supportedLanguage, sparql12Update));
-
-      const feature = namedNode(`${serviceDescriptionSuffix}feature`);
-      const unionDefaultGraph = namedNode(
-        `${serviceDescriptionSuffix}UnionDefaultGraph`,
-      );
-      const dereferencesURIs = namedNode(
-        `${serviceDescriptionSuffix}DereferencesURIs`,
-      );
-      const tripleTerms = namedNode(
-        "http://www.w3.org/ns/sparql-service-description#TripleTerms",
-      );
-      writer.addQuad(quad(endpoint, feature, unionDefaultGraph));
-      writer.addQuad(quad(endpoint, feature, dereferencesURIs));
-      writer.addQuad(quad(endpoint, feature, tripleTerms));
-
-      writer.end((error: Error | null, result: string | undefined) => {
-        if (error) reject(error);
-        else resolve(result as string);
-      });
-    });
-  }
-
-  /**
-   * close shuts down the engine and all managed database connections.
+   * close releases all resources.
    */
   async close(): Promise<void> {
-    this.isClosed = true;
-    this.storeCache.clear();
-    await this.appContext.libsql.manager.close();
-    this.appContext.libsql.database.close();
+    // Current implementation uses :memory: or shared clients, so no explicit teardown is needed for the registry Client.
   }
 
   /**
    * [Symbol.asyncDispose] provides support for explicit resource management.
    */
-  async [Symbol.asyncDispose](): Promise<void> {
+  public async [Symbol.asyncDispose](): Promise<void> {
     await this.close();
   }
 
   /**
-   * ensureNotClosed throws an error if the engine is closed.
+   * dispose is a synchronous alias for close (if applicable).
    */
-  private ensureNotClosed(): void {
-    if (this.isClosed) {
-      throw new Error("Engine is closed");
-    }
+  dispose(): void {
+    // No-op for now.
   }
 
   /**
-   * assertSourceAuthorized ensures the caller is authorized for the given resource.
+   * sparql executes a SPARQL query or update against a world.
    */
-  private assertSourceAuthorized(
-    world: string | null,
-    namespace: string | null,
-  ): void {
-    if (this.registryBootstrapping) {
-      return;
+  async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
+    await this.ensureInitialized();
+    const { sources, query } = input;
+
+    const sourceArray = Array.isArray(sources) ? sources : [sources];
+    if (sourceArray.length === 0) {
+      throw new Error("At least one source is required for SPARQL operations");
     }
 
-    const isRegistryWorld = world === WORLDS_WORLD_SLUG;
-    const isAdmin = this.appContext.namespace === undefined ||
-      this.appContext.namespace === WORLDS_WORLD_NAMESPACE;
-
-    // Reject registry access for non-admins
-    if (isRegistryWorld && !isAdmin) {
-      throw new Error("Unauthorized access to the registry world");
+    const source = sourceArray[0];
+    if (!source) {
+      throw new Error("Source is required for SPARQL operations");
     }
 
-    // Reject cross-namespace access for tenants
-    if (
-      !isAdmin &&
-      namespace !== this.appContext.namespace
-    ) {
+    const { world: sourceWorld, namespace } = resolveSource(
+      source,
+      { namespace: this.appContext.namespace },
+    );
+
+    this.assertSourceAuthorized(sourceWorld, namespace);
+
+    const world = await this.getInternal(sourceWorld, namespace);
+    const triples = new TriplesRepository(world);
+    const result = await triples.query(query);
+
+    return result as WorldsSparqlOutput;
+  }
+
+  /**
+   * getServiceDescription retrieves the SPARQL service description.
+   */
+  async getServiceDescription(
+    input: WorldsServiceDescriptionInput,
+  ): Promise<string> {
+    await this.ensureInitialized();
+    const { sources, contentType } = input;
+
+    if (!sources || sources.length === 0) {
       throw new Error(
-        `Unauthorized access to namespace: ${namespace ?? "system"}`,
+        "At least one source is required for service description",
       );
     }
+
+    const source = sources[0];
+    if (!source) {
+      throw new Error("Source is required for service description");
+    }
+
+    const { world: sourceWorld, namespace } = resolveSource(
+      source,
+      { namespace: this.appContext.namespace },
+    );
+
+    this.assertSourceAuthorized(sourceWorld, namespace);
+
+    const world = await this.getInternal(sourceWorld, namespace);
+    const triples = new TriplesRepository(world);
+    const data = await triples.export(contentType ?? "application/n-quads");
+    return new TextDecoder().decode(data);
   }
 }

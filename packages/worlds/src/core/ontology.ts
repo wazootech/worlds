@@ -42,24 +42,15 @@ export const WORLDS = {
 } as const;
 
 /**
- * WORLDS_WORLD_SLUG is the reserved identifier for the platform worlds world.
+ * defaultNamespace is the fallback used when storing/looking up
+ * namespace-agnostic data in storage or database keys.
+ * In "namespace/world" parsing, "_" returns null to use context defaults.
  */
-export const WORLDS_WORLD_SLUG: string = Deno.env.get("WORLDS_WORLD_SLUG") ??
-  "worlds";
+export const defaultNamespace: string | undefined = undefined;
 
 /**
- * WORLDS_WORLD_NAMESPACE is the default namespace for the platform worlds.
+ * defaultWorld is the fallback used when storing/looking up
+ * world-agnostic data in storage or database keys.
+ * In "namespace/world" parsing, "_" returns null to use context defaults.
  */
-export const WORLDS_WORLD_NAMESPACE: string =
-  Deno.env.get("WORLDS_WORLD_NAMESPACE") ?? "_";
-
-/**
- * DEFAULT_NAMESPACE is the reserved identifier for the default namespace.
- * It expands to the caller's tenant namespace or {@link WORLDS_WORLD_NAMESPACE}.
- */
-export const DEFAULT_NAMESPACE: string | null = null;
-
-/**
- * DEFAULT_WORLD is the reserved default world identifier when a path omits the world segment.
- */
-export const DEFAULT_WORLD: string | null = null;
+export const defaultWorld: string | undefined = undefined;

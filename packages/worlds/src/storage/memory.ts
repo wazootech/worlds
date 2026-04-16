@@ -1,21 +1,19 @@
 import { type Client, createClient } from "@libsql/client";
-import type {
-  DatabaseManager,
-  ManagedDatabase,
-  WorldOptions,
-} from "#/storage/manager.ts";
+import type { WorldOptions, WorldsStorage } from "./types.ts";
+import type { WorldsStorageManager } from "./worlds.ts";
+import { toWorldName } from "#/core/sources.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
 
 /**
- * MemoryDatabaseManager implements DatabaseManager using in-memory databases.
+ * MemoryWorldsStorageManager implements WorldsStorageManager using in-memory databases.
  * Intended for tests; each world gets a separate :memory: client.
  */
-export class MemoryDatabaseManager implements DatabaseManager {
+export class MemoryWorldsStorageManager implements WorldsStorageManager {
   private readonly databases = new Map<string, Client>();
   private readonly initialized = new Set<string>();
 
   /**
-   * constructor initializes the MemoryDatabaseManager.
+   * constructor initializes the MemoryWorldsStorageManager.
    * @param dimensions The vector dimensions for world databases.
    */
   public constructor(private readonly dimensions: number = 768) {}
@@ -23,25 +21,25 @@ export class MemoryDatabaseManager implements DatabaseManager {
   /**
    * create provisions a new in-memory database.
    */
-  public async create(options: WorldOptions): Promise<ManagedDatabase> {
-    return await this.getManagedDatabase(options, ":memory:");
+  public async create(options: WorldOptions): Promise<WorldsStorage> {
+    return await this.getWorldsStorage(options, ":memory:");
   }
 
   /**
    * get returns the LibSQL database for the given namespace and world.
    */
-  public async get(options: WorldOptions): Promise<ManagedDatabase> {
-    return await this.getManagedDatabase(options, ":memory:");
+  public async get(options: WorldOptions): Promise<WorldsStorage> {
+    return await this.getWorldsStorage(options, ":memory:");
   }
 
   /**
-   * getManagedDatabase retrieves or creates a managed database connection.
+   * getWorldsStorage retrieves or creates a world storage connection.
    */
-  private async getManagedDatabase(
+  private async getWorldsStorage(
     options: WorldOptions,
     url: string,
-  ): Promise<ManagedDatabase> {
-    const key = `${options.namespace ?? "_"}:${options.world ?? "_"}`;
+  ): Promise<WorldsStorage> {
+    const key = toWorldName(options);
     const client = this.databases.get(key) ?? createClient({ url });
     this.databases.set(key, client);
 
@@ -60,7 +58,7 @@ export class MemoryDatabaseManager implements DatabaseManager {
   }
 
   public delete(options: WorldOptions): Promise<void> {
-    const key = `${options.namespace ?? "_"}:${options.world ?? "_"}`;
+    const key = toWorldName(options);
     this.databases.delete(key);
     this.initialized.delete(key);
     return Promise.resolve();

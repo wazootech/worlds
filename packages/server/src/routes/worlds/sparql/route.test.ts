@@ -14,7 +14,7 @@ Deno.test("SPARQL API routes", async (t) => {
   await worlds.init();
   const { createServer } = await import("../../../server.ts");
   const app = await createServer(testContext);
-  const worldsRepository = new WorldsRepository(testContext.libsql.database);
+  const worldsRepository = new WorldsRepository(testContext.system);
 
   await t.step(
     "POST /worlds-sparql (Admin)",
@@ -35,7 +35,7 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({
+      await testContext.storage.create({
         namespace: "_",
         world,
       });
@@ -77,7 +77,7 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({
+      await testContext.storage.create({
         namespace: "_",
         world,
       });
@@ -136,7 +136,7 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({
+      await testContext.storage.create({
         namespace: "_",
         world,
       });
@@ -194,7 +194,7 @@ Deno.test("SPARQL API routes", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.libsql.manager.create({
+      await testContext.storage.create({
         namespace: "_",
         world,
       });

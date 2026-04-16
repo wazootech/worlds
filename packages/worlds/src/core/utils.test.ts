@@ -1,5 +1,9 @@
-import { assert } from "@std/assert";
-import { isSparqlUpdate } from "#/core/utils.ts";
+import { assert, assertEquals } from "@std/assert";
+import {
+  escapeSparqlLiteral,
+  escapeSparqlUri,
+  isSparqlUpdate,
+} from "#/core/utils.ts";
 
 Deno.test("isSparqlUpdate - Update operations", async (t) => {
   const updates = [
@@ -67,9 +71,6 @@ Deno.test("isSparqlUpdate - Query with Prologue (Read-only)", async (t) => {
     assert(!isSparqlUpdate(query));
   });
 });
-
-import { escapeSparqlLiteral, escapeSparqlUri } from "#/core/utils.ts";
-import { assertEquals } from "@std/assert";
 
 Deno.test("escapeSparqlLiteral - Escaping", () => {
   assertEquals(escapeSparqlLiteral("abc"), "abc");

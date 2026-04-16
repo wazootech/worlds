@@ -1,30 +1,28 @@
 import { join } from "@std/path";
 import type { Client } from "@libsql/client";
 import { createClient } from "@libsql/client";
-import type {
-  DatabaseManager,
-  ManagedDatabase,
-  WorldOptions,
-} from "#/storage/manager.ts";
+import type { WorldOptions, WorldsStorage } from "./types.ts";
+import type { WorldsStorageManager } from "./worlds.ts";
+import { toWorldName } from "#/core/sources.ts";
 
-import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
+import { WorldsRepository } from "#/plugins/system/worlds.repository.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
 
 /**
- * FileDatabaseManager implements DatabaseManager using local files.
+ * FileWorldsStorageManager implements WorldsStorageManager using local files.
  */
-export class FileDatabaseManager implements DatabaseManager {
+export class FileWorldsStorageManager implements WorldsStorageManager {
   private readonly initialized = new Set<string>();
   private readonly trackedDatabases = new Map<string, Client>();
 
   /**
-   * constructor initializes the FileDatabaseManager.
-   * @param database The system database client.
+   * constructor initializes the FileWorldsStorageManager.
+   * @param system The system database client.
    * @param baseDir The base directory for world database files.
    * @param dimensions The vector dimensions for world databases.
    */
   public constructor(
-    private readonly database: Client,
+    private readonly system: Client,
     private readonly baseDir: string,
     private readonly dimensions: number,
   ) {}
@@ -33,9 +31,9 @@ export class FileDatabaseManager implements DatabaseManager {
    * getStorageKey generates a filesystem-safe identifier for a world.
    */
   private async getStorageKey(options: WorldOptions): Promise<string> {
-    const raw = `${options.namespace ?? "_"}:${options.world ?? "_"}`;
+    const key = toWorldName(options);
     const encoder = new TextEncoder();
-    const data = encoder.encode(raw);
+    const data = encoder.encode(key);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -44,20 +42,23 @@ export class FileDatabaseManager implements DatabaseManager {
   /**
    * create provisions a new file-based database.
    */
-  public async create(options: WorldOptions): Promise<ManagedDatabase> {
+  public async create(options: WorldOptions): Promise<WorldsStorage> {
     const key = await this.getStorageKey(options);
     const path = join(this.baseDir, `${key}.db`);
     await Deno.mkdir(this.baseDir, { recursive: true });
-    return this.getManagedDatabase(key, `file:${path}`);
+    return this.getWorldsStorage(key, `file:${path}`);
   }
 
   /**
    * get retrieves an existing file-based database.
    */
-  public async get(options: WorldOptions): Promise<ManagedDatabase> {
+  public async get(options: WorldOptions): Promise<WorldsStorage> {
     const key = await this.getStorageKey(options);
-    const worldsRepository = new WorldsRepository(this.database);
-    const world = await worldsRepository.get(options.world, options.namespace);
+    const worldsRepository = new WorldsRepository(this.system);
+    const world = await worldsRepository.get(
+      options.id,
+      options.namespace ?? undefined,
+    );
     let url = world?.db_hostname;
 
     if (!url) {
@@ -65,13 +66,13 @@ export class FileDatabaseManager implements DatabaseManager {
       url = `file:${path}`;
     }
 
-    return this.getManagedDatabase(key, url);
+    return this.getWorldsStorage(key, url);
   }
 
-  private async getManagedDatabase(
+  private async getWorldsStorage(
     key: string,
     url: string,
-  ): Promise<ManagedDatabase> {
+  ): Promise<WorldsStorage> {
     const client = this.trackedDatabases.get(key) ?? createClient({ url });
     this.trackedDatabases.set(key, client);
 
@@ -109,7 +110,7 @@ export class FileDatabaseManager implements DatabaseManager {
       client.close();
     }
     this.trackedDatabases.clear();
-    this.database.close(); // Close the system database too
+    this.system.close(); // Close the system database too
     return Promise.resolve();
   }
 

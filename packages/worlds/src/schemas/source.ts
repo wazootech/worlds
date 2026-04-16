@@ -3,45 +3,24 @@ import type { WorldsContentType } from "./rdf-content-type.ts";
 import { worldsContentTypeSchema } from "./rdf-content-type.ts";
 
 /**
- * WorldSource represents a target world by world identifier, qualified name, or name object.
+ * WorldsSource represents a target world by name.
+ * The name can be "world" (uses context namespace) or "namespace/world" (fully qualified).
  */
-export type WorldSource =
-  | string
-  | {
-    world: string | null;
-    namespace?: string | null;
-    write?: boolean;
-    schema?: boolean;
-  }
-  | { name: string; write?: boolean; schema?: boolean };
+export type WorldsSource =
+  | string // "namespace/world" or "world"
+  | (
+    & { write?: boolean }
+    & { name: string } // "namespace/world" or "world"
+  );
 
 /**
- * Source is a backward-compatibility alias for WorldSource.
- * @deprecated Use WorldSource instead.
+ * worldsSourceSchema is the Zod schema for WorldsSource.
  */
-export type Source = WorldSource;
-
-/**
- * worldSourceSchema is the Zod schema for WorldSource.
- */
-export const worldSourceSchema: z.ZodType<WorldSource> = z.union([
-  z.string().describe("A qualified source name: <namespace>/<world>"),
+export const worldsSourceSchema: z.ZodType<WorldsSource> = z.union([
+  z.string().describe("A source name: 'world' or 'namespace/world'"),
   z.object({
-    world: z.string().nullable().describe("The world identifier."),
-    namespace: z.string().nullable().optional().describe(
-      "The optional namespace of the target world.",
-    ),
     write: z.boolean().optional().describe("Whether write access is enabled."),
-    schema: z.boolean().optional().describe(
-      "Whether this source should be treated as a schema source.",
-    ),
-  }),
-  z.object({
-    name: z.string().describe("A qualified source name: <namespace>/<world>"),
-    write: z.boolean().optional().describe("Whether write access is enabled."),
-    schema: z.boolean().optional().describe(
-      "Whether this source should be treated as a schema source.",
-    ),
+    name: z.string().describe("A source name: 'world' or 'namespace/world'"),
   }),
 ]);
 
@@ -79,14 +58,17 @@ export interface WorldsListInput {
   namespace?: string;
 
   /**
-   * page is the 1-indexed page number to fetch.
-   */
-  page?: number;
-
-  /**
-   * pageSize is the number of items per page.
+   * pageSize is the maximum number of items to return.
+   * If unspecified, defaults to a server-chosen value (typically 50).
+   * Maximum value is 1000; values above will be coerced to 1000.
    */
   pageSize?: number;
+
+  /**
+   * pageToken is a token received from a previous ListWorlds call.
+   * Use this to retrieve the next page.
+   */
+  pageToken?: string;
 }
 
 /**
@@ -94,8 +76,8 @@ export interface WorldsListInput {
  */
 export const worldsListInputSchema: z.ZodType<WorldsListInput> = z.object({
   namespace: z.string().optional(),
-  page: z.number().int().positive().optional(),
-  pageSize: z.number().int().positive().optional(),
+  pageSize: z.number().int().positive().max(1000).optional(),
+  pageToken: z.string().optional(),
 });
 
 /**
@@ -105,7 +87,7 @@ export interface WorldsImportInput {
   /**
    * source is the target world identification.
    */
-  source: WorldSource;
+  source: WorldsSource;
 
   /**
    * data is the RDF data to import (string or Buffer).
@@ -122,7 +104,7 @@ export interface WorldsImportInput {
  * worldsImportInputSchema is the Zod schema for WorldsImportInput.
  */
 export const worldsImportInputSchema: z.ZodType<WorldsImportInput> = z.object({
-  source: worldSourceSchema.describe("The target world identification."),
+  source: worldsSourceSchema.describe("The target world identification."),
   data: z.union([z.string(), z.instanceof(ArrayBuffer)]).describe(
     "The RDF data to import.",
   ),
@@ -138,7 +120,7 @@ export interface WorldsExportInput {
   /**
    * source is the target world identification.
    */
-  source: WorldSource;
+  source: WorldsSource;
 
   /**
    * contentType is the requested RDF content type.
@@ -150,8 +132,31 @@ export interface WorldsExportInput {
  * worldsExportInputSchema is the Zod schema for WorldsExportInput.
  */
 export const worldsExportInputSchema: z.ZodType<WorldsExportInput> = z.object({
-  source: worldSourceSchema.describe("The target world identification."),
+  source: worldsSourceSchema.describe("The target world identification."),
   contentType: worldsContentTypeSchema.optional().describe(
     "The requested RDF content type.",
   ),
+});
+
+/**
+ * WorldsQueryInput represents the parameters for executing a query against a world.
+ */
+export interface WorldsQueryInput {
+  /**
+   * source is the target world identification.
+   */
+  source: WorldsSource;
+
+  /**
+   * query is the SPARQL query to execute.
+   */
+  query: string;
+}
+
+/**
+ * worldsQueryInputSchema is the Zod schema for WorldsQueryInput.
+ */
+export const worldsQueryInputSchema: z.ZodType<WorldsQueryInput> = z.object({
+  source: worldsSourceSchema.describe("The target world identification."),
+  query: z.string().describe("The SPARQL query to execute."),
 });

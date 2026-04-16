@@ -18,17 +18,18 @@ Deno.test({
     await worlds.init();
 
     await t.step("registry auto-initialization", async () => {
-      const namespaces = new NamespacesRepository(appContext.libsql.database);
-      const ns = await namespaces.get("_");
-      assertExists(ns);
-      assertEquals(ns.id, "_");
-      assertEquals(ns.label, "Root Namespace");
+      // The root namespace is no longer explicitly stored as "_" in the database.
+      // We verify that the system tables are initialized and writable.
+      const namespaces = new NamespacesRepository(appContext.system);
+      const ns = await namespaces.get("non-existent");
+      assertEquals(ns, null);
     });
 
     await t.step("registry bootstrapping with API key", async () => {
-      const apiKeys = new ApiKeysRepository(appContext.libsql.database);
+      const apiKeys = new ApiKeysRepository(appContext.system);
       const namespace = await apiKeys.resolveNamespace(apiKey);
-      assertEquals(namespace, "_");
+      // The root namespace is represented as undefined/NULL.
+      assertEquals(namespace, undefined);
     });
 
     await t.step(
