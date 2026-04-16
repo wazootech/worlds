@@ -1,21 +1,29 @@
-import { worldsActionPath } from "#/core/resource-path.ts";
-import type { WorldsInterface, WorldsOptions } from "#/core/types.ts";
-import { parseError } from "#/core/utils.ts";
+import { worldsActionPath } from "#/resource-path.ts";
+import type { WorldsInterface, WorldsOptions } from "#/types.ts";
+import { parseError } from "#/utils.ts";
 import type {
   World,
   WorldsCreateInput,
   WorldsDeleteInput,
-  WorldsExportInput,
   WorldsGetInput,
+  WorldsUpdateInput,
+} from "#/worlds/schema.ts";
+import type {
+  WorldsExportInput,
   WorldsImportInput,
   WorldsListInput,
-  WorldsSearchInput,
-  WorldsSearchOutput,
-  WorldsServiceDescriptionInput,
+} from "#/schema.ts";
+import type {
   WorldsSparqlInput,
   WorldsSparqlOutput,
-  WorldsUpdateInput,
-} from "#/schemas/mod.ts";
+  WorldsServiceDescriptionInput,
+} from "#/worlds/sparql.schema.ts";
+import type {
+  WorldsSearchInput,
+  WorldsSearchOutput,
+} from "#/worlds/search.schema.ts";
+
+
 
 /**
  * RemoteWorlds is a TypeScript SDK client for the Worlds API.

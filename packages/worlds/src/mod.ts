@@ -1,38 +1,40 @@
 /**
  * @wazoo/worlds-sdk is the core SDK for interacting with the Worlds engine.
- * It provides both local (server-side) and remote (client-side) implementations
- * of the WorldsInterface.
- * @module
  */
+
+// Entry Points
 export * from "./worlds/worlds.ts";
 export * from "./worlds/local.ts";
 export * from "./worlds/remote.ts";
-export * from "./worlds/worlds.ts";
-export * from "./core/ontology.ts";
-export * from "./core/resource-path.ts";
-export * from "./core/types.ts";
-export * from "./core/engine-context.ts";
-export * from "./core/factory.ts";
-export * from "./core/utils.ts";
-export {
-  defaultNamespace,
-  defaultWorld,
-  resolveSource,
-  toWorldName,
-} from "./core/sources.ts";
-export { expandPathNamespace } from "./core/sources.ts";
-export type { WorldsSource } from "#/schemas/mod.ts";
-export type { WorldsSource as WorldSource } from "#/schemas/mod.ts";
-export * from "#/schemas/mod.ts";
-export * from "#/schemas/world.ts";
-export * from "#/storage/init.ts";
-export * from "#/storage/memory.ts";
-export * from "#/rdf/n3.ts";
-export * from "#/plugins/system/namespaces.repository.ts";
-export * from "#/plugins/system/api-keys.repository.ts";
-export * from "#/plugins/system/worlds.repository.ts";
-export * from "#/world/triples/repository.ts";
-export * from "#/world/chunks/repository.ts";
-export * from "#/rdf/core/serialization.ts";
-export * from "#/rdf/patch/mod.ts";
-export * from "#/vectors/mod.ts";
+
+// Core Utilities & Types
+export * from "./types.ts";
+export * from "./utils.ts";
+export * from "./sources.ts";
+export * from "./resource-path.ts";
+export * from "./engine-context.ts";
+export * from "./factory.ts";
+export * from "./storage.ts";
+export * from "./schema.ts";
+
+// System Repositories
+export * from "./system/keys/repository.ts";
+export * from "./system/namespaces/repository.ts";
+export * from "./system/worlds/repository.ts";
+export * from "./system/worlds/schema.ts";
+
+// World Domain Logic
+export * from "./worlds/schema.ts";
+export * from "./worlds/sparql.schema.ts";
+export * from "./worlds/search.schema.ts";
+export * from "./worlds/facts/repository.ts";
+export * from "./worlds/facts/schema.ts";
+export * from "./worlds/chunks/repository.ts";
+export * from "./worlds/chunks/schema.ts";
+
+// Submodules
+export * from "./vectors/mod.ts";
+export * from "./rdf/n3.ts";
+export * from "./rdf/core/serialization.ts";
+export * from "./rdf/patch/mod.ts";
+export * from "./rdf/sparql-engine.ts";

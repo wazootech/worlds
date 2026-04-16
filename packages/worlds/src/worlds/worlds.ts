@@ -1,21 +1,28 @@
-import type { WorldsOptions } from "#/core/types.ts";
+import type { WorldsOptions, WorldsInterface } from "#/types.ts";
 import { RemoteWorlds } from "#/worlds/remote.ts";
-import type { WorldsInterface } from "#/core/types.ts";
 import type {
   World,
   WorldsCreateInput,
   WorldsDeleteInput,
-  WorldsExportInput,
   WorldsGetInput,
+  WorldsUpdateInput,
+} from "#/worlds/schema.ts";
+import type {
+  WorldsExportInput,
   WorldsImportInput,
   WorldsListInput,
-  WorldsSearchInput,
-  WorldsSearchOutput,
-  WorldsServiceDescriptionInput,
+} from "#/schema.ts";
+import type {
   WorldsSparqlInput,
   WorldsSparqlOutput,
-  WorldsUpdateInput,
-} from "#/schemas/mod.ts";
+  WorldsServiceDescriptionInput,
+} from "#/worlds/sparql.schema.ts";
+import type {
+  WorldsSearchInput,
+  WorldsSearchOutput,
+} from "#/worlds/search.schema.ts";
+
+
 
 /**
  * Worlds is the main entry point for the Worlds API SDK.

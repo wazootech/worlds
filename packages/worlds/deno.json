@@ -1,21 +1,19 @@
 {
   "name": "@wazoo/worlds-sdk",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "exports": {
     ".": "./src/mod.ts",
     "./engine": "./src/worlds/local.ts",
     "./remote": "./src/worlds/remote.ts",
-    "./schema": "./src/schemas/mod.ts",
-    "./schema/world": "./src/schemas/world.ts",
-    "./schema/sparql": "./src/schemas/sparql.ts",
-    "./schema/search": "./src/schemas/search.ts",
-    "./schema/source": "./src/schemas/source.ts",
-    "./types": "./src/core/types.ts",
-    "./testing": "./src/core/engine-context.ts"
+    "./schema": "./src/schema.ts",
+    "./schema/world": "./src/worlds/schema.ts",
+    "./schema/sparql": "./src/worlds/sparql.schema.ts",
+    "./schema/search": "./src/worlds/search.schema.ts",
+    "./types": "./src/types.ts",
+    "./testing": "./src/engine-context.ts"
   },
   "imports": {
     "#/": "./src/",
-    "@libsql/client": "npm:@libsql/client@^0.17.0",
     "@std/ulid": "jsr:@std/ulid@^1.0.0",
     "@fartlabs/rt": "jsr:@fartlabs/rt@^0.0.11",
     "@langchain/textsplitters": "npm:@langchain/textsplitters@^1.0.1",
@@ -23,14 +21,18 @@
     "@types/n3": "npm:@types/n3@^1.26.1",
     "@std/http": "jsr:@std/http@^1.0.25",
     "ollama-ai-provider": "npm:ollama-ai-provider@^1.2.0",
+    "@openrouter/ai-sdk-provider": "npm:@openrouter/ai-sdk-provider@^2.8.0",
+    "ai": "npm:ai@^4.0.0",
+    "ollama": "npm:ollama@^0.5.12",
+
     "rdf-canonize": "npm:rdf-canonize@^5.0.0",
     "@std/encoding": "jsr:@std/encoding@^1.0.5",
+    "@std/path": "jsr:@std/path@^1.0.8",
     "n3": "npm:n3@^2.0.3",
     "zod": "npm:zod@^4.3.6"
   },
   "tasks": {
-    "test": "deno test -A",
-    "generate": "deno -A jsr:@fartlabs/sql-embedder@0.0.5 ./"
+    "test": "deno test -A"
   },
   "publish": {
     "exclude": ["**/*.test.ts", "**/*_test.ts"]
