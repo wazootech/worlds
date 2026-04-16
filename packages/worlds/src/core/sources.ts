@@ -27,15 +27,16 @@ export class SourceParseError extends Error {
 }
 
 /**
- * toResolvedSource converts various input forms into a ResolvedSource.
+ * resolveSource converts various input forms into a ResolvedSource.
  * Handles: WorldSource, { world, namespace }, "namespace/world" string
  *
  * String parsing: "_" returns null (use context defaults)
  * Object forms: null values use context defaults
+ * Fallback chain: value → context → defaultWorlds* constants
  *
  * @throws SourceParseError on invalid input (multiple slashes, invalid format)
  */
-export function toResolvedSource(
+export function resolveSource(
   source: WorldSource | { world?: string | null; namespace?: string | null },
   context?: Partial<WorldsContext>,
 ): ResolvedSource {
@@ -60,11 +61,25 @@ export function toResolvedSource(
 }
 
 /**
- * toStorageName returns a "namespace:world" string for all keys.
- * Used for: cache keys, storage keys, database lookups.
+ * toWorldName returns a "namespace/world" string representation.
+ * Uses resolveSource internally.
+ *
+ * @throws SourceParseError on invalid input
  */
-export function toStorageName(resolved: ResolvedSource): string {
-  return `${resolved.namespace}:${resolved.world}`;
+export function toWorldName(
+  source: WorldSource | ResolvedSource | {
+    world?: string | null;
+    namespace?: string | null;
+  },
+): string {
+  const resolved = resolveSource(source);
+  const ns = resolved.namespace === defaultWorldsNamespaceNameSegment
+    ? "_"
+    : resolved.namespace;
+  const ws = resolved.world === defaultWorldsWorldNameSegment
+    ? "_"
+    : resolved.world;
+  return `${ns}/${ws}`;
 }
 
 /**

@@ -12,6 +12,7 @@ import type {
   WorldRowInsert,
   WorldRowUpdate,
 } from "./worlds.schema.ts";
+import { resolveSource } from "#/core/sources.ts";
 
 /**
  * WorldsRepository handles the persistence of world metadata in the system database.
@@ -26,18 +27,17 @@ export class WorldsRepository {
   /**
    * get retrieves a world by its identifier and optional namespace.
    * @param world The world identifier.
-   * @param namespace The namespace (optional - defaults to "_" if not provided).
+   * @param namespace The namespace (optional - uses context default if null).
    * @returns The world row or null if not found.
    */
   async get(
     world: string | null,
     namespace?: string | null,
   ): Promise<WorldRow | null> {
-    const w = world ?? "_";
-    const ns = namespace ?? "_";
+    const resolved = resolveSource({ world, namespace });
     const result = await this.db.execute({
       sql: selectWorldByWorld,
-      args: [w, ns],
+      args: [resolved.world, resolved.namespace],
     });
     const row = result.rows[0] as Record<string, unknown> | undefined;
     if (!row) return null;
@@ -51,7 +51,7 @@ export class WorldsRepository {
    * @returns The world row or null if not found.
    */
   async getInternal(world: string | null): Promise<WorldRow | null> {
-    const w = world ?? "_";
+    const w = world ?? "default";
     const result = await this.db.execute({
       sql: selectWorldByWorldInternal,
       args: [w],
@@ -92,16 +92,11 @@ export class WorldsRepository {
     limit: number,
     offset: number,
   ): Promise<WorldRow[]> {
-    const ns = namespace ?? "_";
-    const result = (ns !== "-")
-      ? await this.db.execute({
-        sql: selectAllWorlds,
-        args: [ns, limit, offset],
-      })
-      : await this.db.execute({
-        sql: `SELECT * FROM worlds ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-        args: [limit, offset],
-      });
+    const resolved = resolveSource({ namespace });
+    const result = await this.db.execute({
+      sql: selectAllWorlds,
+      args: [resolved.namespace, limit, offset],
+    });
     return (result.rows as Record<string, unknown>[]).map((row) =>
       this.mapRow(row)
     );
@@ -143,8 +138,7 @@ export class WorldsRepository {
   ): Promise<void> {
     const row = await this.get(world, namespace);
     if (!row) return;
-    const w = world ?? "_";
-    const ns = namespace ?? "_";
+    const resolved = resolveSource({ world, namespace });
     await this.db.execute({
       sql: updateWorld,
       args: [
@@ -154,8 +148,8 @@ export class WorldsRepository {
         updates.db_token ?? row.db_token,
         updates.updated_at ?? row.updated_at,
         updates.deleted_at ?? row.deleted_at,
-        w,
-        ns,
+        resolved.world,
+        resolved.namespace,
       ],
     });
   }
@@ -169,8 +163,10 @@ export class WorldsRepository {
     world: string | null,
     namespace: string | null | undefined,
   ): Promise<void> {
-    const w = world ?? "_";
-    const ns = namespace ?? "_";
-    await this.db.execute({ sql: deleteWorld, args: [w, ns] });
+    const resolved = resolveSource({ world, namespace });
+    await this.db.execute({
+      sql: deleteWorld,
+      args: [resolved.world, resolved.namespace],
+    });
   }
 }

@@ -6,7 +6,7 @@ import type {
   WorldsStorage,
   WorldsStorageManager,
 } from "#/storage/worlds.ts";
-import { toStorageName } from "#/storage/types.ts";
+import { toWorldName } from "#/core/sources.ts";
 
 import { WorldsRepository } from "#/plugins/registry/worlds.repository.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
@@ -34,7 +34,7 @@ export class FileWorldsStorageManager implements WorldsStorageManager {
    * getStorageKey generates a filesystem-safe identifier for a world.
    */
   private async getStorageKey(options: WorldOptions): Promise<string> {
-    const key = toStorageName(options);
+    const key = toWorldName(options);
     const encoder = new TextEncoder();
     const data = encoder.encode(key);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);

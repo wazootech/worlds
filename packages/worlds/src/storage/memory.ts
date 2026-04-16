@@ -4,7 +4,7 @@ import type {
   WorldsStorage,
   WorldsStorageManager,
 } from "#/storage/worlds.ts";
-import { toStorageName } from "#/storage/types.ts";
+import { toWorldName } from "#/core/sources.ts";
 import { initializeWorldDatabase } from "#/storage/init.ts";
 
 /**
@@ -42,7 +42,7 @@ export class MemoryWorldsStorageManager implements WorldsStorageManager {
     options: WorldOptions,
     url: string,
   ): Promise<WorldsStorage> {
-    const key = toStorageName(options);
+    const key = toWorldName(options);
     const client = this.databases.get(key) ?? createClient({ url });
     this.databases.set(key, client);
 
@@ -61,7 +61,7 @@ export class MemoryWorldsStorageManager implements WorldsStorageManager {
   }
 
   public delete(options: WorldOptions): Promise<void> {
-    const key = toStorageName(options);
+    const key = toWorldName(options);
     this.databases.delete(key);
     this.initialized.delete(key);
     return Promise.resolve();

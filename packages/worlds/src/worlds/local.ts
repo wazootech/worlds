@@ -8,7 +8,7 @@ import { loadStore } from "#/world/triples/loader.ts";
 import { handlePatch } from "#/rdf/patch/mod.ts";
 import type { PatchHandler } from "#/rdf/patch/types.ts";
 import { sparql } from "#/rdf/sparql.ts";
-import { isSparqlUpdate, resolveSource } from "#/core/utils.ts";
+import { isSparqlUpdate } from "#/core/utils.ts";
 import {
   DEFAULT_SERIALIZATION,
   getSerializationByContentType,
@@ -22,7 +22,7 @@ import {
   defaultWorldsNamespaceNameSegment,
   defaultWorldsWorldNameSegment,
 } from "#/core/ontology.ts";
-import { toResolvedSource, toStorageName } from "#/core/sources.ts";
+import { resolveSource, toWorldName } from "#/core/sources.ts";
 import { worldResourcePath } from "#/core/resource-path.ts";
 import type { WorldRow } from "#/plugins/registry/worlds.schema.ts";
 import type {
@@ -220,7 +220,7 @@ export class LocalWorlds implements WorldsInterface {
     await this.ensureInitialized();
     const { world: sourceWorld, namespace } = resolveSource(
       input.source,
-      this.appContext.namespace,
+      { namespace: this.appContext.namespace },
     );
     this.assertSourceAuthorized(sourceWorld, namespace);
     const worldRow = await this.worldsRepository.get(
@@ -309,7 +309,7 @@ export class LocalWorlds implements WorldsInterface {
     const { source, label, description } = input;
     const { world: sourceWorld, namespace } = resolveSource(
       source,
-      this.appContext.namespace,
+      { namespace: this.appContext.namespace },
     );
     this.assertSourceAuthorized(sourceWorld, namespace);
     const worldRow = await this.worldsRepository.get(
@@ -336,7 +336,7 @@ export class LocalWorlds implements WorldsInterface {
     await this.ensureInitialized();
     const { world: sourceWorld, namespace } = resolveSource(
       input.source,
-      this.appContext.namespace,
+      { namespace: this.appContext.namespace },
     );
     this.assertSourceAuthorized(sourceWorld, namespace);
     const worldRow = await this.worldsRepository.get(
@@ -382,7 +382,7 @@ export class LocalWorlds implements WorldsInterface {
       targetWorlds = await this.worldsRepository.list(namespace, 100, 0);
     } else {
       const worldPromises = sources.map((s) => {
-        const parsed = resolveSource(s, namespace);
+        const parsed = resolveSource(s, { namespace });
         this.assertSourceAuthorized(parsed.world, parsed.namespace);
         return this.worldsRepository.get(
           parsed.world ?? "",
@@ -446,7 +446,7 @@ export class LocalWorlds implements WorldsInterface {
       targetWorlds = await this.worldsRepository.list(namespace, 100, 0);
     } else {
       const worldPromises = sources.map((s) => {
-        const parsed = resolveSource(s, namespace);
+        const parsed = resolveSource(s, { namespace });
         this.assertSourceAuthorized(parsed.world, parsed.namespace);
         return this.worldsRepository.get(
           parsed.world ?? "",
@@ -494,7 +494,7 @@ export class LocalWorlds implements WorldsInterface {
     const { source, data, contentType } = input;
     const { world: sourceWorld, namespace } = resolveSource(
       source,
-      this.appContext.namespace,
+      { namespace: this.appContext.namespace },
     );
     this.assertSourceAuthorized(sourceWorld, namespace);
     const worldRow = await this.worldsRepository.get(
@@ -551,7 +551,7 @@ export class LocalWorlds implements WorldsInterface {
     const { source, contentType } = input;
     const { world: sourceWorld, namespace } = resolveSource(
       source,
-      this.appContext.namespace,
+      { namespace: this.appContext.namespace },
     );
     this.assertSourceAuthorized(sourceWorld, namespace);
     const worldRow = await this.worldsRepository.get(

@@ -1,36 +1,4 @@
-import { toResolvedSource } from "#/core/sources.ts";
-import type { WorldSource } from "#/schemas/mod.ts";
 import { errorResponseDataSchema } from "#/schemas/mod.ts";
-
-/**
- * @deprecated Use toResolvedSource from #/core/sources.ts instead.
- */
-export function resolveSource(
-  source: WorldSource,
-  contextNamespace?: string,
-): {
-  world: string | null;
-  namespace: string | null;
-} {
-  const resolved = toResolvedSource(source, { namespace: contextNamespace });
-  return {
-    world: resolved.world,
-    namespace: resolved.namespace,
-  };
-}
-
-/**
- * @deprecated Use toResolvedSource from #/core/sources.ts instead.
- */
-export function parseSources(
-  sources: WorldSource[],
-  contextNamespace?: string,
-): Array<{
-  world: string | null;
-  namespace: string | null;
-}> {
-  return sources.map((s) => resolveSource(s, contextNamespace));
-}
 
 /**
  * parseError parses an error response from the API.
