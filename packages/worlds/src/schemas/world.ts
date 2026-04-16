@@ -40,12 +40,6 @@ export interface World {
    * deletedAt is the millisecond timestamp of deletion, if applicable.
    */
   deletedAt?: number;
-
-  /**
-   * nextPageToken is the token to retrieve the next page of results.
-   * Only present when there are more results available.
-   */
-  nextPageToken?: string;
 }
 
 /**
@@ -61,7 +55,6 @@ export const worldSchema: z.ZodType<World> = z.object({
   createdAt: z.number(),
   updatedAt: z.number(),
   deletedAt: z.number().optional(),
-  nextPageToken: z.string().optional().describe("The next page token."),
 });
 
 /**

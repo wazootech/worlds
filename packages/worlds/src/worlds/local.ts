@@ -247,7 +247,6 @@ export class LocalWorlds implements AsyncDisposable {
       description: row.description,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-      nextPageToken: result.nextPageToken,
     }));
   }
 
