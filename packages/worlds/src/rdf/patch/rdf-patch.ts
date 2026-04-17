@@ -1,34 +1,35 @@
-import type { Client } from "@libsql/client";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import type { Patch } from "./types.ts";
 import { skolemizeQuad } from "./skolem.ts";
 import type { Embeddings } from "#/vectors/embeddings.ts";
-import { TriplesRepository } from "#/world/triples/repository.ts";
-import { ChunksRepository } from "#/world/chunks/repository.ts";
+import type { WorldsStorage } from "#/storage.ts";
+import { FactsRepository } from "#/worlds/facts/repository.ts";
+import { ChunksRepository } from "#/worlds/chunks/repository.ts";
 
-const DEFAULT_GRAPH = "<default>";
+const DEFAULT_GRAPH = "https://wazoo.dev/worlds/graphs/default";
 
 /**
  * handlePatch handles RDF patches by upserting and deleting triples and chunks.
- * @param client The database client.
+ * @param storage The worlds storage (N3 Store).
+ * @param worldId The world identifier.
  * @param embeddings The embeddings strategy.
  * @param patches The patches to apply.
  */
 export async function handlePatch(
-  client: Client,
+  storage: WorldsStorage,
+  worldId: string,
   embeddings: Embeddings,
   patches: Patch[],
 ) {
-  const triplesRepository = new TriplesRepository(client);
-  const chunksRepository = new ChunksRepository(client);
+  const factsRepository = new FactsRepository(storage);
+  const chunksRepository = new ChunksRepository(worldId);
 
   try {
     for (const patch of patches) {
       if (patch.deletions) {
         for (const q of patch.deletions) {
           const tripleId = await skolemizeQuad(q);
-
-          await triplesRepository.delete(tripleId);
+          await factsRepository.delete(tripleId);
         }
       }
 
@@ -52,11 +53,10 @@ export async function handlePatch(
             try {
               vector = await embeddings.embed(object);
             } catch (_error) {
-              // Ignore embedding errors for now
             }
           }
 
-          await triplesRepository.upsert({
+          await factsRepository.upsert({
             id: tripleId,
             subject,
             predicate,
@@ -79,7 +79,6 @@ export async function handlePatch(
                 try {
                   chunkVector = await embeddings.embed(chunkText);
                 } catch (_error) {
-                  // Ignore embedding errors for chunking
                 }
               }
 
@@ -88,7 +87,7 @@ export async function handlePatch(
               );
               await chunksRepository.upsert({
                 id: chunkId,
-                triple_id: tripleId,
+                fact_id: tripleId,
                 subject,
                 predicate,
                 text: chunkText,

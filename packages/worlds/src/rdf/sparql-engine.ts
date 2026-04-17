@@ -5,7 +5,7 @@ import type {
   SparqlQuad,
   SparqlValue,
   WorldsSparqlOutput,
-} from "#/schemas/mod.ts";
+} from "#/worlds/sparql.schema.ts";
 
 export const queryEngine = new QueryEngine();
 

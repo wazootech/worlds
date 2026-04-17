@@ -1,6 +1,6 @@
 import { assertEquals, assertExists } from "@std/assert";
-import type { SparqlSelectResults } from "#/schemas/mod.ts";
-import { createTestContext } from "#/core/engine-context.ts";
+import type { SparqlSelectResults } from "#/worlds/sparql.schema.ts";
+import { createTestContext } from "#/engine-context.ts";
 import { LocalWorlds } from "#/worlds/local.ts";
 
 Deno.test({
@@ -20,9 +20,9 @@ Deno.test({
         label: "Core World",
         description: "Test World from Core",
       });
-      assertExists(world.name);
+      assertExists(world.id);
       assertEquals(world.label, "Core World");
-      worldId = world.name;
+      worldId = world.id!;
     });
 
     await t.step("get world", async () => {
@@ -33,7 +33,8 @@ Deno.test({
 
     await t.step("list worlds", async () => {
       const list = await worlds.list({ pageSize: 10 });
-      assertExists(list.find((w) => w.name === worldId));
+      const found = list.find((w) => w.id === worldId);
+      assertExists(found);
     });
 
     await t.step("update world", async () => {
