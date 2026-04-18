@@ -37,18 +37,18 @@ export interface NamespacesListResult {
 }
 
 /**
- * NamespacesRepository handles the persistence of namespaces using an in-memory Map.
+ * NamespaceRepository handles the persistence of namespaces using an in-memory Map.
  */
-export class NamespacesRepository {
+export class NamespaceRepository {
   private readonly namespaces = new Map<string, NamespaceRow>();
 
   constructor() {}
 
-  get(id: string): Promise<NamespaceRow | null> {
+  async get(id: string): Promise<NamespaceRow | null> {
     return this.namespaces.get(id) ?? null;
   }
 
-  list(params: NamespacesListParams): Promise<NamespacesListResult> {
+  async list(params: NamespacesListParams): Promise<NamespacesListResult> {
     const { pageSize = 50, pageToken } = params;
 
     const all = Array.from(this.namespaces.values());
@@ -77,12 +77,12 @@ export class NamespacesRepository {
     return { namespaces, nextPageToken };
   }
 
-  insert(namespace: NamespaceInsert): Promise<void> {
+  async insert(namespace: NamespaceInsert): Promise<void> {
     if (this.namespaces.has(namespace.id)) return;
     this.namespaces.set(namespace.id, { ...namespace });
   }
 
-  update(
+  async update(
     id: string,
     updates: { label?: string; updated_at?: number },
   ): Promise<void> {
@@ -95,7 +95,7 @@ export class NamespacesRepository {
     });
   }
 
-  delete(id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     this.namespaces.delete(id);
   }
 }

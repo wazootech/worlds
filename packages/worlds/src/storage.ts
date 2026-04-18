@@ -1,102 +1,67 @@
-import type { Store } from "n3";
-import { Store as N3Store } from "n3";
+import { Store } from "n3";
 
 /**
- * WorldOptions contains options for world database operations.
+ * WorldOptions represents the unique coordinates for a world in storage.
  */
 export interface WorldOptions {
-  /**
-   * id is the world identifier (optional for lookup).
-   */
-  id?: string;
-
-  /**
-   * namespace is the optional namespace (uses internal lookup if not provided).
-   */
+  id: string;
   namespace?: string;
 }
 
 /**
- * WorldsStorage represents the storage for a single world.
- * In the Map-based version, this provides access to an N3 Store.
+ * MemoryStoreManager manages in-memory N3 Stores for multiple worlds.
+ * It provides a central lookup for world stores and handles cleanup.
  */
-export interface WorldsStorage {
-  /**
-   * store is the N3 Store for the world's RDF data.
-   */
-  store: Store;
-}
+export class MemoryStoreManager {
+  private readonly stores = new Map<string, Store>();
 
-/**
- * WorldsStorageManager manages world databases.
- */
-export interface WorldsStorageManager {
-  /**
-   * create creates a new world database and returns its storage.
-   */
-  create(options: WorldOptions): Promise<WorldsStorage>;
+  private toKey(options: WorldOptions): string {
+    return `${options.namespace ?? "default"}:${options.id}`;
+  }
 
   /**
-   * get returns the world database for the given namespace and world.
+   * create initializes a new store for a world.
+   * If the store already exists, it returns the existing one.
    */
-  get(options: WorldOptions): Promise<WorldsStorage>;
+  public async create(options: WorldOptions): Promise<Store> {
+    const key = this.toKey(options);
+    if (!this.stores.has(key)) {
+      this.stores.set(key, new Store());
+    }
+    return this.stores.get(key)!;
+  }
 
   /**
-   * delete deletes the world database for the given namespace and world.
+   * get retrieves an existing store for a world.
+   * If it doesn't exist, it creates a new empty one.
    */
-  delete(options: WorldOptions): Promise<void>;
+  public async get(options: WorldOptions): Promise<Store> {
+    const key = this.toKey(options);
+    if (!this.stores.has(key)) {
+      return this.create(options);
+    }
+    return this.stores.get(key)!;
+  }
 
   /**
-   * close shuts down all managed database connections.
+   * delete removes a world's store from memory.
    */
-  close(): Promise<void>;
+  public async delete(options: WorldOptions): Promise<void> {
+    const key = this.toKey(options);
+    this.stores.delete(key);
+  }
+
+  /**
+   * close clears all stores from memory.
+   */
+  public async close(): Promise<void> {
+    this.stores.clear();
+  }
 
   /**
    * [Symbol.asyncDispose] provides support for explicit resource management.
    */
-  [Symbol.asyncDispose](): Promise<void>;
-}
-
-/**
- * MemoryWorldsStorageManager implements WorldsStorageManager using in-memory N3 Stores.
- */
-export class MemoryWorldsStorageManager implements WorldsStorageManager {
-  private readonly stores = new Map<string, Store>();
-
-  private getStoreKey(options: WorldOptions): string {
-    return `${options.namespace ?? "_"}/${options.id ?? "_"}`;
-  }
-
-  public create(options: WorldOptions): Promise<WorldsStorage> {
-    const key = this.getStoreKey(options);
-    if (this.stores.has(key)) {
-      throw new Error(`World already exists: ${key}`);
-    }
-    const store = new N3Store();
-    this.stores.set(key, store);
-    return { store };
-  }
-
-  public get(options: WorldOptions): Promise<WorldsStorage> {
-    const key = this.getStoreKey(options);
-    let store = this.stores.get(key);
-    if (!store) {
-      store = new N3Store();
-      this.stores.set(key, store);
-    }
-    return { store };
-  }
-
-  public delete(options: WorldOptions): Promise<void> {
-    const key = this.getStoreKey(options);
-    this.stores.delete(key);
-  }
-
-  public close(): Promise<void> {
-    this.stores.clear();
-  }
-
-  async [Symbol.asyncDispose](): Promise<void> {
+  public async [Symbol.asyncDispose](): Promise<void> {
     await this.close();
   }
 }

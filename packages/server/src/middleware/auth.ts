@@ -1,4 +1,3 @@
-import { ApiKeysRepository } from "@wazoo/worlds-sdk";
 import type { WorldsContext } from "@wazoo/worlds-sdk";
 
 /**
@@ -39,8 +38,8 @@ export async function authorizeRequest(
     return { admin: true };
   }
 
-  // Resolve namespace via ApiKeysRepository
-  const apiKeysRepo = new ApiKeysRepository(appContext.system);
+  // Resolve namespace via ApiKeyRepository
+  const apiKeysRepo = appContext.management.keys;
   const namespaceId = await apiKeysRepo.resolveNamespace(apiKey);
 
   if (namespaceId) {

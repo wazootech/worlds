@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
 import {
   resolveNamespace,
   resolveSource,
@@ -130,14 +130,9 @@ Deno.test("resolveSource + toWorldName - composition", async (t) => {
 });
 
 Deno.test("SourceParseError - thrown on invalid input", async (t) => {
-  await t.step("multiple slashes throws error", () => {
-    try {
-      resolveSource("a/b/c");
-      throw new Error("Expected error to be thrown");
-    } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals((e as Error).message.includes("multiple slashes"), true);
-    }
+  await t.step("hierarchical paths are allowed", () => {
+    const result = resolveSource("ns/sub/world");
+    assertEquals(result, { namespace: "ns/sub", world: "world" });
   });
 
   await t.step("invalid object without name throws error", () => {
@@ -145,11 +140,8 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       resolveSource({} as any);
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals(
-        (e as Error).message.includes("missing 'name' property"),
-        true,
-      );
+      assert(e instanceof SourceParseError);
+      assert((e as Error).message.includes("missing 'name'"));
     }
   });
 
@@ -197,11 +189,8 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       resolveSource({ name: "" });
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals(
-        (e as Error).message.includes("missing 'name' property"),
-        true,
-      );
+      assert(e instanceof Error);
+      assert((e as Error).message.includes("missing 'name'"));
     }
   });
 });

@@ -1,6 +1,6 @@
-import { worldsActionPath } from "#/resource-path.ts";
-import type { WorldsInterface, WorldsOptions } from "#/types.ts";
+import type { WorldsOptions } from "#/types.ts";
 import { parseError } from "#/utils.ts";
+import { encodeBase64 } from "@std/encoding/base64";
 import type {
   World,
   WorldsCreateInput,
@@ -26,7 +26,7 @@ import type {
 /**
  * RemoteWorlds is a TypeScript SDK client for the Worlds API.
  */
-export class RemoteWorlds implements WorldsInterface {
+export class RemoteWorlds {
   private readonly fetch: typeof fetch;
 
   /**
@@ -39,256 +39,134 @@ export class RemoteWorlds implements WorldsInterface {
   }
 
   /**
+   * callRpc executes a unified RPC call.
+   */
+  private async callRpc<T>(
+    action: string,
+    params: any,
+    options: {
+      accept?: string;
+      responseType?: "json" | "text" | "arrayBuffer";
+    } = {},
+  ): Promise<T> {
+    const url = new URL(`${this.options.baseUrl}/rpc`);
+    const response = await this.fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.options.apiKey}`,
+        "Content-Type": "application/json",
+        ...(options.accept ? { "Accept": options.accept } : {}),
+      },
+      body: JSON.stringify({
+        ...params,
+        action,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await parseError(response);
+      const error = new Error(`RPC ${action} failed: ${errorMessage}`);
+      // Attach status code for robust error handling
+      (error as any).status = response.status;
+      throw error;
+    }
+
+    if (response.status === 204) {
+      return null as T;
+    }
+
+    switch (options.responseType) {
+      case "text":
+        return await response.text() as T;
+      case "arrayBuffer":
+        return await response.arrayBuffer() as T;
+      default:
+        return await response.json() as T;
+    }
+  }
+
+  /**
    * list paginates all worlds from the Worlds API.
    */
   public async list(input?: WorldsListInput): Promise<World[]> {
-    const url = new URL(`${this.options.baseUrl}/worlds`);
-
-    if (input?.pageSize) {
-      url.searchParams.set("pageSize", input.pageSize.toString());
-    }
-    if (input?.pageToken) {
-      url.searchParams.set("pageToken", input.pageToken);
-    }
-    if (input?.namespace) {
-      url.searchParams.set("namespace", input.namespace);
-    }
-
-    const response = await this.fetch(url, {
-      headers: {
-        Authorization: `Bearer ${this.options.apiKey}`,
-      },
-    });
-    if (!response.ok) {
-      const errorMessage = await parseError(response);
-      throw new Error(`Failed to list worlds: ${errorMessage}`);
-    }
-
-    return await response.json();
+    return await this.callRpc<World[]>("list", input ?? {});
   }
 
   /**
    * get fetches a single world from the Worlds API.
    */
   public async get(input: WorldsGetInput): Promise<World | null> {
-    const url = new URL(
-      `${this.options.baseUrl}${worldsActionPath("get")}`,
-    );
-
-    const response = await this.fetch(
-      url,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(input),
-      },
-    );
-    if (response.status === 404) {
-      return null;
+    try {
+      return await this.callRpc<World>("get", input);
+    } catch (error) {
+      if (error instanceof Error && (error as any).status === 404) {
+        return null;
+      }
+      throw error;
     }
-
-    if (!response.ok) {
-      const errorMessage = await parseError(response);
-      throw new Error(`Failed to get world: ${errorMessage}`);
-    }
-
-    return await response.json();
   }
 
   /**
    * create creates a world in the Worlds API.
    */
   public async create(input: WorldsCreateInput): Promise<World> {
-    const url = new URL(`${this.options.baseUrl}/worlds`);
-
-    const response = await this.fetch(
-      url,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(input),
-      },
-    );
-    if (!response.ok) {
-      const errorMessage = await parseError(response);
-      throw new Error(`Failed to create world: ${errorMessage}`);
-    }
-
-    return await response.json();
+    return await this.callRpc<World>("create", input);
   }
 
   /**
    * update updates a world in the Worlds API.
    */
   public async update(input: WorldsUpdateInput): Promise<void> {
-    const url = new URL(
-      `${this.options.baseUrl}${worldsActionPath("update")}`,
-    );
-
-    const response = await this.fetch(
-      url,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(input),
-      },
-    );
-    if (!response.ok) {
-      const errorMessage = await parseError(response);
-      throw new Error(`Failed to update world: ${errorMessage}`);
-    }
+    return await this.callRpc<void>("update", input);
   }
 
   /**
    * delete deletes a world from the Worlds API.
    */
   public async delete(input: WorldsDeleteInput): Promise<void> {
-    const url = new URL(
-      `${this.options.baseUrl}${worldsActionPath("delete")}`,
-    );
-
-    const response = await this.fetch(
-      url,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(input),
-      },
-    );
-    if (!response.ok) {
-      const errorMessage = await parseError(response);
-      throw new Error(`Failed to delete world: ${errorMessage}`);
-    }
+    return await this.callRpc<void>("delete", input);
   }
 
   /**
    * sparql executes a SPARQL query or update against a world.
    */
   public async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
-    const url = new URL(
-      `${this.options.baseUrl}${worldsActionPath("sparql")}`,
-    );
-
-    const response = await this.fetch(
-      url,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`,
-          "Content-Type": "application/json",
-          "Accept": "application/sparql-results+json",
-        },
-        body: JSON.stringify(input),
-      },
-    );
-    if (!response.ok) {
-      const errorMessage = await parseError(response);
-      throw new Error(`Failed to execute SPARQL: ${errorMessage}`);
-    }
-
-    if (response.status === 204) {
-      return null;
-    }
-
-    return await response.json();
+    return await this.callRpc<WorldsSparqlOutput>("sparql", input, {
+      accept: "application/sparql-results+json",
+    });
   }
 
   /**
    * search performs semantic/text search on a world using vector embeddings.
    */
   public async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
-    const url = new URL(
-      `${this.options.baseUrl}${worldsActionPath("search")}`,
-    );
-
-    const response = await this.fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.options.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(input),
-    });
-    if (!response.ok) {
-      const errorMessage = await parseError(response);
-      throw new Error(`Failed to search: ${errorMessage}`);
-    }
-
-    return await response.json();
+    return await this.callRpc<WorldsSearchOutput[]>("search", input);
   }
 
   /**
    * import ingests RDF data into a world.
    */
   public async import(input: WorldsImportInput): Promise<void> {
-    const { data, contentType } = input;
-    const url = new URL(
-      `${this.options.baseUrl}${worldsActionPath("import")}`,
-    );
-
-    const rdfContentType = contentType ?? "application/n-quads";
-
+    const { data, contentType = "application/n-quads" } = input;
     const binaryData = typeof data === "string"
       ? new TextEncoder().encode(data)
       : new Uint8Array(data);
 
-    // Convert to base64
-    const base64Data = btoa(String.fromCharCode(...binaryData));
-
-    const response = await this.fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.options.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...input,
-        data: base64Data,
-        contentType: rdfContentType,
-      }),
+    const base64Data = encodeBase64(binaryData);
+    return await this.callRpc<void>("import", {
+      ...input,
+      data: base64Data,
+      contentType,
     });
-
-    if (!response.ok) {
-      const errorMessage = await parseError(response);
-      throw new Error(`Failed to import world data: ${errorMessage}`);
-    }
   }
 
   /**
    * export exports a world in the specified RDF content type.
    */
   public async export(input: WorldsExportInput): Promise<ArrayBuffer> {
-    const url = new URL(
-      `${this.options.baseUrl}${worldsActionPath("export")}`,
-    );
-
-    const response = await this.fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.options.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(input),
+    return await this.callRpc<ArrayBuffer>("export", input, {
+      responseType: "arrayBuffer",
     });
-
-    if (!response.ok) {
-      const errorMessage = await parseError(response);
-      throw new Error(`Failed to export world: ${errorMessage}`);
-    }
-
-    return await response.arrayBuffer();
   }
 
   /**
@@ -297,29 +175,13 @@ export class RemoteWorlds implements WorldsInterface {
   public async getServiceDescription(
     input: WorldsServiceDescriptionInput,
   ): Promise<string> {
-    const url = new URL(
-      `${this.options.baseUrl}${worldsActionPath("sparql")}`,
-    );
-
-    const response = await this.fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.options.apiKey}`,
-        "Content-Type": "application/json",
-        Accept: input.contentType ?? "application/n-quads",
-      },
-      body: JSON.stringify({
-        ...input,
-        query: "", // Service description is requested with an empty query
-      }),
+    return await this.callRpc<string>("sparql", {
+      ...input,
+      query: "",
+    }, {
+      accept: input.contentType ?? "application/n-quads",
+      responseType: "text",
     });
-
-    if (!response.ok) {
-      const errorMessage = await parseError(response);
-      throw new Error(`Failed to get service description: ${errorMessage}`);
-    }
-
-    return await response.text();
   }
 
   /**

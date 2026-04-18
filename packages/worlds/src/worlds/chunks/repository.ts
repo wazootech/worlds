@@ -1,12 +1,16 @@
 import type { WorldsContext } from "#/types.ts";
-import type { WorldsSearchOutput } from "#/worlds/search.schema.ts";
-import type { WorldRow } from "#/system/worlds/schema.ts";
-import { toWorldName } from "#/sources.ts";
+import type {
+  WorldsSearchInput,
+  WorldsSearchOutput,
+} from "#/worlds/search.schema.ts";
+import type { WorldRow } from "#/management/schema.ts";
+import { resolveNamespace, resolveWorldId, toWorldName } from "#/sources.ts";
 import type { ChunkTableUpsert } from "./schema.ts";
+import type { SearchIndex } from "#/types.ts";
 
 /**
  * ChunksRepository handles the persistence of text chunks and their vector embeddings in-memory.
- * Each instance is scoped to a specific world.
+ * Each instance is scoped to a specific world coordinate (namespace/id).
  */
 export class ChunksRepository {
   private static readonly worldChunks = new Map<
@@ -14,9 +18,15 @@ export class ChunksRepository {
     Map<string, ChunkTableUpsert>
   >();
 
-  constructor(private readonly worldId: string) {
-    if (!ChunksRepository.worldChunks.has(worldId)) {
-      ChunksRepository.worldChunks.set(worldId, new Map());
+  private readonly worldKey: string;
+
+  constructor(
+    private readonly worldId: string,
+    private readonly namespace?: string,
+  ) {
+    this.worldKey = `${namespace ?? "_"}/${worldId}`;
+    if (!ChunksRepository.worldChunks.has(this.worldKey)) {
+      ChunksRepository.worldChunks.set(this.worldKey, new Map());
     }
   }
 
@@ -24,8 +34,25 @@ export class ChunksRepository {
    * upsert inserts or replaces a text chunk record.
    * @param chunk The chunk data to upsert.
    */
-  upsert(chunk: ChunkTableUpsert): Promise<void> {
-    ChunksRepository.worldChunks.get(this.worldId)!.set(chunk.id, { ...chunk });
+  async upsert(chunk: ChunkTableUpsert): Promise<void> {
+    ChunksRepository.worldChunks.get(this.worldKey)!.set(chunk.id, {
+      ...chunk,
+    });
+  }
+
+  /**
+   * deleteByFactId removes all chunks associated with a specific fact.
+   * @param factId The stable identifier of the fact.
+   */
+  async deleteByFactId(factId: string): Promise<void> {
+    const chunks = ChunksRepository.worldChunks.get(this.worldKey);
+    if (!chunks) return;
+
+    for (const [id, chunk] of chunks.entries()) {
+      if (chunk.fact_id === factId) {
+        chunks.delete(id);
+      }
+    }
   }
 
   /**
@@ -33,44 +60,32 @@ export class ChunksRepository {
    */
   getForWorld(): ChunkTableUpsert[] {
     return Array.from(
-      ChunksRepository.worldChunks.get(this.worldId)?.values() ?? [],
+      ChunksRepository.worldChunks.get(this.worldKey)?.values() ?? [],
     );
   }
 }
 
 /**
- * SearchParams represents the parameters for a semantic and text search.
- */
-export interface SearchParams {
-  query: string;
-  worlds?: WorldRow[];
-  subjects?: string[];
-  predicates?: string[];
-  types?: string[];
-  namespace?: string;
-  limit?: number;
-}
-
-/**
  * ChunksSearchRepository handles complex semantic and hybrid search operations across chunks.
+ * Implements the SearchIndex interface for the simple & open shell architecture.
  */
-export class ChunksSearchRepository {
+export class ChunksSearchRepository implements SearchIndex {
   constructor(private readonly ctx: WorldsContext) {}
 
   /**
    * search performs a hybrid (vector + text) search for triples.
-   * @param params The search parameters.
+   * @param input The search parameters from the Worlds API.
    * @returns An array of search results with scores.
    */
-  async search(params: SearchParams): Promise<WorldsSearchOutput[]> {
+  async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
     const {
       query,
-      worlds,
       subjects,
       predicates,
+      types,
       namespace: inputNamespace,
       limit = 10,
-    } = params;
+    } = input;
 
     const namespace = inputNamespace ?? this.ctx.namespace;
 
@@ -81,22 +96,64 @@ export class ChunksSearchRepository {
 
     // Resolve target worlds
     let targetWorlds: WorldRow[] = [];
-    if (worlds && worlds.length > 0) {
-      targetWorlds = worlds;
+    if (input.sources && input.sources.length > 0) {
+      for (const source of input.sources) {
+        const sourceName = typeof source === "string"
+          ? source
+          : (source as any).name || (source as any).world || (source as any).id;
+
+        const worldId = resolveWorldId(sourceName);
+        const sourceNamespace = resolveNamespace(
+          sourceName,
+          this.ctx.namespace,
+        );
+
+        const row = await this.ctx.management.worlds.get(
+          worldId ?? undefined,
+          sourceNamespace ?? undefined,
+        );
+        if (row) targetWorlds.push(row);
+      }
     } else {
-      const result = await this.ctx.worlds.list({ namespace, pageSize: 100 });
+      const result = await this.ctx.management.worlds.list({
+        namespace,
+        pageSize: 100,
+      });
       targetWorlds = result.worlds;
     }
 
     const allResults: WorldsSearchOutput[] = [];
 
     for (const worldRow of targetWorlds) {
-      const repo = new ChunksRepository(worldRow.id!);
+      const repo = new ChunksRepository(
+        worldRow.id!,
+        worldRow.namespace ?? undefined,
+      );
       const chunks = repo.getForWorld();
+
+      // Index subject types from the current world's chunks for filtering
+      const subjectTypes = new Map<string, Set<string>>();
+      for (const chunk of chunks) {
+        if (
+          chunk.predicate ===
+            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ||
+          chunk.predicate === "a"
+        ) {
+          if (!subjectTypes.has(chunk.subject)) {
+            subjectTypes.set(chunk.subject, new Set());
+          }
+          subjectTypes.get(chunk.subject)!.add(chunk.text);
+        }
+      }
 
       const worldResults: WorldsSearchOutput[] = chunks
         .filter((c) => !subjects || subjects.includes(c.subject))
         .filter((c) => !predicates || predicates.includes(c.predicate))
+        .filter((c) => {
+          if (!types || types.length === 0) return true;
+          const actualTypes = subjectTypes.get(c.subject);
+          return types.some((t) => actualTypes?.has(t));
+        })
         .map((c) => {
           let score = 0;
           let vecRank = null;
@@ -107,17 +164,16 @@ export class ChunksSearchRepository {
               : new Float32Array(c.vector.buffer);
 
             // Simple dot product as similarity measure
-            score = queryVector.reduce(
+            score = (queryVector as number[]).reduce(
               (acc, val, i) => acc + val * (chunkVector[i] || 0),
               0,
             );
             vecRank = score;
           }
 
-          // Simple text matching if query is present and no vector score
-          if (query && score === 0) {
-            if (c.text.toLowerCase().includes(query.toLowerCase())) {
-              score = 0.5;
+          if (!query || score === 0) {
+            if (!query || c.text.toLowerCase().includes(query.toLowerCase())) {
+              score = Math.max(score, 0.5);
             }
           }
 

@@ -72,7 +72,12 @@ export interface WorldsCreateInput {
    * name is the URL-friendly identifier for the new world.
    * Can be "identifier" (uses default namespace) or "namespace/identifier".
    */
-  name: string;
+  name?: string;
+
+  /**
+   * world is an alias for name.
+   */
+  world?: string;
 
   /**
    * label is the human-readable name for the new world.
@@ -89,9 +94,15 @@ export interface WorldsCreateInput {
  * worldsCreateInputSchema is the Zod schema for WorldsCreateInput.
  */
 export const worldsCreateInputSchema: z.ZodType<WorldsCreateInput> = z.object({
-  name: z.string().describe("The world identifier: 'id' or 'ns/id'."),
+  name: z.string().optional().describe(
+    "The world identifier: 'id' or 'ns/id'.",
+  ),
+  world: z.string().optional().describe("The world identifier (alias)."),
   label: z.string().optional().describe("The display label."),
   description: z.string().optional().describe("The description."),
+}).refine((data) => data.name || data.world, {
+  message: "Either 'name' or 'world' property is required",
+  path: ["name"],
 });
 
 /**

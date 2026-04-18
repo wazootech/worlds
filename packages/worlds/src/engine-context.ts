@@ -1,40 +1,55 @@
 import { ulid } from "@std/ulid";
-import { MemoryWorldsStorageManager } from "#/storage.ts";
-import { ApiKeysRepository } from "#/system/keys/repository.ts";
-import { NamespacesRepository } from "#/system/namespaces/repository.ts";
-import { WorldsRepository } from "#/system/worlds/repository.ts";
+import { MemoryStoreManager } from "#/storage.ts";
+import { ApiKeyRepository } from "#/management/keys.ts";
+import { NamespaceRepository } from "#/management/namespaces.ts";
+import { WorldRepository } from "#/management/worlds.ts";
 import type { Embeddings } from "#/vectors/embeddings.ts";
 import type { WorldsContext } from "#/types.ts";
 
 /**
  * createTestContext creates a test application context with in-memory
- * Map-based repositories and storage.
+ * Map-based management repositories and store manager.
  */
 export async function createTestContext(): Promise<WorldsContext> {
-  const keys = new ApiKeysRepository();
-  const namespaces = new NamespacesRepository();
-  const worlds = new WorldsRepository();
+  const keys = new ApiKeyRepository();
+  const namespaces = new NamespaceRepository();
+  const worlds = new WorldRepository();
 
   const mockEmbeddings: Embeddings = {
     dimensions: 768,
     embed: (texts: string | string[]) => {
       if (Array.isArray(texts)) {
-        return Promise.resolve(Array(texts.length).fill(Array(768).fill(0)));
+        return Promise.resolve(Array(texts.length).fill(Array(768).fill(1)));
       }
-      return Promise.resolve(Array(768).fill(0));
+      return Promise.resolve(Array(768).fill(1));
     },
   };
 
-  const storage = new MemoryWorldsStorageManager();
+  const storage = new MemoryStoreManager();
+  const apiKey = ulid();
+  const namespaceId = "test-admin";
+  const now = Date.now();
+
+  // Register the API key for the test namespace
+  await keys.create(apiKey, namespaceId);
+  await namespaces.insert({
+    id: namespaceId,
+    label: "Test Admin",
+    created_at: now,
+    updated_at: now,
+  });
 
   return {
     vectors: mockEmbeddings,
-    keys,
-    namespaces,
-    worlds,
+    management: {
+      keys,
+      namespaces,
+      worlds,
+    },
     storage,
-    apiKey: ulid(),
-    namespace: "test-admin",
+    apiKey,
+    namespace: namespaceId,
+    world: "test-world",
     async [Symbol.asyncDispose]() {
       await storage.close();
     },

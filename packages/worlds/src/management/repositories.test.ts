@@ -1,10 +1,10 @@
 import { assertEquals, assertExists } from "@std/assert";
-import { ApiKeysRepository } from "#/system/keys/repository.ts";
-import { NamespacesRepository } from "#/system/namespaces/repository.ts";
-import { WorldsRepository } from "#/system/worlds/repository.ts";
+import { ApiKeyRepository } from "#/management/keys.ts";
+import { NamespaceRepository } from "#/management/namespaces.ts";
+import { WorldRepository } from "#/management/worlds.ts";
 
-Deno.test("ApiKeysRepository", async (t) => {
-  const repo = new ApiKeysRepository();
+Deno.test("ApiKeyRepository", async (t) => {
+  const repo = new ApiKeyRepository();
 
   await t.step("create stores key", async () => {
     await repo.create("test-api-key", "test-namespace");
@@ -27,8 +27,8 @@ Deno.test("ApiKeysRepository", async (t) => {
   });
 });
 
-Deno.test("NamespacesRepository", async (t) => {
-  const repo = new NamespacesRepository();
+Deno.test("NamespaceRepository", async (t) => {
+  const repo = new NamespaceRepository();
   const now = Date.now();
 
   await t.step("insert adds namespace", async () => {
@@ -76,8 +76,8 @@ Deno.test("NamespacesRepository", async (t) => {
   });
 });
 
-Deno.test("WorldsRepository", async (t) => {
-  const repo = new WorldsRepository();
+Deno.test("WorldRepository", async (t) => {
+  const repo = new WorldRepository();
   const now = Date.now();
 
   await t.step("insert adds world", async () => {

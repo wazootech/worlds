@@ -20,14 +20,18 @@ export const worldsContentTypeSchema: z.ZodType<WorldsContentType> = z.enum([
 ]);
 
 /**
- * WorldsSource represents a target world by name.
- * The name can be "world" (uses context namespace) or "namespace/world" (fully qualified).
+ * WorldsSource represents a target world by identifier.
  */
 export type WorldsSource =
   | string // "namespace/world" or "world"
   | (
     & { write?: boolean }
-    & { name: string } // "namespace/world" or "world"
+    & {
+      name?: string;
+      world?: string;
+      id?: string;
+      namespace?: string;
+    }
   );
 
 /**
@@ -37,7 +41,12 @@ export const worldsSourceSchema: z.ZodType<WorldsSource> = z.union([
   z.string().describe("A source name: 'world' or 'namespace/world'"),
   z.object({
     write: z.boolean().optional().describe("Whether write access is enabled."),
-    name: z.string().describe("A source name: 'world' or 'namespace/world'"),
+    name: z.string().optional().describe(
+      "A source name: 'world' or 'namespace/world'",
+    ),
+    world: z.string().optional().describe("A world identifier."),
+    id: z.string().optional().describe("A world identifier (alias)."),
+    namespace: z.string().optional().describe("A namespace identifier."),
   }),
 ]);
 
@@ -107,12 +116,29 @@ export interface WorldsImportInput {
 }
 
 /**
+ * worldsImportInputSchema is the Zod schema for WorldsImportInput.
+ */
+export const worldsImportInputSchema: z.ZodType<WorldsImportInput> = z.object({
+  source: worldsSourceSchema,
+  data: z.union([z.string(), z.instanceof(ArrayBuffer)]),
+  contentType: worldsContentTypeSchema.optional(),
+});
+
+/**
  * WorldsExportInput represents the parameters for exporting data from a world.
  */
 export interface WorldsExportInput {
   source: WorldsSource;
   contentType?: WorldsContentType;
 }
+
+/**
+ * worldsExportInputSchema is the Zod schema for WorldsExportInput.
+ */
+export const worldsExportInputSchema: z.ZodType<WorldsExportInput> = z.object({
+  source: worldsSourceSchema,
+  contentType: worldsContentTypeSchema.optional(),
+});
 
 /**
  * WorldsQueryInput represents the parameters for executing a query against a world.

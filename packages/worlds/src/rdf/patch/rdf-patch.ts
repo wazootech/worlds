@@ -1,70 +1,61 @@
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import type { Patch } from "./types.ts";
+import type { Patch, PatchHandler } from "./types.ts";
 import { skolemizeQuad } from "./skolem.ts";
 import type { Embeddings } from "#/vectors/embeddings.ts";
-import type { WorldsStorage } from "#/storage.ts";
-import { FactsRepository } from "#/worlds/facts/repository.ts";
 import { ChunksRepository } from "#/worlds/chunks/repository.ts";
 
-const DEFAULT_GRAPH = "https://wazoo.dev/worlds/graphs/default";
+export const META_PREDICATES = [
+  "http://www.w3.org/2000/01/rdf-schema#label",
+  "http://www.w3.org/2000/01/rdf-schema#comment",
+];
+
+function isMetaPredicate(p: string): boolean {
+  return META_PREDICATES.includes(p);
+}
 
 /**
- * handlePatch handles RDF patches by upserting and deleting triples and chunks.
- * @param storage The worlds storage (N3 Store).
- * @param worldId The world identifier.
- * @param embeddings The embeddings strategy.
- * @param patches The patches to apply.
+ * SearchIndexHandler handles RDF patches by updating the vector search index.
+ * It uses a RecursiveCharacterTextSplitter to chunk literal values and generates
+ * embeddings for each chunk.
  */
-export async function handlePatch(
-  storage: WorldsStorage,
-  worldId: string,
-  embeddings: Embeddings,
-  patches: Patch[],
-) {
-  const factsRepository = new FactsRepository(storage);
-  const chunksRepository = new ChunksRepository(worldId);
+export class SearchIndexHandler implements PatchHandler {
+  constructor(
+    private readonly worldId: string,
+    private readonly embeddings: Embeddings,
+    private readonly namespace?: string,
+  ) {}
 
-  try {
+  public async patch(patches: Patch[]): Promise<void> {
+    const chunksRepository = new ChunksRepository(this.worldId, this.namespace);
+
     for (const patch of patches) {
       if (patch.deletions) {
         for (const q of patch.deletions) {
           const tripleId = await skolemizeQuad(q);
-          await factsRepository.delete(tripleId);
+          await chunksRepository.deleteByFactId(tripleId);
         }
       }
 
       if (patch.insertions) {
         for (const q of patch.insertions) {
-          const quadId = await skolemizeQuad(q);
-          const isFtsEligible = (q.object.termType === "Literal") &&
+          const predicateValue = q.predicate.value;
+          const isType = predicateValue ===
+              "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ||
+            predicateValue === "a";
+
+          const isFtsEligible = (q.object.termType === "Literal" || isType) &&
             (q.object.value.length > 0);
 
-          const tripleId = quadId;
+          if (!isFtsEligible) continue;
+          if (isMetaPredicate(predicateValue)) continue;
 
+          const tripleId = await skolemizeQuad(q);
           const subject = q.subject.value;
           const predicate = q.predicate.value;
           const object = q.object.value;
-          const graph = q.graph.termType === "DefaultGraph"
-            ? DEFAULT_GRAPH
-            : q.graph.value;
 
-          let vector: number[] | null = null;
-          if (isFtsEligible) {
-            try {
-              vector = await embeddings.embed(object);
-            } catch (_error) {
-            }
-          }
-
-          await factsRepository.upsert({
-            id: tripleId,
-            subject,
-            predicate,
-            object,
-            graph,
-          });
-
-          if (vector) {
+          try {
+            const vector = await this.embeddings.embed(object);
             const splitter = new RecursiveCharacterTextSplitter({
               chunkSize: 1000,
               chunkOverlap: 200,
@@ -77,14 +68,13 @@ export async function handlePatch(
 
               if (chunks.length > 1) {
                 try {
-                  chunkVector = await embeddings.embed(chunkText);
+                  chunkVector = await this.embeddings.embed(chunkText);
                 } catch (_error) {
+                  // Fallback to full object vector if sub-chunk embedding fails
                 }
               }
 
-              const chunkId = await hash(
-                `${tripleId}:chunk:${i}`,
-              );
+              const chunkId = await hash(`${tripleId}:chunk:${i}`);
               await chunksRepository.upsert({
                 id: chunkId,
                 fact_id: tripleId,
@@ -94,12 +84,12 @@ export async function handlePatch(
                 vector: new Uint8Array(new Float32Array(chunkVector).buffer),
               });
             }
+          } catch (err) {
+            console.error(`Failed to index quad ${tripleId}:`, err);
           }
         }
       }
     }
-  } catch (_error) {
-    throw _error;
   }
 }
 

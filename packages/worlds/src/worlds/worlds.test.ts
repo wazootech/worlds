@@ -1,15 +1,32 @@
 import { assertEquals, assertExists } from "@std/assert";
 import type { SparqlSelectResults } from "#/worlds/sparql.schema.ts";
 import { createTestContext } from "#/engine-context.ts";
-import { LocalWorlds } from "#/worlds/local.ts";
+import { Worlds } from "#/worlds/worlds.ts";
+import { createIndexedStore } from "#/rdf/patch/indexed-store.ts";
+import { SearchIndexHandler } from "#/rdf/patch/rdf-patch.ts";
 
 Deno.test({
-  name: "LocalWorlds",
+  name: "Worlds Engine (Shell Architecture)",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn(t) {
-    await using appContext = await createTestContext();
-    await using worlds = new LocalWorlds(appContext);
+    await using context = await createTestContext();
+
+    // Wire up a Managed Shell engine for testing
+    const worlds = new Worlds({
+      management: context.management,
+      namespace: context.namespace,
+      resolver: async (id, ns) => {
+        const rawStore = await context.storage.get({ id, namespace: ns });
+        const { store, sync } = createIndexedStore(rawStore, [
+          new SearchIndexHandler(id, context.vectors),
+        ]);
+        (store as any).sync = sync;
+        return store;
+      },
+      world: context.world,
+    });
+
     await worlds.init();
 
     let worldId: string;

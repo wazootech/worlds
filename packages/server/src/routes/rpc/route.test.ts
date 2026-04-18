@@ -5,112 +5,115 @@ import {
   createTestContext,
   createTestNamespace,
   LocalWorlds,
-  WorldsRepository,
 } from "@wazoo/worlds-sdk";
 
-Deno.test("Worlds API routes", async (t) => {
+Deno.test("Worlds RPC API", async (t) => {
   await using testContext = (await createTestContext()) as WorldsContext;
   await using worlds = new LocalWorlds(testContext);
   testContext.engine = worlds;
   await worlds.init();
 
-  const worldsRepository = new WorldsRepository(testContext.system);
-  // Import createServer properly if not already there, or just use the one from server.ts
+  const worldsRepository = testContext.management.worlds;
   const { createServer } = await import("../../server.ts");
   const app = await createServer(testContext);
 
   await t.step(
-    "POST /worlds/rpc/get returns world metadata (Admin)",
+    "POST /rpc (action: get) returns world metadata (Admin)",
     async () => {
-      const { apiKey } = await createTestNamespace(
+      const { apiKey, id: namespaceId } = await createTestNamespace(
         testContext,
       );
       const world = "test-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace: "_",
-        world,
+        namespace: namespaceId,
+        id: world,
         label: "Test World",
         description: "Test Description",
-        db_hostname: null,
-        db_token: null,
+        connection_uri: null,
         created_at: now,
         updated_at: now,
         deleted_at: null,
       });
       await testContext.storage.create({
-        namespace: "_",
-        world,
+        namespace: namespaceId,
+        id: world,
       });
 
       const response = await app.fetch(
-        new Request(`http://localhost/worlds/rpc/get`, {
+        new Request(`http://localhost/rpc`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ source: { world } }),
+          body: JSON.stringify({
+            action: "get",
+            source: `${namespaceId}/${world}`,
+          }),
         }),
       );
 
       assertEquals(response.status, 200);
       const worldResult = await response.json();
       assertEquals(worldResult.label, "Test World");
-      assertEquals(worldResult.world, world);
+      assertEquals(worldResult.id, world);
     },
   );
 
-  await t.step("POST /worlds creates a new world (Admin Only)", async () => {
-    const { apiKey } = await createTestNamespace(testContext);
+  await t.step(
+    "POST /rpc (action: create) creates a new world (Admin Only)",
+    async () => {
+      const { apiKey } = await createTestNamespace(testContext);
 
-    const world = ("new-world-" + ulid()).toLowerCase();
-    const req = new Request("http://localhost/worlds", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        world,
-        label: "New World",
-        description: "New Description",
-      }),
-    });
-    const response = await app.fetch(req);
-    assertEquals(response.status, 201);
+      const world = ("new-world-" + ulid()).toLowerCase();
+      const req = new Request("http://localhost/rpc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          action: "create",
+          name: world,
+          label: "New World",
+          description: "New Description",
+        }),
+      });
+      const response = await app.fetch(req);
+      assertEquals(response.status, 201);
 
-    const worldResult = await response.json();
-    assertEquals(worldResult.label, "New World");
-    assertEquals(worldResult.world, world);
-  });
+      const worldResult = await response.json();
+      assertEquals(worldResult.label, "New World");
+      assertEquals(worldResult.id, world);
+    },
+  );
 
   await t.step(
-    "POST /worlds/rpc/export - Content Negotiation (Turtle)",
+    "POST /rpc (action: export) - Content Negotiation (Turtle)",
     async () => {
-      const { apiKey } = await createTestNamespace(
+      const { apiKey, id: namespaceId } = await createTestNamespace(
         testContext,
       );
       const world = "export-world-" + ulid();
       const now = Date.now();
       await worldsRepository.insert({
-        namespace: "_",
-        world,
+        namespace: namespaceId,
+        id: world,
         label: "Export World",
-        description: null,
-        db_hostname: null,
-        db_token: null,
+        description: undefined,
+        connection_uri: null,
         created_at: now,
         updated_at: now,
         deleted_at: null,
       });
       await testContext.storage.create({
-        namespace: "_",
-        world,
+        namespace: namespaceId,
+        id: world,
       });
 
       const response = await app.fetch(
-        new Request(`http://localhost/worlds/rpc/export`, {
+        new Request(`http://localhost/rpc`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
@@ -118,7 +121,8 @@ Deno.test("Worlds API routes", async (t) => {
             "Accept": "text/turtle",
           },
           body: JSON.stringify({
-            source: { world },
+            action: "export",
+            source: `${namespaceId}/${world}`,
             contentType: "text/turtle",
           }),
         }),
@@ -129,7 +133,7 @@ Deno.test("Worlds API routes", async (t) => {
   );
 
   await t.step(
-    "POST /worlds/rpc/get returns 200 without Auth if no apiKey is set",
+    "POST /rpc (action: get) returns 200 without Auth if no apiKey is set",
     async () => {
       await using unprotectedContext = await createTestContext();
       await using unprotectedWorlds = new LocalWorlds(unprotectedContext);
@@ -140,39 +144,40 @@ Deno.test("Worlds API routes", async (t) => {
       const appUnprotected = await createServer(unprotectedContext);
       const world = "unprotected-world-" + ulid();
       const now = Date.now();
-      const unprotectedWorldsRepository = new WorldsRepository(
-        unprotectedContext.libsql.database,
-      );
+      const unprotectedWorldsRepository = unprotectedContext.management.worlds;
+      const namespace = unprotectedContext.namespace ?? "_";
       await unprotectedWorldsRepository.insert({
-        namespace: "_",
-        world,
+        namespace,
+        id: world,
         label: "Unprotected World",
-        description: null,
-        db_hostname: null,
-        db_token: null,
+        description: undefined,
+        connection_uri: null,
         created_at: now,
         updated_at: now,
         deleted_at: null,
       });
-      await unprotectedContext.libsql.manager.create({
-        namespace: "_",
-        world,
+      await unprotectedContext.storage.create({
+        namespace,
+        id: world,
       });
 
       const response = await appUnprotected.fetch(
-        new Request(`http://localhost/worlds/rpc/get`, {
+        new Request(`http://localhost/rpc`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ source: { world } }),
+          body: JSON.stringify({
+            action: "get",
+            source: `${namespace}/${world}`,
+          }),
         }),
       );
 
       assertEquals(response.status, 200);
       const worldResult = await response.json();
       assertEquals(worldResult.label, "Unprotected World");
-      assertEquals(worldResult.world, world);
+      assertEquals(worldResult.id, world);
     },
   );
 });

@@ -1,7 +1,7 @@
 /**
- * ApiKeysRepository handles API key persistence in-memory using a Map.
+ * ApiKeyRepository handles API key persistence in-memory using a Map.
  */
-export class ApiKeysRepository {
+export class ApiKeyRepository {
   private readonly keys = new Map<string, string | undefined>();
 
   constructor() {}

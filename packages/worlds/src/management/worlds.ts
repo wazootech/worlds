@@ -19,9 +19,9 @@ export interface WorldsListResult {
 }
 
 /**
- * WorldsRepository handles the persistence of world metadata in an in-memory Map.
+ * WorldRepository handles the persistence of world metadata in an in-memory Map.
  */
-export class WorldsRepository {
+export class WorldRepository {
   private readonly worlds = new Map<string, WorldRow>();
 
   constructor() {}
@@ -30,7 +30,7 @@ export class WorldsRepository {
     return `${namespace ?? "_"}/${id ?? "_"}`;
   }
 
-  get(id?: string, namespace?: string): Promise<WorldRow | null> {
+  async get(id?: string, namespace?: string): Promise<WorldRow | null> {
     const key = this.getRef(id, namespace);
     return this.worlds.get(key) ?? null;
   }
@@ -38,12 +38,12 @@ export class WorldsRepository {
   /**
    * getInternal retrieves a world by its identifier without namespace scoping.
    */
-  getInternal(id?: string): Promise<WorldRow | null> {
+  async getInternal(id?: string): Promise<WorldRow | null> {
     const found = Array.from(this.worlds.values()).find((w) => w.id === id);
     return found ?? null;
   }
 
-  list(params: WorldsListParams): Promise<WorldsListResult> {
+  async list(params: WorldsListParams): Promise<WorldsListResult> {
     const { namespace, pageSize = 50, pageToken } = params;
 
     const all = Array.from(this.worlds.values())
@@ -77,13 +77,13 @@ export class WorldsRepository {
     return { worlds, nextPageToken };
   }
 
-  insert(world: WorldRowInsert): Promise<void> {
+  async insert(world: WorldRowInsert): Promise<void> {
     const key = this.getRef(world.id, world.namespace);
     if (this.worlds.has(key)) return;
     this.worlds.set(key, { ...world });
   }
 
-  update(
+  async update(
     id: string | undefined,
     namespace: string | undefined,
     updates: WorldRowUpdate,
@@ -98,7 +98,7 @@ export class WorldsRepository {
     });
   }
 
-  delete(id?: string, namespace?: string): Promise<void> {
+  async delete(id?: string, namespace?: string): Promise<void> {
     const key = this.getRef(id, namespace);
     this.worlds.delete(key);
   }
