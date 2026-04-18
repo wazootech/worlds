@@ -340,7 +340,7 @@ export class Worlds {
       try {
         const { decodeBase64 } = await import("@std/encoding/base64");
         importData = decodeBase64(importData);
-      } catch (_e) {
+      } catch (e) {
         // Fallback to treating as raw string if decoding fails
       }
     }

@@ -1,192 +1,89 @@
 import { STATUS_CODE, STATUS_TEXT, type StatusCode } from "@std/http/status";
 
 /**
- * ErrorResponseInit is the initialization options for ErrorResponse.
+ * HttpError is a base class for all HTTP-related errors.
  */
-export interface ErrorResponseInit {
-  /**
-   * message is a human-readable error message.
-   */
-  message: string;
+export class HttpError extends Error {
+  public readonly isHttpError = true;
+
+  public constructor(
+    public readonly status: StatusCode,
+    message: string,
+  ) {
+    super(message);
+    this.name = this.constructor.name;
+  }
 
   /**
-   * code is the HTTP status code for the error.
+   * toResponse converts the error into a structured JSON Response.
    */
-  code: StatusCode;
-
-  /**
-   * headers are optional HTTP headers to include in the response.
-   */
-  headers?: Headers | HeadersInit;
-}
-
-/**
- * ErrorResponse is a structured JSON error response.
- */
-export class ErrorResponse extends Response {
-  /**
-   * constructor creates a new ErrorResponse.
-   * @param init The initialization options.
-   */
-  public constructor(init: ErrorResponseInit) {
-    const { message, code } = init;
-    const headers = new Headers(init.headers);
-    if (!headers.has("Content-Type")) {
-      headers.set("Content-Type", "application/json");
-    }
-
-    super(
-      JSON.stringify({
-        error: {
-          code,
-          message,
-          statusText: STATUS_TEXT[code],
-        },
-      }),
+  public toResponse(): Response {
+    return Response.json(
       {
-        status: code,
-        headers: headers,
+        error: {
+          code: this.status,
+          message: this.message,
+          statusText: STATUS_TEXT[this.status],
+        },
+      },
+      {
+        status: this.status,
+        headers: { "Content-Type": "application/json" },
       },
     );
   }
+}
 
-  /**
-   * BadRequest creates a 400 Bad Request error response.
-   */
-  static BadRequest(
-    message: string,
-    headers: Headers | HeadersInit = {},
-  ): ErrorResponse {
-    return new ErrorResponse({
-      message,
-      code: STATUS_CODE.BadRequest,
-      headers,
-    });
+/**
+ * BadRequestError represents a 400 Bad Request error.
+ */
+export class BadRequestError extends HttpError {
+  constructor(message: string) {
+    super(STATUS_CODE.BadRequest, message);
   }
+}
 
-  /**
-   * Unauthorized creates a 401 Unauthorized error response.
-   */
-  static Unauthorized(
-    message = "Unauthorized",
-    headers: Headers | HeadersInit = {},
-  ): ErrorResponse {
-    return new ErrorResponse({
-      message,
-      code: STATUS_CODE.Unauthorized,
-      headers,
-    });
+/**
+ * UnauthorizedError represents a 401 Unauthorized error.
+ */
+export class UnauthorizedError extends HttpError {
+  constructor(message = "Unauthorized") {
+    super(STATUS_CODE.Unauthorized, message);
   }
+}
 
-  /**
-   * Forbidden creates a 403 Forbidden error response.
-   */
-  static Forbidden(
-    message = "Forbidden",
-    headers: Headers | HeadersInit = {},
-  ): ErrorResponse {
-    return new ErrorResponse({
-      message,
-      code: STATUS_CODE.Forbidden,
-      headers,
-    });
+/**
+ * ForbiddenError represents a 403 Forbidden error.
+ */
+export class ForbiddenError extends HttpError {
+  constructor(message = "Forbidden") {
+    super(STATUS_CODE.Forbidden, message);
   }
+}
 
-  /**
-   * NotFound creates a 404 Not Found error response.
-   */
-  static NotFound(
-    message = "Not found",
-    headers: Headers | HeadersInit = {},
-  ): ErrorResponse {
-    return new ErrorResponse({
-      message,
-      code: STATUS_CODE.NotFound,
-      headers,
-    });
+/**
+ * NotFoundError represents a 404 Not Found error.
+ */
+export class NotFoundError extends HttpError {
+  constructor(message = "Not found") {
+    super(STATUS_CODE.NotFound, message);
   }
+}
 
-  /**
-   * MethodNotAllowed creates a 405 Method Not Allowed error response.
-   */
-  static MethodNotAllowed(
-    message = "Method Not Allowed",
-    headers: Headers | HeadersInit = {},
-  ): ErrorResponse {
-    return new ErrorResponse({
-      message,
-      code: STATUS_CODE.MethodNotAllowed,
-      headers,
-    });
+/**
+ * ConflictError represents a 409 Conflict error.
+ */
+export class ConflictError extends HttpError {
+  constructor(message: string) {
+    super(STATUS_CODE.Conflict, message);
   }
+}
 
-  /**
-   * Conflict creates a 409 Conflict error response.
-   */
-  static Conflict(
-    message: string,
-    headers: Headers | HeadersInit = {},
-  ): ErrorResponse {
-    return new ErrorResponse({
-      message,
-      code: STATUS_CODE.Conflict,
-      headers,
-    });
-  }
-
-  /**
-   * PayloadTooLarge creates a 413 Payload Too Large error response.
-   */
-  static PayloadTooLarge(
-    message = "Payload Too Large",
-    headers: Headers | HeadersInit = {},
-  ): ErrorResponse {
-    return new ErrorResponse({
-      message,
-      code: STATUS_CODE.ContentTooLarge,
-      headers,
-    });
-  }
-
-  /**
-   * UnsupportedMediaType creates a 415 Unsupported Media Type error response.
-   */
-  static UnsupportedMediaType(
-    message = "Unsupported Media Type",
-    headers: Headers | HeadersInit = {},
-  ): ErrorResponse {
-    return new ErrorResponse({
-      message,
-      code: STATUS_CODE.UnsupportedMediaType,
-      headers,
-    });
-  }
-
-  /**
-   * RateLimitExceeded creates a 429 Too Many Requests error response.
-   */
-  static RateLimitExceeded(
-    message = "Rate limit exceeded",
-    headers: Headers | HeadersInit = {},
-  ): ErrorResponse {
-    return new ErrorResponse({
-      message,
-      code: STATUS_CODE.TooManyRequests,
-      headers,
-    });
-  }
-
-  /**
-   * InternalServerError creates a 500 Internal Server Error response.
-   */
-  static InternalServerError(
-    message = "Internal Server Error",
-    headers: Headers | HeadersInit = {},
-  ): ErrorResponse {
-    return new ErrorResponse({
-      message,
-      code: STATUS_CODE.InternalServerError,
-      headers,
-    });
+/**
+ * InternalServerError represents a 500 Internal Server Error.
+ */
+export class InternalServerError extends HttpError {
+  constructor(message = "Internal Server Error") {
+    super(STATUS_CODE.InternalServerError, message);
   }
 }

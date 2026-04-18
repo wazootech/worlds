@@ -25,9 +25,9 @@ export function expandPathNamespace(
 export const defaultWorld: string | undefined = undefined;
 
 /**
- * ResolvedSource represents a fully resolved world + namespace pair.
+ * ParsedSource represents a fully resolved world + namespace pair.
  */
-export interface ResolvedSource {
+export interface ParsedSource {
   world?: string;
   namespace?: string;
 }
@@ -35,7 +35,7 @@ export interface ResolvedSource {
 /**
  * parseSourceName parses a "namespace/world" string into components.
  */
-function parseSourceName(source: string): ResolvedSource {
+function parseSourceName(source: string): ParsedSource {
   const trimmed = source.trim();
   if (!trimmed || trimmed === "_") return {};
 
@@ -64,13 +64,19 @@ function parseSourceName(source: string): ResolvedSource {
     );
   }
 
-  const slashIndex = trimmed.lastIndexOf("/");
-  if (slashIndex === -1) {
+  const slashParts = trimmed.split("/");
+  if (slashParts.length > 2) {
+    throw new SourceParseError(
+      `Invalid source format: strictly flat namespace format required (max one slash) in "${trimmed}"`,
+    );
+  }
+
+  if (slashParts.length === 1) {
     return { world: trimmed };
   }
 
-  const namespace = trimmed.slice(0, slashIndex);
-  const world = trimmed.slice(slashIndex + 1);
+  const namespace = slashParts[0];
+  const world = slashParts[1];
 
   return {
     namespace: (namespace === "" || namespace === "_") ? undefined : namespace,
@@ -89,12 +95,12 @@ export class SourceParseError extends Error {
 }
 
 /**
- * resolveSource converts various input forms into a ResolvedSource.
+ * resolveSource converts various input forms into a ParsedSource.
  */
 export function resolveSource(
   source: WorldsSource,
-  _context?: Partial<WorldsContext>,
-): ResolvedSource {
+  context?: Partial<WorldsContext>,
+): ParsedSource {
   if (source === null || source === undefined) {
     return {};
   }
@@ -106,7 +112,7 @@ export function resolveSource(
     const parsed = parseSourceName(source);
     return {
       world: parsed.world ?? defaultWorld,
-      namespace: parsed.namespace ?? _context?.namespace ?? defaultNamespace,
+      namespace: parsed.namespace ?? context?.namespace ?? defaultNamespace,
     };
   }
 
@@ -118,7 +124,7 @@ export function resolveSource(
       const parsed = parseSourceName((source as any).name);
       return {
         world: parsed.world ?? defaultWorld,
-        namespace: parsed.namespace ?? _context?.namespace ?? defaultNamespace,
+        namespace: parsed.namespace ?? context?.namespace ?? defaultNamespace,
       };
     }
 
@@ -126,7 +132,7 @@ export function resolveSource(
       // Use logical OR with fallback to ensure we don't return undefined if one key exists but is empty
       const worldId = (source as any).world || (source as any).id ||
         defaultWorld;
-      const namespace = (source as any).namespace || _context?.namespace ||
+      const namespace = (source as any).namespace || context?.namespace ||
         defaultNamespace;
 
       return {
@@ -144,40 +150,18 @@ export function resolveSource(
 }
 
 /**
- * resolveNamespace parses a source and extracts the namespace component.
- */
-export function resolveNamespace(
-  source: WorldsSource,
-  defaultNs?: string | null,
-): string | undefined {
-  const resolved = resolveSource(source);
-  return resolved.namespace ?? defaultNs ?? undefined;
-}
-
-/**
- * resolveWorldId parses a source and extracts the world ID component.
- */
-export function resolveWorldId(
-  source: WorldsSource,
-  defaultW?: string | null,
-): string | undefined {
-  const resolved = resolveSource(source);
-  return resolved.world ?? defaultW ?? undefined;
-}
-
-/**
  * toWorldName returns a "namespace/world" string representation.
  */
 export function toWorldName(
   source:
     | WorldsSource
-    | ResolvedSource
+    | ParsedSource
     | {
       world?: string | null;
       namespace?: string | null;
     },
 ): string {
-  let resolved: ResolvedSource;
+  let resolved: ParsedSource;
 
   if (
     typeof source === "string" ||

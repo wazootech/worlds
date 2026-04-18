@@ -69,7 +69,7 @@ export class SearchIndexHandler implements PatchHandler {
               if (chunks.length > 1) {
                 try {
                   chunkVector = await this.embeddings.embed(chunkText);
-                } catch (_error) {
+                } catch (error) {
                   // Fallback to full object vector if sub-chunk embedding fails
                 }
               }

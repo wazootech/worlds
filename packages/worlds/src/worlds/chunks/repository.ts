@@ -4,7 +4,7 @@ import type {
   WorldsSearchOutput,
 } from "#/worlds/search.schema.ts";
 import type { WorldRow } from "#/management/schema.ts";
-import { resolveNamespace, resolveWorldId, toWorldName } from "#/sources.ts";
+import { resolveSource, toWorldName } from "#/sources.ts";
 import type { ChunkTableUpsert } from "./schema.ts";
 import type { SearchIndex } from "#/types.ts";
 
@@ -102,15 +102,10 @@ export class ChunksSearchRepository implements SearchIndex {
           ? source
           : (source as any).name || (source as any).world || (source as any).id;
 
-        const worldId = resolveWorldId(sourceName);
-        const sourceNamespace = resolveNamespace(
-          sourceName,
-          this.ctx.namespace,
-        );
-
+        const resolved = resolveSource(sourceName, this.ctx);
         const row = await this.ctx.management.worlds.get(
-          worldId ?? undefined,
-          sourceNamespace ?? undefined,
+          resolved.world,
+          resolved.namespace,
         );
         if (row) targetWorlds.push(row);
       }

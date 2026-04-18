@@ -1,4 +1,4 @@
-import { assertEquals, assertExists, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertExists, assertRejects } from "@std/assert";
 import type { WorldsInterface } from "@wazoo/worlds-sdk";
 import type {
   WorldsCreateInput,

@@ -63,6 +63,6 @@ export function createTestNamespace(
   context: WorldsContext,
   _options?: { plan?: string },
 ): Promise<{ id: string; apiKey: string | undefined }> {
-  const id = `https://wazoo.dev/worlds/namespaces/${ulid()}`;
+  const id = ulid();
   return Promise.resolve({ id, apiKey: context.apiKey });
 }

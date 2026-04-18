@@ -42,7 +42,7 @@ export async function authorizeRequest(
   const apiKeysRepo = appContext.management.keys;
   const namespaceId = await apiKeysRepo.resolveNamespace(apiKey);
 
-  if (namespaceId) {
+  if (namespaceId !== undefined) {
     return { admin: false, namespaceId };
   }
 

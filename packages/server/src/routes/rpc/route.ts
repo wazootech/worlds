@@ -1,15 +1,24 @@
 import { Router } from "@fartlabs/rt";
-import type { WorldsContext } from "@wazoo/worlds-sdk";
-import { ErrorResponse } from "#/utils/errors/errors.ts";
-import { handleListWorlds } from "./list.ts";
-import { handleGetWorld } from "./get.ts";
-import { handleCreateWorld } from "./create.ts";
-import { handlePutWorld } from "./update.ts";
-import { handleDeleteWorld } from "./delete.ts";
-import { handleExport } from "./export.ts";
-import { handleImport } from "./import.ts";
-import { handleSearch } from "./search.ts";
-import { handleSparql } from "./sparql.ts";
+import {
+  type WorldsContext,
+  worldsCreateInputSchema,
+  worldsDeleteInputSchema,
+  worldsExportInputSchema,
+  worldsGetInputSchema,
+  worldsImportInputSchema,
+  worldsListInputSchema,
+  worldsSearchInputSchema,
+  worldsSparqlInputSchema,
+  worldsUpdateInputSchema,
+} from "@wazoo/worlds-sdk";
+import { authorizeRequest } from "#/middleware/auth.ts";
+import {
+  BadRequestError,
+  HttpError,
+  InternalServerError,
+  NotFoundError,
+  UnauthorizedError,
+} from "#/utils/errors/errors.ts";
 
 /**
  * rpcRouter creates a router for the Unified RPC API.
@@ -17,7 +26,30 @@ import { handleSparql } from "./sparql.ts";
 export default (appContext: WorldsContext) => {
   return new Router()
     .post("/rpc", async (ctx) => {
-      return await handleRpc(appContext, ctx);
+      try {
+        return await handleRpc(appContext, ctx);
+      } catch (error) {
+        // Use property check to handle potential module resolution mismatches
+        if (
+          error && typeof error === "object" && "isHttpError" in error &&
+          typeof (error as any).toResponse === "function"
+        ) {
+          return (error as any).toResponse();
+        }
+
+        if (error instanceof Error) {
+          console.error(`[RPC Middleware Error]:`, error.stack);
+        } else {
+          console.error(`[RPC Middleware Error]:`, error);
+        }
+
+        const message = error instanceof Error ? error.message : String(error);
+        const stack = error instanceof Error ? error.stack : undefined;
+        return Response.json(
+          { error: { code: 500, message, stack } },
+          { status: 500 },
+        );
+      }
     });
 };
 
@@ -32,53 +64,124 @@ export async function handleRpc(
   const { action, ...params } = body;
 
   if (!action) {
-    return ErrorResponse.BadRequest("RPC action required in body");
+    throw new BadRequestError("RPC action required in body");
   }
 
-  // Construct a new Request with the consumed body (params only) to pass to modular handlers
-  const reInjectedBody = { ...body };
-  // @ts-ignore - internal
-  delete reInjectedBody.action;
+  const engine = appContext.engine;
+  if (!engine) {
+    throw new InternalServerError("Engine not initialized");
+  }
+
+  const authorized = await authorizeRequest(appContext, ctx.request);
+  if (!authorized.admin && !authorized.namespaceId) {
+    throw new UnauthorizedError(
+      `Admin/Namespace access required for ${action}`,
+    );
+  }
 
   console.log(
-    `[RPC Dispatcher] Dispatching action=${action}, keys=${
-      Object.keys(reInjectedBody).join(",")
-    }`,
+    `[RPC Dispatcher] action=${action}, keys=${Object.keys(params).join(",")}`,
   );
-  const request = new Request(ctx.request.url, {
-    method: ctx.request.method,
-    headers: ctx.request.headers,
-    body: JSON.stringify(params),
-  });
 
-  try {
-    // Dispatch to modular handlers using standardized (appContext, request) signature
-    switch (action) {
-      case "list":
-        return await handleListWorlds(appContext, request);
-      case "create":
-        return await handleCreateWorld(appContext, request);
-      case "get":
-        return await handleGetWorld(appContext, request);
-      case "update":
-        return await handlePutWorld(appContext, request);
-      case "delete":
-        return await handleDeleteWorld(appContext, request);
-      case "export":
-        return await handleExport(appContext, request);
-      case "import":
-        return await handleImport(appContext, request);
-      case "sparql":
-        return await handleSparql(appContext, request);
-      case "search":
-        return await handleSearch(appContext, request);
-      default:
-        return ErrorResponse.BadRequest(`Unknown RPC action: ${action}`);
+  switch (action) {
+    case "list": {
+      const parseResult = worldsListInputSchema.safeParse(params);
+      if (!parseResult.success) {
+        throw new BadRequestError(
+          `Invalid parameters: ${parseResult.error.message}`,
+        );
+      }
+      const worlds = await engine.list(parseResult.data);
+      return Response.json(worlds);
     }
-  } catch (error) {
-    console.error(`[RPC Error] ${action}:`, error);
-    return ErrorResponse.InternalServerError(
-      error instanceof Error ? error.message : String(error),
-    );
+    case "create": {
+      const parseResult = worldsCreateInputSchema.safeParse(params);
+      if (!parseResult.success) {
+        throw new BadRequestError(
+          `Invalid parameters: ${parseResult.error.message}`,
+        );
+      }
+      const world = await engine.create(parseResult.data);
+      return Response.json(world, { status: 201 });
+    }
+    case "get": {
+      const parseResult = worldsGetInputSchema.safeParse(params);
+      if (!parseResult.success) {
+        throw new BadRequestError(
+          `Invalid parameters: ${parseResult.error.message}`,
+        );
+      }
+      const world = await engine.get(parseResult.data);
+      if (!world) {
+        throw new NotFoundError("World not found");
+      }
+      return Response.json(world);
+    }
+    case "update": {
+      const parseResult = worldsUpdateInputSchema.safeParse(params);
+      if (!parseResult.success) {
+        throw new BadRequestError(
+          `Invalid parameters: ${parseResult.error.message}`,
+        );
+      }
+      const world = await engine.update(parseResult.data);
+      return Response.json(world);
+    }
+    case "delete": {
+      const parseResult = worldsDeleteInputSchema.safeParse(params);
+      if (!parseResult.success) {
+        throw new BadRequestError(
+          `Invalid parameters: ${parseResult.error.message}`,
+        );
+      }
+      await engine.delete(parseResult.data);
+      return new Response(null, { status: 204 });
+    }
+    case "export": {
+      const parseResult = worldsExportInputSchema.safeParse(params);
+      if (!parseResult.success) {
+        throw new BadRequestError(
+          `Invalid parameters: ${parseResult.error.message}`,
+        );
+      }
+      const data = await engine.export(parseResult.data);
+      return new Response(data, {
+        headers: {
+          "Content-Type": parseResult.data.contentType || "application/n-quads",
+        },
+      });
+    }
+    case "import": {
+      const parseResult = worldsImportInputSchema.safeParse(params);
+      if (!parseResult.success) {
+        throw new BadRequestError(
+          `Invalid parameters: ${parseResult.error.message}`,
+        );
+      }
+      await engine.import(parseResult.data);
+      return new Response(null, { status: 204 });
+    }
+    case "sparql": {
+      const parseResult = worldsSparqlInputSchema.safeParse(params);
+      if (!parseResult.success) {
+        throw new BadRequestError(
+          `Invalid parameters: ${parseResult.error.message}`,
+        );
+      }
+      const result = await engine.sparql(parseResult.data);
+      return Response.json(result);
+    }
+    case "search": {
+      const parseResult = worldsSearchInputSchema.safeParse(params);
+      if (!parseResult.success) {
+        throw new BadRequestError(
+          `Invalid parameters: ${parseResult.error.message}`,
+        );
+      }
+      const results = await engine.search(parseResult.data);
+      return Response.json(results);
+    }
+    default:
+      throw new BadRequestError(`Unknown RPC action: ${action}`);
   }
 }
