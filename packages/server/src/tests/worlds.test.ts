@@ -53,7 +53,6 @@ Deno.test("World routes", async (t) => {
       pageSize: 1,
     });
     assertEquals(list1.length, 1);
-    const world1 = list1[0].world;
 
     // We don't have an easy way to get the token from the SDK currently
     // because list returns World[] instead of { worlds, nextPageToken }.

@@ -30,7 +30,7 @@ export class WorldRepository {
     return `${namespace ?? "_"}/${id ?? "_"}`;
   }
 
-  async get(id?: string, namespace?: string): Promise<WorldRow | null> {
+  public async get(id?: string, namespace?: string): Promise<WorldRow | null> {
     const key = this.getRef(id, namespace);
     return this.worlds.get(key) ?? null;
   }
@@ -38,12 +38,12 @@ export class WorldRepository {
   /**
    * getInternal retrieves a world by its identifier without namespace scoping.
    */
-  async getInternal(id?: string): Promise<WorldRow | null> {
+  public async getInternal(id?: string): Promise<WorldRow | null> {
     const found = Array.from(this.worlds.values()).find((w) => w.id === id);
-    return found ?? null;
+    return await Promise.resolve(found ?? null);
   }
 
-  async list(params: WorldsListParams): Promise<WorldsListResult> {
+  public async list(params: WorldsListParams): Promise<WorldsListResult> {
     const { namespace, pageSize = 50, pageToken } = params;
 
     const all = Array.from(this.worlds.values())
@@ -77,13 +77,13 @@ export class WorldRepository {
     return { worlds, nextPageToken };
   }
 
-  async insert(world: WorldRowInsert): Promise<void> {
+  public async insert(world: WorldRowInsert): Promise<void> {
     const key = this.getRef(world.id, world.namespace);
     if (this.worlds.has(key)) return;
     this.worlds.set(key, { ...world });
   }
 
-  async update(
+  public async update(
     id: string | undefined,
     namespace: string | undefined,
     updates: WorldRowUpdate,
@@ -98,7 +98,7 @@ export class WorldRepository {
     });
   }
 
-  async delete(id?: string, namespace?: string): Promise<void> {
+  public async delete(id?: string, namespace?: string): Promise<void> {
     const key = this.getRef(id, namespace);
     this.worlds.delete(key);
   }

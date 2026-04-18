@@ -7,7 +7,7 @@ import type {
   WorldsSparqlOutput,
 } from "#/worlds/sparql.schema.ts";
 
-export const queryEngine = new QueryEngine();
+export const queryEngine: QueryEngine = new QueryEngine();
 
 export async function executeSparql(
   store: Store,
@@ -91,11 +91,11 @@ async function handleBindings(queryType: {
       bindingsStream.off("error", onError);
     };
 
-    // @ts-ignore - event emitter
+    // @ts-ignore: Comunica bindings are EventEmitters
     bindingsStream.on("data", onData);
-    // @ts-ignore - event emitter
+    // @ts-ignore: Comunica bindings are EventEmitters
     bindingsStream.on("end", onEnd);
-    // @ts-ignore - event emitter
+    // @ts-ignore: Comunica bindings are EventEmitters
     bindingsStream.on("error", onError);
   });
 
@@ -125,13 +125,13 @@ async function handleQuads(queryType: {
 
     const onData = (quad: unknown) => {
       if (finished) return;
-      // @ts-ignore - Comunica quad structure
+      // @ts-ignore: Comunica quad structure
       const subject = quad.subject;
-      // @ts-ignore
+      // @ts-ignore: Comunica quad structure
       const predicate = quad.predicate;
-      // @ts-ignore
+      // @ts-ignore: Comunica quad structure
       const object = quad.object;
-      // @ts-ignore
+      // @ts-ignore: Comunica quad structure
       const graph = quad.graph;
 
       q.push({
@@ -166,19 +166,19 @@ async function handleQuads(queryType: {
     };
 
     const cleanup = () => {
-      // @ts-ignore - event emitter
+      // @ts-ignore - Comunica streams are EventEmitters
       quadsStream.off("data", onData);
-      // @ts-ignore - event emitter
+      // @ts-ignore - Comunica streams are EventEmitters
       quadsStream.off("end", onEnd);
-      // @ts-ignore - event emitter
+      // @ts-ignore - Comunica streams are EventEmitters
       quadsStream.off("error", onError);
     };
 
-    // @ts-ignore - event emitter
+    // @ts-ignore - Comunica streams are EventEmitters
     quadsStream.on("data", onData);
-    // @ts-ignore - event emitter
+    // @ts-ignore - Comunica streams are EventEmitters
     quadsStream.on("end", onEnd);
-    // @ts-ignore - event emitter
+    // @ts-ignore - Comunica streams are EventEmitters
     quadsStream.on("error", onError);
   });
 

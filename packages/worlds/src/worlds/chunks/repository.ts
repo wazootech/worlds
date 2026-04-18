@@ -34,7 +34,7 @@ export class ChunksRepository {
    * upsert inserts or replaces a text chunk record.
    * @param chunk The chunk data to upsert.
    */
-  async upsert(chunk: ChunkTableUpsert): Promise<void> {
+  public upsert(chunk: ChunkTableUpsert): void {
     ChunksRepository.worldChunks.get(this.worldKey)!.set(chunk.id, {
       ...chunk,
     });
@@ -44,7 +44,7 @@ export class ChunksRepository {
    * deleteByFactId removes all chunks associated with a specific fact.
    * @param factId The stable identifier of the fact.
    */
-  async deleteByFactId(factId: string): Promise<void> {
+  public deleteByFactId(factId: string): void {
     const chunks = ChunksRepository.worldChunks.get(this.worldKey);
     if (!chunks) return;
 

@@ -1,5 +1,5 @@
 import type { Embeddings } from "#/vectors/embeddings.ts";
-import { MemoryStoreManager } from "#/storage.ts";
+import type { MemoryStoreManager } from "#/storage.ts";
 import type { ApiKeyRepository } from "#/management/keys.ts";
 import type { NamespaceRepository } from "#/management/namespaces.ts";
 import type { WorldRepository } from "#/management/worlds.ts";

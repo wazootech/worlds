@@ -98,7 +98,7 @@ export class SourceParseError extends Error {
  * resolveSource converts various input forms into a ParsedSource.
  */
 export function resolveSource(
-  source: WorldsSource,
+  source?: WorldsSource,
   context?: Partial<WorldsContext>,
 ): ParsedSource {
   if (source === null || source === undefined) {
@@ -141,6 +141,7 @@ export function resolveSource(
       return {
         world: worldId,
         namespace,
+        id: obj.id as string | undefined,
       };
     }
 

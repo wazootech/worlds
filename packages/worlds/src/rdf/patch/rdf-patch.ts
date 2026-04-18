@@ -69,7 +69,7 @@ export class SearchIndexHandler implements PatchHandler {
               if (chunks.length > 1) {
                 try {
                   chunkVector = await this.embeddings.embed(chunkText);
-                } catch (error) {
+                } catch {
                   // Fallback to full object vector if sub-chunk embedding fails
                 }
               }
@@ -84,8 +84,8 @@ export class SearchIndexHandler implements PatchHandler {
                 vector: new Uint8Array(new Float32Array(chunkVector).buffer),
               });
             }
-          } catch (err) {
-            console.error(`Failed to index quad ${tripleId}:`, err);
+          } catch (error) {
+            console.error(`Failed to index quad ${tripleId}:`, error);
           }
         }
       }

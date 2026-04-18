@@ -13,6 +13,7 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createIndexedStore } from "#/rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "#/rdf/patch/rdf-patch.ts";
 import { ChunksSearchRepository } from "#/worlds/chunks/repository.ts";
+import type { Store } from "n3";
 
 /**
  * WorldsContextConfig is the configuration for a Worlds engine context.
@@ -67,7 +68,7 @@ export async function createWorldsContext(
     vectors = new OpenRouterEmbeddings({
       model: openrouter.textEmbeddingModel(
         config.envs.OPENROUTER_EMBEDDINGS_MODEL,
-      ),
+      ) as any,
       dimensions,
     });
   } else {

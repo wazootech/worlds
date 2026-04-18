@@ -1,4 +1,4 @@
-import type { Store } from "n3";
+import type { Store, Quad } from "n3";
 import type {
   WorldsExportInput,
   WorldsImportInput,
@@ -18,7 +18,8 @@ import type {
   WorldsSearchInput,
   WorldsSearchOutput,
 } from "./schema.ts";
-import type { ManagementLayer, WorldRow } from "../management/schema.ts";
+import type { ManagementLayer } from "../types.ts";
+import type { WorldRow } from "../management/worlds.ts";
 import type { SearchIndex } from "../types.ts";
 import { expandPathNamespace, resolveSource, toWorldName } from "../sources.ts";
 import type { WorldsSource } from "../schema.ts";
@@ -26,7 +27,7 @@ import { ChunksSearchRepository } from "./chunks/repository.ts";
 import { createIndexedStore } from "../rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "../rdf/patch/rdf-patch.ts";
 import type { Embeddings } from "../vectors/embeddings.ts";
-import { MemoryStoreManager } from "../storage.ts";
+import type { MemoryStoreManager } from "../storage.ts";
 import type { WorldsEngine } from "../types.ts";
 
 /**
@@ -97,14 +98,14 @@ export class Worlds implements WorldsEngine {
   /**
    * init initializes the engine.
    */
-  public async init(): Promise<void> {
+  public init(): Promise<void> {
     return Promise.resolve();
   }
 
   /**
    * [Symbol.asyncDispose] provides support for explicit resource management.
    */
-  public async [Symbol.asyncDispose](): Promise<void> {
+  public [Symbol.asyncDispose](): Promise<void> {
     return Promise.resolve();
   }
 
@@ -171,7 +172,6 @@ export class Worlds implements WorldsEngine {
         world: row.id ?? undefined,
       }),
       id: row.id,
-      world: row.id,
       namespace: row.namespace ?? undefined,
       label: row.label ?? undefined,
       description: row.description ?? undefined,
@@ -200,7 +200,6 @@ export class Worlds implements WorldsEngine {
         world: row.id ?? undefined,
       }),
       id: row.id,
-      world: row.id,
       namespace: row.namespace ?? undefined,
       label: row.label ?? undefined,
       description: row.description ?? undefined,
@@ -241,12 +240,11 @@ export class Worlds implements WorldsEngine {
         world: row.id ?? undefined,
       }),
       id: row.id,
-      world: row.id,
       namespace: row.namespace ?? undefined,
       label: row.label ?? undefined,
       description: row.description ?? undefined,
       createdAt: row.created_at,
-      updated_at: row.updated_at,
+      updatedAt: row.updated_at,
       deletedAt: undefined,
     };
   }
@@ -277,7 +275,6 @@ export class Worlds implements WorldsEngine {
         world: result.id ?? undefined,
       }),
       id: result.id,
-      world: result.id,
       namespace: result.namespace ?? undefined,
       label: result.label ?? undefined,
       description: result.description ?? undefined,
@@ -315,7 +312,7 @@ export class Worlds implements WorldsEngine {
    */
   public async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
     const { store, sync } = await this.resolveStore(
-      input.source ?? input.sources?.[0],
+      input.sources?.[0],
     );
 
     // Lazy loading executeSparql
@@ -342,8 +339,8 @@ export class Worlds implements WorldsEngine {
     ) {
       try {
         const { decodeBase64 } = await import("@std/encoding/base64");
-        importData = decodeBase64(importData);
-      } catch (e) {
+        importData = decodeBase64(importData).buffer;
+      } catch {
         // Fallback to treating as raw string if decoding fails
       }
     }
@@ -354,7 +351,7 @@ export class Worlds implements WorldsEngine {
     });
     const content = typeof importData === "string"
       ? importData
-      : new TextDecoder().decode(importData);
+      : new TextDecoder().decode(importData as ArrayBuffer);
 
     // Collect quads via callback to ensure completeness
     const quads = await new Promise<Quad[]>((resolve, reject) => {
@@ -376,7 +373,7 @@ export class Worlds implements WorldsEngine {
   /**
    * export retrieves world data.
    */
-  public async export(input: WorldsExportInput): Promise<Uint8Array> {
+  public async export(input: WorldsExportInput): Promise<ArrayBuffer> {
     const { store } = await this.resolveStore(input.source);
     const { Writer } = await import("n3");
     const writer = new Writer({
@@ -386,10 +383,11 @@ export class Worlds implements WorldsEngine {
     // @ts-ignore - n3 store types
     writer.addQuads(store.getQuads());
 
-    return await new Promise<Uint8Array>((resolve, reject) => {
+    return await new Promise<ArrayBuffer>((resolve, reject) => {
       writer.end((error, result) => {
         if (error) reject(error);
-        else resolve(new TextEncoder().encode(result));
+        const encoder = new TextEncoder();
+        resolve(encoder.encode(result).buffer);
       });
     });
   }
@@ -400,7 +398,7 @@ export class Worlds implements WorldsEngine {
   public async getServiceDescription(
     input: WorldsServiceDescriptionInput,
   ): Promise<string> {
-    const { store } = await this.resolveStore(input.source);
+    const { store: _store } = await this.resolveStore(input.sources?.[0]);
     // TODO: Implement actual service description based on store and endpoint
     return "";
   }

@@ -23,7 +23,7 @@ export class MemoryStoreManager {
    * create initializes a new store for a world.
    * If the store already exists, it returns the existing one.
    */
-  public async create(options: WorldOptions): Promise<Store> {
+  public create(options: WorldOptions): Store {
     const key = this.toKey(options);
     if (!this.stores.has(key)) {
       this.stores.set(key, new Store());
@@ -35,7 +35,7 @@ export class MemoryStoreManager {
    * get retrieves an existing store for a world.
    * If it doesn't exist, it creates a new empty one.
    */
-  public async get(options: WorldOptions): Promise<Store> {
+  public get(options: WorldOptions): Store {
     const key = this.toKey(options);
     if (!this.stores.has(key)) {
       return this.create(options);
@@ -46,7 +46,7 @@ export class MemoryStoreManager {
   /**
    * delete removes a world's store from memory.
    */
-  public async delete(options: WorldOptions): Promise<void> {
+  public delete(options: WorldOptions): void {
     const key = this.toKey(options);
     this.stores.delete(key);
   }
@@ -54,14 +54,11 @@ export class MemoryStoreManager {
   /**
    * close clears all stores from memory.
    */
-  public async close(): Promise<void> {
+  public close(): void {
     this.stores.clear();
   }
 
-  /**
-   * [Symbol.asyncDispose] provides support for explicit resource management.
-   */
-  public async [Symbol.asyncDispose](): Promise<void> {
-    await this.close();
+  public [Symbol.dispose](): void {
+    this.close();
   }
 }

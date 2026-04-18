@@ -1,4 +1,4 @@
-import { STATUS_CODE, STATUS_TEXT, type StatusCode } from "@std/http/status";
+import { STATUS_CODE, type StatusCode } from "@std/http/status";
 
 /**
  * HttpError is a base class for all HTTP-related errors.

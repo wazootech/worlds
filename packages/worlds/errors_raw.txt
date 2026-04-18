@@ -1,0 +1,200 @@
+﻿deno : [0m[32mCheck[0m src/mod.ts
+At line:1 char:1
++ deno publish --dry-run 2> publish_errors.txt
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([0m[32mCheck[0m src/mod.ts:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[0m[32mCheck[0m src/worlds/local.ts
+[0m[32mCheck[0m src/worlds/remote.ts
+[0m[32mCheck[0m src/schema.ts
+[0m[32mCheck[0m src/worlds/schema.ts
+[0m[32mCheck[0m src/worlds/sparql.schema.ts
+[0m[32mCheck[0m src/worlds/search.schema.ts
+[0m[32mCheck[0m src/types.ts
+[0m[32mCheck[0m src/engine-context.ts
+[0m[1mTS2307 [0m[ERROR]: Cannot find module 
+'file:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/local.ts'.
+
+[0m[1mTS1361 [0m[ERROR]: 'MemoryStoreManager' cannot be used as a value because it was imported using 'import type'.
+  const storage = new MemoryStoreManager();
+[0m[31m                      ~~~~~~~~~~~~~~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/engine-context.ts[0m:[0m[33m28[0
+m:[0m[33m23[0m
+
+    'MemoryStoreManager' was imported here.
+    import type { MemoryStoreManager } from "#/storage.ts";
+    [0m[36m              ~~~~~~~~~~~~~~~~~~[0m
+        at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/engine-context.ts[0m:[0m[33m2
+[0m:[0m[33m15[0m
+
+[0m[1mTS2339 [0m[ERROR]: Property 'insert' does not exist on type 'ApiKeyRepository'.
+  keys.insert(apiKey, namespaceId);
+[0m[31m       ~~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/engine-context.ts[0m:[0m[33m34[0
+m:[0m[33m8[0m
+
+[0m[1mTS2353 [0m[ERROR]: Object literal may only specify known properties, and '[Symbol.dispose]' does not exist in 
+type 'WorldsContext'.
+    [Symbol.dispose]() {
+[0m[31m    ~~~~~~~~~~~~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/engine-context.ts[0m:[0m[33m53[0
+m:[0m[33m5[0m
+
+[0m[1mTS2322 [0m[ERROR]: Type 'OpenRouterEmbeddingModel' is not assignable to type 'EmbeddingModel<string>'.
+  Types of property 'specificationVersion' are incompatible.
+    Type '"v3"' is not assignable to type '"v1"'.
+      model: openrouter.textEmbeddingModel(
+[0m[31m      ~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/factory.ts[0m:[0m[33m68[0m:[0m
+[33m7[0m
+
+    The expected type comes from property 'model' which is declared here on type 'OpenRouterEmbeddingsOptions'
+      model: EmbeddingModel<string>;
+    [0m[36m  ~~~~~[0m
+        at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/vectors/openrouter.ts[0m:[0m[
+33m11[0m:[0m[33m3[0m
+
+[0m[1mTS2353 [0m[ERROR]: Object literal may only specify known properties, and '[Symbol.dispose]' does not exist in 
+type 'WorldsContext'.
+    [Symbol.dispose]() {
+[0m[31m    ~~~~~~~~~~~~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/factory.ts[0m:[0m[33m92[0m:[0m
+[33m5[0m
+
+[0m[1mTS2739 [0m[ERROR]: Type 'RemoteWorlds' is missing the following properties from type 'Promise<Worlds | 
+RemoteWorlds>': then, catch, finally, [Symbol.toStringTag]
+    return new RemoteWorlds({ ...options, baseUrl, apiKey });
+[0m[31m    ~~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/factory.ts[0m:[0m[33m111[0m:[0m
+[33m5[0m
+
+[0m[1mTS2552 [0m[ERROR]: Cannot find name 'Store'. Did you mean 'Storage'?
+      (store as Store & { sync: () => Promise<void> }).sync = sync;
+[0m[31m                ~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/factory.ts[0m:[0m[33m150[0m:[0m
+[33m17[0m
+
+    'Storage' is declared here.
+    declare var Storage: {
+    [0m[36m            ~~~~~~~[0m
+        at [0m[36masset:///lib.deno.webstorage.d.ts[0m:[0m[33m45[0m:[0m[33m13[0m
+
+[0m[1mTS2739 [0m[ERROR]: Type 'Worlds' is missing the following properties from type 'Promise<Worlds | 
+RemoteWorlds>': then, catch, finally, [Symbol.toStringTag]
+  return worlds;
+[0m[31m  ~~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/factory.ts[0m:[0m[33m156[0m:[0m
+[33m3[0m
+
+[0m[1mTS2345 [0m[ERROR]: Argument of type 'WorldsListInput' is not assignable to parameter of type 'Record<string, 
+unknown>'.
+  Index signature for type 'string' is missing in type 'WorldsListInput'.
+    return await this.callRpc<World[]>("list", input ?? {});
+[0m[31m                                               ~~~~~~~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/remote.ts[0m:[0m[33m92[0m
+:[0m[33m48[0m
+
+[0m[1mTS2345 [0m[ERROR]: Argument of type 'WorldsGetInput' is not assignable to parameter of type 'Record<string, 
+unknown>'.
+  Index signature for type 'string' is missing in type 'WorldsGetInput'.
+      return await this.callRpc<World>("get", input);
+[0m[31m                                              ~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/remote.ts[0m:[0m[33m100[0
+m:[0m[33m47[0m
+
+[0m[1mTS2345 [0m[ERROR]: Argument of type 'WorldsCreateInput' is not assignable to parameter of type 
+'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'WorldsCreateInput'.
+    return await this.callRpc<World>("create", input);
+[0m[31m                                               ~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/remote.ts[0m:[0m[33m116[0
+m:[0m[33m48[0m
+
+[0m[1mTS2345 [0m[ERROR]: Argument of type 'WorldsUpdateInput' is not assignable to parameter of type 
+'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'WorldsUpdateInput'.
+    return await this.callRpc<void>("update", input);
+[0m[31m                                              ~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/remote.ts[0m:[0m[33m123[0
+m:[0m[33m47[0m
+
+[0m[1mTS2345 [0m[ERROR]: Argument of type 'WorldsDeleteInput' is not assignable to parameter of type 
+'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'WorldsDeleteInput'.
+    return await this.callRpc<void>("delete", input);
+[0m[31m                                              ~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/remote.ts[0m:[0m[33m130[0
+m:[0m[33m47[0m
+
+[0m[1mTS2345 [0m[ERROR]: Argument of type 'WorldsSparqlInput' is not assignable to parameter of type 
+'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'WorldsSparqlInput'.
+    return await this.callRpc<WorldsSparqlOutput>("sparql", input, {
+[0m[31m                                                            ~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/remote.ts[0m:[0m[33m137[0
+m:[0m[33m61[0m
+
+[0m[1mTS2345 [0m[ERROR]: Argument of type 'WorldsSearchInput' is not assignable to parameter of type 
+'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'WorldsSearchInput'.
+    return await this.callRpc<WorldsSearchOutput[]>("search", input);
+[0m[31m                                                              ~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/remote.ts[0m:[0m[33m146[0
+m:[0m[33m63[0m
+
+[0m[1mTS2345 [0m[ERROR]: Argument of type 'WorldsExportInput' is not assignable to parameter of type 
+'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'WorldsExportInput'.
+    return await this.callRpc<ArrayBuffer>("export", input, {
+[0m[31m                                                     ~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/remote.ts[0m:[0m[33m170[0
+m:[0m[33m54[0m
+
+[0m[1mTS2305 [0m[ERROR]: Module 
+'"file:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/management/schema.ts"' has no exported member 
+'ManagementLayer'.
+import type { ManagementLayer, WorldRow } from "../management/schema.ts";
+[0m[31m              ~~~~~~~~~~~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/worlds.ts[0m:[0m[33m21[0m
+:[0m[33m15[0m
+
+[0m[1mTS2322 [0m[ERROR]: Type 'MemoryStoreManager | undefined' is not assignable to type 'MemoryStoreManager'.
+  Type 'undefined' is not assignable to type 'MemoryStoreManager'.
+        storage: options.storage,
+[0m[31m        ~~~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/worlds.ts[0m:[0m[33m92[0m
+:[0m[33m9[0m
+
+    The expected type comes from property 'storage' which is declared here on type 'WorldsContext'
+      storage: MemoryStoreManager;
+    [0m[36m  ~~~~~~~[0m
+        at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/types.ts[0m:[0m[33m112[0m:[
+0m[33m3[0m
+
+[0m[1mTS2345 [0m[ERROR]: Argument of type 'WorldsSource | undefined' is not assignable to parameter of type 
+'WorldsSource'.
+  Type 'undefined' is not assignable to type 'WorldsSource'.
+    const source = resolveSource(inputSource, { namespace: this.namespace });
+[0m[31m                                 ~~~~~~~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/worlds.ts[0m:[0m[33m123[0
+m:[0m[33m34[0m
+
+[0m[1mTS7006 [0m[ERROR]: Parameter 'row' implicitly has an 'any' type.
+    return result.worlds.map((row) => ({
+[0m[31m                              ~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/worlds.ts[0m:[0m[33m168[0
+m:[0m[33m31[0m
+
+[0m[1mTS2353 [0m[ERROR]: Object literal may only specify known properties, and 'world' does not exist in type 
+'World'.
+      world: row.id,
+[0m[31m      ~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/worlds.ts[0m:[0m[33m203[0
+m:[0m[33m7[0m
+
+[0m[1mTS2353 [0m[ERROR]: Object literal may only specify known properties, and 'world' does not exist in type 
+'World'.
+      world: row.id,
+[0m[31m      ~~~~~[0m
+    at [0m[36mfile:///C:/Users/ethan/Documents/GitHub/worlds/packages/worlds/src/worlds/worlds.ts[0m:[0m[33m244[0

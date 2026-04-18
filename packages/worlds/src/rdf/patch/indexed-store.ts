@@ -150,8 +150,8 @@ export function createIndexedStore(
             stream.on("data", (quad: Quad) => {
               queue.push([{ insertions: [quad], deletions: [] }]);
             });
-            // @ts-ignore - n3 store types
-            return target.import(stream as any);
+            // @ts-ignore: n3 store types are incomplete for proxies
+            return target.import(stream as unknown as Record<string, unknown>);
           };
         }
 

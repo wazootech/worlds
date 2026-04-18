@@ -14,7 +14,6 @@ import {
 import { authorizeRequest } from "#/middleware/auth.ts";
 import {
   BadRequestError,
-  HttpError,
   InternalServerError,
   NotFoundError,
   UnauthorizedError,

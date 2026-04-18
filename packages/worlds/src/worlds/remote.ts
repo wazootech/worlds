@@ -41,9 +41,9 @@ export class RemoteWorlds {
   /**
    * callRpc executes a unified RPC call.
    */
-  private async callRpc<T>(
+  private async callRpc<T, P = unknown>(
     action: string,
-    params: Record<string, unknown>,
+    params: P,
     options: {
       accept?: string;
       responseType?: "json" | "text" | "arrayBuffer";
@@ -58,7 +58,7 @@ export class RemoteWorlds {
         ...(options.accept ? { "Accept": options.accept } : {}),
       },
       body: JSON.stringify({
-        ...params,
+        ...(params as Record<string, unknown>),
         action,
       }),
     });
