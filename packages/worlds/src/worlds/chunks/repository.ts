@@ -100,7 +100,9 @@ export class ChunksSearchRepository implements SearchIndex {
       for (const source of input.sources) {
         const sourceName = typeof source === "string"
           ? source
-          : (source as any).name || (source as any).world || (source as any).id;
+          : (source as Record<string, unknown>).name as string ||
+            (source as Record<string, unknown>).world as string ||
+            (source as Record<string, unknown>).id as string;
 
         const resolved = resolveSource(sourceName, this.ctx);
         const row = await this.ctx.management.worlds.get(

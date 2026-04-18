@@ -4,33 +4,13 @@ import { STATUS_CODE, STATUS_TEXT, type StatusCode } from "@std/http/status";
  * HttpError is a base class for all HTTP-related errors.
  */
 export class HttpError extends Error {
-  public readonly isHttpError = true;
-
   public constructor(
     public readonly status: StatusCode,
     message: string,
   ) {
     super(message);
     this.name = this.constructor.name;
-  }
-
-  /**
-   * toResponse converts the error into a structured JSON Response.
-   */
-  public toResponse(): Response {
-    return Response.json(
-      {
-        error: {
-          code: this.status,
-          message: this.message,
-          statusText: STATUS_TEXT[this.status],
-        },
-      },
-      {
-        status: this.status,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+    Object.setPrototypeOf(this, HttpError.prototype);
   }
 }
 

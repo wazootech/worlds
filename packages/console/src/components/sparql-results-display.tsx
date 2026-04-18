@@ -138,10 +138,10 @@ export function SparqlResultsDisplay({
     results && typeof results === "object" && "results" in results;
 
   if (hasHead && hasResults) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const anyResults = results as any;
-    const vars = anyResults.head?.vars || [];
-    const bindings = anyResults.results?.bindings || [];
+  if (hasHead && hasResults) {
+    const selectResults = results as SparqlSelectResults;
+    const vars = selectResults.head?.vars || [];
+    const bindings = selectResults.results?.bindings || [];
 
     // If we have either variables or bindings, it's a SELECT result
     if (vars.length > 0 || bindings.length > 0) {

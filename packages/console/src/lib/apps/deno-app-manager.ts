@@ -57,10 +57,8 @@ export class DenoAppManager implements AppManager {
         console.log(
           `[AppManager:Deno] Injecting environment variables into ${app.slug}...`,
         );
-        await this.client.apps.update(app.id, {
           envs,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as DenoAppUpdate as any);
+        } as unknown as Parameters<typeof this.client.apps.update>[1]);
       }
 
       const now = new Date().toISOString();

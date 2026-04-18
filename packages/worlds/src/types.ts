@@ -4,9 +4,25 @@ import type { ApiKeyRepository } from "#/management/keys.ts";
 import type { NamespaceRepository } from "#/management/namespaces.ts";
 import type { WorldRepository } from "#/management/worlds.ts";
 import type {
+  World,
+  WorldsCreateInput,
+  WorldsDeleteInput,
+  WorldsGetInput,
+  WorldsUpdateInput,
+} from "#/worlds/schema.ts";
+import type {
+  WorldsExportInput,
+  WorldsImportInput,
+  WorldsListInput,
+} from "#/schema.ts";
+import type {
   WorldsSearchInput,
   WorldsSearchOutput,
 } from "#/worlds/search.schema.ts";
+import type {
+  WorldsSparqlInput,
+  WorldsSparqlOutput,
+} from "#/worlds/sparql.schema.ts";
 
 /**
  * WorldsOptions are the options for the Worlds API SDK.
@@ -41,6 +57,22 @@ export interface SearchIndex {
 }
 
 /**
+ * WorldsEngine defines the primary interface for the Worlds engine.
+ */
+export interface WorldsEngine {
+  list(input?: WorldsListInput): Promise<World[]>;
+  get(input: WorldsGetInput): Promise<World | null>;
+  create(input: WorldsCreateInput): Promise<World>;
+  update(input: WorldsUpdateInput): Promise<World>;
+  delete(input: WorldsDeleteInput): Promise<void>;
+  sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput>;
+  search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]>;
+  import(input: WorldsImportInput): Promise<void>;
+  export(input: WorldsExportInput): Promise<ArrayBuffer>;
+  [Symbol.asyncDispose](): Promise<void>;
+}
+
+/**
  * ManagementLayer defines the interface for world and namespace metadata.
  */
 export interface ManagementLayer {
@@ -57,7 +89,7 @@ export interface WorldsContext {
   /**
    * engine is the main Worlds engine instance.
    */
-  engine?: any; // Using any for now to avoid circular dependency in types.ts
+  engine?: WorldsEngine;
 
   /**
    * apiKey is an optional API key for authentication.

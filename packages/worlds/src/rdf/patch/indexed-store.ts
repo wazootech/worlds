@@ -142,12 +142,16 @@ export function createIndexedStore(
 
         // Proxy the RDF/JS import method (often used by Comunica)
         if (prop === "import") {
-          return (stream: any) => {
+          return (
+            stream: {
+              on: (event: string, handler: (quad: Quad) => void) => void;
+            },
+          ) => {
             stream.on("data", (quad: Quad) => {
               queue.push([{ insertions: [quad], deletions: [] }]);
             });
             // @ts-ignore - n3 store types
-            return target.import(stream);
+            return target.import(stream as any);
           };
         }
 

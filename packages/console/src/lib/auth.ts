@@ -105,7 +105,7 @@ export async function signOut(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function handleAuth(opts?: any): Promise<any> {
+export async function handleAuth(opts?: unknown): Promise<unknown> {
   if (!isLocalDev) {
     const workos = await import("@workos-inc/authkit-nextjs");
     return workos.handleAuth(opts);

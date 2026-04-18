@@ -55,10 +55,13 @@ function PlanetContent({
   useEffect(() => {
     if (!planet) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    planet.children.forEach((layer: any) => {
-      if (layer.material && layer.material.uniforms) {
-        if (layer.material.uniforms["seed"]) {
-          layer.material.uniforms["seed"].value = seed;
+    planet.children.forEach((layer) => {
+      const obj = layer as unknown as {
+        material?: { uniforms?: Record<string, { value: unknown }> };
+      };
+      if (obj.material && obj.material.uniforms) {
+        if (obj.material.uniforms["seed"]) {
+          obj.material.uniforms["seed"].value = seed;
         }
         // Assuming asteroid sizing logic from index.js if needed, strictly following seed for now
       }
@@ -72,13 +75,16 @@ function PlanetContent({
     const manualRotation = options?.orbitControls ? rotationOffset : 0;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    planet.children.forEach((layer: any) => {
-      if (layer.material && layer.material.uniforms) {
-        if (layer.material.uniforms["time"]) {
-          layer.material.uniforms["time"].value = clock.getElapsedTime();
+    planet.children.forEach((layer) => {
+      const obj = layer as unknown as {
+        material?: { uniforms?: Record<string, { value: unknown }> };
+      };
+      if (obj.material && obj.material.uniforms) {
+        if (obj.material.uniforms["time"]) {
+          obj.material.uniforms["time"].value = clock.getElapsedTime();
         }
-        if (layer.material.uniforms["manual_offset"]) {
-          layer.material.uniforms["manual_offset"].value = manualRotation;
+        if (obj.material.uniforms["manual_offset"]) {
+          obj.material.uniforms["manual_offset"].value = manualRotation;
         }
       }
     });

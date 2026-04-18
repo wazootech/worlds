@@ -147,7 +147,7 @@ export async function createWorlds(
       // if we want full parity, but the user's wish was "simple and open."
 
       // EXPERIMENT: Attach sync to the store object so the shell engine can call it if it exists.
-      (store as any).sync = sync;
+      (store as Store & { sync: () => Promise<void> }).sync = sync;
 
       return store;
     },

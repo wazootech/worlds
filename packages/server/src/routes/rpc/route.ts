@@ -28,13 +28,22 @@ export default (appContext: WorldsContext) => {
     .post("/rpc", async (ctx) => {
       try {
         return await handleRpc(appContext, ctx);
-      } catch (error) {
-        // Use property check to handle potential module resolution mismatches
+      } catch (error: unknown) {
+        // Handle standardized HTTP errors (any object with a numeric status property)
         if (
-          error && typeof error === "object" && "isHttpError" in error &&
-          typeof (error as any).toResponse === "function"
+          error && typeof error === "object" && "status" in error &&
+          typeof (error as { status: unknown }).status === "number"
         ) {
-          return (error as any).toResponse();
+          const httpError = error as { status: number; message?: string };
+          return Response.json(
+            {
+              error: {
+                code: httpError.status,
+                message: httpError.message || "An error occurred",
+              },
+            },
+            { status: httpError.status },
+          );
         }
 
         if (error instanceof Error) {

@@ -1,4 +1,4 @@
-import { embed } from "ai";
+import { embed, type EmbeddingModel } from "ai";
 import type { Embeddings } from "./embeddings.ts";
 
 /**
@@ -8,8 +8,7 @@ export interface OpenRouterEmbeddingsOptions {
   /**
    * model is the model to use for embedding.
    */
-  // deno-lint-ignore no-explicit-any
-  model: any;
+  model: EmbeddingModel<string>;
 
   /**
    * dimensions is the dimensionality of the vector embeddings.

@@ -21,7 +21,7 @@ Deno.test({
         const { store, sync } = createIndexedStore(rawStore, [
           new SearchIndexHandler(id, context.vectors),
         ]);
-        (store as any).sync = sync;
+        (store as Store & { sync: () => Promise<void> }).sync = sync;
         return store;
       },
       world: context.world,

@@ -43,7 +43,7 @@ export class RemoteWorlds {
    */
   private async callRpc<T>(
     action: string,
-    params: any,
+    params: Record<string, unknown>,
     options: {
       accept?: string;
       responseType?: "json" | "text" | "arrayBuffer";
@@ -67,7 +67,7 @@ export class RemoteWorlds {
       const errorMessage = await parseError(response);
       const error = new Error(`RPC ${action} failed: ${errorMessage}`);
       // Attach status code for robust error handling
-      (error as any).status = response.status;
+      Object.assign(error, { status: response.status });
       throw error;
     }
 
@@ -99,7 +99,10 @@ export class RemoteWorlds {
     try {
       return await this.callRpc<World>("get", input);
     } catch (error) {
-      if (error instanceof Error && (error as any).status === 404) {
+      if (
+        error && typeof error === "object" && "status" in error &&
+        (error as { status: number }).status === 404
+      ) {
         return null;
       }
       throw error;

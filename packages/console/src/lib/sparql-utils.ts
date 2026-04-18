@@ -1,4 +1,4 @@
-import type { ExecuteSparqlOutput } from "@wazoo/worlds-sdk";
+import type { ExecuteSparqlOutput, SparqlSelectResults, SparqlBinding } from "@wazoo/worlds-sdk";
 
 /**
  * Formats SPARQL results as text for copying.
@@ -30,15 +30,14 @@ export function formatSparqlResultsForCopy(
     results && typeof results === "object" && "results" in results;
 
   if (hasHead && hasResults) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const anyResults = results as any;
-    const vars = anyResults.head?.vars || [];
-    const bindings = anyResults.results?.bindings || [];
+    const selectResults = results as SparqlSelectResults;
+    const vars = selectResults.head?.vars || [];
+    const bindings = selectResults.results?.bindings || [];
 
     if (vars.length > 0 && bindings.length > 0) {
       // Format as CSV
       const header = vars.map((v: string) => `?${v}`).join(",");
-      const rows = bindings.map((binding: Record<string, { value: string }>) =>
+      const rows = bindings.map((binding: SparqlBinding) =>
         vars
           .map((v: string) => {
             const cell = binding[v];

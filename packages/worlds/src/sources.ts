@@ -117,22 +117,25 @@ export function resolveSource(
   }
 
   if (typeof source === "object" && source !== null) {
+    const obj = source as Record<string, unknown>;
     if (
-      "name" in source && typeof (source as any).name === "string" &&
-      (source as any).name
+      "name" in obj && typeof obj.name === "string" &&
+      obj.name
     ) {
-      const parsed = parseSourceName((source as any).name);
+      const parsed = parseSourceName(obj.name);
       return {
         world: parsed.world ?? defaultWorld,
         namespace: parsed.namespace ?? context?.namespace ?? defaultNamespace,
       };
     }
 
-    if ("world" in source || "namespace" in source || "id" in source) {
+    if ("world" in obj || "namespace" in obj || "id" in obj) {
       // Use logical OR with fallback to ensure we don't return undefined if one key exists but is empty
-      const worldId = (source as any).world || (source as any).id ||
+      const worldId = (obj.world as string | undefined) ||
+        (obj.id as string | undefined) ||
         defaultWorld;
-      const namespace = (source as any).namespace || context?.namespace ||
+      const namespace = (obj.namespace as string | undefined) ||
+        context?.namespace ||
         defaultNamespace;
 
       return {
@@ -169,9 +172,11 @@ export function toWorldName(
   ) {
     resolved = resolveSource(source as WorldsSource);
   } else {
+    const obj = source as Record<string, unknown>;
     resolved = {
-      world: (source as any).world ?? (source as any).id ?? defaultWorld,
-      namespace: (source as any).namespace ?? defaultNamespace,
+      world: (obj.world as string | undefined) ??
+        (obj.id as string | undefined) ?? defaultWorld,
+      namespace: (obj.namespace as string | undefined) ?? defaultNamespace,
     };
   }
 

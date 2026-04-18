@@ -126,7 +126,7 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
 
   await t.step("invalid object without name throws error", () => {
     try {
-      resolveSource({} as any);
+      resolveSource({} as unknown as WorldsSource);
       throw new Error("Expected error to be thrown");
     } catch (e) {
       if (!(e instanceof SourceParseError)) {
@@ -138,7 +138,7 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
 
   await t.step("number input throws error", () => {
     try {
-      resolveSource(123 as any);
+      resolveSource(123 as unknown as WorldsSource);
       throw new Error("Expected error to be thrown");
     } catch (e) {
       if (!(e instanceof SourceParseError)) {
@@ -150,7 +150,7 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
 
   await t.step("boolean input throws error", () => {
     try {
-      resolveSource(true as any);
+      resolveSource(true as unknown as WorldsSource);
       throw new Error("Expected error to be thrown");
     } catch (e) {
       if (!(e instanceof SourceParseError)) {
@@ -162,7 +162,7 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
 
   await t.step("array input throws error", () => {
     try {
-      resolveSource([] as any);
+      resolveSource([] as unknown as WorldsSource);
       throw new Error("Expected error to be thrown");
     } catch (e) {
       if (!(e instanceof SourceParseError)) {

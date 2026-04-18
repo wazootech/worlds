@@ -25,6 +25,9 @@ import type { WorldsSource } from "../schema.ts";
 import { ChunksSearchRepository } from "./chunks/repository.ts";
 import { createIndexedStore } from "../rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "../rdf/patch/rdf-patch.ts";
+import type { Embeddings } from "../vectors/embeddings.ts";
+import { MemoryStoreManager } from "../storage.ts";
+import type { WorldsEngine } from "../types.ts";
 
 /**
  * WorldStoreResolver is a function that resolves a world coordinate to an RDF/JS store.
@@ -46,14 +49,14 @@ interface SyncableStore {
  * Worlds is an engine-agnostic implementation of the Worlds API.
  * It coordinates operations across standard RDF/JS stores and optional management/search layers.
  */
-export class Worlds {
+export class Worlds implements WorldsEngine {
   private readonly store?: Store;
   private readonly resolver?: WorldStoreResolver;
   private readonly searchIndex?: SearchIndex;
   private readonly management?: ManagementLayer;
   private readonly namespace?: string;
   private readonly world?: string;
-  private readonly vectors?: any;
+  private readonly vectors?: Embeddings;
 
   constructor(options: {
     store?: Store;
@@ -62,8 +65,8 @@ export class Worlds {
     management?: ManagementLayer;
     namespace?: string;
     world?: string;
-    storage?: any; // For MemoryStoreManager
-    vectors?: any; // Embeddings object
+    storage?: MemoryStoreManager;
+    vectors?: Embeddings;
   }) {
     this.store = options.store;
     this.resolver = options.resolver;
@@ -87,7 +90,7 @@ export class Worlds {
         namespace: this.namespace,
         world: this.world,
         storage: options.storage,
-      } as any);
+      });
     }
   }
 

@@ -8,7 +8,7 @@ Deno.test("MemoryStoreManager", async (t) => {
   const manager = new MemoryStoreManager();
 
   await t.step("create creates new store", async () => {
-    const _store = await manager.create({ id: "world-1", namespace: "ns-1" });
+    await manager.create({ id: "world-1", namespace: "ns-1" });
 
     const exists = await manager.get({ id: "world-1", namespace: "ns-1" });
     assertEquals(exists !== null, true);

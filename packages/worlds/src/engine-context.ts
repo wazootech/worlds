@@ -61,7 +61,7 @@ export async function createTestContext(): Promise<WorldsContext> {
  */
 export function createTestNamespace(
   context: WorldsContext,
-  _options?: { plan?: string },
+  options?: { plan?: string },
 ): Promise<{ id: string; apiKey: string | undefined }> {
   const id = ulid();
   return Promise.resolve({ id, apiKey: context.apiKey });
