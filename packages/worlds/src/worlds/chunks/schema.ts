@@ -119,4 +119,3 @@ export const searchRowSchema: z.ZodType<SearchRow> = z.object({
   fts_rank: z.number().nullable(),
   combined_rank: z.number(),
 });
-

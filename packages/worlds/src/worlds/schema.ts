@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { type WorldsSource, worldsSourceSchema } from "#/schema.ts";
 
-
 /**
  * World represents a world in the Worlds API.
  * Resource name format: {namespace}/{identifier} (computed, not stored)
@@ -166,10 +165,7 @@ export type {
 } from "#/schema.ts";
 
 // Re-exports from search.schema.ts
-export type {
-  WorldsSearchInput,
-  WorldsSearchOutput,
-} from "./search.schema.ts";
+export type { WorldsSearchInput, WorldsSearchOutput } from "./search.schema.ts";
 
 // Re-exports from sparql.schema.ts
 export type {

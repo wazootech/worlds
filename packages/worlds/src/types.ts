@@ -172,4 +172,3 @@ export interface WorldsInterface {
    */
   [Symbol.asyncDispose](): Promise<void>;
 }
-

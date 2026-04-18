@@ -1,4 +1,4 @@
-import { encodeCursor, decodeCursor } from "#/utils.ts";
+import { decodeCursor, encodeCursor } from "#/utils.ts";
 import type { WorldRow, WorldRowInsert, WorldRowUpdate } from "./schema.ts";
 
 /**
@@ -30,7 +30,7 @@ export class WorldsRepository {
     return `${namespace ?? "_"}/${id ?? "_"}`;
   }
 
-  async get(id?: string, namespace?: string): Promise<WorldRow | null> {
+  get(id?: string, namespace?: string): Promise<WorldRow | null> {
     const key = this.getRef(id, namespace);
     return this.worlds.get(key) ?? null;
   }
@@ -38,25 +38,29 @@ export class WorldsRepository {
   /**
    * getInternal retrieves a world by its identifier without namespace scoping.
    */
-  async getInternal(id?: string): Promise<WorldRow | null> {
-    const found = Array.from(this.worlds.values()).find(w => w.id === id);
+  getInternal(id?: string): Promise<WorldRow | null> {
+    const found = Array.from(this.worlds.values()).find((w) => w.id === id);
     return found ?? null;
   }
 
-  async list(params: WorldsListParams): Promise<WorldsListResult> {
+  list(params: WorldsListParams): Promise<WorldsListResult> {
     const { namespace, pageSize = 50, pageToken } = params;
-    
-    let all = Array.from(this.worlds.values())
-      .filter(w => !namespace || w.namespace === namespace)
-      .filter(w => w.deleted_at === null);
-      
-    all.sort((a, b) => b.created_at - a.created_at || (b.id ?? "").localeCompare(a.id ?? ""));
+
+    const all = Array.from(this.worlds.values())
+      .filter((w) => !namespace || w.namespace === namespace)
+      .filter((w) => w.deleted_at === null);
+
+    all.sort((a, b) =>
+      b.created_at - a.created_at || (b.id ?? "").localeCompare(a.id ?? "")
+    );
 
     let startIndex = 0;
     if (pageToken) {
       const cursor = decodeCursor(pageToken);
       if (cursor) {
-        startIndex = all.findIndex(n => n.created_at === cursor.created_at && n.id === cursor.id) + 1;
+        startIndex = all.findIndex((n) =>
+          n.created_at === cursor.created_at && n.id === cursor.id
+        ) + 1;
       }
     }
 
@@ -64,19 +68,26 @@ export class WorldsRepository {
     let nextPageToken: string | undefined;
     if (startIndex + pageSize < all.length) {
       const last = worlds[worlds.length - 1];
-      nextPageToken = encodeCursor({ created_at: last.created_at, id: last.id ?? "" });
+      nextPageToken = encodeCursor({
+        created_at: last.created_at,
+        id: last.id ?? "",
+      });
     }
 
     return { worlds, nextPageToken };
   }
 
-  async insert(world: WorldRowInsert): Promise<void> {
+  insert(world: WorldRowInsert): Promise<void> {
     const key = this.getRef(world.id, world.namespace);
     if (this.worlds.has(key)) return;
     this.worlds.set(key, { ...world });
   }
 
-  async update(id: string | undefined, namespace: string | undefined, updates: WorldRowUpdate): Promise<void> {
+  update(
+    id: string | undefined,
+    namespace: string | undefined,
+    updates: WorldRowUpdate,
+  ): Promise<void> {
     const key = this.getRef(id, namespace);
     const existing = this.worlds.get(key);
     if (!existing) return;
@@ -87,7 +98,7 @@ export class WorldsRepository {
     });
   }
 
-  async delete(id?: string, namespace?: string): Promise<void> {
+  delete(id?: string, namespace?: string): Promise<void> {
     const key = this.getRef(id, namespace);
     this.worlds.delete(key);
   }

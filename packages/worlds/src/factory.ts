@@ -57,16 +57,22 @@ export async function createWorldsContext(
     },
   };
 
-  const dimensions = parseInt(config.envs.WORLDS_EMBEDDINGS_DIMENSIONS || "768");
+  const dimensions = parseInt(
+    config.envs.WORLDS_EMBEDDINGS_DIMENSIONS || "768",
+  );
 
   // Resolve embeddings strategy.
   let vectors: Embeddings;
-  if (config.envs.OPENROUTER_API_KEY && config.envs.OPENROUTER_EMBEDDINGS_MODEL) {
+  if (
+    config.envs.OPENROUTER_API_KEY && config.envs.OPENROUTER_EMBEDDINGS_MODEL
+  ) {
     const openrouter = createOpenRouter({
       apiKey: config.envs.OPENROUTER_API_KEY,
     });
     vectors = new OpenRouterEmbeddings({
-      model: openrouter.textEmbeddingModel(config.envs.OPENROUTER_EMBEDDINGS_MODEL),
+      model: openrouter.textEmbeddingModel(
+        config.envs.OPENROUTER_EMBEDDINGS_MODEL,
+      ),
       dimensions,
     });
   } else {
@@ -118,7 +124,9 @@ export async function createWorlds(): Promise<Worlds> {
       WORLDS_API_KEY: localApiKey,
       OPENROUTER_API_KEY: Deno.env.get("OPENROUTER_API_KEY"),
       OPENROUTER_EMBEDDINGS_MODEL: Deno.env.get("OPENROUTER_EMBEDDINGS_MODEL"),
-      WORLDS_EMBEDDINGS_DIMENSIONS: Deno.env.get("WORLDS_EMBEDDINGS_DIMENSIONS"),
+      WORLDS_EMBEDDINGS_DIMENSIONS: Deno.env.get(
+        "WORLDS_EMBEDDINGS_DIMENSIONS",
+      ),
       OLLAMA_BASE_URL: Deno.env.get("OLLAMA_BASE_URL"),
       OLLAMA_EMBEDDINGS_MODEL: Deno.env.get("OLLAMA_EMBEDDINGS_MODEL"),
       WORLDS_WORLD_NAMESPACE: Deno.env.get("WORLDS_WORLD_NAMESPACE"),
@@ -130,4 +138,3 @@ export async function createWorlds(): Promise<Worlds> {
   await worlds.init();
   return worlds;
 }
-

@@ -2,17 +2,17 @@ import type { WorldsContext } from "#/types.ts";
 import type { WorldsSearchOutput } from "#/worlds/search.schema.ts";
 import type { WorldRow } from "#/system/worlds/schema.ts";
 import { toWorldName } from "#/sources.ts";
-import {
-  type ChunkTableUpsert,
-  type SearchRow,
-} from "./schema.ts";
+import type { ChunkTableUpsert } from "./schema.ts";
 
 /**
  * ChunksRepository handles the persistence of text chunks and their vector embeddings in-memory.
  * Each instance is scoped to a specific world.
  */
 export class ChunksRepository {
-  private static readonly worldChunks = new Map<string, Map<string, ChunkTableUpsert>>();
+  private static readonly worldChunks = new Map<
+    string,
+    Map<string, ChunkTableUpsert>
+  >();
 
   constructor(private readonly worldId: string) {
     if (!ChunksRepository.worldChunks.has(worldId)) {
@@ -24,7 +24,7 @@ export class ChunksRepository {
    * upsert inserts or replaces a text chunk record.
    * @param chunk The chunk data to upsert.
    */
-  async upsert(chunk: ChunkTableUpsert): Promise<void> {
+  upsert(chunk: ChunkTableUpsert): Promise<void> {
     ChunksRepository.worldChunks.get(this.worldId)!.set(chunk.id, { ...chunk });
   }
 
@@ -32,7 +32,9 @@ export class ChunksRepository {
    * getForWorld returns all chunks for this world.
    */
   getForWorld(): ChunkTableUpsert[] {
-    return Array.from(ChunksRepository.worldChunks.get(this.worldId)?.values() ?? []);
+    return Array.from(
+      ChunksRepository.worldChunks.get(this.worldId)?.values() ?? [],
+    );
   }
 }
 
@@ -91,21 +93,24 @@ export class ChunksSearchRepository {
     for (const worldRow of targetWorlds) {
       const repo = new ChunksRepository(worldRow.id!);
       const chunks = repo.getForWorld();
-      
+
       const worldResults: WorldsSearchOutput[] = chunks
-        .filter(c => !subjects || subjects.includes(c.subject))
-        .filter(c => !predicates || predicates.includes(c.predicate))
-        .map(c => {
+        .filter((c) => !subjects || subjects.includes(c.subject))
+        .filter((c) => !predicates || predicates.includes(c.predicate))
+        .map((c) => {
           let score = 0;
           let vecRank = null;
-          
+
           if (c.vector) {
-            const chunkVector = c.vector instanceof ArrayBuffer 
-              ? new Float32Array(c.vector) 
+            const chunkVector = c.vector instanceof ArrayBuffer
+              ? new Float32Array(c.vector)
               : new Float32Array(c.vector.buffer);
-            
+
             // Simple dot product as similarity measure
-            score = queryVector.reduce((acc, val, i) => acc + val * (chunkVector[i] || 0), 0);
+            score = queryVector.reduce(
+              (acc, val, i) => acc + val * (chunkVector[i] || 0),
+              0,
+            );
             vecRank = score;
           }
 
@@ -138,7 +143,7 @@ export class ChunksSearchRepository {
             },
           } as WorldsSearchOutput;
         })
-        .filter(r => r.score > 0);
+        .filter((r) => r.score > 0);
 
       allResults.push(...worldResults);
     }
@@ -148,4 +153,3 @@ export class ChunksSearchRepository {
       .slice(0, limit);
   }
 }
-

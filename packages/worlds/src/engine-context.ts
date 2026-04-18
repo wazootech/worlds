@@ -51,4 +51,3 @@ export function createTestNamespace(
   const id = `https://wazoo.dev/worlds/namespaces/${ulid()}`;
   return Promise.resolve({ id, apiKey: context.apiKey });
 }
-

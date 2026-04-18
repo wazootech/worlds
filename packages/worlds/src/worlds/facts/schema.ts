@@ -45,4 +45,3 @@ export type FactTableUpsert = FactTable;
  */
 export const factTableUpsertSchema: z.ZodType<FactTableUpsert> =
   factTableSchema;
-

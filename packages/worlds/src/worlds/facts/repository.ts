@@ -17,9 +17,10 @@ export class FactsRepository {
   constructor(private readonly storage: WorldsStorage) {}
 
   private toQuad(fact: FactTableUpsert) {
-    const object = fact.object.startsWith("http") || fact.object.startsWith("_:")
-      ? namedNode(fact.object)
-      : literal(fact.object);
+    const object =
+      fact.object.startsWith("http") || fact.object.startsWith("_:")
+        ? namedNode(fact.object)
+        : literal(fact.object);
 
     return quad(
       namedNode(fact.subject),
@@ -33,7 +34,7 @@ export class FactsRepository {
     return this.idIndex.get(quadToKey(quad)) ?? "";
   }
 
-  async upsert(fact: FactTableUpsert): Promise<void> {
+  upsert(fact: FactTableUpsert): Promise<void> {
     const q = this.toQuad(fact);
     const key = quadToKey(q);
 
@@ -41,7 +42,7 @@ export class FactsRepository {
     if (existingId) {
       this.idIndex.delete(key);
       const existingQuad = this.storage.store.getQuads(null, null, null, null)
-        .find(existingQ => quadToKey(existingQ) === key);
+        .find((existingQ) => quadToKey(existingQ) === key);
       if (existingQuad) {
         this.storage.store.removeQuad(existingQuad);
       }
@@ -51,23 +52,23 @@ export class FactsRepository {
     this.idIndex.set(key, fact.id);
   }
 
-  async delete(id: string): Promise<void> {
+  delete(id: string): Promise<void> {
     const keyToRemove = Array.from(this.idIndex.entries())
       .find(([, v]) => v === id)?.[0];
-    
+
     if (!keyToRemove) return;
-    
+
     this.idIndex.delete(keyToRemove);
-    
+
     const quad = this.storage.store.getQuads(null, null, null, null)
-      .find(q => quadToKey(q) === keyToRemove);
-    
+      .find((q) => quadToKey(q) === keyToRemove);
+
     if (quad) {
       this.storage.store.removeQuad(quad);
     }
   }
 
-  async getAll(): Promise<FactTableUpsert[]> {
+  getAll(): Promise<FactTableUpsert[]> {
     const quads = this.storage.store.getQuads(null, null, null, null);
     return quads.map((q) => {
       const key = quadToKey(q);
@@ -82,8 +83,13 @@ export class FactsRepository {
     });
   }
 
-  async getByGraph(graph: string): Promise<FactTableUpsert[]> {
-    const quads = this.storage.store.getQuads(null, null, null, namedNode(graph));
+  getByGraph(graph: string): Promise<FactTableUpsert[]> {
+    const quads = this.storage.store.getQuads(
+      null,
+      null,
+      null,
+      namedNode(graph),
+    );
     return quads.map((q) => {
       const key = quadToKey(q);
       const id = this.idIndex.get(key) ?? crypto.randomUUID();
@@ -106,9 +112,9 @@ export class FactsRepository {
     const parsedData = data instanceof Uint8Array
       ? new TextDecoder().decode(data)
       : data;
-    
+
     const quads = parser.parse(parsedData);
-    
+
     for (const q of quads) {
       const key = quadToKey(q);
       if (!this.idIndex.has(key)) {
@@ -116,7 +122,7 @@ export class FactsRepository {
         this.idIndex.set(key, id);
       }
     }
-    
+
     this.storage.store.addQuads(quads);
   }
 
@@ -126,7 +132,7 @@ export class FactsRepository {
     const writer = new Writer({ format: contentType });
     const quads = this.storage.store.getQuads(null, null, null, null);
     writer.addQuads(quads);
-    
+
     const nQuadsString = await new Promise<string>((resolve, reject) => {
       writer.end((error: Error | null, result: string | undefined) => {
         if (error) reject(error);
@@ -140,4 +146,3 @@ export class FactsRepository {
 function quadToKey(q: ReturnType<typeof quad>): string {
   return `${q.subject.value}|${q.predicate.value}|${q.object.value}|${q.graph.value}`;
 }
-

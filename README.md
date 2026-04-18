@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>World models as a service. Verifiable context for AI.</strong>
+  Worlds API provides world models and verified facts for agents.
 </p>
 
 <p align="center">
@@ -19,22 +19,17 @@
   <a href="https://deepwiki.com/wazootech/worlds"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" /></a>
 </p>
 
-Worlds Platform is the open-source verifiable context layer for AI. It is a
-deterministic reasoning engine designed to manage, query, and prove knowledge
-using [SPARQL](https://www.w3.org/TR/sparql11-overview/) standards at the edge.
+Worlds Platform is a context layer for agents. The engine manages, queries, and
+proves knowledge using [SPARQL](https://www.w3.org/TR/sparql11-overview/)
+standards at the edge.
 
-Worlds provides an interoperable context graph to manage, query, and prove
-high-stakes knowledge at the edge.
+- Reasoning. Built-in SPARQL support for federated knowledge discovery.
+- Agnostic. Works with any model, framework, or agent.
+- AI-native. Tool-calling support and context injection.
+- Provenance. Direct link to source data for all knowledge.
+- Continual learning. Designed to improve recall and reasoning over time.
 
-- Reasoning: Built-in SPARQL support for complex reasoning and federated
-  knowledge discovery.
-- Agnostic: Bring your own model. Works with any LLM, framework, or agent.
-- AI-native: First-class support for LLM tool-calling and context injection.
-- Verifiable: Complete provenance and explainability for all knowledge.
-- Continual learning: Worlds is designed to learn and improve recall and
-  reasoning with gaining more experience.
-
-Worlds delivers these features through a unified, open-source API.
+Worlds delivers these features through an open-source API.
 
 ## Use Worlds
 
@@ -42,51 +37,49 @@ Worlds delivers these features through a unified, open-source API.
 <tr>
 <td width="50%" valign="top">
 
-### I use AI tools
+### Manage knowledge
 
-Manage your knowledge visually. Explore graphs, run queries, and build your
-personal world model.
+Explore graphs, run queries, and build your world model.
 
-Persistent context across all your AI assistants and tools.
+Persistent context for your assistants and tools.
 
-**[→ Open Worlds Console](https://console.wazoo.dev)**
+[→ Open Worlds Console](https://console.wazoo.dev)
 
 <br>
 </td>
 <td width="50%" valign="top">
 
-### I build AI products
+### Build agents
 
-Add deterministic reasoning and verifiable context to your agents with the SDK.
+Add reasoning and context to your agents with the SDK.
 
-No RDF expertise required. Simple and modular.
+No RDF expertise required.
 
-**[→ Install CLI](https://docs.wazoo.dev/reference/cli)**
+[→ Install CLI](https://docs.wazoo.dev/reference/cli)
 
 <br>
 </td>
 </tr>
 </table>
 
-## High-stakes context for your AI
+## Context for agents
 
-The Worlds SDK provides AI agents with persistent, verifiable context.
+The Worlds SDK provides agents with persistent context.
 
 > [!IMPORTANT]
-> Context is not just RAG. Worlds Platform focuses on deterministic symbolic
-> logic. It understands actual relationships and hierarchies, moving beyond
-> "best guess" similarity matches to verifiable reasoning.
+> Logical facts are technical descriptions of graph state. Worlds Platform
+> focuses on deterministic symbolic logic. It manages actual relationships and
+> hierarchies to provide verifiable reasoning.
 
 ### Worlds Console
 
-Manage your worlds through our web interface. Build graphs, test SPARQL queries,
-and monitor your agent's memory.
+Manage worlds through the web interface. Build graphs, test SPARQL queries, and
+monitor agent memory.
 
-### AI SDK tools
-
-The Worlds Platform AI SDK provides first-class support for LLM tool-calling.
+The platform's AI SDK provides support for tool-calling.
 
 ```typescript
+import type { WorldEntry } from "@wazoo/worlds-sdk";
 import { Worlds } from "@wazoo/worlds-sdk";
 import { createTools } from "@wazoo/worlds-ai-sdk";
 
@@ -108,8 +101,8 @@ const { text } = await generateText({
 
 ## Build with Worlds SDK
 
-If you're building AI agents or apps, Worlds provides the entire context stack
-through one SDK including memory, reasoning, and graph management.
+If you are building agents or apps, Worlds provides the context stack through
+one SDK.
 
 ### Install
 
@@ -122,7 +115,6 @@ deno add jsr:@wazoo/worlds-sdk
 ```typescript
 import { Worlds } from "@wazoo/worlds-sdk";
 
-// Initialize the client.
 const worlds = new Worlds({
   baseUrl: "http://localhost:8000",
   apiKey: "your-api-key",
@@ -130,7 +122,7 @@ const worlds = new Worlds({
 
 const worldId = "my-knowledge-base";
 
-// Add mission-critical knowledge (triples) to your world.
+// Add facts to your world.
 await worlds.sparql(
   worldId,
   `
@@ -141,7 +133,7 @@ await worlds.sparql(
 `,
 );
 
-// Perform deterministic reasoning over your world.
+// Perform reasoning over your world.
 const result = await worlds.sparql(
   worldId,
   `
@@ -155,7 +147,7 @@ const result = await worlds.sparql(
 
 ## Command line interface
 
-Manage your worlds directly from the terminal.
+Manage worlds directly from the terminal.
 
 ### Install
 
@@ -194,4 +186,4 @@ See the [whitepaper](https://docs.wazoo.dev/overview/whitepaper).
 - [Wazoo Technologies](https://wazoo.dev)
 - [Support](https://github.com/wazootech/worlds/issues)
 
-Developed with 🧪 [**@wazootech**](https://github.com/wazootech)
+Developed with [**@wazootech**](https://github.com/wazootech)

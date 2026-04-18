@@ -23,7 +23,7 @@
       "dependencies": ["fmt", "lint", "check", "test", "publish:dry"]
     },
     "precommit": {
-      "dependencies": ["precommit:core", "precommit:console", "precommit:docs"]
+      "dependencies": ["precommit:core"]
     }
   },
   "imports": {
@@ -44,7 +44,7 @@
     "@openrouter/ai-sdk-provider": "npm:@openrouter/ai-sdk-provider@^2.5.1",
     "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.29.0"
   },
-  "exclude": ["./packages/console", "./packages/docs"],
+  "exclude": ["./packages/console", "./packages/docs", "./.gemini"],
   "lint": {
     "exclude": ["scratch"]
   },

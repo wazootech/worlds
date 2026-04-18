@@ -6,8 +6,6 @@ import {
   worldsSourceSchema,
 } from "#/schema.ts";
 
-
-
 export { type WorldsContentType, worldsContentTypeSchema };
 
 /**

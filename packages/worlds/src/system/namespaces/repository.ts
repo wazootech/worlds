@@ -1,4 +1,4 @@
-import { encodeCursor, decodeCursor } from "#/utils.ts";
+import { decodeCursor, encodeCursor } from "#/utils.ts";
 
 /**
  * NamespaceRow represents a namespace record from the database.
@@ -44,21 +44,23 @@ export class NamespacesRepository {
 
   constructor() {}
 
-  async get(id: string): Promise<NamespaceRow | null> {
+  get(id: string): Promise<NamespaceRow | null> {
     return this.namespaces.get(id) ?? null;
   }
 
-  async list(params: NamespacesListParams): Promise<NamespacesListResult> {
+  list(params: NamespacesListParams): Promise<NamespacesListResult> {
     const { pageSize = 50, pageToken } = params;
-    
-    let all = Array.from(this.namespaces.values());
+
+    const all = Array.from(this.namespaces.values());
     all.sort((a, b) => b.created_at - a.created_at || b.id.localeCompare(a.id));
 
     let startIndex = 0;
     if (pageToken) {
       const cursor = decodeCursor(pageToken);
       if (cursor) {
-        startIndex = all.findIndex(n => n.created_at === cursor.created_at && n.id === cursor.id) + 1;
+        startIndex = all.findIndex((n) =>
+          n.created_at === cursor.created_at && n.id === cursor.id
+        ) + 1;
       }
     }
 
@@ -66,18 +68,24 @@ export class NamespacesRepository {
     let nextPageToken: string | undefined;
     if (startIndex + pageSize < all.length) {
       const last = namespaces[namespaces.length - 1];
-      nextPageToken = encodeCursor({ created_at: last.created_at, id: last.id });
+      nextPageToken = encodeCursor({
+        created_at: last.created_at,
+        id: last.id,
+      });
     }
 
     return { namespaces, nextPageToken };
   }
 
-  async insert(namespace: NamespaceInsert): Promise<void> {
+  insert(namespace: NamespaceInsert): Promise<void> {
     if (this.namespaces.has(namespace.id)) return;
     this.namespaces.set(namespace.id, { ...namespace });
   }
 
-  async update(id: string, updates: { label?: string; updated_at?: number }): Promise<void> {
+  update(
+    id: string,
+    updates: { label?: string; updated_at?: number },
+  ): Promise<void> {
     const existing = this.namespaces.get(id);
     if (!existing) return;
     this.namespaces.set(id, {
@@ -87,7 +95,7 @@ export class NamespacesRepository {
     });
   }
 
-  async delete(id: string): Promise<void> {
+  delete(id: string): Promise<void> {
     this.namespaces.delete(id);
   }
 }

@@ -2,7 +2,6 @@ import { assertEquals } from "@std/assert";
 import { createTestContext } from "#/engine-context.ts";
 import { LocalWorlds } from "#/worlds/local.ts";
 
-
 Deno.test("LocalWorlds Lifecycle", async (t) => {
   await t.step("multiple init() calls are safe", async () => {
     await using appContext = await createTestContext();

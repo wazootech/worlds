@@ -1,13 +1,8 @@
 import { ulid } from "@std/ulid";
 import type { WorldsContext, WorldsInterface } from "#/types.ts";
-import {
-  resolveNamespace,
-  resolveSource,
-  resolveWorldId,
-  toWorldName,
-} from "#/sources.ts";
+import { resolveNamespace, resolveWorldId, toWorldName } from "#/sources.ts";
 import { FactsRepository } from "#/worlds/facts/repository.ts";
-import { ChunksRepository, ChunksSearchRepository } from "#/worlds/chunks/repository.ts";
+import { ChunksSearchRepository } from "#/worlds/chunks/repository.ts";
 import type {
   World,
   WorldsCreateInput,
@@ -21,15 +16,14 @@ import type {
   WorldsListInput,
 } from "#/schema.ts";
 import type {
+  WorldsServiceDescriptionInput,
   WorldsSparqlInput,
   WorldsSparqlOutput,
-  WorldsServiceDescriptionInput,
 } from "#/worlds/sparql.schema.ts";
 import type {
   WorldsSearchInput,
   WorldsSearchOutput,
 } from "#/worlds/search.schema.ts";
-
 
 /**
  * LocalWorlds is the server-side implementation of the Worlds API.
@@ -68,11 +62,16 @@ export class LocalWorlds implements WorldsInterface {
    * get fetches a single world by its ID or source name.
    */
   public async get(input: WorldsGetInput): Promise<World | null> {
-    const source = typeof input.source === "string" ? input.source : input.source.name;
+    const source = typeof input.source === "string"
+      ? input.source
+      : input.source.name;
     const worldId = resolveWorldId(source);
     const namespace = resolveNamespace(source, this.ctx.namespace);
 
-    const row = await this.ctx.worlds.get(worldId ?? undefined, namespace ?? undefined);
+    const row = await this.ctx.worlds.get(
+      worldId ?? undefined,
+      namespace ?? undefined,
+    );
     if (!row) return null;
 
     return {
@@ -112,7 +111,10 @@ export class LocalWorlds implements WorldsInterface {
 
     await this.ctx.worlds.insert(row);
     // Ensure storage is initialized for this world
-    await this.ctx.storage.create({ id: worldId, namespace: namespace ?? undefined });
+    await this.ctx.storage.create({
+      id: worldId,
+      namespace: namespace ?? undefined,
+    });
 
     return {
       name: toWorldName({
@@ -133,7 +135,9 @@ export class LocalWorlds implements WorldsInterface {
    * update modifies world metadata.
    */
   public async update(input: WorldsUpdateInput): Promise<void> {
-    const source = typeof input.source === "string" ? input.source : input.source.name;
+    const source = typeof input.source === "string"
+      ? input.source
+      : input.source.name;
     const worldId = resolveWorldId(source);
     const namespace = resolveNamespace(source, this.ctx.namespace);
 
@@ -144,17 +148,21 @@ export class LocalWorlds implements WorldsInterface {
     });
   }
 
-
   /**
    * delete removes a world record and its storage.
    */
   public async delete(input: WorldsDeleteInput): Promise<void> {
-    const source = typeof input.source === "string" ? input.source : input.source.name;
+    const source = typeof input.source === "string"
+      ? input.source
+      : input.source.name;
     const worldId = resolveWorldId(source);
     const namespace = resolveNamespace(source, this.ctx.namespace);
 
     await this.ctx.worlds.delete(worldId ?? undefined, namespace ?? undefined);
-    await this.ctx.storage.delete({ id: worldId ?? undefined, namespace: namespace ?? undefined });
+    await this.ctx.storage.delete({
+      id: worldId ?? undefined,
+      namespace: namespace ?? undefined,
+    });
   }
 
   /**
@@ -162,11 +170,19 @@ export class LocalWorlds implements WorldsInterface {
    */
   public async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
     const sourceInput = input.sources?.[0] ?? "";
-    const source = typeof sourceInput === "string" ? sourceInput : sourceInput.name;
+    const source = typeof sourceInput === "string"
+      ? sourceInput
+      : sourceInput.name;
     const worldId = resolveWorldId(source);
-    const namespace = resolveNamespace(source, input.namespace ?? this.ctx.namespace);
+    const namespace = resolveNamespace(
+      source,
+      input.namespace ?? this.ctx.namespace,
+    );
 
-    const storage = await this.ctx.storage.get({ id: worldId ?? undefined, namespace: namespace ?? undefined });
+    const storage = await this.ctx.storage.get({
+      id: worldId ?? undefined,
+      namespace: namespace ?? undefined,
+    });
     const facts = new FactsRepository(storage);
     return await facts.query(input.query) as WorldsSparqlOutput;
   }
@@ -188,14 +204,19 @@ export class LocalWorlds implements WorldsInterface {
    */
   public async import(input: WorldsImportInput): Promise<void> {
     const sourceInput = input.source;
-    const source = typeof sourceInput === "string" ? sourceInput : sourceInput.name;
+    const source = typeof sourceInput === "string"
+      ? sourceInput
+      : sourceInput.name;
     const worldId = resolveWorldId(source);
     const namespace = resolveNamespace(source, this.ctx.namespace);
 
-    const storage = await this.ctx.storage.get({ id: worldId ?? undefined, namespace: namespace ?? undefined });
+    const storage = await this.ctx.storage.get({
+      id: worldId ?? undefined,
+      namespace: namespace ?? undefined,
+    });
     const facts = new FactsRepository(storage);
-    const importData = input.data instanceof ArrayBuffer 
-      ? new Uint8Array(input.data) 
+    const importData = input.data instanceof ArrayBuffer
+      ? new Uint8Array(input.data)
       : input.data;
     await facts.import(importData, input.contentType ?? "application/n-quads");
   }
@@ -205,20 +226,24 @@ export class LocalWorlds implements WorldsInterface {
    */
   public async export(input: WorldsExportInput): Promise<ArrayBuffer> {
     const sourceInput = input.source;
-    const source = typeof sourceInput === "string" ? sourceInput : sourceInput.name;
+    const source = typeof sourceInput === "string"
+      ? sourceInput
+      : sourceInput.name;
     const worldId = resolveWorldId(source);
     const namespace = resolveNamespace(source, this.ctx.namespace);
 
-    const storage = await this.ctx.storage.get({ id: worldId ?? undefined, namespace: namespace ?? undefined });
+    const storage = await this.ctx.storage.get({
+      id: worldId ?? undefined,
+      namespace: namespace ?? undefined,
+    });
     const facts = new FactsRepository(storage);
     return await facts.export(input.contentType);
   }
 
-
   /**
    * getServiceDescription retrieves the SPARQL service description.
    */
-  public async getServiceDescription(
+  public getServiceDescription(
     _input: WorldsServiceDescriptionInput,
   ): Promise<string> {
     return "SPARQL 1.1 Service Description (Map-based Worlds Engine)";

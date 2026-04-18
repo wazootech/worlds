@@ -1,6 +1,11 @@
 import { assertEquals } from "@std/assert";
-import { resolveSource, toWorldName, resolveNamespace, resolveWorldId, SourceParseError } from "#/sources.ts";
-
+import {
+  resolveNamespace,
+  resolveSource,
+  resolveWorldId,
+  SourceParseError,
+  toWorldName,
+} from "#/sources.ts";
 
 Deno.test("resolveSource - String inputs", async (t) => {
   await t.step("parses qualified name", () => {
@@ -141,7 +146,10 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       throw new Error("Expected error to be thrown");
     } catch (e) {
       assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals((e as Error).message.includes("missing 'name' property"), true);
+      assertEquals(
+        (e as Error).message.includes("missing 'name' property"),
+        true,
+      );
     }
   });
 
@@ -151,7 +159,10 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       throw new Error("Expected error to be thrown");
     } catch (e) {
       assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals((e as Error).message.includes("Invalid source format"), true);
+      assertEquals(
+        (e as Error).message.includes("Invalid source format"),
+        true,
+      );
     }
   });
 
@@ -161,7 +172,10 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       throw new Error("Expected error to be thrown");
     } catch (e) {
       assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals((e as Error).message.includes("Invalid source format"), true);
+      assertEquals(
+        (e as Error).message.includes("Invalid source format"),
+        true,
+      );
     }
   });
 
@@ -171,7 +185,10 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       throw new Error("Expected error to be thrown");
     } catch (e) {
       assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals((e as Error).message.includes("Invalid source format"), true);
+      assertEquals(
+        (e as Error).message.includes("Invalid source format"),
+        true,
+      );
     }
   });
 
@@ -181,7 +198,10 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       throw new Error("Expected error to be thrown");
     } catch (e) {
       assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals((e as Error).message.includes("missing 'name' property"), true);
+      assertEquals(
+        (e as Error).message.includes("missing 'name' property"),
+        true,
+      );
     }
   });
 });

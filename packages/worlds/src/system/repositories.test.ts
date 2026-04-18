@@ -8,7 +8,7 @@ Deno.test("ApiKeysRepository", async (t) => {
 
   await t.step("create stores key", async () => {
     await repo.create("test-api-key", "test-namespace");
-    
+
     const namespace = await repo.resolveNamespace("test-api-key");
     assertEquals(namespace, "test-namespace");
   });
@@ -21,7 +21,7 @@ Deno.test("ApiKeysRepository", async (t) => {
   await t.step("delete removes key", async () => {
     await repo.create("key-to-delete", "ns");
     await repo.delete("key-to-delete");
-    
+
     const namespace = await repo.resolveNamespace("key-to-delete");
     assertEquals(namespace, null);
   });
@@ -38,7 +38,7 @@ Deno.test("NamespacesRepository", async (t) => {
       created_at: now,
       updated_at: now,
     });
-    
+
     const ns = await repo.get("ns-1");
     assertExists(ns);
     assertEquals(ns!.label, "Namespace 1");
@@ -56,21 +56,21 @@ Deno.test("NamespacesRepository", async (t) => {
       created_at: now,
       updated_at: now,
     });
-    
+
     const result = await repo.list({});
     assertEquals(result.namespaces.length, 2);
   });
 
   await t.step("update modifies namespace", async () => {
     await repo.update("ns-1", { label: "Updated Label" });
-    
+
     const ns = await repo.get("ns-1");
     assertEquals(ns!.label, "Updated Label");
   });
 
   await t.step("delete removes namespace", async () => {
     await repo.delete("ns-1");
-    
+
     const ns = await repo.get("ns-1");
     assertEquals(ns, null);
   });
@@ -91,7 +91,7 @@ Deno.test("WorldsRepository", async (t) => {
       updated_at: now,
       deleted_at: null,
     });
-    
+
     const world = await repo.get("world-1", "ns-1");
     assertExists(world);
     assertEquals(world!.label, "World 1");
@@ -112,7 +112,7 @@ Deno.test("WorldsRepository", async (t) => {
       updated_at: now,
       deleted_at: null,
     });
-    
+
     const result = await repo.list({ namespace: "ns-1" });
     assertEquals(result.worlds.length, 2);
   });
@@ -127,21 +127,21 @@ Deno.test("WorldsRepository", async (t) => {
       updated_at: now,
       deleted_at: now, // Marked as deleted
     });
-    
+
     const result = await repo.list({ namespace: "ns-2" });
     assertEquals(result.worlds.length, 0);
   });
 
   await t.step("update modifies world", async () => {
     await repo.update("world-1", "ns-1", { label: "Updated World" });
-    
+
     const world = await repo.get("world-1", "ns-1");
     assertEquals(world!.label, "Updated World");
   });
 
   await t.step("delete removes world", async () => {
     await repo.delete("world-1", "ns-1");
-    
+
     const world = await repo.get("world-1", "ns-1");
     assertEquals(world, null);
   });
@@ -156,7 +156,7 @@ Deno.test("WorldsRepository", async (t) => {
       updated_at: now,
       deleted_at: null,
     });
-    
+
     const world = await repo.getInternal("world-internal");
     assertExists(world);
     assertEquals(world!.id, "world-internal");

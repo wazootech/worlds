@@ -14,16 +14,14 @@ import type {
   WorldsListInput,
 } from "#/schema.ts";
 import type {
+  WorldsServiceDescriptionInput,
   WorldsSparqlInput,
   WorldsSparqlOutput,
-  WorldsServiceDescriptionInput,
 } from "#/worlds/sparql.schema.ts";
 import type {
   WorldsSearchInput,
   WorldsSearchOutput,
 } from "#/worlds/search.schema.ts";
-
-
 
 /**
  * RemoteWorlds is a TypeScript SDK client for the Worlds API.

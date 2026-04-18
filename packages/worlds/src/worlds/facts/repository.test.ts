@@ -25,32 +25,35 @@ Deno.test("FactsRepository - upsert", async (t) => {
     assertEquals(all[0].subject, "http://example.org/s");
   });
 
-  await t.step("upsert replaces existing quad with same S/P/O/G key", async () => {
-    const storage2 = createTestStorage();
-    const repo2 = new FactsRepository(storage2);
+  await t.step(
+    "upsert replaces existing quad with same S/P/O/G key",
+    async () => {
+      const storage2 = createTestStorage();
+      const repo2 = new FactsRepository(storage2);
 
-    await repo2.upsert({
-      id: "fact-2",
-      subject: "http://example.org/s",
-      predicate: "http://example.org/p",
-      object: "Test",
-      graph: "http://example.org/g",
-    });
+      await repo2.upsert({
+        id: "fact-2",
+        subject: "http://example.org/s",
+        predicate: "http://example.org/p",
+        object: "Test",
+        graph: "http://example.org/g",
+      });
 
-    await repo2.upsert({
-      id: "fact-2",
-      subject: "http://example.org/s",
-      predicate: "http://example.org/p",
-      object: "Test",
-      graph: "http://example.org/g",
-    });
+      await repo2.upsert({
+        id: "fact-2",
+        subject: "http://example.org/s",
+        predicate: "http://example.org/p",
+        object: "Test",
+        graph: "http://example.org/g",
+      });
 
-    const all = await repo2.getAll();
-    assertEquals(all.length, 1);
-    const fact = all.find((f) => f.subject === "http://example.org/s");
-    assertExists(fact);
-    assertEquals(fact!.object, "Test");
-  });
+      const all = await repo2.getAll();
+      assertEquals(all.length, 1);
+      const fact = all.find((f) => f.subject === "http://example.org/s");
+      assertExists(fact);
+      assertEquals(fact!.object, "Test");
+    },
+  );
 
   await t.step("delete removes quad by ID", async () => {
     const storage3 = createTestStorage();
@@ -65,12 +68,18 @@ Deno.test("FactsRepository - upsert", async (t) => {
     });
 
     let all = await repo3.getAll();
-    assertEquals(all.some((f) => f.subject === "http://example.org/to-delete"), true);
+    assertEquals(
+      all.some((f) => f.subject === "http://example.org/to-delete"),
+      true,
+    );
 
     await repo3.delete("fact-3");
 
     all = await repo3.getAll();
-    assertEquals(all.some((f) => f.subject === "http://example.org/to-delete"), false);
+    assertEquals(
+      all.some((f) => f.subject === "http://example.org/to-delete"),
+      false,
+    );
   });
 });
 
@@ -122,9 +131,12 @@ Deno.test("FactsRepository - import/export", async () => {
   const storage = createTestStorage();
   const repo = new FactsRepository(storage);
 
-  await repo.import(`
+  await repo.import(
+    `
     <http://example.org/a> <http://example.org/b> "imported" .
-  `, "text/turtle");
+  `,
+    "text/turtle",
+  );
 
   const all = await repo.getAll();
   const imported = all.find((f) => f.subject === "http://example.org/a");

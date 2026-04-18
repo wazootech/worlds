@@ -5,7 +5,7 @@ import type { ChunkTableUpsert } from "./schema.ts";
 Deno.test("ChunksRepository", async (t) => {
   await t.step("upsert stores chunk", async () => {
     const repo = new ChunksRepository("world-1");
-    
+
     const chunk: ChunkTableUpsert = {
       id: "chunk-1",
       fact_id: "fact-1",
@@ -14,9 +14,9 @@ Deno.test("ChunksRepository", async (t) => {
       text: "Test chunk text",
       vector: null,
     };
-    
+
     await repo.upsert(chunk);
-    
+
     const chunks = repo.getForWorld();
     assertEquals(chunks.length, 1);
     assertEquals(chunks[0].text, "Test chunk text");
@@ -24,7 +24,7 @@ Deno.test("ChunksRepository", async (t) => {
 
   await t.step("upsert replaces existing chunk", async () => {
     const repo = new ChunksRepository("world-2");
-    
+
     await repo.upsert({
       id: "chunk-2",
       fact_id: "fact-2",
@@ -33,7 +33,7 @@ Deno.test("ChunksRepository", async (t) => {
       text: "Original",
       vector: null,
     });
-    
+
     await repo.upsert({
       id: "chunk-2",
       fact_id: "fact-2",
@@ -42,7 +42,7 @@ Deno.test("ChunksRepository", async (t) => {
       text: "Updated",
       vector: null,
     });
-    
+
     const chunks = repo.getForWorld();
     assertEquals(chunks.length, 1);
     assertEquals(chunks[0].text, "Updated");
@@ -51,7 +51,7 @@ Deno.test("ChunksRepository", async (t) => {
   await t.step("per-world isolation", async () => {
     const repo1 = new ChunksRepository("world-a");
     const repo2 = new ChunksRepository("world-b");
-    
+
     await repo1.upsert({
       id: "chunk-a",
       fact_id: "fact-a",
@@ -60,7 +60,7 @@ Deno.test("ChunksRepository", async (t) => {
       text: "World A chunk",
       vector: null,
     });
-    
+
     await repo2.upsert({
       id: "chunk-b",
       fact_id: "fact-b",
@@ -69,10 +69,10 @@ Deno.test("ChunksRepository", async (t) => {
       text: "World B chunk",
       vector: null,
     });
-    
+
     const chunks1 = repo1.getForWorld();
     const chunks2 = repo2.getForWorld();
-    
+
     assertEquals(chunks1.length, 1);
     assertEquals(chunks1[0].text, "World A chunk");
     assertEquals(chunks2.length, 1);
@@ -81,7 +81,7 @@ Deno.test("ChunksRepository", async (t) => {
 
   await t.step("getForWorld returns all chunks for world", async () => {
     const repo = new ChunksRepository("world-3");
-    
+
     await repo.upsert({
       id: "chunk-3a",
       fact_id: "fact-3a",
@@ -90,7 +90,7 @@ Deno.test("ChunksRepository", async (t) => {
       text: "Text 1",
       vector: null,
     });
-    
+
     await repo.upsert({
       id: "chunk-3b",
       fact_id: "fact-3b",
@@ -99,7 +99,7 @@ Deno.test("ChunksRepository", async (t) => {
       text: "Text 2",
       vector: null,
     });
-    
+
     const chunks = repo.getForWorld();
     assertEquals(chunks.length, 2);
   });
