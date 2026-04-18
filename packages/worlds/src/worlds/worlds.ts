@@ -1,4 +1,4 @@
-import type { Store, Quad } from "n3";
+import type { Quad, Store } from "n3";
 import type {
   WorldsExportInput,
   WorldsImportInput,
