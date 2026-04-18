@@ -31,8 +31,8 @@ export class SearchIndexHandler implements PatchHandler {
     for (const patch of patches) {
       if (patch.deletions) {
         for (const q of patch.deletions) {
-          const tripleId = await skolemizeQuad(q);
-          await chunksRepository.deleteByFactId(tripleId);
+          const factId = await skolemizeQuad(q);
+          await chunksRepository.deleteByFactId(factId);
         }
       }
 

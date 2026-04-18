@@ -105,14 +105,14 @@ export class ChunksSearchRepository implements SearchIndex {
             (source as Record<string, unknown>).id as string;
 
         const resolved = resolveSource(sourceName, this.ctx);
-        const row = await this.ctx.management.worlds.get(
+        const row = this.ctx.management.worlds.get(
           resolved.world,
           resolved.namespace,
         );
         if (row) targetWorlds.push(row);
       }
     } else {
-      const result = await this.ctx.management.worlds.list({
+      const result = this.ctx.management.worlds.list({
         namespace,
         pageSize: 100,
       });

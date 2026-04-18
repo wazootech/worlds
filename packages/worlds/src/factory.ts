@@ -45,9 +45,9 @@ export const defaultWorldsContextConfig: WorldsContextConfig = {
 /**
  * createWorldsContext creates a minimalist WorldsContext from configuration.
  */
-export async function createWorldsContext(
+export function createWorldsContext(
   config: WorldsContextConfig,
-): Promise<WorldsContext> {
+): WorldsContext {
   config = {
     ...defaultWorldsContextConfig,
     ...config,
@@ -68,7 +68,7 @@ export async function createWorldsContext(
     vectors = new OpenRouterEmbeddings({
       model: openrouter.textEmbeddingModel(
         config.envs.OPENROUTER_EMBEDDINGS_MODEL,
-      ) as any,
+      ),
       dimensions,
     });
   } else {
@@ -91,7 +91,7 @@ export async function createWorldsContext(
     apiKey: config.envs.WORLDS_API_KEY,
     namespace: config.envs.WORLDS_WORLD_NAMESPACE,
     async [Symbol.asyncDispose]() {
-      await storage.close();
+      await Promise.resolve(storage.close());
     },
   };
 

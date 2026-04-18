@@ -44,13 +44,13 @@ export class NamespaceRepository {
 
   constructor() {}
 
-  public async get(id: string): Promise<NamespaceRow | null> {
+  public get(id: string): NamespaceRow | null {
     return this.namespaces.get(id) ?? null;
   }
 
-  public async list(
+  public list(
     params: NamespacesListParams,
-  ): Promise<NamespacesListResult> {
+  ): NamespacesListResult {
     const { pageSize = 50, pageToken } = params;
 
     const all = Array.from(this.namespaces.values());
@@ -79,15 +79,15 @@ export class NamespaceRepository {
     return { namespaces, nextPageToken };
   }
 
-  public async insert(namespace: NamespaceInsert): Promise<void> {
+  public insert(namespace: NamespaceInsert): void {
     if (this.namespaces.has(namespace.id)) return;
     this.namespaces.set(namespace.id, { ...namespace });
   }
 
-  public async update(
+  public update(
     id: string,
     updates: { label?: string; updated_at?: number },
-  ): Promise<void> {
+  ): void {
     const existing = this.namespaces.get(id);
     if (!existing) return;
     this.namespaces.set(id, {
@@ -97,7 +97,7 @@ export class NamespaceRepository {
     });
   }
 
-  public async delete(id: string): Promise<void> {
+  public delete(id: string): void {
     this.namespaces.delete(id);
   }
 }

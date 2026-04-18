@@ -58,7 +58,7 @@ export class MemoryStoreManager {
     this.stores.clear();
   }
 
-  public [Symbol.dispose](): void {
-    this.close();
+  public async [Symbol.asyncDispose](): Promise<void> {
+    await Promise.resolve(this.close());
   }
 }

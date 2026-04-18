@@ -161,7 +161,8 @@ export class Worlds implements WorldsEngine {
       input?.namespace ?? this.namespace ?? null,
     );
 
-    const result = await mgmt.worlds.list({
+    await Promise.resolve(); // Deno lint: keep async for interface compatibility
+    const result = mgmt.worlds.list({
       ...input,
       namespace,
     });
@@ -188,7 +189,8 @@ export class Worlds implements WorldsEngine {
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
 
-    const row = await mgmt.worlds.get(
+    await Promise.resolve();
+    const row = mgmt.worlds.get(
       resolved.world!,
       resolved.namespace,
     );
@@ -232,7 +234,8 @@ export class Worlds implements WorldsEngine {
       deleted_at: null,
     };
 
-    await mgmt.worlds.insert(row);
+    await Promise.resolve();
+    mgmt.worlds.insert(row);
 
     return {
       name: toWorldName({
@@ -256,7 +259,8 @@ export class Worlds implements WorldsEngine {
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
 
-    await mgmt.worlds.update(
+    await Promise.resolve();
+    mgmt.worlds.update(
       resolved.world!,
       resolved.namespace,
       {
@@ -266,7 +270,7 @@ export class Worlds implements WorldsEngine {
     );
 
     // Fetch the updated row since management.update returns void
-    const result = await mgmt.worlds.get(resolved.world!, resolved.namespace);
+    const result = mgmt.worlds.get(resolved.world!, resolved.namespace);
     if (!result) throw new Error("World not found after update");
 
     return {
@@ -291,7 +295,8 @@ export class Worlds implements WorldsEngine {
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
 
-    await mgmt.worlds.delete(
+    await Promise.resolve();
+    mgmt.worlds.delete(
       resolved.world!,
       resolved.namespace,
     );
