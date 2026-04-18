@@ -328,7 +328,7 @@ Deno.test("export tool", async (t) => {
       export: () => Promise.resolve(new TextEncoder().encode(mockData).buffer),
     });
     const result = await exportWorld(mockWorlds, { source: "test-world" });
-    assertEquals(result.data.includes("http://example.org/s"), true);
+    assert(result.data.includes("http://example.org/s"));
   });
 
   await t.step("exports world as turtle", async () => {

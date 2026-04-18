@@ -140,8 +140,10 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       resolveSource({} as any);
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assert(e instanceof SourceParseError);
-      assert((e as Error).message.includes("missing 'name'"));
+      if (!(e instanceof SourceParseError)) {
+        throw new Error(`Expected SourceParseError, got: ${e}`);
+      }
+      assert(e.message.includes("missing 'name'"));
     }
   });
 
@@ -150,11 +152,10 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       resolveSource(123 as any);
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals(
-        (e as Error).message.includes("Invalid source format"),
-        true,
-      );
+      if (!(e instanceof SourceParseError)) {
+        throw new Error(`Expected SourceParseError, got: ${e}`);
+      }
+      assert(e.message.includes("Invalid source format"));
     }
   });
 
@@ -163,11 +164,10 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       resolveSource(true as any);
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals(
-        (e as Error).message.includes("Invalid source format"),
-        true,
-      );
+      if (!(e instanceof SourceParseError)) {
+        throw new Error(`Expected SourceParseError, got: ${e}`);
+      }
+      assert(e.message.includes("Invalid source format"));
     }
   });
 
@@ -176,11 +176,10 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       resolveSource([] as any);
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals(
-        (e as Error).message.includes("Invalid source format"),
-        true,
-      );
+      if (!(e instanceof SourceParseError)) {
+        throw new Error(`Expected SourceParseError, got: ${e}`);
+      }
+      assert(e.message.includes("Invalid source format"));
     }
   });
 
@@ -189,8 +188,10 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
       resolveSource({ name: "" });
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assert(e instanceof Error);
-      assert((e as Error).message.includes("missing 'name'"));
+      if (!(e instanceof SourceParseError)) {
+        throw new Error(`Expected SourceParseError, got: ${e}`);
+      }
+      assert(e.message.includes("missing 'name'"));
     }
   });
 });
@@ -201,8 +202,10 @@ Deno.test("SourceParseError - edge cases", async (t) => {
       resolveSource("ns/hello world");
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals((e as Error).message.includes("space"), true);
+      if (!(e instanceof SourceParseError)) {
+        throw new Error(`Expected SourceParseError, got: ${e}`);
+      }
+      assert(e.message.includes("space"));
     }
   });
 
@@ -211,7 +214,9 @@ Deno.test("SourceParseError - edge cases", async (t) => {
       resolveSource("hello world");
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
+      if (!(e instanceof SourceParseError)) {
+        throw new Error(`Expected SourceParseError, got: ${e}`);
+      }
     }
   });
 
@@ -220,8 +225,10 @@ Deno.test("SourceParseError - edge cases", async (t) => {
       resolveSource("ns\\world");
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals((e as Error).message.includes("backslash"), true);
+      if (!(e instanceof SourceParseError)) {
+        throw new Error(`Expected SourceParseError, got: ${e}`);
+      }
+      assert(e.message.includes("backslash"));
     }
   });
 
@@ -230,8 +237,10 @@ Deno.test("SourceParseError - edge cases", async (t) => {
       resolveSource("ns/world!@#$");
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals((e as Error).message.includes("alphanumeric"), true);
+      if (!(e instanceof SourceParseError)) {
+        throw new Error(`Expected SourceParseError, got: ${e}`);
+      }
+      assert(e.message.includes("alphanumeric"));
     }
   });
 
@@ -240,8 +249,10 @@ Deno.test("SourceParseError - edge cases", async (t) => {
       resolveSource("ns/");
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals((e as Error).message.includes("trailing slash"), true);
+      if (!(e instanceof SourceParseError)) {
+        throw new Error(`Expected SourceParseError, got: ${e}`);
+      }
+      assert(e.message.includes("trailing slash"));
     }
   });
 
@@ -250,8 +261,10 @@ Deno.test("SourceParseError - edge cases", async (t) => {
       resolveSource("/world");
       throw new Error("Expected error to be thrown");
     } catch (e) {
-      assertEquals((e as Error) instanceof SourceParseError, true);
-      assertEquals((e as Error).message.includes("leading"), true);
+      if (!(e instanceof SourceParseError)) {
+        throw new Error(`Expected SourceParseError, got: ${e}`);
+      }
+      assert(e.message.includes("leading"));
     }
   });
 });
