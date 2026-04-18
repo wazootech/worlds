@@ -23,11 +23,11 @@ Worlds Platform is a context layer for agents. The engine manages, queries, and
 proves knowledge using [SPARQL](https://www.w3.org/TR/sparql11-overview/)
 standards at the edge.
 
-- Reasoning. Built-in SPARQL support for federated knowledge discovery.
-- Agnostic. Works with any model, framework, or agent.
-- AI-native. Tool-calling support and context injection.
-- Provenance. Direct link to source data for all knowledge.
-- Continual learning. Designed to improve recall and reasoning over time.
+- Reasoning: Built-in SPARQL support for federated knowledge discovery.
+- Agnostic: Works with any model, framework, or agent.
+- AI-native: Tool-calling support and context injection.
+- Provenance: Direct link to source data for all knowledge.
+- Continual learning: Designed to improve recall and reasoning over time.
 
 Worlds delivers these features through an open-source API.
 
