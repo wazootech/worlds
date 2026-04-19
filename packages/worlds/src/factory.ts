@@ -3,13 +3,39 @@ import { ApiKeyRepository } from "#/management/keys.ts";
 import { NamespaceRepository } from "#/management/namespaces.ts";
 import { WorldRepository } from "#/management/worlds.ts";
 import type { Embeddings } from "#/vectors/embeddings.ts";
-import type { WorldsContext, WorldsOptions } from "#/types.ts";
+import type { WorldsContext } from "#/testing/context.ts";
+import type { WorldsOptions } from "./factory.ts";
 import { Worlds, type WorldsEngineOptions } from "#/worlds/worlds.ts";
 import { RemoteWorlds } from "#/worlds/remote.ts";
 import { OllamaEmbeddings } from "#/vectors/ollama.ts";
 import { OpenRouterEmbeddings } from "#/vectors/openrouter.ts";
 import { createOllama } from "ollama-ai-provider";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+
+/**
+ * WorldsOptions are the options for the Worlds API SDK.
+ */
+export interface WorldsOptions {
+  /**
+   * baseUrl is the base URL of the Worlds API. It should not include the /v1 suffix.
+   */
+  baseUrl?: string;
+
+  /**
+   * apiKey is the API key for the Worlds API.
+   */
+  apiKey?: string;
+
+  /**
+   * fetch fetches a resource from the network.
+   */
+  fetch?: typeof globalThis.fetch;
+
+  /**
+   * namespace is the default namespace to use for this instance.
+   */
+  namespace?: string;
+}
 
 /**
  * WorldsContextConfig is the configuration for a Worlds engine context.

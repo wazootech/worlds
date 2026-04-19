@@ -7,7 +7,6 @@ export * from "./worlds/worlds.ts";
 export * from "./worlds/remote.ts";
 
 // Core Utilities & Types
-export * from "./types.ts";
 export * from "./utils.ts";
 export * from "./sources/resolver.ts";
 export * from "./testing/context.ts";

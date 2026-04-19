@@ -1,4 +1,16 @@
 import { z } from "zod";
+import type { ApiKeyRepository } from "./keys.ts";
+import type { NamespaceRepository } from "./namespaces.ts";
+import type { WorldRepository } from "./worlds.ts";
+
+/**
+ * ManagementLayer defines the interface for world and namespace metadata.
+ */
+export interface ManagementLayer {
+  keys: ApiKeyRepository;
+  namespaces: NamespaceRepository;
+  worlds: WorldRepository;
+}
 
 /**
  * worldRowSchema is the Zod schema for the worlds database table.

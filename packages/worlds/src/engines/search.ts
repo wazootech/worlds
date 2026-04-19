@@ -4,7 +4,7 @@ import type {
   WorldsSearchOutput,
 } from "#/worlds/search.schema.ts";
 import type { Embeddings } from "#/vectors/embeddings.ts";
-import type { ManagementLayer } from "#/types.ts";
+import type { ManagementLayer } from "#/management/schema.ts";
 import type { StoreEngine } from "./store.ts";
 
 /**

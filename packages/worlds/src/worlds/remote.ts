@@ -1,4 +1,4 @@
-import type { WorldsOptions } from "#/types.ts";
+import type { WorldsOptions } from "#/factory.ts";
 import { parseError } from "#/utils.ts";
 import { encodeBase64 } from "@std/encoding/base64";
 import type {

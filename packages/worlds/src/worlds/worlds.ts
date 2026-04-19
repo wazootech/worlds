@@ -18,7 +18,7 @@ import type {
   WorldsSearchInput,
   WorldsSearchOutput,
 } from "./schema.ts";
-import type { ManagementLayer } from "../types.ts";
+import type { ManagementLayer } from "../management/schema.ts";
 import type { WorldRow } from "../management/worlds.ts";
 import {
   expandPathNamespace,
@@ -29,7 +29,7 @@ import type { WorldsSource } from "#/schemas/input.ts";
 import { createIndexedStore } from "../rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "../rdf/patch/rdf-patch.ts";
 import type { Embeddings } from "../vectors/embeddings.ts";
-import type { WorldsEngine } from "../types.ts";
+import type { WorldsEngine } from "./worlds.ts";
 import type {
   SearchEngine,
   SparqlEngine,
@@ -87,6 +87,22 @@ export interface WorldsEngineOptions {
    * world is the default world name.
    */
   world?: string;
+}
+
+/**
+ * WorldsEngine defines the primary interface for the Worlds engine.
+ */
+export interface WorldsEngine {
+  list(input?: WorldsListInput): Promise<World[]>;
+  get(input: WorldsGetInput): Promise<World | null>;
+  create(input: WorldsCreateInput): Promise<World>;
+  update(input: WorldsUpdateInput): Promise<World>;
+  delete(input: WorldsDeleteInput): Promise<void>;
+  sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput>;
+  search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]>;
+  import(input: WorldsImportInput): Promise<void>;
+  export(input: WorldsExportInput): Promise<ArrayBuffer>;
+  [Symbol.asyncDispose](): Promise<void>;
 }
 
 /**

@@ -1,10 +1,56 @@
 import { ulid } from "@std/ulid";
+
+/**
+ * WorldsContext is the shared context for the Worlds engine.
+ * In the new "Simple & Open" architecture, this is a minimalist configuration bag.
+ */
+export interface WorldsContext {
+  /**
+   * engine is the main Worlds engine instance.
+   */
+  engine?: import("../worlds/worlds.ts").WorldsEngine;
+
+  /**
+   * apiKey is an optional API key for authentication.
+   */
+  apiKey?: string;
+
+  /**
+   * embeddings is the embedding strategy used for semantic or vector search.
+   */
+  embeddings: Embeddings;
+
+  /**
+   * management provides handles for metadata operations.
+   */
+  management: ManagementLayer;
+
+  /**
+   * storage manages the underlying stores.
+   */
+  storage: import("../engines/store.ts").MemoryStoreRepository;
+
+  /**
+   * namespace is the default namespace for this context.
+   */
+  namespace?: string;
+
+  /**
+   * world is the default world for this context.
+   */
+  world?: string;
+
+  /**
+   * [Symbol.asyncDispose] provides support for explicit resource management.
+   */
+  [Symbol.asyncDispose](): Promise<void>;
+}
 import { MemoryStoreRepository } from "#/engines/store.ts";
 import { ApiKeyRepository } from "#/management/keys.ts";
 import { NamespaceRepository } from "#/management/namespaces.ts";
 import { WorldRepository } from "#/management/worlds.ts";
 import type { Embeddings } from "#/vectors/embeddings.ts";
-import type { WorldsContext } from "#/types.ts";
+import type { ManagementLayer } from "#/management/schema.ts";
 
 /**
  * createTestContext creates a test application context with in-memory
