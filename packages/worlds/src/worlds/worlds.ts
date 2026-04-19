@@ -387,8 +387,3 @@ export class Worlds implements WorldsEngine {
     return "";
   }
 }
-
-/**
- * LocalWorlds is a factory and alias for Worlds.
- */
-export const LocalWorlds = Worlds;
