@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { type World, worldSchema } from "./schema.ts";
-import { type WorldsSource, worldsSourceSchema } from "#/schema.ts";
+export { type WorldsSource, worldsSourceSchema } from "#/schemas/input.ts";
+import type { WorldsSource } from "#/schemas/input.ts";
 
 /**
  * WorldsSearchOutput represents a search result from the TripleSearch service.

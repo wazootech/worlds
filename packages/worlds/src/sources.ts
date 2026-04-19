@@ -1,4 +1,4 @@
-import type { WorldsSource } from "#/schema.ts";
+import type { WorldsSource } from "#/schemas/input.ts";
 import type { WorldsContext } from "#/types.ts";
 
 /**

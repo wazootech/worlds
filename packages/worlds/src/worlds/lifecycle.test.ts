@@ -7,18 +7,15 @@ Deno.test("Worlds Engine Lifecycle", async (t) => {
     await using context = await createTestContext();
     const worlds = new Worlds({
       management: context.management,
-      resolver: async (id, ns) =>
-        await context.storage.get({ id, namespace: ns }),
+      storeEngine: context.storage,
     });
 
-    // Call init multiple times concurrently
     await Promise.all([
       worlds.init(),
       worlds.init(),
       worlds.init(),
     ]);
 
-    // Should work
     const list = await worlds.list();
     assertEquals(Array.isArray(list), true);
   });
@@ -27,11 +24,9 @@ Deno.test("Worlds Engine Lifecycle", async (t) => {
     await using context = await createTestContext();
     const worlds = new Worlds({
       management: context.management,
-      resolver: async (id, ns) =>
-        await context.storage.get({ id, namespace: ns }),
+      storeEngine: context.storage,
     });
 
-    // Call a method without explicit init()
     const list = await worlds.list();
     assertEquals(Array.isArray(list), true);
   });
@@ -40,8 +35,7 @@ Deno.test("Worlds Engine Lifecycle", async (t) => {
     await using context = await createTestContext();
     const worlds = new Worlds({
       management: context.management,
-      resolver: async (id, ns) =>
-        await context.storage.get({ id, namespace: ns }),
+      storeEngine: context.storage,
     });
     await worlds.init();
 

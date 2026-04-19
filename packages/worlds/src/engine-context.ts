@@ -1,5 +1,5 @@
 import { ulid } from "@std/ulid";
-import { MemoryStoreManager } from "#/storage.ts";
+import { MemoryStoreManager } from "#/engines/store.ts";
 import { ApiKeyRepository } from "#/management/keys.ts";
 import { NamespaceRepository } from "#/management/namespaces.ts";
 import { WorldRepository } from "#/management/worlds.ts";
@@ -40,7 +40,7 @@ export async function createTestContext(): Promise<WorldsContext> {
   });
 
   return {
-    vectors: mockEmbeddings,
+    embeddings: mockEmbeddings,
     management: {
       keys,
       namespaces,

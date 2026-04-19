@@ -4,7 +4,7 @@ import {
   worldsContentTypeSchema,
   type WorldsSource,
   worldsSourceSchema,
-} from "#/schema.ts";
+} from "#/schemas/input.ts";
 
 export { type WorldsContentType, worldsContentTypeSchema };
 

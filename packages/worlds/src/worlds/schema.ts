@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { type WorldsSource, worldsSourceSchema } from "#/schema.ts";
+export { type WorldsSource, worldsSourceSchema } from "#/schemas/input.ts";
+import type { WorldsSource } from "#/schemas/input.ts";
 
 /**
  * World represents a world in the Worlds API.
@@ -168,12 +169,12 @@ export const worldsDeleteInputSchema: z.ZodType<WorldsDeleteInput> = z.object({
   source: worldsSourceSchema.describe("The target world identification."),
 });
 
-// Re-exports from schema.ts
+// Re-exports from schemas/input.ts
 export type {
   WorldsExportInput,
   WorldsImportInput,
   WorldsListInput,
-} from "#/schema.ts";
+} from "#/schemas/input.ts";
 
 // Re-exports from search.schema.ts
 export type { WorldsSearchInput, WorldsSearchOutput } from "./search.schema.ts";

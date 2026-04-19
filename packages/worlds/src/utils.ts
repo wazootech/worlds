@@ -1,4 +1,4 @@
-import { errorResponseDataSchema } from "#/schema.ts";
+import { errorResponseDataSchema } from "#/schemas/input.ts";
 
 /**
  * parseError parses an error response from the API.

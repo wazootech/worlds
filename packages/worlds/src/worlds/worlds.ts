@@ -20,23 +20,18 @@ import type {
 } from "./schema.ts";
 import type { ManagementLayer } from "../types.ts";
 import type { WorldRow } from "../management/worlds.ts";
-import type { SearchIndex } from "../types.ts";
 import { expandPathNamespace, resolveSource, toWorldName } from "../sources.ts";
-import type { WorldsSource } from "../schema.ts";
-import { ChunksSearchRepository } from "./chunks/repository.ts";
+import type { WorldsSource } from "#/schemas/input.ts";
 import { createIndexedStore } from "../rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "../rdf/patch/rdf-patch.ts";
 import type { Embeddings } from "../vectors/embeddings.ts";
-import type { MemoryStoreManager } from "../storage.ts";
 import type { WorldsEngine } from "../types.ts";
-
-/**
- * WorldStoreResolver is a function that resolves a world coordinate to an RDF/JS store.
- */
-export type WorldStoreResolver = (
-  id: string,
-  namespace?: string,
-) => Promise<Store>;
+import type {
+  SearchEngine,
+  SparqlEngine,
+  StoreEngine,
+} from "../engines/mod.ts";
+import { ChunksSearchEngine } from "../engines/search.ts";
 
 /**
  * SyncableStore combines an RDF store with a sync operation for indexing.
@@ -47,50 +42,80 @@ interface SyncableStore {
 }
 
 /**
+ * WorldsEngineOptions defines the options for creating a Worlds engine.
+ */
+export interface WorldsEngineOptions {
+  /**
+   * storeEngine is the store engine for RDF persistence.
+   * Required for data-plane operations (sparql, import, export).
+   */
+  storeEngine?: StoreEngine;
+
+  /**
+   * sparqlEngine is the SPARQL engine for RDF query operations.
+   * Optional - if not provided, Worlds uses inline SPARQL execution.
+   */
+  sparqlEngine?: SparqlEngine;
+
+  /**
+   * searchEngine is the search engine for semantic search.
+   * Optional - search() throws if not provided.
+   */
+  searchEngine?: SearchEngine;
+
+  /**
+   * embeddings is the embedding generator for search.
+   * Used to create a default search engine if none provided.
+   */
+  embeddings?: Embeddings;
+
+  /**
+   * management is the management layer for world metadata.
+   */
+  management?: ManagementLayer;
+
+  /**
+   * namespace is the default namespace.
+   */
+  namespace?: string;
+
+  /**
+   * world is the default world name.
+   */
+  world?: string;
+}
+
+/**
  * Worlds is an engine-agnostic implementation of the Worlds API.
- * It coordinates operations across standard RDF/JS stores and optional management/search layers.
+ * It coordinates operations across store engines and optional search engines.
  */
 export class Worlds implements WorldsEngine {
-  private readonly store?: Store;
-  private readonly resolver?: WorldStoreResolver;
-  private readonly searchIndex?: SearchIndex;
+  private readonly storeEngine?: StoreEngine;
+  private readonly sparqlEngine?: SparqlEngine;
+  private readonly searchEngine?: SearchEngine;
   private readonly management?: ManagementLayer;
   private readonly namespace?: string;
   private readonly world?: string;
-  private readonly vectors?: Embeddings;
+  private readonly embeddings?: Embeddings;
 
-  constructor(options: {
-    store?: Store;
-    resolver?: WorldStoreResolver;
-    search?: SearchIndex;
-    management?: ManagementLayer;
-    namespace?: string;
-    world?: string;
-    storage?: MemoryStoreManager;
-    vectors?: Embeddings;
-  }) {
-    this.store = options.store;
-    this.resolver = options.resolver;
-    if (!this.resolver && options.storage) {
-      this.resolver = async (id, ns) =>
-        await options.storage!.get({ id, namespace: ns });
-    }
-
+  constructor(options: WorldsEngineOptions) {
+    this.storeEngine = options.storeEngine;
     this.management = options.management;
     this.namespace = options.namespace;
     this.world = options.world;
-    this.vectors = options.vectors;
+    this.embeddings = options.embeddings;
+    this.sparqlEngine = options.sparqlEngine;
 
-    // Initialize search index: wrap vectors if a specific search backend is not provided
-    if (options.search) {
-      this.searchIndex = options.search;
-    } else if (this.vectors) {
-      this.searchIndex = new ChunksSearchRepository({
-        vectors: this.vectors,
+    // Create search engine if not provided but embeddings available
+    if (options.searchEngine) {
+      this.searchEngine = options.searchEngine;
+    } else if (this.embeddings && this.management) {
+      this.searchEngine = new ChunksSearchEngine({
+        embeddings: this.embeddings,
         management: this.management!,
         namespace: this.namespace,
         world: this.world,
-        storage: options.storage,
+        storeEngine: this.storeEngine,
       });
     }
   }
@@ -124,25 +149,22 @@ export class Worlds implements WorldsEngine {
     const source = resolveSource(inputSource, { namespace: this.namespace });
     const worldId = source.world ?? this.world;
 
-    let rawStore: Store;
-    if (this.store) {
-      rawStore = this.store;
-    } else if (this.resolver) {
-      if (!worldId) {
-        throw new Error("World ID is required when using a store resolver");
-      }
-      rawStore = await this.resolver(worldId, source.namespace ?? "_");
-    } else {
+    if (!this.storeEngine) {
       throw new Error(
-        "Store or Resolver is required for data-plane operations",
+        "StoreEngine is required for data-plane operations",
       );
     }
 
-    // Wrap in IndexedStore if indexing is possible
-    if (this.vectors && worldId) {
+    const rawStore = await this.storeEngine.getStore(
+      worldId,
+      source.namespace,
+    );
+
+    // Wrap in IndexedStore if embeddings available
+    if (this.embeddings && worldId) {
       const handler = new SearchIndexHandler(
         worldId,
-        this.vectors,
+        this.embeddings,
         source.namespace,
       );
       const { store, sync } = createIndexedStore(rawStore, [handler]);
@@ -306,10 +328,10 @@ export class Worlds implements WorldsEngine {
    * search executes a semantic search against the world.
    */
   public async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
-    if (!this.searchIndex) {
-      throw new Error("Search index is required for search operations");
+    if (!this.searchEngine) {
+      throw new Error("SearchEngine is required for search operations");
     }
-    return await this.searchIndex.search(input);
+    return await this.searchEngine.search(input);
   }
 
   /**
@@ -373,6 +395,16 @@ export class Worlds implements WorldsEngine {
 
     // Sync indexing
     await sync();
+
+    // Sync to search engine if available
+    if (this.searchEngine?.applyPatches) {
+      // Generate patches from the imported quads
+      const patches = quads.map((q) => ({
+        insertions: [q],
+        deletions: [] as Quad[],
+      }));
+      await this.searchEngine.applyPatches(patches);
+    }
   }
 
   /**

@@ -1,9 +1,7 @@
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import type { SparqlSelectResults } from "#/worlds/sparql.schema.ts";
 import { createTestContext } from "#/engine-context.ts";
 import { Worlds } from "#/worlds/worlds.ts";
-import { createIndexedStore } from "#/rdf/patch/indexed-store.ts";
-import { SearchIndexHandler } from "#/rdf/patch/rdf-patch.ts";
 
 Deno.test({
   name: "Worlds Engine (Shell Architecture)",
@@ -14,16 +12,10 @@ Deno.test({
 
     // Wire up a Managed Shell engine for testing
     const worlds = new Worlds({
+      storeEngine: context.storage,
+      embeddings: context.embeddings,
       management: context.management,
       namespace: context.namespace,
-      resolver: async (id, ns) => {
-        const rawStore = await context.storage.get({ id, namespace: ns });
-        const { store, sync } = createIndexedStore(rawStore, [
-          new SearchIndexHandler(id, context.vectors),
-        ]);
-        (store as Store & { sync: () => Promise<void> }).sync = sync;
-        return store;
-      },
       world: context.world,
     });
 
@@ -94,5 +86,49 @@ Deno.test({
       const world = await worlds.get({ source: worldId });
       assertEquals(world, null);
     });
+  },
+});
+
+Deno.test({
+  name: "Worlds throws when search called without SearchEngine",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    const keys = new (await import("#/management/keys.ts")).ApiKeyRepository();
+    const namespaces = new (await import("#/management/namespaces.ts"))
+      .NamespaceRepository();
+    const worldsRepo = new (await import("#/management/worlds.ts"))
+      .WorldRepository();
+    const storage = new (await import("#/engines/store.ts"))
+      .MemoryStoreManager();
+    const namespaceId = "test-admin";
+
+    await namespaces.insert({
+      id: namespaceId,
+      label: "Test Admin",
+      created_at: Date.now(),
+      updated_at: Date.now(),
+    });
+
+    const worldsNoSearch = new Worlds({
+      management: {
+        keys,
+        namespaces,
+        worlds: worldsRepo,
+      },
+      namespace: namespaceId,
+      storeEngine: storage,
+      world: "test-world",
+    });
+
+    await worldsNoSearch.init();
+
+    await assertRejects(
+      () => worldsNoSearch.search({ query: "test" }),
+      Error,
+      "SearchEngine is required for search operations",
+    );
+
+    await storage.close();
   },
 });

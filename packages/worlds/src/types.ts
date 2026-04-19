@@ -1,5 +1,5 @@
 import type { Embeddings } from "#/vectors/embeddings.ts";
-import type { MemoryStoreManager } from "#/storage.ts";
+import type { MemoryStoreManager } from "#/engines/store.ts";
 import type { ApiKeyRepository } from "#/management/keys.ts";
 import type { NamespaceRepository } from "#/management/namespaces.ts";
 import type { WorldRepository } from "#/management/worlds.ts";
@@ -14,7 +14,7 @@ import type {
   WorldsExportInput,
   WorldsImportInput,
   WorldsListInput,
-} from "#/schema.ts";
+} from "#/schemas/input.ts";
 import type {
   WorldsSearchInput,
   WorldsSearchOutput,
@@ -47,13 +47,6 @@ export interface WorldsOptions {
    * namespace is the default namespace to use for this instance.
    */
   namespace?: string;
-}
-
-/**
- * SearchIndex defines the interface for semantic search backends.
- */
-export interface SearchIndex {
-  search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]>;
 }
 
 /**
@@ -97,9 +90,9 @@ export interface WorldsContext {
   apiKey?: string;
 
   /**
-   * vectors is the embedding strategy used for semantic or vector search.
+   * embeddings is the embedding strategy used for semantic or vector search.
    */
-  vectors: Embeddings;
+  embeddings: Embeddings;
 
   /**
    * management provides handles for metadata operations.

@@ -1,0 +1,194 @@
+import type { Patch } from "#/rdf/patch/types.ts";
+import type {
+  WorldsSearchInput,
+  WorldsSearchOutput,
+} from "#/worlds/search.schema.ts";
+import type { Embeddings } from "#/vectors/embeddings.ts";
+import type { ManagementLayer } from "#/types.ts";
+import type { StoreEngine } from "./store.ts";
+
+/**
+ * SearchEngine handles semantic search operations.
+ * Optional - search() throws if not provided.
+ */
+export interface SearchEngine {
+  /**
+   * search executes a semantic search against the world.
+   */
+  search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]>;
+
+  /**
+   * applyPatches handles patches when data changes (sync mechanism).
+   */
+  applyPatches?(patches: Patch[]): Promise<void>;
+
+  /**
+   * close cleans up resources.
+   */
+  close?(): Promise<void>;
+}
+
+export interface ChunksSearchEngineOptions {
+  embeddings: Embeddings;
+  management: ManagementLayer;
+  namespace?: string;
+  world?: string;
+  storeEngine?: StoreEngine;
+}
+
+/**
+ * ChunksSearchEngine handles semantic search using chunk-based vector indexing.
+ * Implements the SearchEngine interface for the Worlds engine.
+ */
+export class ChunksSearchEngine implements SearchEngine {
+  constructor(private readonly options: ChunksSearchEngineOptions) {}
+
+  async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
+    const {
+      query,
+      subjects,
+      predicates,
+      types,
+      namespace: inputNamespace,
+      limit = 10,
+    } = input;
+
+    const namespace = inputNamespace ?? this.options.namespace;
+
+    const queryVector = query
+      ? await this.options.embeddings.embed(query)
+      : new Array(this.options.embeddings.dimensions).fill(0);
+
+    const result = this.options.management.worlds.list({
+      namespace,
+      pageSize: 100,
+    });
+
+    const allResults: WorldsSearchOutput[] = [];
+
+    for (const worldRow of result.worlds) {
+      const { ChunksRepository } = await import(
+        "#/worlds/chunks/repository.ts"
+      );
+      const repo = new ChunksRepository(
+        worldRow.id!,
+        worldRow.namespace ?? undefined,
+      );
+      const chunks = repo.getForWorld();
+
+      const subjectTypes = new Map<string, Set<string>>();
+      for (const chunk of chunks) {
+        if (
+          chunk.predicate ===
+            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ||
+          chunk.predicate === "a"
+        ) {
+          if (!subjectTypes.has(chunk.subject)) {
+            subjectTypes.set(chunk.subject, new Set());
+          }
+          subjectTypes.get(chunk.subject)!.add(chunk.text);
+        }
+      }
+
+      const worldResults = chunks
+        .filter((c) => !subjects || subjects.includes(c.subject))
+        .filter((c) => !predicates || predicates.includes(c.predicate))
+        .filter((c) => {
+          if (!types || types.length === 0) return true;
+          const actualTypes = subjectTypes.get(c.subject);
+          return types.some((t) => actualTypes?.has(t));
+        })
+        .map((c) => {
+          let score = 0;
+          let vecRank = null;
+
+          if (c.vector) {
+            const chunkVector = c.vector instanceof ArrayBuffer
+              ? new Float32Array(c.vector)
+              : new Float32Array(c.vector.buffer);
+
+            score = (queryVector as number[]).reduce(
+              (acc, val, i) => acc + val * (chunkVector[i] || 0),
+              0,
+            );
+            vecRank = score;
+          }
+
+          if (!query || score === 0) {
+            if (!query || c.text.toLowerCase().includes(query.toLowerCase())) {
+              score = Math.max(score, 0.5);
+            }
+          }
+
+          return {
+            subject: c.subject,
+            predicate: c.predicate,
+            object: c.text,
+            vecRank,
+            ftsRank: null,
+            score,
+            world: {
+              name: worldRow.namespace
+                ? `${worldRow.namespace}/${worldRow.id}`
+                : worldRow.id,
+              id: worldRow.id,
+              namespace: worldRow.namespace ?? undefined,
+              label: worldRow.label ?? undefined,
+              description: worldRow.description ?? undefined,
+              createdAt: worldRow.created_at,
+              updatedAt: worldRow.updated_at,
+              deletedAt: worldRow.deleted_at ?? undefined,
+            },
+          } as WorldsSearchOutput;
+        })
+        .filter((r) => r.score > 0);
+
+      allResults.push(...worldResults);
+    }
+
+    return allResults
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+  }
+
+  async applyPatches(patches: Patch[]): Promise<void> {
+    for (const patch of patches) {
+      const { ChunksRepository } = await import(
+        "#/worlds/chunks/repository.ts"
+      );
+
+      for (const deletion of patch.deletions ?? []) {
+        const key = `${deletion.graph.value}/${deletion.subject.value}`;
+        const parts = key.split("/");
+        const ns = parts.length > 1 ? parts[0] : undefined;
+        const id = parts.length > 1 ? parts.slice(1).join("/") : parts[0];
+        const repo = new ChunksRepository(id, ns === "_" ? undefined : ns);
+        repo.deleteByFactId(deletion.subject.value);
+      }
+
+      for (const insertion of patch.insertions ?? []) {
+        const key = `${insertion.graph.value}/${insertion.subject.value}`;
+        const parts = key.split("/");
+        const ns = parts.length > 1 ? parts[0] : undefined;
+        const id = parts.length > 1 ? parts.slice(1).join("/") : parts[0];
+        const repo = new ChunksRepository(id, ns === "_" ? undefined : ns);
+
+        const objectText = insertion.object.value;
+        const vector = await this.options.embeddings.embed(objectText);
+
+        repo.upsert({
+          id: crypto.randomUUID(),
+          fact_id: insertion.subject.value,
+          subject: insertion.subject.value,
+          predicate: insertion.predicate.value,
+          text: objectText,
+          vector: new Uint8Array(new Float32Array(vector).buffer),
+        });
+      }
+    }
+  }
+
+  async close(): Promise<void> {
+    // No-op for in-memory search engine
+  }
+}

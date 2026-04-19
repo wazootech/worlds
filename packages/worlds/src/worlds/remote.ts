@@ -12,7 +12,7 @@ import type {
   WorldsExportInput,
   WorldsImportInput,
   WorldsListInput,
-} from "#/schema.ts";
+} from "#/schemas/input.ts";
 import type {
   WorldsServiceDescriptionInput,
   WorldsSparqlInput,
