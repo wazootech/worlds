@@ -2,6 +2,10 @@ import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import type { SparqlSelectResults } from "#/worlds/sparql.schema.ts";
 import { createTestContext } from "../testing/context.ts";
 import { Worlds } from "#/worlds/worlds.ts";
+import { ApiKeyRepository } from "#/management/keys.ts";
+import { NamespaceRepository } from "#/management/namespaces.ts";
+import { WorldRepository } from "#/management/worlds.ts";
+import { KvStoreEngine } from "#/engines/store.ts";
 
 Deno.test({
   name: "Worlds Engine (Shell Architecture)",
@@ -94,13 +98,10 @@ Deno.test({
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
-    const keys = new (await import("#/management/keys.ts")).ApiKeyRepository();
-    const namespaces = new (await import("#/management/namespaces.ts"))
-      .NamespaceRepository();
-    const worldsRepo = new (await import("#/management/worlds.ts"))
-      .WorldRepository();
-    const storage = new (await import("#/engines/store.ts"))
-      .KvStoreEngine();
+    const keys = new ApiKeyRepository();
+    const namespaces = new NamespaceRepository();
+    const worldsRepo = new WorldRepository();
+    const storage = new KvStoreEngine();
     const namespaceId = "test-admin";
 
     await namespaces.insert({
