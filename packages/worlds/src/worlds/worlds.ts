@@ -1,4 +1,4 @@
-import type { Quad, Store } from "n3";
+import type { Quad } from "n3";
 import type {
   WorldsExportInput,
   WorldsImportInput,
@@ -19,12 +19,7 @@ import type {
   WorldsSearchOutput,
 } from "./schema.ts";
 import type { ManagementLayer } from "../management/schema.ts";
-import type { WorldRow } from "../management/worlds.ts";
-import {
-  expandPathNamespace,
-  resolveSource,
-  toWorldName,
-} from "../sources/resolver.ts";
+import { expandPathNamespace, resolveSource } from "../sources/resolver.ts";
 import type { WorldsSource } from "#/schemas/input.ts";
 import { createIndexedStore } from "../rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "../rdf/patch/rdf-patch.ts";
@@ -36,14 +31,7 @@ import type {
   StoreEngine,
 } from "../engines/mod.ts";
 import { ChunksSearchEngine } from "../engines/search.ts";
-
-/**
- * SyncableStore combines an RDF store with a sync operation for indexing.
- */
-interface SyncableStore {
-  store: Store;
-  sync: () => Promise<void>;
-}
+import { mapRowsToWorlds, mapRowToWorld, type SyncableStore } from "./utils.ts";
 
 /**
  * WorldsEngineOptions defines the options for creating a Worlds engine.
@@ -203,25 +191,9 @@ export class Worlds implements WorldsEngine {
       input?.namespace ?? this.namespace ?? null,
     );
 
-    await Promise.resolve(); // Deno lint: keep async for interface compatibility
-    const result = mgmt.worlds.list({
-      ...input,
-      namespace,
-    });
-
-    return result.worlds.map((row) => ({
-      name: toWorldName({
-        namespace: row.namespace ?? undefined,
-        world: row.id ?? undefined,
-      }),
-      id: row.id,
-      namespace: row.namespace ?? undefined,
-      label: row.label ?? undefined,
-      description: row.description ?? undefined,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      deletedAt: row.deleted_at ?? undefined,
-    }));
+    await Promise.resolve();
+    const result = mgmt.worlds.list({ ...input, namespace });
+    return mapRowsToWorlds(result.worlds);
   }
 
   /**
@@ -232,25 +204,10 @@ export class Worlds implements WorldsEngine {
     const resolved = resolveSource(input.source, { namespace: this.namespace });
 
     await Promise.resolve();
-    const row = mgmt.worlds.get(
-      resolved.world!,
-      resolved.namespace,
-    );
+    const row = mgmt.worlds.get(resolved.world!, resolved.namespace);
     if (!row) return null;
 
-    return {
-      name: toWorldName({
-        namespace: row.namespace ?? undefined,
-        world: row.id ?? undefined,
-      }),
-      id: row.id,
-      namespace: row.namespace ?? undefined,
-      label: row.label ?? undefined,
-      description: row.description ?? undefined,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      deletedAt: row.deleted_at ?? undefined,
-    };
+    return mapRowToWorld(row);
   }
 
   /**
@@ -265,7 +222,8 @@ export class Worlds implements WorldsEngine {
     const resolved = resolveSource(nameOrWorld, { namespace: this.namespace });
 
     const now = Date.now();
-    const row: WorldRow = {
+    await Promise.resolve();
+    mgmt.worlds.insert({
       namespace: resolved.namespace,
       id: resolved.world!,
       label: input.label ?? resolved.world ?? "Untitled",
@@ -274,24 +232,10 @@ export class Worlds implements WorldsEngine {
       created_at: now,
       updated_at: now,
       deleted_at: null,
-    };
+    });
 
-    await Promise.resolve();
-    mgmt.worlds.insert(row);
-
-    return {
-      name: toWorldName({
-        namespace: row.namespace ?? undefined,
-        world: row.id ?? undefined,
-      }),
-      id: row.id,
-      namespace: row.namespace ?? undefined,
-      label: row.label ?? undefined,
-      description: row.description ?? undefined,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      deletedAt: undefined,
-    };
+    const row = mgmt.worlds.get(resolved.world!, resolved.namespace);
+    return mapRowToWorld(row!);
   }
 
   /**
@@ -302,32 +246,15 @@ export class Worlds implements WorldsEngine {
     const resolved = resolveSource(input.source, { namespace: this.namespace });
 
     await Promise.resolve();
-    mgmt.worlds.update(
-      resolved.world!,
-      resolved.namespace,
-      {
-        label: input.label,
-        description: input.description,
-      },
-    );
+    mgmt.worlds.update(resolved.world!, resolved.namespace, {
+      label: input.label,
+      description: input.description,
+    });
 
-    // Fetch the updated row since management.update returns void
     const result = mgmt.worlds.get(resolved.world!, resolved.namespace);
     if (!result) throw new Error("World not found after update");
 
-    return {
-      name: toWorldName({
-        namespace: result.namespace ?? undefined,
-        world: result.id ?? undefined,
-      }),
-      id: result.id,
-      namespace: result.namespace ?? undefined,
-      label: result.label ?? undefined,
-      description: result.description ?? undefined,
-      createdAt: result.created_at,
-      updatedAt: result.updated_at,
-      deletedAt: result.deleted_at ?? undefined,
-    };
+    return mapRowToWorld(result);
   }
 
   /**
