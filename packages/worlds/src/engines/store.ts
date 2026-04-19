@@ -22,11 +22,15 @@ export interface StoreEngine {
 }
 
 /**
- * MemoryStoreRepository manages in-memory N3 Stores for multiple worlds.
- * It provides a central lookup for world stores and handles cleanup.
- * Implements StoreEngine interface.
+ * KvStoreEngine manages in-memory N3 Stores using KV pattern.
+ *
+ * Multitenancy: Each namespace+world combination maps to a separate Store.
+ * Key format: "${namespace}:${world}" (both optional, default to "default")
+ *
+ * Implementations can swap this for SQLite by changing the Map to use
+ * an actual database - the interface contract remains the same.
  */
-export class MemoryStoreRepository implements StoreEngine {
+export class KvStoreEngine implements StoreEngine {
   private readonly stores = new Map<string, Store>();
 
   private toKey(id?: string, namespace?: string): string {

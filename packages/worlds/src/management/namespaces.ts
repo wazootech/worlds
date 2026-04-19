@@ -37,7 +37,12 @@ export interface NamespacesListResult {
 }
 
 /**
- * NamespaceRepository handles the persistence of namespaces using an in-memory Map.
+ * NamespaceRepository manages namespace metadata using KV pattern.
+ *
+ * Multitenancy: Each namespace ID is a separate entry.
+ * Key format: "${namespaceId}"
+ *
+ * This is the "namespaces table" - swap Map for SQLite to persist.
  */
 export class NamespaceRepository {
   private readonly namespaces = new Map<string, NamespaceRow>();

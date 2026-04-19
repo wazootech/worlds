@@ -1,11 +1,11 @@
 import { assertEquals } from "@std/assert";
 import { DataFactory } from "n3";
-import { MemoryStoreManager } from "./engines/store.ts";
+import { KvStoreEngine } from "./engines/store.ts";
 
 const { namedNode, literal, quad } = DataFactory;
 
-Deno.test("MemoryStoreManager", async (t) => {
-  const manager = new MemoryStoreRepository();
+Deno.test("KvStoreEngine", async (t) => {
+  const manager = new KvStoreEngine();
 
   await t.step("getStore creates new store", async () => {
     await manager.getStore("world-1", "ns-1");
@@ -18,7 +18,6 @@ Deno.test("MemoryStoreManager", async (t) => {
     const store1 = await manager.getStore("world-2", "ns-1");
     const store2 = await manager.getStore("world-2", "ns-1");
 
-    // Should return same store instance for same key
     assertEquals(store1 === store2, true);
   });
 
@@ -34,7 +33,6 @@ Deno.test("MemoryStoreManager", async (t) => {
 
     manager.delete("world-to-delete", "ns-1");
 
-    // After delete, getStore should create a new empty store
     const store = await manager.getStore("world-to-delete", "ns-1");
     assertEquals(store.getQuads(null, null, null, null).length, 0);
   });
@@ -77,13 +75,12 @@ Deno.test("MemoryStoreManager", async (t) => {
 
     manager.close();
 
-    // After close, getStore should create new empty store
     const store = await manager.getStore("world-x", "ns-1");
     assertEquals(store.getQuads(null, null, null, null).length, 0);
   });
 
   await t.step("Symbol.asyncDispose closes storage", async () => {
-    const mgr = new MemoryStoreManager();
+    const mgr = new KvStoreEngine();
     await mgr.getStore("test", "ns");
 
     await mgr[Symbol.asyncDispose]();

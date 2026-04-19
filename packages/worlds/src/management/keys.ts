@@ -1,5 +1,10 @@
 /**
- * ApiKeyRepository handles API key persistence in-memory using a Map.
+ * ApiKeyRepository manages API keys using KV pattern.
+ *
+ * The key is a hash of the API key, value is the namespace ID.
+ * This enables auth lookups without storing plaintext keys.
+ *
+ * This is the "api_keys table" - swap Map for SQLite to persist.
  */
 export class ApiKeyRepository {
   private readonly keys = new Map<string, string | undefined>();

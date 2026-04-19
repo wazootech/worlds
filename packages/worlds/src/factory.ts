@@ -1,4 +1,4 @@
-import { MemoryStoreRepository } from "#/engines/store.ts";
+import { KvStoreEngine } from "#/engines/store.ts";
 import type { StoreEngine } from "#/engines/mod.ts";
 import { ApiKeyRepository } from "#/management/keys.ts";
 import { NamespaceRepository } from "#/management/namespaces.ts";
@@ -152,7 +152,7 @@ export function createWorldsContext(
     });
   }
 
-  const storage = new MemoryStoreRepository();
+  const storage = new KvStoreEngine();
   const context: WorldsContext = {
     embeddings,
     management: {

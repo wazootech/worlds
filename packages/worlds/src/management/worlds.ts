@@ -19,7 +19,12 @@ export interface WorldsListResult {
 }
 
 /**
- * WorldRepository handles the persistence of world metadata in an in-memory Map.
+ * WorldRepository manages world metadata using KV pattern.
+ *
+ * Multitenancy: Each namespace+world combination is a separate entry.
+ * Key format: "${namespace}/${worldId}" (namespace defaults to "_" for root)
+ *
+ * This is the "worlds table" - swap Map for SQLite to persist.
  */
 export class WorldRepository {
   private readonly worlds = new Map<string, WorldRow>();

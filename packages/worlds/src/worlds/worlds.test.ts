@@ -100,7 +100,7 @@ Deno.test({
     const worldsRepo = new (await import("#/management/worlds.ts"))
       .WorldRepository();
     const storage = new (await import("#/engines/store.ts"))
-      .MemoryStoreManager();
+      .KvStoreEngine();
     const namespaceId = "test-admin";
 
     await namespaces.insert({
