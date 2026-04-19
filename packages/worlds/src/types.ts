@@ -1,5 +1,5 @@
 import type { Embeddings } from "#/vectors/embeddings.ts";
-import type { MemoryStoreManager } from "#/engines/store.ts";
+import type { MemoryStoreRepository } from "#/engines/store.ts";
 import type { ApiKeyRepository } from "#/management/keys.ts";
 import type { NamespaceRepository } from "#/management/namespaces.ts";
 import type { WorldRepository } from "#/management/worlds.ts";
@@ -102,7 +102,7 @@ export interface WorldsContext {
   /**
    * storage manages the underlying stores.
    */
-  storage: MemoryStoreManager;
+  storage: MemoryStoreRepository;
 
   /**
    * namespace is the default namespace for this context.

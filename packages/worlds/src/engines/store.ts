@@ -22,11 +22,11 @@ export interface StoreEngine {
 }
 
 /**
- * MemoryStoreManager manages in-memory N3 Stores for multiple worlds.
+ * MemoryStoreRepository manages in-memory N3 Stores for multiple worlds.
  * It provides a central lookup for world stores and handles cleanup.
  * Implements StoreEngine interface.
  */
-export class MemoryStoreManager implements StoreEngine {
+export class MemoryStoreRepository implements StoreEngine {
   private readonly stores = new Map<string, Store>();
 
   private toKey(id?: string, namespace?: string): string {

@@ -1,4 +1,4 @@
-import { MemoryStoreManager } from "#/engines/store.ts";
+import { MemoryStoreRepository } from "#/engines/store.ts";
 import { ApiKeyRepository } from "#/management/keys.ts";
 import { NamespaceRepository } from "#/management/namespaces.ts";
 import { WorldRepository } from "#/management/worlds.ts";
@@ -75,7 +75,7 @@ export function createWorldsContext(
     });
   }
 
-  const storage = new MemoryStoreManager();
+  const storage = new MemoryStoreRepository();
   const context: WorldsContext = {
     embeddings,
     management: {

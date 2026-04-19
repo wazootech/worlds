@@ -1,5 +1,5 @@
 import { ulid } from "@std/ulid";
-import { MemoryStoreManager } from "#/engines/store.ts";
+import { MemoryStoreRepository } from "#/engines/store.ts";
 import { ApiKeyRepository } from "#/management/keys.ts";
 import { NamespaceRepository } from "#/management/namespaces.ts";
 import { WorldRepository } from "#/management/worlds.ts";
@@ -25,7 +25,7 @@ export async function createTestContext(): Promise<WorldsContext> {
     },
   };
 
-  const storage = new MemoryStoreManager();
+  const storage = new MemoryStoreRepository();
   const apiKey = ulid();
   const namespaceId = "test-admin";
   const now = Date.now();

@@ -5,7 +5,7 @@ import { MemoryStoreManager } from "./engines/store.ts";
 const { namedNode, literal, quad } = DataFactory;
 
 Deno.test("MemoryStoreManager", async (t) => {
-  const manager = new MemoryStoreManager();
+  const manager = new MemoryStoreRepository();
 
   await t.step("getStore creates new store", async () => {
     await manager.getStore("world-1", "ns-1");
