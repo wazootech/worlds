@@ -1,12 +1,13 @@
 import { MemoryStoreRepository } from "#/engines/store.ts";
+import type { StoreEngine } from "#/engines/mod.ts";
 import { ApiKeyRepository } from "#/management/keys.ts";
 import { NamespaceRepository } from "#/management/namespaces.ts";
 import { WorldRepository } from "#/management/worlds.ts";
+import type { ManagementLayer } from "#/management/schema.ts";
 import type { Embeddings } from "#/vectors/embeddings.ts";
-import type { WorldsContext } from "#/testing/context.ts";
 import type { WorldsOptions } from "./factory.ts";
 import { Worlds, type WorldsEngineOptions } from "#/worlds/worlds.ts";
-import { RemoteWorlds } from "#/worlds/remote.ts";
+import { WorldsClient } from "#/worlds/client.ts";
 import { OllamaEmbeddings } from "#/vectors/ollama.ts";
 import { OpenRouterEmbeddings } from "#/vectors/openrouter.ts";
 import { createOllama } from "ollama-ai-provider";
@@ -32,9 +33,54 @@ export interface WorldsOptions {
   fetch?: typeof globalThis.fetch;
 
   /**
-   * namespace is the default namespace to use for this instance.
+   * id is the default namespace identifier for this instance.
+   */
+  id?: string;
+}
+
+/**
+ * WorldsContext is the shared context for the Worlds engine.
+ */
+export interface WorldsContext {
+  /**
+   * engine is the main Worlds engine instance.
+   */
+  engine?: import("../worlds/worlds.ts").WorldsEngine;
+
+  /**
+   * apiKey is an optional API key for authentication.
+   */
+  apiKey?: string;
+
+  /**
+   * embeddings is the embedding strategy used for semantic or vector search.
+   */
+  embeddings: Embeddings;
+
+  /**
+   * management provides handles for metadata operations.
+   */
+  management: ManagementLayer;
+
+  /**
+   * storage manages the underlying stores.
+   */
+  storage: StoreEngine;
+
+  /**
+   * namespace is the default namespace for this context.
    */
   namespace?: string;
+
+  /**
+   * world is the default world for this context.
+   */
+  world?: string;
+
+  /**
+   * [Symbol.asyncDispose] provides support for explicit resource management.
+   */
+  [Symbol.asyncDispose](): Promise<void>;
 }
 
 /**
@@ -48,55 +94,60 @@ export interface WorldsContextConfig {
     OLLAMA_EMBEDDINGS_MODEL?: string;
     WORLDS_EMBEDDINGS_DIMENSIONS?: string;
     WORLDS_API_KEY?: string;
-    WORLDS_WORLD_NAMESPACE?: string;
+    WORLDS_NS?: string;
   };
 }
 
 /**
- * defaultWorldsContextConfig is the default configuration.
+ * createDefaultWorldsContextConfig creates the default configuration.
+ * Uses a function to avoid eager allocation.
  */
-export const defaultWorldsContextConfig: WorldsContextConfig = {
-  envs: {
-    WORLDS_EMBEDDINGS_DIMENSIONS: "1536",
-    OLLAMA_BASE_URL: "http://localhost:11434",
-    OLLAMA_EMBEDDINGS_MODEL: "nomic-embed-text",
-    OPENROUTER_EMBEDDINGS_MODEL: "openai/text-embedding-3-small",
-  },
-};
+export function createDefaultWorldsContextConfig(): WorldsContextConfig {
+  return {
+    envs: {
+      WORLDS_EMBEDDINGS_DIMENSIONS: "1536",
+      OLLAMA_BASE_URL: "http://localhost:11434",
+      OLLAMA_EMBEDDINGS_MODEL: "nomic-embed-text",
+      OPENROUTER_EMBEDDINGS_MODEL: "openai/text-embedding-3-small",
+    },
+  };
+}
 
 /**
  * createWorldsContext creates a minimalist WorldsContext from configuration.
  */
 export function createWorldsContext(
-  config: WorldsContextConfig,
+  config: Partial<WorldsContextConfig>,
 ): WorldsContext {
-  config = {
-    ...defaultWorldsContextConfig,
-    ...config,
-    envs: { ...defaultWorldsContextConfig.envs, ...config.envs },
+  const defaults = createDefaultWorldsContextConfig();
+  const finalConfig: WorldsContextConfig = {
+    envs: { ...defaults.envs, ...config.envs },
   };
 
   const dimensions = parseInt(
-    config.envs.WORLDS_EMBEDDINGS_DIMENSIONS || "1536",
+    finalConfig.envs.WORLDS_EMBEDDINGS_DIMENSIONS || "1536",
   );
 
   let embeddings: Embeddings;
   if (
-    config.envs.OPENROUTER_API_KEY && config.envs.OPENROUTER_EMBEDDINGS_MODEL
+    finalConfig.envs.OPENROUTER_API_KEY &&
+    finalConfig.envs.OPENROUTER_EMBEDDINGS_MODEL
   ) {
     const openrouter = createOpenRouter({
-      apiKey: config.envs.OPENROUTER_API_KEY,
+      apiKey: finalConfig.envs.OPENROUTER_API_KEY,
     });
     embeddings = new OpenRouterEmbeddings({
       model: openrouter.textEmbeddingModel(
-        config.envs.OPENROUTER_EMBEDDINGS_MODEL,
+        finalConfig.envs.OPENROUTER_EMBEDDINGS_MODEL,
       ),
       dimensions,
     });
   } else {
-    const ollama = createOllama({ baseURL: config.envs.OLLAMA_BASE_URL! });
+    const ollama = createOllama({ baseURL: finalConfig.envs.OLLAMA_BASE_URL! });
     embeddings = new OllamaEmbeddings({
-      model: ollama.textEmbeddingModel(config.envs.OLLAMA_EMBEDDINGS_MODEL!),
+      model: ollama.textEmbeddingModel(
+        finalConfig.envs.OLLAMA_EMBEDDINGS_MODEL!,
+      ),
       dimensions,
     });
   }
@@ -110,8 +161,8 @@ export function createWorldsContext(
       worlds: new WorldRepository(),
     },
     storage,
-    apiKey: config.envs.WORLDS_API_KEY,
-    namespace: config.envs.WORLDS_WORLD_NAMESPACE,
+    apiKey: finalConfig.envs.WORLDS_API_KEY,
+    namespace: finalConfig.envs.WORLDS_NS,
     async [Symbol.asyncDispose]() {
       await Promise.resolve(storage.close());
     },
@@ -126,12 +177,12 @@ export function createWorldsContext(
  */
 export async function createWorlds(
   options?: WorldsOptions,
-): Promise<Worlds | RemoteWorlds> {
+): Promise<Worlds | WorldsClient> {
   const baseUrl = options?.baseUrl ?? Deno.env.get("WORLDS_BASE_URL");
   const apiKey = options?.apiKey ?? Deno.env.get("WORLDS_API_KEY");
 
   if (baseUrl && apiKey) {
-    return new RemoteWorlds({ ...options, baseUrl, apiKey });
+    return new WorldsClient({ ...options, baseUrl, apiKey });
   }
 
   // Local Mode
@@ -145,8 +196,7 @@ export async function createWorlds(
       ),
       OLLAMA_BASE_URL: Deno.env.get("OLLAMA_BASE_URL"),
       OLLAMA_EMBEDDINGS_MODEL: Deno.env.get("OLLAMA_EMBEDDINGS_MODEL"),
-      WORLDS_WORLD_NAMESPACE: options?.namespace ??
-        Deno.env.get("WORLDS_WORLD_NAMESPACE"),
+      WORLDS_NS: options?.id ?? Deno.env.get("WORLDS_NS"),
     },
   });
 

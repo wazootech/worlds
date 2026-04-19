@@ -4,5 +4,5 @@
 
 // Core Entry Points
 export { Worlds, type WorldsEngine } from "./worlds/worlds.ts";
-export { RemoteWorlds } from "./worlds/remote.ts";
+export { WorldsClient } from "./worlds/client.ts";
 export { createWorlds } from "./factory.ts";

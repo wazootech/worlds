@@ -24,13 +24,13 @@ import type {
 } from "#/worlds/search.schema.ts";
 
 /**
- * RemoteWorlds is a TypeScript SDK client for the Worlds API.
+ * WorldsClient is a TypeScript SDK client for the Worlds API.
  */
-export class RemoteWorlds {
+export class WorldsClient {
   private readonly fetch: typeof fetch;
 
   /**
-   * RemoteWorlds initializes the TypeScript SDK client.
+   * WorldsClient initializes the TypeScript SDK client.
    */
   public constructor(
     private readonly options: WorldsOptions,
@@ -66,7 +66,6 @@ export class RemoteWorlds {
     if (!response.ok) {
       const errorMessage = await parseError(response);
       const error = new Error(`RPC ${action} failed: ${errorMessage}`);
-      // Attach status code for robust error handling
       Object.assign(error, { status: response.status });
       throw error;
     }
@@ -100,7 +99,8 @@ export class RemoteWorlds {
       return await this.callRpc<World>("get", input);
     } catch (error) {
       if (
-        error && typeof error === "object" && "status" in error &&
+        error && typeof error === "object" &&
+        "status" in error &&
         (error as { status: number }).status === 404
       ) {
         return null;
