@@ -1,5 +1,5 @@
 import { assert, assertEquals, assertThrows } from "@std/assert";
-import { resolveSource, SourceParseError, toWorldName } from "./sources.ts";
+import { resolveSource, SourceParseError, toWorldName } from "./resolver.ts";
 
 Deno.test("resolveSource - String inputs", async (t) => {
   await t.step("parses qualified name", () => {

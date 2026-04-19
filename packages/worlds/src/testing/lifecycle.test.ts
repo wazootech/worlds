@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { createTestContext } from "#/engine-context.ts";
+import { createTestContext } from "./context.ts";
 import { Worlds } from "#/worlds/worlds.ts";
 
 Deno.test("Worlds Engine Lifecycle", async (t) => {

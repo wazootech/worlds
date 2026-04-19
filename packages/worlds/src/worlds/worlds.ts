@@ -20,7 +20,11 @@ import type {
 } from "./schema.ts";
 import type { ManagementLayer } from "../types.ts";
 import type { WorldRow } from "../management/worlds.ts";
-import { expandPathNamespace, resolveSource, toWorldName } from "../sources.ts";
+import {
+  expandPathNamespace,
+  resolveSource,
+  toWorldName,
+} from "../sources/resolver.ts";
 import type { WorldsSource } from "#/schemas/input.ts";
 import { createIndexedStore } from "../rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "../rdf/patch/rdf-patch.ts";

@@ -9,8 +9,8 @@ export * from "./worlds/remote.ts";
 // Core Utilities & Types
 export * from "./types.ts";
 export * from "./utils.ts";
-export * from "./sources.ts";
-export * from "./engine-context.ts";
+export * from "./sources/resolver.ts";
+export * from "./testing/context.ts";
 export * from "./factory.ts";
 export * from "./schema.ts";
 export * from "./schemas/input.ts";

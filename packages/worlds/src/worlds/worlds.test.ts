@@ -1,6 +1,6 @@
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import type { SparqlSelectResults } from "#/worlds/sparql.schema.ts";
-import { createTestContext } from "#/engine-context.ts";
+import { createTestContext } from "../testing/context.ts";
 import { Worlds } from "#/worlds/worlds.ts";
 
 Deno.test({
