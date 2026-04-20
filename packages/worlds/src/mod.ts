@@ -5,4 +5,4 @@
 // Core Entry Points
 export { Worlds, type WorldsEngine } from "./worlds/worlds.ts";
 export { WorldsClient } from "./worlds/client.ts";
-export { createWorlds } from "./factory.ts";
+export { createWorlds } from "./worlds/factory.ts";

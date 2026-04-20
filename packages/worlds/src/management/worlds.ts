@@ -1,5 +1,67 @@
 import { decodeCursor, encodeCursor } from "#/utils.ts";
-import type { WorldRow, WorldRowInsert, WorldRowUpdate } from "./schema.ts";
+import type { ApiKeyRepository } from "./keys.ts";
+import type { NamespaceRepository } from "./namespaces.ts";
+
+/**
+ * WorldRow represents a full world record as stored.
+ * Key format: "${namespace}/${worldId}"
+ */
+export interface WorldRow {
+  /**
+   * namespace is the identifier of the namespace that owns the world.
+   * Undefined indicates the default namespace.
+   */
+  namespace?: string;
+
+  /**
+   * id is the unique identifier (within a namespace) for the world.
+   * Undefined indicates the default world.
+   */
+  id?: string;
+
+  /**
+   * label is the human-readable title of the world.
+   */
+  label: string;
+
+  /**
+   * description is an optional summary of the world.
+   */
+  description?: string;
+
+  /**
+   * connection_uri is the connection string for the world database.
+   * Format: protocol://host?param1=value1&param2=value2
+   */
+  connection_uri: string | null;
+
+  /**
+   * created_at is the unix timestamp of creation.
+   */
+  created_at: number;
+
+  /**
+   * updated_at is the unix timestamp of the last update.
+   */
+  updated_at: number;
+
+  /**
+   * deleted_at is the unix timestamp of deletion, if any.
+   */
+  deleted_at: number | null;
+}
+
+/**
+ * WorldRowInsert represents the data needed to insert a new world.
+ */
+export type WorldRowInsert = WorldRow;
+
+/**
+ * WorldRowUpdate represents the data needed to update a world.
+ */
+export type WorldRowUpdate = Partial<
+  Omit<WorldRow, "namespace" | "id" | "created_at">
+>;
 
 /**
  * WorldsListParams represents the parameters for listing worlds.
@@ -16,6 +78,15 @@ export interface WorldsListParams {
 export interface WorldsListResult {
   worlds: WorldRow[];
   nextPageToken?: string;
+}
+
+/**
+ * ManagementLayer defines the interface for world and namespace metadata.
+ */
+export interface ManagementLayer {
+  keys: ApiKeyRepository;
+  namespaces: NamespaceRepository;
+  worlds: WorldRepository;
 }
 
 /**

@@ -18,7 +18,7 @@ import type {
   WorldsSearchInput,
   WorldsSearchOutput,
 } from "./schema.ts";
-import type { ManagementLayer } from "../management/schema.ts";
+import type { ManagementLayer } from "../management/worlds.ts";
 import { expandPathNamespace, resolveSource } from "../sources/resolver.ts";
 import type { WorldsSource } from "#/schemas/input.ts";
 import { createIndexedStore } from "../rdf/patch/indexed-store.ts";

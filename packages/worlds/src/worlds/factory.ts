@@ -2,10 +2,8 @@ import { KvStoreEngine } from "#/engines/store.ts";
 import type { StoreEngine } from "#/engines/mod.ts";
 import { ApiKeyRepository } from "#/management/keys.ts";
 import { NamespaceRepository } from "#/management/namespaces.ts";
-import { WorldRepository } from "#/management/worlds.ts";
-import type { ManagementLayer } from "#/management/schema.ts";
+import { type ManagementLayer, WorldRepository } from "#/management/worlds.ts";
 import type { Embeddings } from "#/vectors/embeddings.ts";
-import type { WorldsOptions } from "./factory.ts";
 import { Worlds, type WorldsEngineOptions } from "#/worlds/worlds.ts";
 import { WorldsClient } from "#/worlds/client.ts";
 import { OllamaEmbeddings } from "#/vectors/ollama.ts";
@@ -45,7 +43,7 @@ export interface WorldsContext {
   /**
    * engine is the main Worlds engine instance.
    */
-  engine?: import("../worlds/worlds.ts").WorldsEngine;
+  engine?: import("./worlds.ts").WorldsEngine;
 
   /**
    * apiKey is an optional API key for authentication.
@@ -185,7 +183,6 @@ export async function createWorlds(
     return new WorldsClient({ ...options, baseUrl, apiKey });
   }
 
-  // Local Mode
   const context = await createWorldsContext({
     envs: {
       WORLDS_API_KEY: apiKey ?? crypto.randomUUID(),
