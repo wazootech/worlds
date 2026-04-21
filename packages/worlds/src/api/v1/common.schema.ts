@@ -1,4 +1,4 @@
-import { z } from "../../shared/z.ts";
+import { z } from "../../z.ts";
 
 /**
  * ContentType represents the supported RDF serialization content types.

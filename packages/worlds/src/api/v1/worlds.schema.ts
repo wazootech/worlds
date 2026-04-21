@@ -1,7 +1,7 @@
-import { z } from "../../shared/z.ts";
-import { worldSchema } from "../../resources/world.schema.ts";
+import { z } from "../../z.ts";
+import { worldSchema, type World } from "../../resources/world.schema.ts";
 import { type ContentType, contentTypeSchema } from "./common.schema.ts";
-import { sourceSchema } from "./source.schema.ts";
+import { sourceSchema, type Source } from "./source.schema.ts";
 
 /**
  * GetWorldRequest represents the parameters for retrieving a single world.
@@ -10,7 +10,9 @@ export const getWorldRequestSchema = z.object({
   source: sourceSchema.describe("The world identifier or name."),
 });
 
-export type GetWorldRequest = z.infer<typeof getWorldRequestSchema>;
+export interface GetWorldRequest {
+  source: Source;
+}
 
 
 /**
@@ -25,7 +27,14 @@ export const createWorldRequestSchema = z.object({
   description: z.string().optional(),
 });
 
-export type CreateWorldRequest = z.infer<typeof createWorldRequestSchema>;
+export interface CreateWorldRequest {
+  parent?: string;
+  id?: string;
+  name?: string;
+  world?: string;
+  displayName?: string;
+  description?: string;
+}
 
 
 /**
@@ -37,7 +46,11 @@ export const updateWorldRequestSchema = z.object({
   description: z.string().optional(),
 });
 
-export type UpdateWorldRequest = z.infer<typeof updateWorldRequestSchema>;
+export interface UpdateWorldRequest {
+  source: Source;
+  displayName?: string;
+  description?: string;
+}
 
 
 /**
@@ -47,7 +60,9 @@ export const deleteWorldRequestSchema = z.object({
   source: sourceSchema,
 });
 
-export type DeleteWorldRequest = z.infer<typeof deleteWorldRequestSchema>;
+export interface DeleteWorldRequest {
+  source: Source;
+}
 
 /**
  * ListWorldsRequest represents the parameters for listing worlds (pagination).
@@ -62,7 +77,11 @@ export const listWorldsRequestSchema = z.object({
   pageToken: z.string().optional().describe("A page token for pagination."),
 });
 
-export type ListWorldsRequest = z.infer<typeof listWorldsRequestSchema>;
+export interface ListWorldsRequest {
+  parent?: string;
+  pageSize?: number;
+  pageToken?: string;
+}
 
 /**
  * ListWorldsResponse represents the results of listing worlds.
@@ -81,7 +100,10 @@ export const listWorldsResponseSchema = z.object({
   ),
 });
 
-export type ListWorldsResponse = z.infer<typeof listWorldsResponseSchema>;
+export interface ListWorldsResponse {
+  worlds: World[];
+  nextPageToken?: string;
+}
 
 /**
  * ImportWorldRequest represents the parameters for importing data into a world.
@@ -92,7 +114,11 @@ export const importWorldRequestSchema = z.object({
   contentType: contentTypeSchema.optional(),
 });
 
-export type ImportWorldRequest = z.infer<typeof importWorldRequestSchema>;
+export interface ImportWorldRequest {
+  source: Source;
+  data: string | ArrayBuffer;
+  contentType?: ContentType;
+}
 
 /**
  * ExportWorldRequest represents the parameters for exporting data from a world.
@@ -102,7 +128,10 @@ export const exportWorldRequestSchema = z.object({
   contentType: contentTypeSchema.optional(),
 });
 
-export type ExportWorldRequest = z.infer<typeof exportWorldRequestSchema>;
+export interface ExportWorldRequest {
+  source: Source;
+  contentType?: ContentType;
+}
 
 /**
  * QueryWorldRequest represents the parameters for executing a query against a world.
@@ -112,5 +141,7 @@ export const queryWorldRequestSchema = z.object({
   query: z.string(),
 });
 
-export type QueryWorldRequest = z.infer<typeof queryWorldRequestSchema>;
-
+export interface QueryWorldRequest {
+  source: Source;
+  query: string;
+}

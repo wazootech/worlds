@@ -1,10 +1,10 @@
-import { z } from "../shared/z.ts";
+import { z } from "../z.ts";
 
 /**
  * FactId is a branded string for Fact identifiers.
  */
 export const factIdSchema = z.id("Fact");
-export type FactId = z.infer<typeof factIdSchema>;
+export type FactId = string;
 
 /**
  * FactTable represents a fact record (RDF quad) as stored in memory.
@@ -17,8 +17,13 @@ export const factTableSchema = z.object({
   graph: z.string(),
 });
 
-
-export type FactTable = z.infer<typeof factTableSchema>;
+export interface FactTable {
+  id: FactId;
+  subject: string;
+  predicate: string;
+  object: string;
+  graph: string;
+}
 
 
 /**
@@ -26,7 +31,7 @@ export type FactTable = z.infer<typeof factTableSchema>;
  */
 export const factRowSchema = factTableSchema;
 
-export type FactRow = z.infer<typeof factRowSchema>;
+export type FactRow = FactTable;
 
 
 /**
@@ -34,4 +39,4 @@ export type FactRow = z.infer<typeof factRowSchema>;
  */
 export const factTableUpsertSchema = factTableSchema;
 
-export type FactTableUpsert = z.infer<typeof factTableUpsertSchema>;
+export type FactTableUpsert = FactTable;

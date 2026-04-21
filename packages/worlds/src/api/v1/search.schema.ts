@@ -1,9 +1,23 @@
-import { z } from "../../shared/z.ts";
-import { worldSchema } from "../../resources/world.schema.ts";
+import { z } from "../../z.ts";
+import { type World, worldSchema } from "../../resources/world.schema.ts";
 import { type Source, sourceSchema } from "./source.schema.ts";
 
 export { sourceSchema };
 export type { Source };
+
+
+/**
+ * SearchResult represents a single search result.
+ */
+export interface SearchResult {
+  subject: string;
+  predicate: string;
+  object: string;
+  vecRank: number | null;
+  ftsRank: number | null;
+  score: number;
+  world: World;
+}
 
 
 /**
@@ -31,9 +45,15 @@ export const searchWorldsResponseSchema = z.object({
   ),
 });
 
-export type SearchWorldsResponse = z.infer<typeof searchWorldsResponseSchema>;
-export type SearchWorldsResult = SearchWorldsResponse["results"][number];
+export interface SearchWorldsResponse {
+  results: SearchResult[];
+  nextPageToken?: string;
+}
 
+/**
+ * SearchWorldsResult is an alias for SearchResult.
+ */
+export type SearchWorldsResult = SearchResult;
 
 
 /**
@@ -62,4 +82,13 @@ export const searchWorldsRequestSchema = z.object({
   ),
 });
 
-export type SearchWorldsRequest = z.infer<typeof searchWorldsRequestSchema>;
+export interface SearchWorldsRequest {
+  sources?: Source[];
+  parent?: string;
+  query: string;
+  pageSize?: number;
+  pageToken?: string;
+  subjects?: string[];
+  predicates?: string[];
+  types?: string[];
+}

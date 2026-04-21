@@ -1,10 +1,10 @@
-import { z } from "../shared/z.ts";
+import { z } from "../z.ts";
 
 /**
  * ChunkId is a branded string for Chunk identifiers.
  */
 export const chunkIdSchema = z.id("Chunk");
-export type ChunkId = z.infer<typeof chunkIdSchema>;
+export type ChunkId = string;
 
 /**
  * ChunkTable represents a chunk record as stored in memory.
@@ -42,7 +42,14 @@ export const chunkTableSchema = z.object({
     .nullable(),
 });
 
-export type ChunkTable = z.infer<typeof chunkTableSchema>;
+export interface ChunkTable {
+  id: ChunkId;
+  fact_id: string;
+  subject: string;
+  predicate: string;
+  text: string;
+  vector: ArrayBuffer | Uint8Array | null;
+}
 
 
 /**
@@ -52,7 +59,13 @@ export const chunkRowSchema = chunkTableSchema.omit({
   vector: true,
 });
 
-export type ChunkRow = z.infer<typeof chunkRowSchema>;
+export interface ChunkRow {
+  id: ChunkId;
+  fact_id: string;
+  subject: string;
+  predicate: string;
+  text: string;
+}
 
 
 /**
@@ -60,7 +73,7 @@ export type ChunkRow = z.infer<typeof chunkRowSchema>;
  */
 export const chunkTableUpsertSchema = chunkTableSchema;
 
-export type ChunkTableUpsert = z.infer<typeof chunkTableUpsertSchema>;
+export type ChunkTableUpsert = ChunkTable;
 
 
 /**
@@ -75,4 +88,11 @@ export const searchRowSchema = z.object({
   combinedRank: z.number(),
 });
 
-export type SearchRow = z.infer<typeof searchRowSchema>;
+export interface SearchRow {
+  subject: string;
+  predicate: string;
+  object: string;
+  vecRank: number | null;
+  ftsRank: number | null;
+  combinedRank: number;
+}

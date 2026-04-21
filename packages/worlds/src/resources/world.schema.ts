@@ -1,10 +1,10 @@
-import { z } from "../shared/z.ts";
+import { z } from "../z.ts";
 
 /**
  * WorldId is a branded string for World identifiers.
  */
 export const worldIdSchema = z.id("World");
-export type WorldId = z.infer<typeof worldIdSchema>;
+export type WorldId = string;
 
 /**
  * World represents a world in the Worlds API.
@@ -61,4 +61,13 @@ export const worldSchema = z.object({
 /**
  * World represents a world in the Worlds API.
  */
-export type World = z.infer<typeof worldSchema>;
+export interface World {
+  name?: string;
+  id?: WorldId;
+  namespace?: string;
+  displayName?: string;
+  description?: string;
+  createTime?: number;
+  updateTime?: number;
+  deleteTime?: number;
+}

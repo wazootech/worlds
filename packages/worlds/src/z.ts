@@ -38,13 +38,3 @@ export const z = {
    */
   displayName: () => zod.string().optional().describe("The human-readable name."),
 };
-
-/**
- * Type-level re-exports for z namespace compatibility.
- * Declaration merging allows using z as both a value (with helpers) and a namespace (for types).
- */
-export namespace z {
-  export type infer<T extends zod.ZodTypeAny> = zod.infer<T>;
-  export type ZodTypeAny = zod.ZodTypeAny;
-  export type ZodRawShape = zod.ZodRawShape;
-}

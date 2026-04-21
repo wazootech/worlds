@@ -7,4 +7,4 @@ export { Worlds } from "./engine/service.ts";
 export { WorldsClient } from "./sdk/client.ts";
 export { createWorlds } from "./engine/factory.ts";
 export * from "./schema.ts";
-export * from "./shared/z.ts";
+export * from "./z.ts";

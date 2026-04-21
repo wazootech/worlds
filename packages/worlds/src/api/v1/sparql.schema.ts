@@ -1,4 +1,4 @@
-import { z } from "../../shared/z.ts";
+import { z } from "../../z.ts";
 import { z as zod } from "zod";
 
 import {
@@ -18,27 +18,27 @@ export { contentTypeSchema, type ContentType };
  */
 export type SparqlValue =
   | {
-    type: "uri";
-    value: string;
-  }
+      type: "uri";
+      value: string;
+    }
   | {
-    type: "bnode";
-    value: string;
-  }
+      type: "bnode";
+      value: string;
+    }
   | {
-    type: "literal";
-    value: string;
-    "xml:lang"?: string;
-    datatype?: string;
-  }
+      type: "literal";
+      value: string;
+      "xml:lang"?: string;
+      datatype?: string;
+    }
   | {
-    type: "triple";
-    value: {
-      subject: SparqlValue;
-      predicate: SparqlValue;
-      object: SparqlValue;
+      type: "triple";
+      value: {
+        subject: SparqlValue;
+        predicate: SparqlValue;
+        object: SparqlValue;
+      };
     };
-  };
 
 /**
  * sparqlValueSchema is the Zod schema for SparqlValue.
@@ -77,6 +77,19 @@ export const sparqlValueSchema: zod.ZodType<SparqlValue> = z.lazy(() =>
 /**
  * SparqlServiceDescription represents a SPARQL 1.1 Service Description.
  */
+export interface SparqlServiceDescription {
+  endpoint: string;
+  supportedLanguages: string[];
+  features: string[];
+  resultFormats: string[];
+  defaultDataset?: {
+    graphs: Array<{
+      uri?: string;
+      isDefault: boolean;
+    }>;
+  };
+}
+
 export const sparqlServiceDescriptionSchema = z.object({
   endpoint: z.url(),
   supportedLanguages: z.array(z.string()),
@@ -89,10 +102,6 @@ export const sparqlServiceDescriptionSchema = z.object({
     })),
   }).optional(),
 });
-
-export type SparqlServiceDescription = z.infer<
-  typeof sparqlServiceDescriptionSchema
->;
 
 
 /**
@@ -107,6 +116,14 @@ export const sparqlBindingSchema = z.record(
   z.string(),
   sparqlValueSchema,
 );
+
+/**
+ * SparqlSelectHead represents the head section of SELECT results.
+ */
+export interface SparqlSelectHead {
+  vars: string[];
+  link: string[] | null;
+}
 
 /**
  * SparqlSelectResults represents the results of a SPARQL SELECT query.
@@ -125,8 +142,21 @@ export const sparqlSelectResultsSchema = z.object({
   boolean: z.undefined().optional(),
 });
 
-export type SparqlSelectResults = z.infer<typeof sparqlSelectResultsSchema>;
+export interface SparqlSelectResults {
+  head: SparqlSelectHead;
+  results: {
+    bindings: SparqlBinding[];
+  };
+  boolean?: undefined;
+}
 
+
+/**
+ * SparqlAskHead represents the head section of ASK results.
+ */
+export interface SparqlAskHead {
+  link: string[] | null;
+}
 
 /**
  * SparqlAskResults represents the results of a SPARQL ASK query.
@@ -142,7 +172,11 @@ export const sparqlAskResultsSchema = z.object({
   results: z.undefined().optional(),
 });
 
-export type SparqlAskResults = z.infer<typeof sparqlAskResultsSchema>;
+export interface SparqlAskResults {
+  head: SparqlAskHead;
+  boolean: boolean;
+  results?: undefined;
+}
 
 
 /**
@@ -199,6 +233,13 @@ export const sparqlQuadSchema = z.object({
 });
 
 /**
+ * SparqlQuadsHead represents the head section of CONSTRUCT/DESCRIBE results.
+ */
+export interface SparqlQuadsHead {
+  link: string[] | null;
+}
+
+/**
  * SparqlQuadsResults represents the results of a SPARQL CONSTRUCT/DESCRIBE query.
  */
 export const sparqlQuadsResultsSchema = z.object({
@@ -214,12 +255,26 @@ export const sparqlQuadsResultsSchema = z.object({
   boolean: z.undefined().optional(),
 });
 
-export type SparqlQuadsResults = z.infer<typeof sparqlQuadsResultsSchema>;
+export interface SparqlQuadsResults {
+  head: SparqlQuadsHead;
+  results: {
+    quads: SparqlQuad[];
+  };
+  boolean?: undefined;
+}
 
 
 /**
  * SparqlQueryRequest represents the parameters for executing a SPARQL query or update.
  */
+export interface SparqlQueryRequest {
+  sources?: Source[];
+  parent?: string;
+  query: string;
+  defaultGraphUris?: string[];
+  namedGraphUris?: string[];
+}
+
 export const sparqlQueryRequestSchema = z.object({
   sources: z.array(sourceSchema).optional().describe(
     "The optional list of target worlds.",
@@ -236,12 +291,17 @@ export const sparqlQueryRequestSchema = z.object({
   ),
 });
 
-export type SparqlQueryRequest = z.infer<typeof sparqlQueryRequestSchema>;
-
 
 /**
  * GetServiceDescriptionRequest represents the parameters for retrieving a SPARQL service description.
  */
+export interface GetServiceDescriptionRequest {
+  sources?: Source[];
+  parent?: string;
+  endpointUrl: string;
+  contentType?: ContentType;
+}
+
 export const getServiceDescriptionRequestSchema = z.object({
   sources: z.array(sourceSchema).optional().describe(
     "The optional list of target worlds.",
@@ -255,13 +315,18 @@ export const getServiceDescriptionRequestSchema = z.object({
   ),
 });
 
-export type GetServiceDescriptionRequest = z.infer<
-  typeof getServiceDescriptionRequestSchema
->;
-
 
 /**
  * SparqlQueryResponse represents the result of a SPARQL query or update.
+ */
+export type SparqlQueryResponse =
+  | SparqlSelectResults
+  | SparqlAskResults
+  | SparqlQuadsResults
+  | null;
+
+/**
+ * sparqlQueryResponseSchema is the Zod schema for SparqlQueryResponse.
  */
 export const sparqlQueryResponseSchema = z.union([
   sparqlSelectResultsSchema,
@@ -269,5 +334,3 @@ export const sparqlQueryResponseSchema = z.union([
   sparqlQuadsResultsSchema,
   z.literal(null),
 ]);
-
-export type SparqlQueryResponse = z.infer<typeof sparqlQueryResponseSchema>;

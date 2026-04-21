@@ -1,4 +1,4 @@
-import { z } from "../../shared/z.ts";
+import { z } from "../../z.ts";
 import {
   type TransactionMode,
   transactionModeSchema,
