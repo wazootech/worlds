@@ -1,14 +1,19 @@
-import { z } from "zod";
+import { z } from "../shared/z.ts";
 
 /**
+ * ChunkId is a branded string for Chunk identifiers.
+ */
+export const chunkIdSchema = z.id("Chunk");
+export type ChunkId = z.infer<typeof chunkIdSchema>;
 
+/**
  * ChunkTable represents a chunk record as stored in memory.
  */
 export const chunkTableSchema = z.object({
   /**
    * id is the unique identifier for the chunk.
    */
-  id: z.string(),
+  id: chunkIdSchema,
 
   /**
    * fact_id is the ID of the parent fact.
@@ -59,48 +64,15 @@ export type ChunkTableUpsert = z.infer<typeof chunkTableUpsertSchema>;
 
 
 /**
- * SearchRow represents a single row from a hybrid search result.
- */
-export interface SearchRow {
-  /**
-   * subject is the subject of the matching fact.
-   */
-  subject: string;
-
-  /**
-   * predicate is the predicate of the matching fact.
-   */
-  predicate: string;
-
-  /**
-   * object is the full object text of the matching fact.
-   */
-  object: string;
-
-  /**
-   * vec_rank is the rank based on vector similarity.
-   */
-  vec_rank: number | null;
-
-  /**
-   * fts_rank is the rank based on full-text search relevance.
-   */
-  fts_rank: number | null;
-
-  /**
-   * combined_rank is the final score calculated by the search engine.
-   */
-  combined_rank: number;
-}
-
-/**
  * searchRowSchema is the Zod schema for SearchRow.
  */
-export const searchRowSchema: z.ZodType<SearchRow> = z.object({
+export const searchRowSchema = z.object({
   subject: z.string(),
   predicate: z.string(),
   object: z.string(),
-  vec_rank: z.number().nullable(),
-  fts_rank: z.number().nullable(),
-  combined_rank: z.number(),
+  vecRank: z.number().nullable(),
+  ftsRank: z.number().nullable(),
+  combinedRank: z.number(),
 });
+
+export type SearchRow = z.infer<typeof searchRowSchema>;

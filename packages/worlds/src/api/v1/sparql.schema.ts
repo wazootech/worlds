@@ -1,10 +1,12 @@
-import { z } from "zod";
+import { z } from "../../shared/z.ts";
+import { z as zod } from "zod";
+
 import {
   type WorldsContentType,
   worldsContentTypeSchema,
   type WorldsSource,
   worldsSourceSchema,
-} from "#/schemas/input.ts";
+} from "./shared.schema.ts";
 
 export { type WorldsContentType, worldsContentTypeSchema };
 
@@ -40,7 +42,10 @@ export type SparqlValue =
  * sparqlValueSchema is the Zod schema for SparqlValue.
  * Uses z.lazy for recursive triple term support.
  */
-export const sparqlValueSchema: z.ZodType<SparqlValue> = z.lazy(() =>
+export const sparqlValueSchema: zod.ZodType<SparqlValue> = z.lazy(() =>
+
+
+
   z.discriminatedUnion(
     "type",
     [
@@ -74,13 +79,13 @@ export const sparqlValueSchema: z.ZodType<SparqlValue> = z.lazy(() =>
  * SparqlServiceDescription represents a SPARQL 1.1 Service Description.
  */
 export const sparqlServiceDescriptionSchema = z.object({
-  endpoint: z.string().url(),
+  endpoint: z.url(),
   supportedLanguages: z.array(z.string()),
   features: z.array(z.string()),
   resultFormats: z.array(z.string()),
   defaultDataset: z.object({
     graphs: z.array(z.object({
-      uri: z.string().url().optional(),
+      uri: z.url().optional(),
       isDefault: z.boolean(),
     })),
   }).optional(),
@@ -99,7 +104,9 @@ export type SparqlBinding = Record<string, SparqlValue>;
 /**
  * sparqlBindingSchema is the Zod schema for SparqlBinding.
  */
-export const sparqlBindingSchema: z.ZodType<SparqlBinding> = z.record(
+export const sparqlBindingSchema = z.record(
+
+
   z.string(),
   sparqlValueSchema,
 );
@@ -178,7 +185,9 @@ export interface SparqlQuad {
 /**
  * sparqlQuadSchema is the Zod schema for SparqlQuad.
  */
-export const sparqlQuadSchema: z.ZodType<SparqlQuad> = z.object({
+export const sparqlQuadSchema = z.object({
+
+
   subject: z.object({
     type: z.enum(["uri", "bnode"]),
     value: z.string(),
@@ -220,8 +229,8 @@ export const sparqlQueryRequestSchema = z.object({
   sources: z.array(worldsSourceSchema).optional().describe(
     "The optional list of target worlds.",
   ),
-  namespace: z.string().optional().describe(
-    "The optional namespace of the target world.",
+  parent: z.string().optional().describe(
+    "The parent resource name (e.g., 'namespaces/default').",
   ),
   query: z.string().describe("The SPARQL query or update string."),
   defaultGraphUris: z.array(z.string()).optional().describe(
@@ -235,6 +244,7 @@ export const sparqlQueryRequestSchema = z.object({
 export type SparqlQueryRequest = z.infer<typeof sparqlQueryRequestSchema>;
 
 
+
 /**
  * GetServiceDescriptionRequest represents the parameters for retrieving a SPARQL service description.
  */
@@ -242,10 +252,10 @@ export const getServiceDescriptionRequestSchema = z.object({
   sources: z.array(worldsSourceSchema).optional().describe(
     "The optional list of target worlds.",
   ),
-  namespace: z.string().optional().describe(
-    "The optional namespace of the target world.",
+  parent: z.string().optional().describe(
+    "The parent resource name (e.g., 'namespaces/default').",
   ),
-  endpointUrl: z.string().url().describe("The URL of the SPARQL endpoint."),
+  endpointUrl: z.url().describe("The URL of the SPARQL endpoint."),
   contentType: worldsContentTypeSchema.optional().describe(
     "Optional RDF serialization content type.",
   ),
@@ -256,15 +266,15 @@ export type GetServiceDescriptionRequest = z.infer<
 >;
 
 
+
 /**
- * SparqlQueryResult represents the result of a SPARQL query or update.
+ * SparqlQueryResponse represents the result of a SPARQL query or update.
  */
-export const sparqlQueryResultSchema = z.union([
+export const sparqlQueryResponseSchema = z.union([
   sparqlSelectResultsSchema,
   sparqlAskResultsSchema,
   sparqlQuadsResultsSchema,
   z.literal(null),
 ]);
 
-export type SparqlQueryResult = z.infer<typeof sparqlQueryResultSchema>;
-
+export type SparqlQueryResponse = z.infer<typeof sparqlQueryResponseSchema>;

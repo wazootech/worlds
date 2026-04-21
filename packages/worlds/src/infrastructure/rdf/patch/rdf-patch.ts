@@ -1,8 +1,8 @@
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import type { Patch, PatchHandler } from "./types.ts";
 import { skolemizeQuad } from "./skolem.ts";
-import type { Embeddings } from "#/vectors/embeddings.ts";
-import { ChunksRepository } from "#/worlds/chunks/repository.ts";
+import type { Embeddings } from "../../../vectors/embeddings.ts";
+import { ChunksRepository } from "../../chunks/repository.ts";
 
 export const META_PREDICATES = [
   "http://www.w3.org/2000/01/rdf-schema#label",
@@ -76,7 +76,8 @@ export class SearchIndexHandler implements PatchHandler {
 
               const chunkId = await hash(`${tripleId}:chunk:${i}`);
               await chunksRepository.upsert({
-                id: chunkId,
+                id: chunkId as any,
+
                 fact_id: tripleId,
                 subject,
                 predicate,

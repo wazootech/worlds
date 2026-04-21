@@ -1,5 +1,7 @@
-import type { WorldsSource } from "#/schemas/input.ts";
-import type { WorldsContext } from "#/testing/context.ts";
+import type { WorldsSource } from "../api/v1/shared.schema.ts";
+
+import type { WorldsContext } from "../testing/context.ts";
+
 
 /**
  * defaultNamespace is the fallback used when storing/looking up

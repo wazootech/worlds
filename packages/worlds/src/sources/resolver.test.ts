@@ -1,6 +1,7 @@
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import { resolveSource, SourceParseError, toWorldName } from "./resolver.ts";
-import type { WorldsSource } from "#/schemas/input.ts";
+import type { WorldsSource } from "../api/v1/shared.schema.ts";
+
 
 
 Deno.test("resolveSource - String inputs", async (t) => {

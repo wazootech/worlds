@@ -3,6 +3,8 @@
  */
 
 // Core Entry Points
-export { Worlds, type WorldsEngine } from "./worlds/worlds.ts";
-export { WorldsClient } from "./worlds/client.ts";
-export { createWorlds } from "./worlds/factory.ts";
+export { Worlds } from "./engine/service.ts";
+export { WorldsClient } from "./sdk/client.ts";
+export { createWorlds } from "./engine/factory.ts";
+export * from "./schema.ts";
+export * from "./shared/z.ts";

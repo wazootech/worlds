@@ -1,11 +1,11 @@
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
-import type { SparqlSelectResults } from "#/worlds/sparql.schema.ts";
+import type { SparqlSelectResults } from "../schema.ts";
 import { createTestContext } from "../testing/context.ts";
-import { Worlds } from "#/worlds/worlds.ts";
-import { ApiKeyRepository } from "#/management/keys.ts";
-import { NamespaceRepository } from "#/management/namespaces.ts";
-import { WorldRepository } from "#/management/worlds.ts";
-import { KvStoreEngine } from "#/engines/store.ts";
+import { Worlds } from "./service.ts";
+import { ApiKeyRepository } from "../management/keys.ts";
+import { NamespaceRepository } from "../management/namespaces.ts";
+import { WorldRepository } from "../management/worlds.ts";
+import { KvStoreEngine } from "../infrastructure/store.ts";
 
 Deno.test({
   name: "Worlds Engine (Shell Architecture)",
@@ -46,9 +46,10 @@ Deno.test({
 
     await t.step("list worlds", async () => {
       const list = await worlds.list({ pageSize: 10 });
-      const found = list.find((w) => w.id === worldId);
+      const found = list.worlds.find((w: any) => w.id === worldId);
       assertExists(found);
     });
+
 
     await t.step("update world", async () => {
       await worlds.update({

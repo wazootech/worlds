@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "../../shared/z.ts";
 
 /**
  * WorldsContentType represents the supported RDF serialization content types.
@@ -12,7 +12,9 @@ export type WorldsContentType =
 /**
  * worldsContentTypeSchema is the Zod schema for WorldsContentType.
  */
-export const worldsContentTypeSchema: z.ZodType<WorldsContentType> = z.enum([
+export const worldsContentTypeSchema = z.enum([
+
+
   "text/turtle",
   "application/n-quads",
   "application/n-triples",
@@ -37,7 +39,9 @@ export type WorldsSource =
 /**
  * worldsSourceSchema is the Zod schema for WorldsSource.
  */
-export const worldsSourceSchema: z.ZodType<WorldsSource> = z.union([
+export const worldsSourceSchema = z.union([
+
+
   z.string().describe("A source name: 'world' or 'namespace/world'"),
   z.object({
     write: z.boolean().optional().describe("Whether write access is enabled."),
@@ -62,7 +66,9 @@ export interface ErrorResponseData {
 /**
  * errorResponseDataSchema is the Zod schema for ErrorResponseData.
  */
-export const errorResponseDataSchema: z.ZodType<ErrorResponseData> = z.object({
+export const errorResponseDataSchema = z.object({
+
+
   error: z.object({
     message: z.string(),
   }),
@@ -72,7 +78,9 @@ export const errorResponseDataSchema: z.ZodType<ErrorResponseData> = z.object({
  * ListWorldsRequest represents the parameters for listing worlds (pagination).
  */
 export const listWorldsRequestSchema = z.object({
-  namespace: z.string().optional().describe("The namespace filter."),
+  parent: z.string().optional().describe(
+    "The parent resource name (e.g., 'namespaces/default').",
+  ),
   pageSize: z.number().int().positive().max(1000).optional().describe(
     "Maximum number of results to return.",
   ),
@@ -80,6 +88,26 @@ export const listWorldsRequestSchema = z.object({
 });
 
 export type ListWorldsRequest = z.infer<typeof listWorldsRequestSchema>;
+
+/**
+ * ListWorldsResponse represents the results of listing worlds.
+ */
+export const listWorldsResponseSchema = z.object({
+  /**
+   * worlds is the list of worlds.
+   */
+  worlds: z.array(z.any()).describe("The list of worlds."),
+
+  /**
+   * nextPageToken is a token to retrieve the next page of results.
+   */
+  nextPageToken: z.string().optional().describe(
+    "A token to retrieve the next page of results.",
+  ),
+});
+
+export type ListWorldsResponse = z.infer<typeof listWorldsResponseSchema>;
+
 
 
 /**
@@ -95,7 +123,9 @@ export interface Log {
 /**
  * logSchema is the Zod schema for Log.
  */
-export const logSchema: z.ZodType<Log> = z.object({
+export const logSchema = z.object({
+
+
   level: z.string(),
   message: z.string(),
   timestamp: z.number(),
@@ -133,4 +163,3 @@ export const queryWorldRequestSchema = z.object({
 });
 
 export type QueryWorldRequest = z.infer<typeof queryWorldRequestSchema>;
-

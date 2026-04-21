@@ -1,13 +1,14 @@
-import { KvStoreEngine } from "#/engines/store.ts";
-import type { StoreEngine } from "#/engines/mod.ts";
-import { ApiKeyRepository } from "#/management/keys.ts";
-import { NamespaceRepository } from "#/management/namespaces.ts";
-import { type ManagementLayer, WorldRepository } from "#/management/worlds.ts";
-import type { Embeddings } from "#/vectors/embeddings.ts";
-import { Worlds, type WorldsEngineOptions } from "#/worlds/worlds.ts";
-import { WorldsClient } from "#/worlds/client.ts";
-import { OllamaEmbeddings } from "#/vectors/ollama.ts";
-import { OpenRouterEmbeddings } from "#/vectors/openrouter.ts";
+import { KvStoreEngine } from "../infrastructure/store.ts";
+import type { StoreEngine } from "../infrastructure/mod.ts";
+import { ApiKeyRepository } from "../management/keys.ts";
+import { NamespaceRepository } from "../management/namespaces.ts";
+import { type ManagementLayer, WorldRepository } from "../management/worlds.ts";
+import type { Embeddings } from "../vectors/embeddings.ts";
+import { Worlds } from "./service.ts";
+import type { WorldsEngineOptions } from "./service.ts";
+import { WorldsClient } from "../sdk/client.ts";
+import { OllamaEmbeddings } from "../vectors/ollama.ts";
+import { OpenRouterEmbeddings } from "../vectors/openrouter.ts";
 import { createOllama } from "ollama-ai-provider";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 
@@ -43,7 +44,7 @@ export interface WorldsContext {
   /**
    * engine is the main Worlds engine instance.
    */
-  engine?: import("./worlds.ts").WorldsEngine;
+  engine?: import("./service.ts").WorldsEngine;
 
   /**
    * apiKey is an optional API key for authentication.

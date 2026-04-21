@@ -1,13 +1,14 @@
 import { assertEquals } from "@std/assert";
 import { ChunksRepository } from "./repository.ts";
-import type { ChunkTableUpsert } from "./schema.ts";
+import type { ChunkTableUpsert } from "../../resources/chunk.schema.ts";
+
 
 Deno.test("ChunksRepository", async (t) => {
   await t.step("upsert stores chunk", async () => {
     const repo = new ChunksRepository("world-1");
 
     const chunk: ChunkTableUpsert = {
-      id: "chunk-1",
+      id: "chunk-1" as any,
       fact_id: "fact-1",
       subject: "http://example.org/s",
       predicate: "http://example.org/p",
@@ -15,7 +16,7 @@ Deno.test("ChunksRepository", async (t) => {
       vector: null,
     };
 
-    await repo.upsert(chunk);
+    repo.upsert(chunk);
 
     const chunks = repo.getForWorld();
     assertEquals(chunks.length, 1);
@@ -25,8 +26,8 @@ Deno.test("ChunksRepository", async (t) => {
   await t.step("upsert replaces existing chunk", async () => {
     const repo = new ChunksRepository("world-2");
 
-    await repo.upsert({
-      id: "chunk-2",
+    repo.upsert({
+      id: "chunk-2" as any,
       fact_id: "fact-2",
       subject: "http://example.org/s",
       predicate: "http://example.org/p",
@@ -34,8 +35,8 @@ Deno.test("ChunksRepository", async (t) => {
       vector: null,
     });
 
-    await repo.upsert({
-      id: "chunk-2",
+    repo.upsert({
+      id: "chunk-2" as any,
       fact_id: "fact-2",
       subject: "http://example.org/s",
       predicate: "http://example.org/p",
@@ -52,8 +53,8 @@ Deno.test("ChunksRepository", async (t) => {
     const repo1 = new ChunksRepository("world-a");
     const repo2 = new ChunksRepository("world-b");
 
-    await repo1.upsert({
-      id: "chunk-a",
+    repo1.upsert({
+      id: "chunk-a" as any,
       fact_id: "fact-a",
       subject: "http://example.org/s",
       predicate: "http://example.org/p",
@@ -61,8 +62,8 @@ Deno.test("ChunksRepository", async (t) => {
       vector: null,
     });
 
-    await repo2.upsert({
-      id: "chunk-b",
+    repo2.upsert({
+      id: "chunk-b" as any,
       fact_id: "fact-b",
       subject: "http://example.org/s",
       predicate: "http://example.org/p",
@@ -82,8 +83,8 @@ Deno.test("ChunksRepository", async (t) => {
   await t.step("getForWorld returns all chunks for world", async () => {
     const repo = new ChunksRepository("world-3");
 
-    await repo.upsert({
-      id: "chunk-3a",
+    repo.upsert({
+      id: "chunk-3a" as any,
       fact_id: "fact-3a",
       subject: "http://example.org/s1",
       predicate: "http://example.org/p1",
@@ -91,8 +92,8 @@ Deno.test("ChunksRepository", async (t) => {
       vector: null,
     });
 
-    await repo.upsert({
-      id: "chunk-3b",
+    repo.upsert({
+      id: "chunk-3b" as any,
       fact_id: "fact-3b",
       subject: "http://example.org/s2",
       predicate: "http://example.org/p2",

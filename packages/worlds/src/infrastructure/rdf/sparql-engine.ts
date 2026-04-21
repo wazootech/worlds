@@ -4,8 +4,8 @@ import type {
   SparqlBinding,
   SparqlQuad,
   SparqlValue,
-  SparqlQueryResult,
-} from "#/worlds/sparql.schema.ts";
+  SparqlQueryResponse,
+} from "../../schema.ts";
 
 
 export const queryEngine: QueryEngine = new QueryEngine();
@@ -14,7 +14,7 @@ export async function executeSparql(
   store: Store,
   query: string,
   baseIRI?: string,
-): Promise<SparqlQueryResult> {
+): Promise<SparqlQueryResponse> {
   const queryType = await queryEngine.query(query, {
     sources: [store],
     baseIRI,
@@ -22,7 +22,7 @@ export async function executeSparql(
 
   if (queryType.resultType === "void") {
     await queryType.execute();
-    return null as unknown as SparqlQueryResult;
+    return null as unknown as SparqlQueryResponse;
   }
 
 
@@ -45,7 +45,7 @@ export async function executeSparql(
 async function handleBindings(queryType: {
   execute(): Promise<unknown>;
   metadata(): Promise<{ variables: { value: string }[] }>;
-}): Promise<SparqlQueryResult> {
+}): Promise<SparqlQueryResponse> {
   const bindingsStream = await queryType.execute();
   // @ts-ignore - Comunica types are complex
   const vars = (await queryType.metadata()).variables.map((
@@ -65,7 +65,7 @@ async function handleBindings(queryType: {
         // @ts-ignore - term iteration
         const term = bindingMap.get(v);
         if (term) {
-          bindingObj[v] = toSparqlValue(term);
+          bindingObj[v] = toSparqlValue(term as any);
         }
       }
       b.push(bindingObj);
@@ -110,7 +110,7 @@ async function handleBindings(queryType: {
 
 async function handleBoolean(queryType: {
   execute(): Promise<boolean>;
-}): Promise<SparqlQueryResult> {
+}): Promise<SparqlQueryResponse> {
   const booleanResult = await queryType.execute();
   return {
     head: { link: null },
@@ -120,7 +120,7 @@ async function handleBoolean(queryType: {
 
 async function handleQuads(queryType: {
   execute(): Promise<unknown>;
-}): Promise<SparqlQueryResult> {
+}): Promise<SparqlQueryResponse> {
   const quadsStream = await queryType.execute();
   const quads = await new Promise<SparqlQuad[]>((resolve, reject) => {
     const q: SparqlQuad[] = [];

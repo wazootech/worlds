@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { DataFactory } from "n3";
-import { KvStoreEngine } from "./engines/store.ts";
+import { KvStoreEngine } from "./infrastructure/store.ts";
 
 const { namedNode, literal, quad } = DataFactory;
 
@@ -75,7 +75,7 @@ Deno.test("KvStoreEngine", async (t) => {
 
     manager.close();
 
-    const store = await manager.getStore("world-x", "ns-1");
+    const store = await manager.getStore("test-world-closed", "ns-1");
     assertEquals(store.getQuads(null, null, null, null).length, 0);
   });
 

@@ -1,9 +1,9 @@
 import type {
   SparqlQueryRequest,
-  SparqlQueryResult,
-} from "#/worlds/sparql.schema.ts";
-
-import type { ExportWorldRequest, ImportWorldRequest } from "#/worlds/schema.ts";
+  SparqlQueryResponse,
+  ExportWorldRequest,
+  ImportWorldRequest,
+} from "../schema.ts";
 
 
 /**
@@ -14,8 +14,7 @@ export interface SparqlEngine {
   /**
    * sparql executes a SPARQL query against the world.
    */
-  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResult>;
-
+  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
 
   /**
    * import loads data into the world.

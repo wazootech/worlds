@@ -1,11 +1,12 @@
-import type { Patch } from "#/rdf/patch/types.ts";
+import type { Patch } from "./rdf/patch/types.ts";
 import type {
-  SearchWorldRequest,
-  SearchWorldResult,
-} from "#/worlds/search.schema.ts";
+  SearchWorldsRequest,
+  SearchWorldsResult,
+} from "../schema.ts";
 
-import type { Embeddings } from "#/vectors/embeddings.ts";
-import type { ManagementLayer } from "#/management/worlds.ts";
+
+import type { Embeddings } from "../vectors/embeddings.ts";
+import type { ManagementLayer } from "../management/worlds.ts";
 import type { StoreEngine } from "./store.ts";
 
 /**
@@ -16,7 +17,8 @@ export interface SearchEngine {
   /**
    * search executes a semantic search against the world.
    */
-  search(input: SearchWorldRequest): Promise<SearchWorldResult[]>;
+  search(input: SearchWorldsRequest): Promise<SearchWorldsResult[]>;
+
 
   /**
    * applyPatches handles patches when data changes (sync mechanism).
@@ -44,17 +46,18 @@ export interface ChunksSearchEngineOptions {
 export class ChunksSearchEngine implements SearchEngine {
   constructor(private readonly options: ChunksSearchEngineOptions) {}
 
-  async search(input: SearchWorldRequest): Promise<SearchWorldResult[]> {
+  async search(input: SearchWorldsRequest): Promise<SearchWorldsResult[]> {
     const {
       query,
       subjects,
       predicates,
       types,
-      namespace: inputNamespace,
-      limit = 10,
+      parent,
+      pageSize: limit = 10,
     } = input;
 
-    const namespace = inputNamespace ?? this.options.namespace;
+    const namespace = parent ?? this.options.namespace;
+
 
     const queryVector = query
       ? await this.options.embeddings.embed(query)
@@ -65,11 +68,12 @@ export class ChunksSearchEngine implements SearchEngine {
       pageSize: 100,
     });
 
-    const allResults: SearchWorldResult[] = [];
+    const allResults: SearchWorldsResult[] = [];
+
 
     for (const worldRow of result.worlds) {
       const { ChunksRepository } = await import(
-        "#/worlds/chunks/repository.ts"
+        "./chunks/repository.ts"
       );
       const repo = new ChunksRepository(
         worldRow.id!,
@@ -140,7 +144,8 @@ export class ChunksSearchEngine implements SearchEngine {
               updateTime: worldRow.updated_at,
               deleteTime: worldRow.deleted_at ?? undefined,
             },
-          } as SearchWorldResult;
+          } as SearchWorldsResult;
+
         })
         .filter((r) => r.score > 0);
 
@@ -155,7 +160,7 @@ export class ChunksSearchEngine implements SearchEngine {
   async applyPatches(patches: Patch[]): Promise<void> {
     for (const patch of patches) {
       const { ChunksRepository } = await import(
-        "#/worlds/chunks/repository.ts"
+        "./chunks/repository.ts"
       );
 
       for (const deletion of patch.deletions ?? []) {
@@ -178,7 +183,8 @@ export class ChunksSearchEngine implements SearchEngine {
         const vector = await this.options.embeddings.embed(objectText);
 
         repo.upsert({
-          id: crypto.randomUUID(),
+          id: crypto.randomUUID() as any,
+
           fact_id: insertion.subject.value,
           subject: insertion.subject.value,
           predicate: insertion.predicate.value,

@@ -1,5 +1,5 @@
-import type { WorldsOptions } from "#/worlds/factory.ts";
-import { parseError } from "#/utils.ts";
+import type { WorldsOptions } from "../engine/factory.ts";
+import { parseError } from "../utils.ts";
 import { encodeBase64 } from "@std/encoding/base64";
 import type {
   World,
@@ -10,17 +10,13 @@ import type {
   ExportWorldRequest,
   ImportWorldRequest,
   ListWorldsRequest,
-} from "#/worlds/schema.ts";
-import type {
+  ListWorldsResponse,
   GetServiceDescriptionRequest,
   SparqlQueryRequest,
-  SparqlQueryResult,
-} from "#/worlds/sparql.schema.ts";
-
-import type {
-  SearchWorldRequest,
-  SearchWorldResult,
-} from "#/worlds/search.schema.ts";
+  SparqlQueryResponse,
+  SearchWorldsRequest,
+  SearchWorldsResponse,
+} from "../schema.ts";
 
 
 /**
@@ -87,9 +83,10 @@ export class WorldsClient {
   /**
    * list paginates all worlds from the Worlds API.
    */
-  public async list(input?: ListWorldsRequest): Promise<World[]> {
-    return await this.callRpc<World[]>("list", input ?? {});
+  public async list(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
+    return await this.callRpc<ListWorldsResponse>("list", input ?? {});
   }
+
 
 
   /**
@@ -138,19 +135,23 @@ export class WorldsClient {
   /**
    * sparql executes a SPARQL query or update against a world.
    */
-  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResult> {
-    return await this.callRpc<SparqlQueryResult>("sparql", input, {
+  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
+    return await this.callRpc<SparqlQueryResponse>("sparql", input, {
       accept: "application/sparql-results+json",
     });
   }
 
 
+
   /**
    * search performs semantic/text search on a world using vector embeddings.
    */
-  public async search(input: SearchWorldRequest): Promise<SearchWorldResult[]> {
-    return await this.callRpc<SearchWorldResult[]>("search", input);
+  public async search(
+    input: SearchWorldsRequest,
+  ): Promise<SearchWorldsResponse> {
+    return await this.callRpc<SearchWorldsResponse>("search", input);
   }
+
 
 
   /**

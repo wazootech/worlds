@@ -1,7 +1,7 @@
 import { assertEquals, assertExists } from "@std/assert";
-import { ApiKeyRepository } from "#/management/keys.ts";
-import { NamespaceRepository } from "#/management/namespaces.ts";
-import { WorldRepository } from "#/management/worlds.ts";
+import { ApiKeyRepository } from "./keys.ts";
+import { NamespaceRepository } from "./namespaces.ts";
+import { WorldRepository } from "./worlds.ts";
 
 Deno.test("ApiKeyRepository", async (t) => {
   const repo = new ApiKeyRepository();

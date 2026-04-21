@@ -1,5 +1,5 @@
 import type { Store } from "n3";
-import type { World } from "./schema.ts";
+import type { World } from "../schema.ts";
 import type { WorldRow } from "../management/worlds.ts";
 import { toWorldName } from "../sources/resolver.ts";
 

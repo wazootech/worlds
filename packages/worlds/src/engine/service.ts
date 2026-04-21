@@ -3,36 +3,32 @@ import type {
   ExportWorldRequest,
   ImportWorldRequest,
   ListWorldsRequest,
-} from "./schema.ts";
-import type {
   DeleteWorldRequest,
   GetWorldRequest,
   GetServiceDescriptionRequest,
   SparqlQueryRequest,
-  SparqlQueryResult,
+  SparqlQueryResponse,
   UpdateWorldRequest,
-} from "./schema.ts";
-
-import type {
   World,
   CreateWorldRequest,
-  SearchWorldRequest,
-  SearchWorldResult,
-} from "./schema.ts";
+  ListWorldsResponse,
+  SearchWorldsRequest,
+  SearchWorldsResponse,
+  WorldsSource,
+} from "../schema.ts";
+
 
 import type { ManagementLayer } from "../management/worlds.ts";
 import { expandPathNamespace, resolveSource } from "../sources/resolver.ts";
-import type { WorldsSource } from "#/schemas/input.ts";
-import { createIndexedStore } from "../rdf/patch/indexed-store.ts";
-import { SearchIndexHandler } from "../rdf/patch/rdf-patch.ts";
+import { createIndexedStore } from "../infrastructure/rdf/patch/indexed-store.ts";
+import { SearchIndexHandler } from "../infrastructure/rdf/patch/rdf-patch.ts";
 import type { Embeddings } from "../vectors/embeddings.ts";
 import type {
   SearchEngine,
-
   SparqlEngine,
   StoreEngine,
-} from "../engines/mod.ts";
-import { ChunksSearchEngine } from "../engines/search.ts";
+} from "../infrastructure/mod.ts";
+import { ChunksSearchEngine } from "../infrastructure/search.ts";
 import { mapRowsToWorlds, mapRowToWorld, type SyncableStore } from "./utils.ts";
 
 /**
@@ -83,14 +79,15 @@ export interface WorldsEngineOptions {
  * WorldsEngine defines the primary interface for the Worlds engine.
  */
 export interface WorldsEngine {
-  list(input?: ListWorldsRequest): Promise<World[]>;
+  list(input?: ListWorldsRequest): Promise<ListWorldsResponse>;
   get(input: GetWorldRequest): Promise<World | null>;
   create(input: CreateWorldRequest): Promise<World>;
   update(input: UpdateWorldRequest): Promise<World>;
   delete(input: DeleteWorldRequest): Promise<void>;
-  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResult>;
+  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
 
-  search(input: SearchWorldRequest): Promise<SearchWorldResult[]>;
+  search(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
+
   import(input: ImportWorldRequest): Promise<void>;
   export(input: ExportWorldRequest): Promise<ArrayBuffer>;
   [Symbol.asyncDispose](): Promise<void>;
@@ -189,16 +186,20 @@ export class Worlds implements WorldsEngine {
   /**
    * list paginates all available worlds.
    */
-  public async list(input?: ListWorldsRequest): Promise<World[]> {
+  public async list(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
     const mgmt = this.ensureManagement();
     const namespace = expandPathNamespace(
-      input?.namespace ?? this.namespace ?? null,
+      input?.parent ?? this.namespace ?? null,
     );
 
     await Promise.resolve();
     const result = mgmt.worlds.list({ ...input, namespace });
-    return mapRowsToWorlds(result.worlds);
+    return {
+      worlds: mapRowsToWorlds(result.worlds),
+      nextPageToken: result.nextPageToken,
+    };
   }
+
 
   /**
    * get retrieves a specific world's metadata.
@@ -279,24 +280,37 @@ export class Worlds implements WorldsEngine {
   /**
    * search executes a semantic search against the world.
    */
-  public async search(input: SearchWorldRequest): Promise<SearchWorldResult[]> {
+  public async search(
+    input: SearchWorldsRequest,
+  ): Promise<SearchWorldsResponse> {
     if (!this.searchEngine) {
       throw new Error("SearchEngine is required for search operations");
     }
-    return await this.searchEngine.search(input);
+    // Convert parent to namespace for internal search engine if needed
+    const searchInput = {
+      ...input,
+      namespace: input.parent ?? this.namespace,
+    };
+    const results = await this.searchEngine.search(searchInput);
+    return {
+      results,
+      // SearchEngine doesn't support pagination yet, but we fulfill the interface
+    };
   }
+
 
 
   /**
    * sparql executes a SPARQL query against the world.
    */
-  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResult> {
+  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
+
     const { store, sync } = await this.resolveStore(
       input.sources?.[0],
     );
 
     // Lazy loading executeSparql
-    const { executeSparql } = await import("../rdf/sparql-engine.ts");
+    const { executeSparql } = await import("../infrastructure/rdf/sparql-engine.ts");
     const result = await executeSparql(store, input.query);
 
     // Sync indexing if it was an update

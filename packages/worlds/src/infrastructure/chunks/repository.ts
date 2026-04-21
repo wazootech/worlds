@@ -1,4 +1,5 @@
-import type { ChunkTableUpsert } from "./schema.ts";
+import type { ChunkTableUpsert } from "../../resources/chunk.schema.ts";
+
 
 /**
  * ChunksRepository handles the persistence of text chunks and their vector embeddings in-memory.
