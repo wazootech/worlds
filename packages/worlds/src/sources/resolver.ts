@@ -14,7 +14,7 @@ import type { WorldsContext } from "../testing/context.ts";
  * defaultNamespace is the fallback used when storing/looking up
  * namespace-agnostic data in storage or database keys.
  */
-export const defaultNamespace: string | undefined = undefined;
+export const defaultNamespace: string | undefined = Deno.env.get("WORLDS_NS");
 
 /**
  * expandPathNamespace resolves a namespace segment, treating "_" or null as the default.
@@ -31,7 +31,7 @@ export function expandPathNamespace(
  * defaultWorld is the fallback used when storing/looking up
  * world-agnostic data in storage or database keys.
  */
-export const defaultWorld: string | undefined = undefined;
+export const defaultWorld: string | undefined = Deno.env.get("WORLDS_ID");
 
 /**
  * isNamedSource checks if a source is an object with a 'name' property.

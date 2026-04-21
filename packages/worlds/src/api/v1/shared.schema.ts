@@ -112,7 +112,9 @@ export type Source =
  * sourceSchema is the Zod schema for Source.
  */
 export const sourceSchema = z.union([
-  z.string().describe("A source name: 'world' or 'namespace/world'"),
+  z.string().describe(
+    "A source name: 'world' or 'namespace/world'. Falls back to WORLDS_ID and WORLDS_NS environment variables if omitted via object forms.",
+  ),
   z.intersection(
     z.object({
       mode: transactionModeSchema.optional().describe(
@@ -122,16 +124,22 @@ export const sourceSchema = z.union([
     z.union([
       z.object({
         name: z.string().describe(
-          "A source name: 'world' or 'namespace/world'",
+          "A source name: 'world' or 'namespace/id'. Falls back to WORLDS_ID and WORLDS_NS environment variables if empty.",
         ),
       }),
       z.object({
-        id: z.string().describe("A world identifier."),
-        namespace: z.string().optional().describe("A namespace identifier."),
+        id: z.string().describe("A world identifier. Falls back to WORLDS_ID."),
+        namespace: z.string().optional().describe(
+          "A namespace identifier. Falls back to WORLDS_NS.",
+        ),
       }),
       z.object({
-        namespace: z.string().describe("A namespace identifier."),
-        id: z.string().optional().describe("A world identifier."),
+        namespace: z.string().describe(
+          "A namespace identifier. Falls back to WORLDS_NS.",
+        ),
+        id: z.string().optional().describe(
+          "A world identifier. Falls back to WORLDS_ID.",
+        ),
       }),
       z.object({}).describe("Default Source (all identifiers omitted)"),
     ]),

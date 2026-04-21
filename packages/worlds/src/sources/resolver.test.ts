@@ -105,6 +105,17 @@ Deno.test("resolveSource - Edge cases", async (t) => {
   });
 });
 
+Deno.test("resolveSource - Environment variables", async (t) => {
+  await t.step("uses defaultWorld and defaultNamespace constants", () => {
+    // This test verifies that resolveSource uses the exported constants.
+    // Since they are initialized at module load, we compare against them directly.
+    const result = resolveSource({});
+    assertEquals(result.id, defaultWorld);
+    assertEquals(result.namespace, defaultNamespace);
+    assertEquals(result.mode, "deferred");
+  });
+});
+
 Deno.test("resolveSource - Object inputs with name", async (t) => {
   await t.step("explicit qualified name", () => {
     const result = resolveSource({ name: "ns/world" });
