@@ -14,10 +14,10 @@ export class ChunksRepository {
   private readonly worldKey: string;
 
   constructor(
-    private readonly worldId: string,
+    private readonly id: string,
     private readonly namespace?: string,
   ) {
-    this.worldKey = `${namespace ?? "_"}/${worldId}`;
+    this.worldKey = `${namespace ?? "_"}/${id}`;
     if (!ChunksRepository.worldChunks.has(this.worldKey)) {
       ChunksRepository.worldChunks.set(this.worldKey, new Map());
     }

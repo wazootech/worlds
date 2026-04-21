@@ -1,9 +1,9 @@
 import { z } from "../../shared/z.ts";
 import { worldSchema } from "../../resources/world.schema.ts";
-import { type WorldsSource, worldsSourceSchema } from "./shared.schema.ts";
+import { type Source, sourceSchema } from "./shared.schema.ts";
 
-export { worldsSourceSchema };
-export type { WorldsSource };
+export { sourceSchema };
+export type { Source };
 
 
 /**
@@ -40,7 +40,7 @@ export type SearchWorldsResult = SearchWorldsResponse["results"][number];
  * SearchWorldsRequest represents the parameters for searching triples.
  */
 export const searchWorldsRequestSchema = z.object({
-  sources: z.array(worldsSourceSchema).optional().describe(
+  sources: z.array(sourceSchema).optional().describe(
     "The list of target worlds.",
   ),
   parent: z.string().optional().describe(

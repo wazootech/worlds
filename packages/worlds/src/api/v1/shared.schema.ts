@@ -1,20 +1,18 @@
 import { z } from "../../shared/z.ts";
 
 /**
- * WorldsContentType represents the supported RDF serialization content types.
+ * ContentType represents the supported RDF serialization content types.
  */
-export type WorldsContentType =
+export type ContentType =
   | "text/turtle"
   | "application/n-quads"
   | "application/n-triples"
   | "text/n3";
 
 /**
- * worldsContentTypeSchema is the Zod schema for WorldsContentType.
+ * contentTypeSchema is the Zod schema for ContentType.
  */
-export const worldsContentTypeSchema = z.enum([
-
-
+export const contentTypeSchema = z.enum([
   "text/turtle",
   "application/n-quads",
   "application/n-triples",
@@ -22,36 +20,122 @@ export const worldsContentTypeSchema = z.enum([
 ]);
 
 /**
- * WorldsSource represents a target world by identifier.
+ * TransactionMode represents the transaction behavior for a source access.
+ * Consistent with Turso/libsql.
  */
-export type WorldsSource =
-  | string // "namespace/world" or "world"
-  | (
-    & { write?: boolean }
-    & {
-      name?: string;
-      world?: string;
-      id?: string;
-      namespace?: string;
-    }
-  );
+export type TransactionMode = "write" | "read" | "deferred";
 
 /**
- * worldsSourceSchema is the Zod schema for WorldsSource.
+ * transactionModeSchema is the Zod schema for TransactionMode.
  */
-export const worldsSourceSchema = z.union([
+export const transactionModeSchema = z.enum(["write", "read", "deferred"]);
 
+/**
+ * BaseSource contains common properties for all object-based world sources.
+ */
+export interface BaseSource {
+  /**
+   * mode indicates the transaction behavior for the source access.
+   */
+  mode?: TransactionMode;
+}
 
+/**
+ * NamedSource identifies a world by a single name string in an object.
+ */
+export interface NamedSource extends BaseSource {
+  /**
+   * name is the source identifier (e.g. "world" or "namespace/world").
+   */
+  name: string;
+}
+
+/**
+ * IdSource identifies a world using its unique identifier.
+ */
+export interface IdSource extends BaseSource {
+  /**
+   * id is the world identifier.
+   */
+  id: string;
+}
+
+/**
+ * NamespaceSource identifies a target namespace.
+ */
+export interface NamespaceSource extends BaseSource {
+  /**
+   * namespace is the namespace identifier.
+   */
+  namespace: string;
+}
+
+/**
+ * FullyQualifiedSource identifies a world by both namespace and id.
+ */
+export interface FullyQualifiedSource extends BaseSource {
+  /**
+   * namespace is the namespace identifier.
+   */
+  namespace: string;
+
+  /**
+   * id is the world identifier.
+   */
+  id: string;
+}
+
+/**
+ * QualifiedSource represents any explicitly qualified target (id and/or namespace).
+ */
+export type QualifiedSource =
+  | IdSource
+  | NamespaceSource
+  | FullyQualifiedSource;
+
+/**
+ * SourceObject is a union of object-based world identifiers.
+ */
+export type SourceObject =
+  | BaseSource
+  | NamedSource
+  | QualifiedSource;
+
+/**
+ * Source represents a target world by identifier.
+ */
+export type Source =
+  | string // "namespace/world" or "world"
+  | SourceObject;
+
+/**
+ * sourceSchema is the Zod schema for Source.
+ */
+export const sourceSchema = z.union([
   z.string().describe("A source name: 'world' or 'namespace/world'"),
-  z.object({
-    write: z.boolean().optional().describe("Whether write access is enabled."),
-    name: z.string().optional().describe(
-      "A source name: 'world' or 'namespace/world'",
-    ),
-    world: z.string().optional().describe("A world identifier."),
-    id: z.string().optional().describe("A world identifier (alias)."),
-    namespace: z.string().optional().describe("A namespace identifier."),
-  }),
+  z.intersection(
+    z.object({
+      mode: transactionModeSchema.optional().describe(
+        "The transaction mode (write, read, or deferred).",
+      ),
+    }),
+    z.union([
+      z.object({
+        name: z.string().describe(
+          "A source name: 'world' or 'namespace/world'",
+        ),
+      }),
+      z.object({
+        id: z.string().describe("A world identifier."),
+        namespace: z.string().optional().describe("A namespace identifier."),
+      }),
+      z.object({
+        namespace: z.string().describe("A namespace identifier."),
+        id: z.string().optional().describe("A world identifier."),
+      }),
+      z.object({}).describe("Default Source (all identifiers omitted)"),
+    ]),
+  ),
 ]);
 
 /**
@@ -67,8 +151,6 @@ export interface ErrorResponseData {
  * errorResponseDataSchema is the Zod schema for ErrorResponseData.
  */
 export const errorResponseDataSchema = z.object({
-
-
   error: z.object({
     message: z.string(),
   }),
@@ -108,8 +190,6 @@ export const listWorldsResponseSchema = z.object({
 
 export type ListWorldsResponse = z.infer<typeof listWorldsResponseSchema>;
 
-
-
 /**
  * Log represents a log entry in the Worlds API.
  */
@@ -124,8 +204,6 @@ export interface Log {
  * logSchema is the Zod schema for Log.
  */
 export const logSchema = z.object({
-
-
   level: z.string(),
   message: z.string(),
   timestamp: z.number(),
@@ -136,9 +214,9 @@ export const logSchema = z.object({
  * ImportWorldRequest represents the parameters for importing data into a world.
  */
 export const importWorldRequestSchema = z.object({
-  source: worldsSourceSchema,
+  source: sourceSchema,
   data: z.union([z.string(), z.instanceof(ArrayBuffer)]),
-  contentType: worldsContentTypeSchema.optional(),
+  contentType: contentTypeSchema.optional(),
 });
 
 export type ImportWorldRequest = z.infer<typeof importWorldRequestSchema>;
@@ -147,18 +225,17 @@ export type ImportWorldRequest = z.infer<typeof importWorldRequestSchema>;
  * ExportWorldRequest represents the parameters for exporting data from a world.
  */
 export const exportWorldRequestSchema = z.object({
-  source: worldsSourceSchema,
-  contentType: worldsContentTypeSchema.optional(),
+  source: sourceSchema,
+  contentType: contentTypeSchema.optional(),
 });
 
 export type ExportWorldRequest = z.infer<typeof exportWorldRequestSchema>;
-
 
 /**
  * QueryWorldRequest represents the parameters for executing a query against a world.
  */
 export const queryWorldRequestSchema = z.object({
-  source: worldsSourceSchema,
+  source: sourceSchema,
   query: z.string(),
 });
 

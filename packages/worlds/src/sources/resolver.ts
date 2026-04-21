@@ -1,4 +1,11 @@
-import type { WorldsSource } from "../api/v1/shared.schema.ts";
+import type {
+  BaseSource,
+  FullyQualifiedSource,
+  NamedSource,
+  QualifiedSource,
+  Source,
+  TransactionMode,
+} from "../api/v1/shared.schema.ts";
 
 import type { WorldsContext } from "../testing/context.ts";
 
@@ -27,21 +34,76 @@ export function expandPathNamespace(
 export const defaultWorld: string | undefined = undefined;
 
 /**
- * ParsedSource represents a fully resolved world + namespace pair.
+ * isNamedSource checks if a source is an object with a 'name' property.
  */
-export interface ParsedSource {
-  world?: string;
-  namespace?: string;
-  id?: string;
+export function isNamedSource(
+  source: unknown,
+): source is NamedSource {
+  return (
+    typeof source === "object" &&
+    source !== null &&
+    "name" in source &&
+    typeof (source as any).name === "string"
+  );
 }
+
+/**
+ * isQualifiedSource checks if a source is an object with 'namespace' or 'id' properties.
+ */
+export function isQualifiedSource(
+  source: unknown,
+): source is QualifiedSource {
+  return (
+    typeof source === "object" &&
+    source !== null &&
+    ("namespace" in source || "id" in source) &&
+    !("name" in source)
+  );
+}
+
+/**
+ * isBaseSource checks if a source is a base object source (Default Source).
+ */
+export function isBaseSource(
+  source: unknown,
+): source is BaseSource {
+  return (
+    typeof source === "object" &&
+    source !== null &&
+    !Array.isArray(source) &&
+    !("name" in source) &&
+    !("namespace" in source) &&
+    !("id" in source)
+  );
+}
+
+/**
+ * isSource checks if a value is a valid Source input.
+ */
+export function isSource(source: unknown): source is Source {
+  return (
+    typeof source === "string" ||
+    isNamedSource(source) ||
+    isQualifiedSource(source) ||
+    isBaseSource(source)
+  );
+}
+
+/**
+ * ResolvedSource represents a fully resolved world + namespace pair,
+ * potentially carrying a transaction mode.
+ */
+export type ResolvedSource = Partial<FullyQualifiedSource>;
 
 
 /**
  * parseSourceName parses a "namespace/world" string into components.
  */
-function parseSourceName(source: string): ParsedSource {
+function parseSourceName(source: string): ResolvedSource {
   const trimmed = source.trim();
-  if (!trimmed || trimmed === "_") return {};
+  if (!trimmed) {
+    throw new SourceParseError("Source name cannot be empty");
+  }
 
   if (/[\\ ]/.test(trimmed)) {
     throw new SourceParseError(
@@ -76,7 +138,7 @@ function parseSourceName(source: string): ParsedSource {
   }
 
   if (slashParts.length === 1) {
-    return { world: trimmed };
+    return { id: trimmed };
   }
 
   const namespace = slashParts[0];
@@ -84,7 +146,7 @@ function parseSourceName(source: string): ParsedSource {
 
   return {
     namespace: (namespace === "" || namespace === "_") ? undefined : namespace,
-    world: (world === "" || world === "_") ? undefined : world,
+    id: (world === "") ? undefined : world,
   };
 }
 
@@ -99,58 +161,66 @@ export class SourceParseError extends Error {
 }
 
 /**
- * resolveSource converts various input forms into a ParsedSource.
+ * resolveSource converts various input forms into a ResolvedSource.
  */
 export function resolveSource(
-  source?: WorldsSource,
+  source?: Source,
   context?: Partial<WorldsContext>,
-): ParsedSource {
+): ResolvedSource {
   if (source === null || source === undefined) {
-    return {};
+    return { mode: "deferred" };
   }
 
   if (typeof source === "string") {
-    if (source === "" || source === "_") {
-      return {};
+    if (source === "") {
+      throw new SourceParseError("Source name cannot be empty");
     }
     const parsed = parseSourceName(source);
     return {
-      world: parsed.world ?? defaultWorld,
+      id: parsed.id ?? defaultWorld,
       namespace: parsed.namespace ?? context?.namespace ?? defaultNamespace,
+      mode: "deferred",
     };
   }
 
-  if (typeof source === "object" && source !== null) {
-    const obj = source as Record<string, unknown>;
-    if (
-      "name" in obj && typeof obj.name === "string" &&
-      obj.name
-    ) {
-      const parsed = parseSourceName(obj.name);
-      return {
-        world: parsed.world ?? defaultWorld,
-        namespace: parsed.namespace ?? context?.namespace ?? defaultNamespace,
-      };
+  const mode: TransactionMode = (source as any).mode ?? "deferred";
+
+  if (isNamedSource(source)) {
+    if (!source.name.trim()) {
+      throw new SourceParseError("Source name cannot be empty");
     }
+    const parsed = parseSourceName(source.name);
+    return {
+      id: parsed.id ?? defaultWorld,
+      namespace: parsed.namespace ?? context?.namespace ?? defaultNamespace,
+      mode,
+    };
+  }
 
-    if ("world" in obj || "namespace" in obj || "id" in obj) {
-      // Use logical OR with fallback to ensure we don't return undefined if one key exists but is empty
-      const worldId = (obj.world as string | undefined) ||
-        (obj.id as string | undefined) ||
-        defaultWorld;
-      const namespace = (obj.namespace as string | undefined) ||
-        context?.namespace ||
-        defaultNamespace;
+  if (isQualifiedSource(source)) {
+    const worldId = ("id" in source ? source.id : undefined) || defaultWorld;
+    const namespace = ("namespace" in source ? source.namespace : undefined) ||
+      context?.namespace ||
+      defaultNamespace;
 
-      return {
-        world: worldId,
-        namespace,
-        id: obj.id as string | undefined,
-      };
-    }
+    return {
+      id: worldId,
+      namespace,
+      mode,
+    };
+  }
 
+  if (isBaseSource(source)) {
+    return {
+      id: defaultWorld,
+      namespace: context?.namespace || defaultNamespace,
+      mode,
+    };
+  }
+
+  if (typeof source === "object") {
     throw new SourceParseError(
-      "Invalid source format: missing 'name', 'world', or 'namespace' property",
+      "Invalid source format: missing 'name', 'id', or 'namespace' property",
     );
   }
 
@@ -162,30 +232,29 @@ export function resolveSource(
  */
 export function toWorldName(
   source:
-    | WorldsSource
-    | ParsedSource
+    | Source
+    | ResolvedSource
     | {
-      world?: string | null;
+      id?: string | null;
       namespace?: string | null;
     },
 ): string {
-  let resolved: ParsedSource;
+  let resolved: ResolvedSource;
 
-  if (
-    typeof source === "string" ||
-    (typeof source === "object" && source !== null && "name" in source)
-  ) {
-    resolved = resolveSource(source as WorldsSource);
+  if (typeof source === "string" || isNamedSource(source)) {
+    resolved = resolveSource(source);
+  } else if (isQualifiedSource(source) || isBaseSource(source)) {
+    resolved = resolveSource(source);
   } else {
+    // Handling ResolvedSource or other objects
     const obj = source as Record<string, unknown>;
     resolved = {
-      world: (obj.world as string | undefined) ??
-        (obj.id as string | undefined) ?? defaultWorld,
+      id: (obj.id as string | undefined) ?? defaultWorld,
       namespace: (obj.namespace as string | undefined) ?? defaultNamespace,
     };
   }
 
-  if (!resolved.namespace && !resolved.world) return "";
-  if (!resolved.namespace) return resolved.world ?? "";
-  return `${resolved.namespace}/${resolved.world ?? ""}`;
+  if (!resolved.namespace && !resolved.id) return "";
+  if (!resolved.namespace) return resolved.id ?? "";
+  return `${resolved.namespace}/${resolved.id ?? ""}`;
 }

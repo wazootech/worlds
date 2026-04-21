@@ -51,7 +51,7 @@ export async function createTestContext(): Promise<WorldsContext> {
     storage,
     apiKey,
     namespace: namespaceId,
-    world: "test-world",
+    id: "test-world",
     async [Symbol.asyncDispose]() {
       await storage.close();
     },

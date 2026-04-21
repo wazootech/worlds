@@ -19,7 +19,13 @@ export interface StoreEngine {
    * @param namespace - Namespace identifier (optional, defaults to "default")
    */
   getStore(id?: string, namespace?: string): Promise<Store>;
+
+  /**
+   * delete removes a world's store.
+   */
+  delete(id: string, namespace?: string): void | Promise<void>;
 }
+
 
 /**
  * KvStoreEngine manages in-memory N3 Stores using KV pattern.

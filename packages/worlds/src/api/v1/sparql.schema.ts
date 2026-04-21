@@ -2,13 +2,13 @@ import { z } from "../../shared/z.ts";
 import { z as zod } from "zod";
 
 import {
-  type WorldsContentType,
-  worldsContentTypeSchema,
-  type WorldsSource,
-  worldsSourceSchema,
+  contentTypeSchema,
+  sourceSchema,
+  type ContentType,
+  type Source,
 } from "./shared.schema.ts";
 
-export { type WorldsContentType, worldsContentTypeSchema };
+export { contentTypeSchema, type ContentType };
 
 /**
  * SparqlValue represents a value in a SPARQL result.
@@ -43,9 +43,6 @@ export type SparqlValue =
  * Uses z.lazy for recursive triple term support.
  */
 export const sparqlValueSchema: zod.ZodType<SparqlValue> = z.lazy(() =>
-
-
-
   z.discriminatedUnion(
     "type",
     [
@@ -105,8 +102,6 @@ export type SparqlBinding = Record<string, SparqlValue>;
  * sparqlBindingSchema is the Zod schema for SparqlBinding.
  */
 export const sparqlBindingSchema = z.record(
-
-
   z.string(),
   sparqlValueSchema,
 );
@@ -186,8 +181,6 @@ export interface SparqlQuad {
  * sparqlQuadSchema is the Zod schema for SparqlQuad.
  */
 export const sparqlQuadSchema = z.object({
-
-
   subject: z.object({
     type: z.enum(["uri", "bnode"]),
     value: z.string(),
@@ -226,7 +219,7 @@ export type SparqlQuadsResults = z.infer<typeof sparqlQuadsResultsSchema>;
  * SparqlQueryRequest represents the parameters for executing a SPARQL query or update.
  */
 export const sparqlQueryRequestSchema = z.object({
-  sources: z.array(worldsSourceSchema).optional().describe(
+  sources: z.array(sourceSchema).optional().describe(
     "The optional list of target worlds.",
   ),
   parent: z.string().optional().describe(
@@ -244,19 +237,18 @@ export const sparqlQueryRequestSchema = z.object({
 export type SparqlQueryRequest = z.infer<typeof sparqlQueryRequestSchema>;
 
 
-
 /**
  * GetServiceDescriptionRequest represents the parameters for retrieving a SPARQL service description.
  */
 export const getServiceDescriptionRequestSchema = z.object({
-  sources: z.array(worldsSourceSchema).optional().describe(
+  sources: z.array(sourceSchema).optional().describe(
     "The optional list of target worlds.",
   ),
   parent: z.string().optional().describe(
     "The parent resource name (e.g., 'namespaces/default').",
   ),
   endpointUrl: z.url().describe("The URL of the SPARQL endpoint."),
-  contentType: worldsContentTypeSchema.optional().describe(
+  contentType: contentTypeSchema.optional().describe(
     "Optional RDF serialization content type.",
   ),
 });
@@ -264,7 +256,6 @@ export const getServiceDescriptionRequestSchema = z.object({
 export type GetServiceDescriptionRequest = z.infer<
   typeof getServiceDescriptionRequestSchema
 >;
-
 
 
 /**

@@ -20,7 +20,7 @@ Deno.test({
       embeddings: context.embeddings,
       management: context.management,
       namespace: context.namespace,
-      world: context.world,
+      id: context.id,
     });
 
     await worlds.init();
@@ -120,7 +120,7 @@ Deno.test({
       },
       namespace: namespaceId,
       storeEngine: storage,
-      world: "test-world",
+      id: "test-world",
     });
 
     await worldsNoSearch.init();

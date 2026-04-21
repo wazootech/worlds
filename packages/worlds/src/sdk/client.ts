@@ -119,9 +119,10 @@ export class WorldsClient {
   /**
    * update updates a world in the Worlds API.
    */
-  public async update(input: UpdateWorldRequest): Promise<void> {
-    return await this.callRpc<void>("update", input);
+  public async update(input: UpdateWorldRequest): Promise<World> {
+    return await this.callRpc<World>("update", input);
   }
+
 
 
   /**

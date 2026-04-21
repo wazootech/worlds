@@ -14,12 +14,11 @@ import type {
   ListWorldsResponse,
   SearchWorldsRequest,
   SearchWorldsResponse,
-  WorldsSource,
+  Source,
 } from "../schema.ts";
 
-
-import type { ManagementLayer } from "../management/worlds.ts";
-import { expandPathNamespace, resolveSource } from "../sources/resolver.ts";
+import type { ManagementLayer, WorldRow } from "../management/worlds.ts";
+import { resolveSource } from "../sources/resolver.ts";
 import { createIndexedStore } from "../infrastructure/rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "../infrastructure/rdf/patch/rdf-patch.ts";
 import type { Embeddings } from "../vectors/embeddings.ts";
@@ -28,75 +27,71 @@ import type {
   SparqlEngine,
   StoreEngine,
 } from "../infrastructure/mod.ts";
-import { ChunksSearchEngine } from "../infrastructure/search.ts";
-import { mapRowsToWorlds, mapRowToWorld, type SyncableStore } from "./utils.ts";
+import { generateBlobFromN3Store, generateN3StoreFromBlob } from "../infrastructure/rdf/n3.ts";
+import { Store } from "n3";
 
 /**
- * WorldsEngineOptions defines the options for creating a Worlds engine.
+ * SyncableStore combines an N3 store with a sync method for handlers.
+ */
+export interface SyncableStore {
+  store: Store<Quad, Quad, Quad, Quad>;
+  sync: (patches?: any[]) => Promise<void>;
+}
+
+/**
+ * WorldsEngineOptions are the options for creating a Worlds instance.
  */
 export interface WorldsEngineOptions {
-  /**
-   * storeEngine is the store engine for RDF persistence.
-   * Required for data-plane operations (sparql, import, export).
-   */
   storeEngine?: StoreEngine;
-
-  /**
-   * sparqlEngine is the SPARQL engine for RDF query operations.
-   * Optional - if not provided, Worlds uses inline SPARQL execution.
-   */
   sparqlEngine?: SparqlEngine;
-
-  /**
-   * searchEngine is the search engine for semantic search.
-   * Optional - search() throws if not provided.
-   */
   searchEngine?: SearchEngine;
-
-  /**
-   * embeddings is the embedding generator for search.
-   * Used to create a default search engine if none provided.
-   */
   embeddings?: Embeddings;
-
-  /**
-   * management is the management layer for world metadata.
-   */
   management?: ManagementLayer;
-
-  /**
-   * namespace is the default namespace.
-   */
   namespace?: string;
-
-  /**
-   * world is the default world name.
-   */
-  world?: string;
+  id?: string;
 }
 
 /**
  * WorldsEngine defines the primary interface for the Worlds engine.
  */
 export interface WorldsEngine {
+  init(): Promise<void>;
   list(input?: ListWorldsRequest): Promise<ListWorldsResponse>;
   get(input: GetWorldRequest): Promise<World | null>;
   create(input: CreateWorldRequest): Promise<World>;
   update(input: UpdateWorldRequest): Promise<World>;
   delete(input: DeleteWorldRequest): Promise<void>;
   sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
-
   search(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
-
   import(input: ImportWorldRequest): Promise<void>;
   export(input: ExportWorldRequest): Promise<ArrayBuffer>;
   [Symbol.asyncDispose](): Promise<void>;
 }
 
+/**
+ * mapRowToWorld converts a management WorldRow to an API World object.
+ */
+function mapRowToWorld(row: WorldRow): World {
+  return {
+    id: row.id,
+    namespace: row.namespace,
+    displayName: row.label,
+    description: row.description,
+    createTime: row.created_at!,
+    updateTime: row.updated_at!,
+    deleteTime: row.deleted_at ?? undefined,
+  };
+}
+
+/**
+ * mapRowsToWorlds converts a list of WorldRows to API World objects.
+ */
+function mapRowsToWorlds(rows: WorldRow[]): World[] {
+  return rows.map(mapRowToWorld);
+}
 
 /**
  * Worlds is an engine-agnostic implementation of the Worlds API.
- * It coordinates operations across store engines and optional search engines.
  */
 export class Worlds implements WorldsEngine {
   private readonly storeEngine?: StoreEngine;
@@ -104,42 +99,20 @@ export class Worlds implements WorldsEngine {
   private readonly searchEngine?: SearchEngine;
   private readonly management?: ManagementLayer;
   private readonly namespace?: string;
-  private readonly world?: string;
+  private readonly id?: string;
   private readonly embeddings?: Embeddings;
 
   constructor(options: WorldsEngineOptions) {
     this.storeEngine = options.storeEngine;
     this.management = options.management;
     this.namespace = options.namespace;
-    this.world = options.world;
+    this.id = options.id;
     this.embeddings = options.embeddings;
     this.sparqlEngine = options.sparqlEngine;
-
-    // Create search engine if not provided but embeddings available
-    if (options.searchEngine) {
-      this.searchEngine = options.searchEngine;
-    } else if (this.embeddings && this.management) {
-      this.searchEngine = new ChunksSearchEngine({
-        embeddings: this.embeddings,
-        management: this.management!,
-        namespace: this.namespace,
-        world: this.world,
-        storeEngine: this.storeEngine,
-      });
-    }
+    this.searchEngine = options.searchEngine;
   }
 
-  /**
-   * init initializes the engine.
-   */
-  public init(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  /**
-   * [Symbol.asyncDispose] provides support for explicit resource management.
-   */
-  public [Symbol.asyncDispose](): Promise<void> {
+  public async init(): Promise<void> {
     return Promise.resolve();
   }
 
@@ -152,11 +125,12 @@ export class Worlds implements WorldsEngine {
     return this.management;
   }
 
+
   private async resolveStore(
-    inputSource?: WorldsSource,
+    inputSource?: Source,
   ): Promise<SyncableStore> {
-    const source = resolveSource(inputSource, { namespace: this.namespace });
-    const worldId = source.world ?? this.world;
+    const resolved = resolveSource(inputSource, { namespace: this.namespace });
+    const worldId = resolved.id ?? this.id;
 
     if (!this.storeEngine) {
       throw new Error(
@@ -164,74 +138,70 @@ export class Worlds implements WorldsEngine {
       );
     }
 
-    const rawStore = await this.storeEngine.getStore(
-      worldId,
-      source.namespace,
-    );
 
-    // Wrap in IndexedStore if embeddings available
-    if (this.embeddings && worldId) {
-      const handler = new SearchIndexHandler(
-        worldId,
-        this.embeddings,
-        source.namespace,
-      );
-      const { store, sync } = createIndexedStore(rawStore, [handler]);
-      return { store, sync };
+    if (!worldId) {
+      throw new Error("World identity required");
     }
 
-    return { store: rawStore, sync: async () => {} };
-  }
-
-  /**
-   * list paginates all available worlds.
-   */
-  public async list(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
-    const mgmt = this.ensureManagement();
-    const namespace = expandPathNamespace(
-      input?.parent ?? this.namespace ?? null,
+    const rawStore = await this.storeEngine.getStore(
+      worldId,
+      resolved.namespace,
     );
 
-    await Promise.resolve();
-    const result = mgmt.worlds.list({ ...input, namespace });
+    if (this.embeddings) {
+      const handler = new SearchIndexHandler(
+        this.embeddings,
+        worldId,
+        resolved.namespace,
+      );
+      const indexed = createIndexedStore(rawStore as any, [handler]);
+      return {
+        store: indexed.store as any,
+        sync: indexed.sync,
+      };
+    }
+
+    return {
+      store: rawStore as any,
+      sync: async () => {},
+    };
+  }
+
+  public async list(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
+    const mgmt = this.ensureManagement();
+    const namespace = input?.parent || this.namespace;
+    const result = await mgmt.worlds.list({ ...input, namespace });
     return {
       worlds: mapRowsToWorlds(result.worlds),
       nextPageToken: result.nextPageToken,
     };
   }
 
-
-  /**
-   * get retrieves a specific world's metadata.
-   */
   public async get(input: GetWorldRequest): Promise<World | null> {
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
+    if (!resolved.id) return null;
 
-    await Promise.resolve();
-    const row = mgmt.worlds.get(resolved.world!, resolved.namespace);
+    const row = await mgmt.worlds.get(resolved.id, resolved.namespace);
     if (!row) return null;
 
     return mapRowToWorld(row);
   }
 
-  /**
-   * create registers a new world.
-   */
   public async create(input: CreateWorldRequest): Promise<World> {
     const mgmt = this.ensureManagement();
-    const nameOrWorld = input.name || input.world;
-    if (!nameOrWorld) {
-      throw new Error("World name/identifier is required");
-    }
-    const resolved = resolveSource(nameOrWorld, { namespace: this.namespace });
+    const nameOrId = input.id || input.name || input.world;
+    if (!nameOrId) throw new Error("World identity required");
+
+    const resolved = resolveSource(nameOrId, {
+      namespace: input.parent || this.namespace,
+    });
 
     const now = Date.now();
-    await Promise.resolve();
-    mgmt.worlds.insert({
+    await mgmt.worlds.insert({
       namespace: resolved.namespace,
-      id: resolved.world!,
-      label: input.displayName ?? resolved.world ?? "Untitled",
+      id: resolved.id!,
+      label: input.displayName ?? resolved.id ?? "Untitled",
       description: input.description,
       connection_uri: null,
       created_at: now,
@@ -239,173 +209,113 @@ export class Worlds implements WorldsEngine {
       deleted_at: null,
     });
 
-    const row = mgmt.worlds.get(resolved.world!, resolved.namespace);
+    const row = await mgmt.worlds.get(resolved.id!, resolved.namespace);
     return mapRowToWorld(row!);
   }
 
-  /**
-   * update modifies a world's metadata.
-   */
   public async update(input: UpdateWorldRequest): Promise<World> {
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
+    if (!resolved.id) throw new Error("World ID required");
 
-    await Promise.resolve();
-    mgmt.worlds.update(resolved.world!, resolved.namespace, {
+    const now = Date.now();
+    await mgmt.worlds.update(resolved.id, resolved.namespace, {
       label: input.displayName,
       description: input.description,
+      updated_at: now,
     });
 
-    const result = mgmt.worlds.get(resolved.world!, resolved.namespace);
-    if (!result) throw new Error("World not found after update");
-
-    return mapRowToWorld(result);
+    const result = await mgmt.worlds.get(resolved.id, resolved.namespace);
+    return mapRowToWorld(result!);
   }
 
-  /**
-   * delete removes a world.
-   */
   public async delete(input: DeleteWorldRequest): Promise<void> {
-
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
+    if (!resolved.id) return;
 
-    await Promise.resolve();
-    mgmt.worlds.delete(
-      resolved.world!,
-      resolved.namespace,
-    );
-  }
-
-  /**
-   * search executes a semantic search against the world.
-   */
-  public async search(
-    input: SearchWorldsRequest,
-  ): Promise<SearchWorldsResponse> {
-    if (!this.searchEngine) {
-      throw new Error("SearchEngine is required for search operations");
+    await mgmt.worlds.delete(resolved.id, resolved.namespace);
+    if (this.storeEngine) {
+      await this.storeEngine.delete(resolved.id, resolved.namespace);
     }
-    // Convert parent to namespace for internal search engine if needed
-    const searchInput = {
-      ...input,
-      namespace: input.parent ?? this.namespace,
-    };
-    const results = await this.searchEngine.search(searchInput);
-    return {
-      results,
-      // SearchEngine doesn't support pagination yet, but we fulfill the interface
-    };
   }
 
-
-
-  /**
-   * sparql executes a SPARQL query against the world.
-   */
   public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
+    if (this.sparqlEngine) {
+      return await this.sparqlEngine.sparql(input);
+    }
 
     const { store, sync } = await this.resolveStore(
-      input.sources?.[0],
+      input.sources?.[0] || input.parent,
     );
 
-    // Lazy loading executeSparql
+    if (!this.sparqlEngine && !this.storeEngine) {
+      throw new Error("SparqlEngine is required for SPARQL operations");
+    }
+
     const { executeSparql } = await import("../infrastructure/rdf/sparql-engine.ts");
-    const result = await executeSparql(store, input.query);
-
-    // Sync indexing if it was an update
+    const result = await executeSparql(store as any, input.query);
     await sync();
-
     return result;
   }
 
-  /**
-   * import loads data into the store.
-   */
+  public async search(input: SearchWorldsRequest): Promise<SearchWorldsResponse> {
+    if (!this.searchEngine) {
+      throw new Error("SearchEngine is required for search operations");
+    }
+
+
+    const resolved = resolveSource(
+      input.sources?.[0] || input.parent,
+      { namespace: this.namespace },
+    );
+
+    const result = await this.searchEngine.search({
+      ...input,
+      parent: resolved.namespace,
+    });
+
+    return {
+      results: result,
+    };
+  }
+
   public async import(input: ImportWorldRequest): Promise<void> {
-
     const { store, sync } = await this.resolveStore(input.source);
-    let importData = input.data;
+    const data = typeof input.data === "string"
+      ? new TextEncoder().encode(input.data).buffer
+      : input.data;
 
-    // Detect and decode base64 if it's a string and doesn't look like RDF
-    if (
-      typeof importData === "string" && !importData.includes("<") &&
-      !importData.includes("_:")
-    ) {
-      try {
-        const { decodeBase64 } = await import("@std/encoding/base64");
-        importData = decodeBase64(importData).buffer;
-      } catch {
-        // Fallback to treating as raw string if decoding fails
-      }
-    }
+    const n3Store = await generateN3StoreFromBlob(new Blob([data]));
+    const quads = n3Store.getQuads(null, null, null, null);
 
-    const { Parser } = await import("n3");
-    const parser = new Parser({
-      format: input.contentType ?? "application/n-quads",
-    });
-    const content = typeof importData === "string"
-      ? importData
-      : new TextDecoder().decode(importData as ArrayBuffer);
-
-    // Collect quads via callback to ensure completeness
-    const quads = await new Promise<Quad[]>((resolve, reject) => {
-      const q: Quad[] = [];
-      parser.parse(content, (error, quad) => {
-        if (error) reject(error);
-        if (quad) q.push(quad);
-        else resolve(q);
-      });
-    });
-
-    // @ts-ignore - n3 store types
+    // @ts-ignore - n3 types
     store.addQuads(quads);
-
-    // Sync indexing
     await sync();
-
-    // Sync to search engine if available
-    if (this.searchEngine?.applyPatches) {
-      // Generate patches from the imported quads
-      const patches = quads.map((q) => ({
-        insertions: [q],
-        deletions: [] as Quad[],
-      }));
-      await this.searchEngine.applyPatches(patches);
-    }
   }
 
-  /**
-   * export retrieves world data.
-   */
   public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
-
     const { store } = await this.resolveStore(input.source);
-    const { Writer } = await import("n3");
-    const writer = new Writer({
-      format: input.contentType ?? "application/n-quads",
-    });
-
-    // @ts-ignore - n3 store types
-    writer.addQuads(store.getQuads());
-
-    return await new Promise<ArrayBuffer>((resolve, reject) => {
-      writer.end((error, result) => {
-        if (error) reject(error);
-        const encoder = new TextEncoder();
-        resolve(encoder.encode(result).buffer);
-      });
-    });
+    const n3Store = new Store();
+    // @ts-ignore - n3 types
+    n3Store.addQuads(store.getQuads());
+    const blob = await generateBlobFromN3Store(n3Store);
+    return await blob.arrayBuffer();
   }
 
-  /**
-   * getServiceDescription returns the SPARQL service description.
-   */
   public async getServiceDescription(
     input: GetServiceDescriptionRequest,
   ): Promise<string> {
-    const { store: _store } = await this.resolveStore(input.sources?.[0]);
-    // TODO: Implement actual service description based on store and endpoint
+    const { store } = await this.resolveStore(input.sources?.[0]);
+    // TODO: Implement actual service description
     return "";
+  }
+
+  public async [Symbol.asyncDispose](): Promise<void> {
+    if (this.storeEngine) {
+      if (typeof (this.storeEngine as any)[Symbol.asyncDispose] === "function") {
+        await (this.storeEngine as any)[Symbol.asyncDispose]();
+      }
+    }
   }
 }

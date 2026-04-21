@@ -20,13 +20,13 @@ function isMetaPredicate(p: string): boolean {
  */
 export class SearchIndexHandler implements PatchHandler {
   constructor(
-    private readonly worldId: string,
     private readonly embeddings: Embeddings,
+    private readonly id: string,
     private readonly namespace?: string,
   ) {}
 
   public async patch(patches: Patch[]): Promise<void> {
-    const chunksRepository = new ChunksRepository(this.worldId, this.namespace);
+    const chunksRepository = new ChunksRepository(this.id, this.namespace);
 
     for (const patch of patches) {
       if (patch.deletions) {
