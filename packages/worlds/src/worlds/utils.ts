@@ -20,15 +20,16 @@ export function mapRowToWorld(row: WorldRow): World {
       namespace: row.namespace ?? undefined,
       world: row.id ?? undefined,
     }),
-    id: row.id,
+    id: row.id as any, // Cast for branded id
     namespace: row.namespace ?? undefined,
-    label: row.label ?? undefined,
+    displayName: row.label ?? undefined,
     description: row.description ?? undefined,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    deletedAt: row.deleted_at ?? undefined,
+    createTime: row.created_at,
+    updateTime: row.updated_at,
+    deleteTime: row.deleted_at ?? undefined,
   };
 }
+
 
 /**
  * mapRowsToWorlds converts an array of database rows to World objects.

@@ -73,44 +73,7 @@ export const sparqlValueSchema: z.ZodType<SparqlValue> = z.lazy(() =>
 /**
  * SparqlServiceDescription represents a SPARQL 1.1 Service Description.
  */
-export interface SparqlServiceDescription {
-  /**
-   * endpoint is the URL of the SPARQL endpoint.
-   */
-  endpoint: string;
-
-  /**
-   * supportedLanguages is the list of SPARQL languages supported.
-   */
-  supportedLanguages: string[];
-
-  /**
-   * features is the list of SPARQL features supported.
-   */
-  features: string[];
-
-  /**
-   * resultFormats is the list of result formats supported.
-   */
-  resultFormats: string[];
-
-  /**
-   * defaultDataset is the description of the default dataset.
-   */
-  defaultDataset?: {
-    graphs: Array<{
-      uri?: string;
-      isDefault: boolean;
-    }>;
-  };
-}
-
-/**
- * sparqlServiceDescriptionSchema is the Zod schema for SparqlServiceDescription.
- */
-export const sparqlServiceDescriptionSchema: z.ZodType<
-  SparqlServiceDescription
-> = z.object({
+export const sparqlServiceDescriptionSchema = z.object({
   endpoint: z.string().url(),
   supportedLanguages: z.array(z.string()),
   features: z.array(z.string()),
@@ -122,6 +85,11 @@ export const sparqlServiceDescriptionSchema: z.ZodType<
     })),
   }).optional(),
 });
+
+export type SparqlServiceDescription = z.infer<
+  typeof sparqlServiceDescriptionSchema
+>;
+
 
 /**
  * SparqlBinding represents a single result binding.
@@ -139,72 +107,27 @@ export const sparqlBindingSchema: z.ZodType<SparqlBinding> = z.record(
 /**
  * SparqlSelectResults represents the results of a SPARQL SELECT query.
  */
-export interface SparqlSelectResults {
-  /**
-   * head contains the variable names and optional links.
-   */
-  head: {
-    vars: string[];
-    link: string[] | null;
-  };
+export const sparqlSelectResultsSchema = z.object({
+  head: z.object({
+    vars: z.array(z.string()),
+    link: z.array(z.string()).nullable().optional(),
+  }).transform((h: { vars: string[]; link?: string[] | null }) => ({
+    ...h,
+    link: h.link ?? null,
+  })),
+  results: z.object({
+    bindings: z.array(sparqlBindingSchema),
+  }),
+  boolean: z.undefined().optional(),
+});
 
-  /**
-   * results contains the bindings for each result.
-   */
-  results: {
-    bindings: SparqlBinding[];
-  };
+export type SparqlSelectResults = z.infer<typeof sparqlSelectResultsSchema>;
 
-  /**
-   * boolean is undefined for SELECT results.
-   */
-  boolean?: undefined;
-}
-
-/**
- * sparqlSelectResultsSchema is the Zod schema for SparqlSelectResults.
- */
-export const sparqlSelectResultsSchema: z.ZodType<SparqlSelectResults> = z
-  .object({
-    head: z.object({
-      vars: z.array(z.string()),
-      link: z.array(z.string()).nullable().optional(),
-    }).transform((h: { vars: string[]; link?: string[] | null }) => ({
-      ...h,
-      link: h.link ?? null,
-    })),
-    results: z.object({
-      bindings: z.array(sparqlBindingSchema),
-    }),
-    boolean: z.undefined().optional(),
-  });
 
 /**
  * SparqlAskResults represents the results of a SPARQL ASK query.
  */
-export interface SparqlAskResults {
-  /**
-   * head contains optional links for the result.
-   */
-  head: {
-    link: string[] | null;
-  };
-
-  /**
-   * boolean is the result of the ASK query.
-   */
-  boolean: boolean;
-
-  /**
-   * results is undefined for ASK results.
-   */
-  results?: undefined;
-}
-
-/**
- * sparqlAskResultsSchema is the Zod schema for SparqlAskResults.
- */
-export const sparqlAskResultsSchema: z.ZodType<SparqlAskResults> = z.object({
+export const sparqlAskResultsSchema = z.object({
   head: z.object({
     link: z.array(z.string()).nullable().optional(),
   }).transform((h: { link?: string[] | null }) => ({
@@ -214,6 +137,9 @@ export const sparqlAskResultsSchema: z.ZodType<SparqlAskResults> = z.object({
   boolean: z.boolean(),
   results: z.undefined().optional(),
 });
+
+export type SparqlAskResults = z.infer<typeof sparqlAskResultsSchema>;
+
 
 /**
  * SparqlQuad represents a single quad result (for CONSTRUCT/DESCRIBE).
@@ -271,78 +197,26 @@ export const sparqlQuadSchema: z.ZodType<SparqlQuad> = z.object({
 /**
  * SparqlQuadsResults represents the results of a SPARQL CONSTRUCT/DESCRIBE query.
  */
-export interface SparqlQuadsResults {
-  /**
-   * head contains optional links for the result.
-   */
-  head: {
-    link: string[] | null;
-  };
+export const sparqlQuadsResultsSchema = z.object({
+  head: z.object({
+    link: z.array(z.string()).nullable().optional(),
+  }).transform((h: { link?: string[] | null }) => ({
+    ...h,
+    link: h.link ?? null,
+  })),
+  results: z.object({
+    quads: z.array(sparqlQuadSchema),
+  }),
+  boolean: z.undefined().optional(),
+});
 
-  /**
-   * results contains the quads found.
-   */
-  results: {
-    quads: SparqlQuad[];
-  };
+export type SparqlQuadsResults = z.infer<typeof sparqlQuadsResultsSchema>;
 
-  /**
-   * boolean is undefined for QUAD results.
-   */
-  boolean?: undefined;
-}
 
 /**
- * sparqlQuadsResultsSchema is the Zod schema for SparqlQuadsResults.
+ * SparqlQueryRequest represents the parameters for executing a SPARQL query or update.
  */
-export const sparqlQuadsResultsSchema: z.ZodType<SparqlQuadsResults> = z
-  .object({
-    head: z.object({
-      link: z.array(z.string()).nullable().optional(),
-    }).transform((h: { link?: string[] | null }) => ({
-      ...h,
-      link: h.link ?? null,
-    })),
-    results: z.object({
-      quads: z.array(sparqlQuadSchema),
-    }),
-    boolean: z.undefined().optional(),
-  });
-
-/**
- * WorldsSparqlInput represents the parameters for executing a SPARQL query or update.
- */
-export interface WorldsSparqlInput {
-  /**
-   * sources is the optional list of target worlds.
-   */
-  sources?: WorldsSource[];
-
-  /**
-   * namespace is the optional namespace of the target world.
-   */
-  namespace?: string;
-
-  /**
-   * query is the SPARQL query or update string.
-   */
-  query: string;
-
-  /**
-   * defaultGraphUris is an optional list of default graphs to query.
-   */
-  defaultGraphUris?: string[];
-
-  /**
-   * namedGraphUris is an optional list of named graphs to query.
-   */
-  namedGraphUris?: string[];
-}
-
-/**
- * worldsSparqlInputSchema is the Zod schema for WorldsSparqlInput.
- */
-export const worldsSparqlInputSchema: z.ZodType<WorldsSparqlInput> = z.object({
+export const sparqlQueryRequestSchema = z.object({
   sources: z.array(worldsSourceSchema).optional().describe(
     "The optional list of target worlds.",
   ),
@@ -358,37 +232,13 @@ export const worldsSparqlInputSchema: z.ZodType<WorldsSparqlInput> = z.object({
   ),
 });
 
-/**
- * WorldsServiceDescriptionInput represents the parameters for retrieving a SPARQL service description.
- */
-export interface WorldsServiceDescriptionInput {
-  /**
-   * sources is the optional list of target worlds.
-   */
-  sources?: WorldsSource[];
+export type SparqlQueryRequest = z.infer<typeof sparqlQueryRequestSchema>;
 
-  /**
-   * namespace is the optional namespace of the target world.
-   */
-  namespace?: string;
-
-  /**
-   * endpointUrl is the URL of the SPARQL endpoint.
-   */
-  endpointUrl: string;
-
-  /**
-   * contentType is the optional RDF serialization content type.
-   */
-  contentType?: WorldsContentType;
-}
 
 /**
- * worldsServiceDescriptionInputSchema is the Zod schema for WorldsServiceDescriptionInput.
+ * GetServiceDescriptionRequest represents the parameters for retrieving a SPARQL service description.
  */
-export const worldsServiceDescriptionInputSchema: z.ZodType<
-  WorldsServiceDescriptionInput
-> = z.object({
+export const getServiceDescriptionRequestSchema = z.object({
   sources: z.array(worldsSourceSchema).optional().describe(
     "The optional list of target worlds.",
   ),
@@ -401,22 +251,20 @@ export const worldsServiceDescriptionInputSchema: z.ZodType<
   ),
 });
 
-/**
- * WorldsSparqlOutput represents the result of a SPARQL query or update.
- */
-export type WorldsSparqlOutput =
-  | SparqlSelectResults
-  | SparqlAskResults
-  | SparqlQuadsResults
-  | null;
+export type GetServiceDescriptionRequest = z.infer<
+  typeof getServiceDescriptionRequestSchema
+>;
+
 
 /**
- * worldsSparqlOutputSchema is the Zod schema for the output of a SPARQL query or update.
+ * SparqlQueryResult represents the result of a SPARQL query or update.
  */
-export const worldsSparqlOutputSchema: z.ZodType<WorldsSparqlOutput> = z
-  .union([
-    sparqlSelectResultsSchema,
-    sparqlAskResultsSchema,
-    sparqlQuadsResultsSchema,
-    z.literal(null),
-  ]);
+export const sparqlQueryResultSchema = z.union([
+  sparqlSelectResultsSchema,
+  sparqlAskResultsSchema,
+  sparqlQuadsResultsSchema,
+  z.literal(null),
+]);
+
+export type SparqlQueryResult = z.infer<typeof sparqlQueryResultSchema>;
+

@@ -1,8 +1,10 @@
 import type {
-  WorldsSparqlInput,
-  WorldsSparqlOutput,
+  SparqlQueryRequest,
+  SparqlQueryResult,
 } from "#/worlds/sparql.schema.ts";
-import type { WorldsExportInput, WorldsImportInput } from "#/worlds/schema.ts";
+
+import type { ExportWorldRequest, ImportWorldRequest } from "#/worlds/schema.ts";
+
 
 /**
  * SparqlEngine handles RDF store operations.
@@ -12,15 +14,16 @@ export interface SparqlEngine {
   /**
    * sparql executes a SPARQL query against the world.
    */
-  sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput>;
+  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResult>;
+
 
   /**
    * import loads data into the world.
    */
-  import(input: WorldsImportInput): Promise<void>;
+  import(input: ImportWorldRequest): Promise<void>;
 
   /**
    * export retrieves world data.
    */
-  export(input: WorldsExportInput): Promise<ArrayBuffer>;
+  export(input: ExportWorldRequest): Promise<ArrayBuffer>;
 }

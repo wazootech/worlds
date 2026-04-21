@@ -137,9 +137,10 @@ export function createWorldsContext(
     embeddings = new OpenRouterEmbeddings({
       model: openrouter.textEmbeddingModel(
         finalConfig.envs.OPENROUTER_EMBEDDINGS_MODEL,
-      ),
+      ) as any,
       dimensions,
     });
+
   } else {
     const ollama = createOllama({ baseURL: finalConfig.envs.OLLAMA_BASE_URL! });
     embeddings = new OllamaEmbeddings({

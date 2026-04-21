@@ -30,7 +30,9 @@ export const defaultWorld: string | undefined = undefined;
 export interface ParsedSource {
   world?: string;
   namespace?: string;
+  id?: string;
 }
+
 
 /**
  * parseSourceName parses a "namespace/world" string into components.

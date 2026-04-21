@@ -41,8 +41,9 @@ Deno.test("Worlds Engine Lifecycle", async (t) => {
 
     await worlds.create({
       name: "test-world",
-      label: "Test",
+      displayName: "Test",
     });
+
 
     await worlds[Symbol.asyncDispose]();
   });

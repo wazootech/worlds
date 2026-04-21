@@ -4,8 +4,9 @@ import type {
   SparqlBinding,
   SparqlQuad,
   SparqlValue,
-  WorldsSparqlOutput,
+  SparqlQueryResult,
 } from "#/worlds/sparql.schema.ts";
+
 
 export const queryEngine: QueryEngine = new QueryEngine();
 
@@ -13,7 +14,7 @@ export async function executeSparql(
   store: Store,
   query: string,
   baseIRI?: string,
-): Promise<WorldsSparqlOutput> {
+): Promise<SparqlQueryResult> {
   const queryType = await queryEngine.query(query, {
     sources: [store],
     baseIRI,
@@ -21,20 +22,22 @@ export async function executeSparql(
 
   if (queryType.resultType === "void") {
     await queryType.execute();
-    return null as unknown as WorldsSparqlOutput;
+    return null as unknown as SparqlQueryResult;
   }
 
+
   if (queryType.resultType === "bindings") {
-    return await handleBindings(queryType);
+    return await handleBindings(queryType as any);
   }
 
   if (queryType.resultType === "boolean") {
-    return await handleBoolean(queryType);
+    return await handleBoolean(queryType as any);
   }
 
   if (queryType.resultType === "quads") {
-    return await handleQuads(queryType);
+    return await handleQuads(queryType as any);
   }
+
 
   throw new Error("Unsupported query type");
 }
@@ -42,7 +45,7 @@ export async function executeSparql(
 async function handleBindings(queryType: {
   execute(): Promise<unknown>;
   metadata(): Promise<{ variables: { value: string }[] }>;
-}): Promise<WorldsSparqlOutput> {
+}): Promise<SparqlQueryResult> {
   const bindingsStream = await queryType.execute();
   // @ts-ignore - Comunica types are complex
   const vars = (await queryType.metadata()).variables.map((
@@ -107,7 +110,7 @@ async function handleBindings(queryType: {
 
 async function handleBoolean(queryType: {
   execute(): Promise<boolean>;
-}): Promise<WorldsSparqlOutput> {
+}): Promise<SparqlQueryResult> {
   const booleanResult = await queryType.execute();
   return {
     head: { link: null },
@@ -117,7 +120,7 @@ async function handleBoolean(queryType: {
 
 async function handleQuads(queryType: {
   execute(): Promise<unknown>;
-}): Promise<WorldsSparqlOutput> {
+}): Promise<SparqlQueryResult> {
   const quadsStream = await queryType.execute();
   const quads = await new Promise<SparqlQuad[]>((resolve, reject) => {
     const q: SparqlQuad[] = [];

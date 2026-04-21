@@ -30,18 +30,18 @@ Deno.test({
     await t.step("create world", async () => {
       const world = await worlds.create({
         name: "core-world",
-        label: "Core World",
+        displayName: "Core World",
         description: "Test World from Core",
       });
       assertExists(world.id);
-      assertEquals(world.label, "Core World");
+      assertEquals(world.displayName, "Core World");
       worldId = world.id!;
     });
 
     await t.step("get world", async () => {
       const world = await worlds.get({ source: worldId });
       assertExists(world);
-      assertEquals(world!.label, "Core World");
+      assertEquals(world!.displayName, "Core World");
     });
 
     await t.step("list worlds", async () => {

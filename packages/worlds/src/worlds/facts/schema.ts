@@ -2,20 +2,8 @@ import { z } from "zod";
 
 /**
  * FactTable represents a fact record (RDF quad) as stored in memory.
- * Graph column stores the named graph URI (default graph if null).
  */
-export interface FactTable {
-  id: string;
-  subject: string;
-  predicate: string;
-  object: string;
-  graph: string;
-}
-
-/**
- * factTableSchema is the Zod schema for the fact record.
- */
-const factTableShape = z.object({
+export const factTableSchema = z.object({
   id: z.string(),
   subject: z.string(),
   predicate: z.string(),
@@ -23,25 +11,21 @@ const factTableShape = z.object({
   graph: z.string(),
 });
 
-export const factTableSchema: z.ZodType<FactTable> = factTableShape;
+export type FactTable = z.infer<typeof factTableSchema>;
+
 
 /**
  * FactRow represents a fact record without metadata/vector fields.
  */
-export interface FactRow extends FactTable {}
+export const factRowSchema = factTableSchema;
 
-/**
- * factRowSchema is the Zod schema for a fact record.
- */
-export const factRowSchema: z.ZodType<FactRow> = factTableShape;
+export type FactRow = z.infer<typeof factRowSchema>;
+
 
 /**
  * FactTableUpsert represents the data needed to upsert a fact.
  */
-export type FactTableUpsert = FactTable;
+export const factTableUpsertSchema = factTableSchema;
 
-/**
- * factTableUpsertSchema is the Zod schema for inserting or replacing a fact.
- */
-export const factTableUpsertSchema: z.ZodType<FactTableUpsert> =
-  factTableSchema;
+export type FactTableUpsert = z.infer<typeof factTableUpsertSchema>;
+

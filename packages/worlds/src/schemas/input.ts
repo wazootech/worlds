@@ -69,22 +69,18 @@ export const errorResponseDataSchema: z.ZodType<ErrorResponseData> = z.object({
 });
 
 /**
- * WorldsListInput represents the parameters for listing worlds (pagination).
+ * ListWorldsRequest represents the parameters for listing worlds (pagination).
  */
-export interface WorldsListInput {
-  namespace?: string;
-  pageSize?: number;
-  pageToken?: string;
-}
-
-/**
- * worldsListInputSchema is the Zod schema for WorldsListInput.
- */
-export const worldsListInputSchema: z.ZodType<WorldsListInput> = z.object({
-  namespace: z.string().optional(),
-  pageSize: z.number().int().positive().max(1000).optional(),
-  pageToken: z.string().optional(),
+export const listWorldsRequestSchema = z.object({
+  namespace: z.string().optional().describe("The namespace filter."),
+  pageSize: z.number().int().positive().max(1000).optional().describe(
+    "Maximum number of results to return.",
+  ),
+  pageToken: z.string().optional().describe("A page token for pagination."),
 });
+
+export type ListWorldsRequest = z.infer<typeof listWorldsRequestSchema>;
+
 
 /**
  * Log represents a log entry in the Worlds API.
@@ -107,43 +103,34 @@ export const logSchema: z.ZodType<Log> = z.object({
 });
 
 /**
- * WorldsImportInput represents the parameters for importing data into a world.
+ * ImportWorldRequest represents the parameters for importing data into a world.
  */
-export interface WorldsImportInput {
-  source: WorldsSource;
-  data: string | ArrayBuffer;
-  contentType?: WorldsContentType;
-}
-
-/**
- * worldsImportInputSchema is the Zod schema for WorldsImportInput.
- */
-export const worldsImportInputSchema: z.ZodType<WorldsImportInput> = z.object({
+export const importWorldRequestSchema = z.object({
   source: worldsSourceSchema,
   data: z.union([z.string(), z.instanceof(ArrayBuffer)]),
   contentType: worldsContentTypeSchema.optional(),
 });
 
-/**
- * WorldsExportInput represents the parameters for exporting data from a world.
- */
-export interface WorldsExportInput {
-  source: WorldsSource;
-  contentType?: WorldsContentType;
-}
+export type ImportWorldRequest = z.infer<typeof importWorldRequestSchema>;
 
 /**
- * worldsExportInputSchema is the Zod schema for WorldsExportInput.
+ * ExportWorldRequest represents the parameters for exporting data from a world.
  */
-export const worldsExportInputSchema: z.ZodType<WorldsExportInput> = z.object({
+export const exportWorldRequestSchema = z.object({
   source: worldsSourceSchema,
   contentType: worldsContentTypeSchema.optional(),
 });
 
+export type ExportWorldRequest = z.infer<typeof exportWorldRequestSchema>;
+
+
 /**
- * WorldsQueryInput represents the parameters for executing a query against a world.
+ * QueryWorldRequest represents the parameters for executing a query against a world.
  */
-export interface WorldsQueryInput {
-  source: WorldsSource;
-  query: string;
-}
+export const queryWorldRequestSchema = z.object({
+  source: worldsSourceSchema,
+  query: z.string(),
+});
+
+export type QueryWorldRequest = z.infer<typeof queryWorldRequestSchema>;
+

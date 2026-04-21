@@ -1,27 +1,27 @@
-import type { WorldsOptions } from "#/factory.ts";
+import type { WorldsOptions } from "#/worlds/factory.ts";
 import { parseError } from "#/utils.ts";
 import { encodeBase64 } from "@std/encoding/base64";
 import type {
   World,
-  WorldsCreateInput,
-  WorldsDeleteInput,
-  WorldsGetInput,
-  WorldsUpdateInput,
+  CreateWorldRequest,
+  DeleteWorldRequest,
+  GetWorldRequest,
+  UpdateWorldRequest,
+  ExportWorldRequest,
+  ImportWorldRequest,
+  ListWorldsRequest,
 } from "#/worlds/schema.ts";
 import type {
-  WorldsExportInput,
-  WorldsImportInput,
-  WorldsListInput,
-} from "#/schemas/input.ts";
-import type {
-  WorldsServiceDescriptionInput,
-  WorldsSparqlInput,
-  WorldsSparqlOutput,
+  GetServiceDescriptionRequest,
+  SparqlQueryRequest,
+  SparqlQueryResult,
 } from "#/worlds/sparql.schema.ts";
+
 import type {
-  WorldsSearchInput,
-  WorldsSearchOutput,
+  SearchWorldRequest,
+  SearchWorldResult,
 } from "#/worlds/search.schema.ts";
+
 
 /**
  * WorldsClient is a TypeScript SDK client for the Worlds API.
@@ -87,14 +87,15 @@ export class WorldsClient {
   /**
    * list paginates all worlds from the Worlds API.
    */
-  public async list(input?: WorldsListInput): Promise<World[]> {
+  public async list(input?: ListWorldsRequest): Promise<World[]> {
     return await this.callRpc<World[]>("list", input ?? {});
   }
+
 
   /**
    * get fetches a single world from the Worlds API.
    */
-  public async get(input: WorldsGetInput): Promise<World | null> {
+  public async get(input: GetWorldRequest): Promise<World | null> {
     try {
       return await this.callRpc<World>("get", input);
     } catch (error) {
@@ -109,47 +110,53 @@ export class WorldsClient {
     }
   }
 
+
   /**
    * create creates a world in the Worlds API.
    */
-  public async create(input: WorldsCreateInput): Promise<World> {
+  public async create(input: CreateWorldRequest): Promise<World> {
     return await this.callRpc<World>("create", input);
   }
+
 
   /**
    * update updates a world in the Worlds API.
    */
-  public async update(input: WorldsUpdateInput): Promise<void> {
+  public async update(input: UpdateWorldRequest): Promise<void> {
     return await this.callRpc<void>("update", input);
   }
+
 
   /**
    * delete deletes a world from the Worlds API.
    */
-  public async delete(input: WorldsDeleteInput): Promise<void> {
+  public async delete(input: DeleteWorldRequest): Promise<void> {
     return await this.callRpc<void>("delete", input);
   }
+
 
   /**
    * sparql executes a SPARQL query or update against a world.
    */
-  public async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
-    return await this.callRpc<WorldsSparqlOutput>("sparql", input, {
+  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResult> {
+    return await this.callRpc<SparqlQueryResult>("sparql", input, {
       accept: "application/sparql-results+json",
     });
   }
 
+
   /**
    * search performs semantic/text search on a world using vector embeddings.
    */
-  public async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
-    return await this.callRpc<WorldsSearchOutput[]>("search", input);
+  public async search(input: SearchWorldRequest): Promise<SearchWorldResult[]> {
+    return await this.callRpc<SearchWorldResult[]>("search", input);
   }
+
 
   /**
    * import ingests RDF data into a world.
    */
-  public async import(input: WorldsImportInput): Promise<void> {
+  public async import(input: ImportWorldRequest): Promise<void> {
     const { data, contentType = "application/n-quads" } = input;
     const binaryData = typeof data === "string"
       ? new TextEncoder().encode(data)
@@ -163,20 +170,22 @@ export class WorldsClient {
     });
   }
 
+
   /**
    * export exports a world in the specified RDF content type.
    */
-  public async export(input: WorldsExportInput): Promise<ArrayBuffer> {
+  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
     return await this.callRpc<ArrayBuffer>("export", input, {
       responseType: "arrayBuffer",
     });
   }
 
+
   /**
    * getServiceDescription retrieves the SPARQL service description.
    */
   public async getServiceDescription(
-    input: WorldsServiceDescriptionInput,
+    input: GetServiceDescriptionRequest,
   ): Promise<string> {
     return await this.callRpc<string>("sparql", {
       ...input,
@@ -186,6 +195,7 @@ export class WorldsClient {
       responseType: "text",
     });
   }
+
 
   /**
    * close shuts down the SDK client.

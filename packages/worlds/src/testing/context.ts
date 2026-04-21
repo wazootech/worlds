@@ -4,7 +4,9 @@ import { ApiKeyRepository } from "#/management/keys.ts";
 import { NamespaceRepository } from "#/management/namespaces.ts";
 import { WorldRepository } from "#/management/worlds.ts";
 import type { Embeddings } from "#/vectors/embeddings.ts";
-import type { WorldsContext } from "#/factory.ts";
+export type { WorldsContext } from "#/worlds/factory.ts";
+import type { WorldsContext } from "#/worlds/factory.ts";
+
 
 /**
  * createTestContext creates a test application context with in-memory

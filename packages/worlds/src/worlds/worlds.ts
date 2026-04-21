@@ -1,32 +1,34 @@
 import type { Quad } from "n3";
 import type {
-  WorldsExportInput,
-  WorldsImportInput,
-  WorldsListInput,
+  ExportWorldRequest,
+  ImportWorldRequest,
+  ListWorldsRequest,
 } from "./schema.ts";
 import type {
-  WorldsDeleteInput,
-  WorldsGetInput,
-  WorldsServiceDescriptionInput,
-  WorldsSparqlInput,
-  WorldsSparqlOutput,
-  WorldsUpdateInput,
+  DeleteWorldRequest,
+  GetWorldRequest,
+  GetServiceDescriptionRequest,
+  SparqlQueryRequest,
+  SparqlQueryResult,
+  UpdateWorldRequest,
 } from "./schema.ts";
+
 import type {
   World,
-  WorldsCreateInput,
-  WorldsSearchInput,
-  WorldsSearchOutput,
+  CreateWorldRequest,
+  SearchWorldRequest,
+  SearchWorldResult,
 } from "./schema.ts";
+
 import type { ManagementLayer } from "../management/worlds.ts";
 import { expandPathNamespace, resolveSource } from "../sources/resolver.ts";
 import type { WorldsSource } from "#/schemas/input.ts";
 import { createIndexedStore } from "../rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "../rdf/patch/rdf-patch.ts";
 import type { Embeddings } from "../vectors/embeddings.ts";
-import type { WorldsEngine } from "./worlds.ts";
 import type {
   SearchEngine,
+
   SparqlEngine,
   StoreEngine,
 } from "../engines/mod.ts";
@@ -81,17 +83,19 @@ export interface WorldsEngineOptions {
  * WorldsEngine defines the primary interface for the Worlds engine.
  */
 export interface WorldsEngine {
-  list(input?: WorldsListInput): Promise<World[]>;
-  get(input: WorldsGetInput): Promise<World | null>;
-  create(input: WorldsCreateInput): Promise<World>;
-  update(input: WorldsUpdateInput): Promise<World>;
-  delete(input: WorldsDeleteInput): Promise<void>;
-  sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput>;
-  search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]>;
-  import(input: WorldsImportInput): Promise<void>;
-  export(input: WorldsExportInput): Promise<ArrayBuffer>;
+  list(input?: ListWorldsRequest): Promise<World[]>;
+  get(input: GetWorldRequest): Promise<World | null>;
+  create(input: CreateWorldRequest): Promise<World>;
+  update(input: UpdateWorldRequest): Promise<World>;
+  delete(input: DeleteWorldRequest): Promise<void>;
+  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResult>;
+
+  search(input: SearchWorldRequest): Promise<SearchWorldResult[]>;
+  import(input: ImportWorldRequest): Promise<void>;
+  export(input: ExportWorldRequest): Promise<ArrayBuffer>;
   [Symbol.asyncDispose](): Promise<void>;
 }
+
 
 /**
  * Worlds is an engine-agnostic implementation of the Worlds API.
@@ -185,7 +189,7 @@ export class Worlds implements WorldsEngine {
   /**
    * list paginates all available worlds.
    */
-  public async list(input?: WorldsListInput): Promise<World[]> {
+  public async list(input?: ListWorldsRequest): Promise<World[]> {
     const mgmt = this.ensureManagement();
     const namespace = expandPathNamespace(
       input?.namespace ?? this.namespace ?? null,
@@ -199,7 +203,7 @@ export class Worlds implements WorldsEngine {
   /**
    * get retrieves a specific world's metadata.
    */
-  public async get(input: WorldsGetInput): Promise<World | null> {
+  public async get(input: GetWorldRequest): Promise<World | null> {
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
 
@@ -213,7 +217,7 @@ export class Worlds implements WorldsEngine {
   /**
    * create registers a new world.
    */
-  public async create(input: WorldsCreateInput): Promise<World> {
+  public async create(input: CreateWorldRequest): Promise<World> {
     const mgmt = this.ensureManagement();
     const nameOrWorld = input.name || input.world;
     if (!nameOrWorld) {
@@ -226,7 +230,7 @@ export class Worlds implements WorldsEngine {
     mgmt.worlds.insert({
       namespace: resolved.namespace,
       id: resolved.world!,
-      label: input.label ?? resolved.world ?? "Untitled",
+      label: input.displayName ?? resolved.world ?? "Untitled",
       description: input.description,
       connection_uri: null,
       created_at: now,
@@ -241,13 +245,13 @@ export class Worlds implements WorldsEngine {
   /**
    * update modifies a world's metadata.
    */
-  public async update(input: WorldsUpdateInput): Promise<World> {
+  public async update(input: UpdateWorldRequest): Promise<World> {
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
 
     await Promise.resolve();
     mgmt.worlds.update(resolved.world!, resolved.namespace, {
-      label: input.label,
+      label: input.displayName,
       description: input.description,
     });
 
@@ -260,7 +264,8 @@ export class Worlds implements WorldsEngine {
   /**
    * delete removes a world.
    */
-  public async delete(input: WorldsDeleteInput): Promise<void> {
+  public async delete(input: DeleteWorldRequest): Promise<void> {
+
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
 
@@ -274,17 +279,18 @@ export class Worlds implements WorldsEngine {
   /**
    * search executes a semantic search against the world.
    */
-  public async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
+  public async search(input: SearchWorldRequest): Promise<SearchWorldResult[]> {
     if (!this.searchEngine) {
       throw new Error("SearchEngine is required for search operations");
     }
     return await this.searchEngine.search(input);
   }
 
+
   /**
    * sparql executes a SPARQL query against the world.
    */
-  public async sparql(input: WorldsSparqlInput): Promise<WorldsSparqlOutput> {
+  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResult> {
     const { store, sync } = await this.resolveStore(
       input.sources?.[0],
     );
@@ -302,7 +308,8 @@ export class Worlds implements WorldsEngine {
   /**
    * import loads data into the store.
    */
-  public async import(input: WorldsImportInput): Promise<void> {
+  public async import(input: ImportWorldRequest): Promise<void> {
+
     const { store, sync } = await this.resolveStore(input.source);
     let importData = input.data;
 
@@ -357,7 +364,8 @@ export class Worlds implements WorldsEngine {
   /**
    * export retrieves world data.
    */
-  public async export(input: WorldsExportInput): Promise<ArrayBuffer> {
+  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
+
     const { store } = await this.resolveStore(input.source);
     const { Writer } = await import("n3");
     const writer = new Writer({
@@ -380,7 +388,7 @@ export class Worlds implements WorldsEngine {
    * getServiceDescription returns the SPARQL service description.
    */
   public async getServiceDescription(
-    input: WorldsServiceDescriptionInput,
+    input: GetServiceDescriptionRequest,
   ): Promise<string> {
     const { store: _store } = await this.resolveStore(input.sources?.[0]);
     // TODO: Implement actual service description based on store and endpoint

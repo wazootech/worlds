@@ -1,187 +1,178 @@
 import { z } from "zod";
 export { type WorldsSource, worldsSourceSchema } from "#/schemas/input.ts";
-import type { WorldsSource } from "#/schemas/input.ts";
+import { worldsSourceSchema } from "#/schemas/input.ts";
+
+
+/**
+ * WorldId is a branded string for World identifiers.
+ */
+export const worldIdSchema = z.string().brand<"World">();
+export type WorldId = z.infer<typeof worldIdSchema>;
 
 /**
  * World represents a world in the Worlds API.
- * Resource name format: {namespace}/{identifier} (computed, not stored)
+ * Resource name format: namespaces/{namespace}/worlds/{identifier}
  */
-export interface World {
+export const worldSchema = z.object({
   /**
    * name is the full canonical resource name: namespaces/{namespace}/worlds/{identifier}.
-   * Computed from namespace + id when needed.
    */
-  name?: string;
+  name: z.string().optional().describe(
+    "@OutputOnly The canonical resource name.",
+  ),
 
   /**
    * id is the unique identifier for the world.
    */
-  id?: string;
+  id: worldIdSchema.optional().describe(
+    "@Identifier @Immutable The world identifier.",
+  ),
 
   /**
-   * namespace is the optional parent namespace (optional - for multi-tenant).
+   * namespace is the optional parent namespace.
    */
-  namespace?: string;
+  namespace: z.string().optional().describe(
+    "@Immutable The namespace (optional).",
+  ),
 
   /**
-   * label is the human-readable name of the world.
+   * displayName is the human-readable name of the world.
    */
-  label?: string;
+  displayName: z.string().optional().describe("The display label."),
 
   /**
    * description is an optional human-readable description of the world.
    */
-  description?: string;
-
-  /**
-   * createdAt is the millisecond timestamp of creation.
-   */
-  createdAt: number;
-
-  /**
-   * updatedAt is the millisecond timestamp of the last update.
-   */
-  updatedAt: number;
-
-  /**
-   * deletedAt is the millisecond timestamp of deletion, if applicable.
-   */
-  deletedAt?: number;
-}
-
-/**
- * worldSchema is the Zod schema for World.
- */
-export const worldSchema: z.ZodType<World> = z.object({
-  name: z.string().optional().describe("The canonical resource name."),
-  id: z.string().optional().describe("The world identifier."),
-  namespace: z.string().optional().describe(
-    "The namespace (optional).",
-  ),
-  label: z.string().optional().describe("The display label."),
   description: z.string().optional().describe("The description."),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-  deletedAt: z.number().optional(),
+
+  /**
+   * createTime is the millisecond timestamp of creation.
+   */
+  createTime: z.number().describe("@OutputOnly The creation timestamp."),
+
+  /**
+   * updateTime is the millisecond timestamp of the last update.
+   */
+  updateTime: z.number().describe("@OutputOnly The last update timestamp."),
+
+  /**
+   * deleteTime is the millisecond timestamp of deletion, if applicable.
+   */
+  deleteTime: z.number().optional().describe(
+    "@OutputOnly The deletion timestamp.",
+  ),
 });
 
 /**
- * WorldsCreateInput represents the parameters for creating a world.
+ * World represents a world in the Worlds API.
  */
-export interface WorldsCreateInput {
+export type World = z.infer<typeof worldSchema>;
+
+
+/**
+ * CreateWorldRequest represents the parameters for creating a world.
+ */
+export const createWorldRequestSchema = z.object({
   /**
    * name is the URL-friendly identifier for the new world.
-   * Can be "identifier" (uses default namespace) or "namespace/identifier".
    */
-  name?: string;
+  name: z.string().optional().describe(
+    "The world identifier: 'id' or 'ns/id'.",
+  ),
 
   /**
    * world is an alias for name.
    */
-  world?: string;
+  world: z.string().optional().describe("The world identifier (alias)."),
 
   /**
-   * label is the human-readable name for the new world.
+   * displayName is the human-readable name for the new world.
    */
-  label?: string;
+  displayName: z.string().optional().describe("The display label."),
 
   /**
    * description is an optional human-readable description.
    */
-  description?: string;
-}
-
-/**
- * worldsCreateInputSchema is the Zod schema for WorldsCreateInput.
- */
-export const worldsCreateInputSchema: z.ZodType<WorldsCreateInput> = z.object({
-  name: z.string().optional().describe(
-    "The world identifier: 'id' or 'ns/id'.",
-  ),
-  world: z.string().optional().describe("The world identifier (alias)."),
-  label: z.string().optional().describe("The display label."),
   description: z.string().optional().describe("The description."),
 }).refine((data) => data.name || data.world, {
   message: "Either 'name' or 'world' property is required",
   path: ["name"],
 });
 
+export type CreateWorldRequest = z.infer<typeof createWorldRequestSchema>;
+
+
 /**
- * WorldsUpdateInput represents the parameters for updating a world.
+ * UpdateWorldRequest represents the parameters for updating a world.
  */
-export interface WorldsUpdateInput {
+export const updateWorldRequestSchema = z.object({
   /**
    * source is the target world identification.
    */
-  source: WorldsSource;
+  source: worldsSourceSchema.describe("The target world identification."),
 
   /**
-   * label is the updated human-readable name.
+   * displayName is the updated human-readable name.
    */
-  label?: string;
+  displayName: z.string().optional(),
 
   /**
    * description is the updated human-readable description.
    */
-  description?: string;
-}
-
-/**
- * worldsUpdateInputSchema is the Zod schema for WorldsUpdateInput.
- */
-export const worldsUpdateInputSchema: z.ZodType<WorldsUpdateInput> = z.object({
-  source: worldsSourceSchema.describe("The target world identification."),
-  label: z.string().optional(),
   description: z.string().optional(),
 });
 
+export type UpdateWorldRequest = z.infer<typeof updateWorldRequestSchema>;
+
+
 /**
- * WorldsGetInput represents the parameters for retrieving a world.
+ * GetWorldRequest represents the parameters for retrieving a world.
  */
-export interface WorldsGetInput {
+export const getWorldRequestSchema = z.object({
   /**
    * source is the target world identification.
    */
-  source: WorldsSource;
-}
-
-/**
- * worldsGetInputSchema is the Zod schema for WorldsGetInput.
- */
-export const worldsGetInputSchema: z.ZodType<WorldsGetInput> = z.object({
   source: worldsSourceSchema.describe("The target world identification."),
 });
 
+export type GetWorldRequest = z.infer<typeof getWorldRequestSchema>;
+
+
 /**
- * WorldsDeleteInput represents the parameters for deleting a world.
+ * DeleteWorldRequest represents the parameters for deleting a world.
  */
-export interface WorldsDeleteInput {
+export const deleteWorldRequestSchema = z.object({
   /**
    * source is the target world identification.
    */
-  source: WorldsSource;
-}
-
-/**
- * worldsDeleteInputSchema is the Zod schema for WorldsDeleteInput.
- */
-export const worldsDeleteInputSchema: z.ZodType<WorldsDeleteInput> = z.object({
   source: worldsSourceSchema.describe("The target world identification."),
 });
+
+export type DeleteWorldRequest = z.infer<typeof deleteWorldRequestSchema>;
+
 
 // Re-exports from schemas/input.ts
 export type {
-  WorldsExportInput,
-  WorldsImportInput,
-  WorldsListInput,
+  ExportWorldRequest,
+  ImportWorldRequest,
+  ListWorldsRequest,
 } from "#/schemas/input.ts";
 
+
 // Re-exports from search.schema.ts
-export type { WorldsSearchInput, WorldsSearchOutput } from "./search.schema.ts";
+export { searchWorldRequestSchema, searchWorldResultSchema } from "./search.schema.ts";
+export type { SearchWorldRequest, SearchWorldResult } from "./search.schema.ts";
+
 
 // Re-exports from sparql.schema.ts
-export type {
-  WorldsServiceDescriptionInput,
-  WorldsSparqlInput,
-  WorldsSparqlOutput,
+export {
+  getServiceDescriptionRequestSchema,
+  sparqlQueryRequestSchema,
+  sparqlQueryResultSchema,
 } from "./sparql.schema.ts";
+export type {
+  GetServiceDescriptionRequest,
+  SparqlQueryRequest,
+  SparqlQueryResult,
+} from "./sparql.schema.ts";
+

@@ -1,8 +1,9 @@
 import type { Patch } from "#/rdf/patch/types.ts";
 import type {
-  WorldsSearchInput,
-  WorldsSearchOutput,
+  SearchWorldRequest,
+  SearchWorldResult,
 } from "#/worlds/search.schema.ts";
+
 import type { Embeddings } from "#/vectors/embeddings.ts";
 import type { ManagementLayer } from "#/management/worlds.ts";
 import type { StoreEngine } from "./store.ts";
@@ -15,7 +16,7 @@ export interface SearchEngine {
   /**
    * search executes a semantic search against the world.
    */
-  search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]>;
+  search(input: SearchWorldRequest): Promise<SearchWorldResult[]>;
 
   /**
    * applyPatches handles patches when data changes (sync mechanism).
@@ -43,7 +44,7 @@ export interface ChunksSearchEngineOptions {
 export class ChunksSearchEngine implements SearchEngine {
   constructor(private readonly options: ChunksSearchEngineOptions) {}
 
-  async search(input: WorldsSearchInput): Promise<WorldsSearchOutput[]> {
+  async search(input: SearchWorldRequest): Promise<SearchWorldResult[]> {
     const {
       query,
       subjects,
@@ -64,7 +65,7 @@ export class ChunksSearchEngine implements SearchEngine {
       pageSize: 100,
     });
 
-    const allResults: WorldsSearchOutput[] = [];
+    const allResults: SearchWorldResult[] = [];
 
     for (const worldRow of result.worlds) {
       const { ChunksRepository } = await import(
@@ -131,15 +132,15 @@ export class ChunksSearchEngine implements SearchEngine {
               name: worldRow.namespace
                 ? `${worldRow.namespace}/${worldRow.id}`
                 : worldRow.id,
-              id: worldRow.id,
+              id: worldRow.id as any,
               namespace: worldRow.namespace ?? undefined,
-              label: worldRow.label ?? undefined,
+              displayName: worldRow.label ?? undefined,
               description: worldRow.description ?? undefined,
-              createdAt: worldRow.created_at,
-              updatedAt: worldRow.updated_at,
-              deletedAt: worldRow.deleted_at ?? undefined,
+              createTime: worldRow.created_at,
+              updateTime: worldRow.updated_at,
+              deleteTime: worldRow.deleted_at ?? undefined,
             },
-          } as WorldsSearchOutput;
+          } as SearchWorldResult;
         })
         .filter((r) => r.score > 0);
 

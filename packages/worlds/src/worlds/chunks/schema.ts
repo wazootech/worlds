@@ -1,77 +1,62 @@
 import { z } from "zod";
 
 /**
+
  * ChunkTable represents a chunk record as stored in memory.
  */
-export interface ChunkTable {
+export const chunkTableSchema = z.object({
   /**
    * id is the unique identifier for the chunk.
    */
-  id: string;
+  id: z.string(),
 
   /**
    * fact_id is the ID of the parent fact.
    */
-  fact_id: string;
+  fact_id: z.string(),
 
   /**
    * subject is the subject of the parent fact.
    */
-  subject: string;
+  subject: z.string(),
 
   /**
    * predicate is the predicate of the parent fact.
    */
-  predicate: string;
+  predicate: z.string(),
 
   /**
    * text is the text content of the chunk.
    */
-  text: string;
+  text: z.string(),
 
   /**
    * vector is the raw vector embedding data.
    */
-  vector: ArrayBuffer | Uint8Array | null;
-}
-
-const chunkTableShape = z.object({
-  id: z.string(),
-  fact_id: z.string(),
-  subject: z.string(),
-  predicate: z.string(),
-  text: z.string(),
   vector: z.union([z.instanceof(ArrayBuffer), z.instanceof(Uint8Array)])
     .nullable(),
 });
 
-/**
- * chunkTableSchema is the Zod schema for ChunkTable.
- */
-export const chunkTableSchema: z.ZodType<ChunkTable> = chunkTableShape;
+export type ChunkTable = z.infer<typeof chunkTableSchema>;
+
 
 /**
  * ChunkRow represents a chunk record without the vector field.
  */
-export interface ChunkRow extends Omit<ChunkTable, "vector"> {}
-
-/**
- * chunkRowSchema is the Zod schema for ChunkRow.
- */
-export const chunkRowSchema: z.ZodType<ChunkRow> = chunkTableShape.omit({
+export const chunkRowSchema = chunkTableSchema.omit({
   vector: true,
 });
+
+export type ChunkRow = z.infer<typeof chunkRowSchema>;
+
 
 /**
  * ChunkTableUpsert represents the data needed to upsert a chunk.
  */
-export type ChunkTableUpsert = ChunkTable;
+export const chunkTableUpsertSchema = chunkTableSchema;
 
-/**
- * chunkTableUpsertSchema is the Zod schema for inserting or replacing a chunk.
- */
-export const chunkTableUpsertSchema: z.ZodType<ChunkTableUpsert> =
-  chunkTableSchema;
+export type ChunkTableUpsert = z.infer<typeof chunkTableUpsertSchema>;
+
 
 /**
  * SearchRow represents a single row from a hybrid search result.
