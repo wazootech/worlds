@@ -3,10 +3,12 @@ import { z as zod } from "zod";
 
 import {
   contentTypeSchema,
-  sourceSchema,
   type ContentType,
+} from "./common.schema.ts";
+import {
+  sourceSchema,
   type Source,
-} from "./shared.schema.ts";
+} from "./source.schema.ts";
 
 export { contentTypeSchema, type ContentType };
 

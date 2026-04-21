@@ -1,4 +1,5 @@
-export * from "./api/v1/shared.schema.ts";
+export * from "./api/v1/common.schema.ts";
+export * from "./api/v1/source.schema.ts";
 export * from "./api/v1/worlds.schema.ts";
 export * from "./api/v1/search.schema.ts";
 export * from "./api/v1/sparql.schema.ts";

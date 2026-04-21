@@ -1,11 +1,11 @@
+import type { TransactionMode } from "../api/v1/common.schema.ts";
 import type {
   BaseSource,
   FullyQualifiedSource,
   NamedSource,
   QualifiedSource,
   Source,
-  TransactionMode,
-} from "../api/v1/shared.schema.ts";
+} from "../api/v1/source.schema.ts";
 
 import type { WorldsContext } from "../testing/context.ts";
 

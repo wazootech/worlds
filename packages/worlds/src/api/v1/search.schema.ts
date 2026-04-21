@@ -1,6 +1,6 @@
 import { z } from "../../shared/z.ts";
 import { worldSchema } from "../../resources/world.schema.ts";
-import { type Source, sourceSchema } from "./shared.schema.ts";
+import { type Source, sourceSchema } from "./source.schema.ts";
 
 export { sourceSchema };
 export type { Source };

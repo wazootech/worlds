@@ -10,7 +10,7 @@ import {
   SourceParseError,
   toWorldName,
 } from "./resolver.ts";
-import type { Source } from "../api/v1/shared.schema.ts";
+import type { Source } from "../api/v1/source.schema.ts";
 
 
 Deno.test("Resolver Helpers - Type Guards", async (t) => {

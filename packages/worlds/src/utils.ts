@@ -1,4 +1,4 @@
-import { errorResponseDataSchema } from "./api/v1/shared.schema.ts";
+import { errorResponseDataSchema } from "./api/v1/common.schema.ts";
 
 
 /**
