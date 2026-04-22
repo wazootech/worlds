@@ -1,4 +1,4 @@
-import type { ErrorResponseData } from "./api/v1/common.types.ts";
+import type { ErrorResponseData } from "./api/v1/types.gen.ts";
 
 /**
  * isErrorResponseData check if a value is an ErrorResponseData.

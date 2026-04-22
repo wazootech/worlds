@@ -61,35 +61,11 @@ export interface WorldsEngineOptions {
  */
 export interface WorldsEngine {
   init(): Promise<void>;
-  querySparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
-  searchWorlds(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
-  importData(input: ImportWorldRequest): Promise<void>;
-  exportData(input: ExportWorldRequest): Promise<ArrayBuffer>;
-  [Symbol.asyncDispose](): Promise<void>;
-
-  /**
-   * sparql is a legacy alias for querySparql.
-   * @deprecated Use querySparql instead.
-   */
   sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
-
-  /**
-   * search is a legacy alias for searchWorlds.
-   * @deprecated Use searchWorlds instead.
-   */
   search(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
-
-  /**
-   * import is a legacy alias for importData.
-   * @deprecated Use importData instead.
-   */
   import(input: ImportWorldRequest): Promise<void>;
-
-  /**
-   * export is a legacy alias for exportData.
-   * @deprecated Use exportData instead.
-   */
   export(input: ExportWorldRequest): Promise<ArrayBuffer>;
+  [Symbol.asyncDispose](): Promise<void>;
 }
 
 
@@ -174,7 +150,7 @@ export class Worlds implements WorldsEngine {
 
 
 
-  public async querySparql(
+  public async sparql(
     input: SparqlQueryRequest,
   ): Promise<SparqlQueryResponse> {
     if (this.sparqlEngine) {
@@ -195,11 +171,7 @@ export class Worlds implements WorldsEngine {
     return result;
   }
 
-  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
-    return this.querySparql(input);
-  }
-
-  public async searchWorlds(
+  public async search(
     input: SearchWorldsRequest,
   ): Promise<SearchWorldsResponse> {
     if (!this.searchEngine) {
@@ -233,11 +205,7 @@ export class Worlds implements WorldsEngine {
     };
   }
 
-  public async search(input: SearchWorldsRequest): Promise<SearchWorldsResponse> {
-    return this.searchWorlds(input);
-  }
-
-  public async importData(input: ImportWorldRequest): Promise<void> {
+  public async import(input: ImportWorldRequest): Promise<void> {
     const { store, sync } = await this.resolveStore(input.source);
     const data = typeof input.data === "string"
       ? new TextEncoder().encode(input.data).buffer
@@ -254,21 +222,13 @@ export class Worlds implements WorldsEngine {
     await sync();
   }
 
-  public async import(input: ImportWorldRequest): Promise<void> {
-    return this.importData(input);
-  }
-
-  public async exportData(input: ExportWorldRequest): Promise<ArrayBuffer> {
+  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
     const { store } = await this.resolveStore(input.source);
     const n3Store = new Store();
     // @ts-ignore - n3 types
     n3Store.addQuads(store.getQuads());
     const blob = await generateBlobFromN3Store(n3Store);
     return await blob.arrayBuffer();
-  }
-
-  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
-    return this.exportData(input);
   }
 
   public async getServiceDescription(

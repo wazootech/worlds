@@ -1,43 +1,42 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { GetWorldRequest, World, WorldsManagement } from "@wazoo/worlds-sdk";
-import { GetWorldRequestSchema, WorldSchema } from "#/utils/validation.ts";
+import type { GetWorldRequest, World, WorldsManagementPlane } from "@wazoo/worlds-sdk";
+import { GetWorldRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
+import { z } from "zod";
 
-/**
- * get retrieves a single world by ID or name.
- */
-export async function get(
-  management: WorldsManagement,
-  input: GetWorldRequest,
-): Promise<World> {
-  const world = await management.getWorld(input);
-  if (!world) {
-    throw new Error(`World not found: ${JSON.stringify(input.source)}`);
-  }
-  return world;
-}
+export type WorldsGetTool = Tool<GetWorldRequest, World | null>;
 
-/**
- * WorldsGetTool is a tool for getting a world.
- */
-export type WorldsGetTool = Tool<GetWorldRequest, World>;
-
-/**
- * worldsGetTool defines the configuration for the world retrieval tool.
- */
-export const worldsGetTool: WorldsTool<GetWorldRequest, World> = {
+export const worldsGetTool: WorldsTool<GetWorldRequest, World | null> = {
   name: "worlds_get",
-  description:
-    "Retrieves metadata for a single dataset (world) by its identifier or name. Use this tool when you need detailed information about a specific world such as its created/updated times.",
+  description: "Retrieves metadata for a single dataset (world) by its identifier or name.",
   inputSchema: GetWorldRequestSchema,
-  outputSchema: WorldSchema,
+  outputSchema: z.any(),
   isWrite: false,
 };
 
-/**
- * createWorldsGetTool instantiates the world retrieval tool.
- */
+export function createWorldsGetTool(
+  { management }: CreateToolsOptions,
+): WorldsGetTool {
+  return tool({
+    ...worldsGetTool,
+    execute: async (input: GetWorldRequest) => {
+      return await management.getWorld(input);
+    },
+  });
+}
+
+export type WorldsGetTool = Tool<GetWorldRequest, World | null>;
+
+export const worldsGetTool: WorldsTool<GetWorldRequest, World | null> = {
+  name: "worlds_get",
+  description:
+    "Retrieves metadata for a single dataset (world) by its identifier or name.",
+  inputSchema: GetWorldRequestSchema,
+  outputSchema: z.any(),
+  isWrite: false,
+};
+
 export function createWorldsGetTool(
   { management }: CreateToolsOptions,
 ): WorldsGetTool {

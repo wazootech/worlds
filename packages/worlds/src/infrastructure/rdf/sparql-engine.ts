@@ -116,7 +116,7 @@ async function handleBindings(queryType: {
   });
 
   return {
-    head: { vars, link: null },
+    head: { vars, link: undefined },
     results: { bindings },
   };
 }
@@ -125,10 +125,10 @@ async function handleBoolean(queryType: {
   execute(): Promise<boolean>;
 }): Promise<SparqlQueryResponse> {
   const booleanResult = await queryType.execute();
-  return {
-    head: { link: null },
-    boolean: booleanResult,
-  };
+return {
+      head: { link: undefined },
+      boolean: booleanResult,
+    };
 }
 
 async function handleQuads(queryType: {
@@ -199,7 +199,7 @@ async function handleQuads(queryType: {
   });
 
   return {
-    head: { link: null },
+    head: { link: undefined },
     results: { quads },
   };
 }

@@ -29,7 +29,8 @@
     "n3": "npm:n3@^2.0.3"
   },
   "tasks": {
-    "test": "deno test -A"
+    "test": "deno test -A",
+    "generate": "npx @hey-api/openapi-ts -f openapi-ts.config.ts"
   },
   "publish": {
     "exclude": ["**/*.test.ts", "**/*_test.ts"]

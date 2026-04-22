@@ -1,47 +1,28 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { ImportWorldRequest, WorldsData } from "@wazoo/worlds-sdk";
+import type { ImportWorldRequest, WorldsDataPlane } from "@wazoo/worlds-sdk";
 import { ImportWorldRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 import { z } from "zod";
 
-/**
- * importWorld loads data into a world.
- */
-export async function importWorld(
-  worlds: WorldsData,
-  input: ImportWorldRequest,
-): Promise<void> {
-  await worlds.importData(input);
-}
-
-/**
- * WorldsImportTool is a tool for importing data.
- */
 export type WorldsImportTool = Tool<ImportWorldRequest, void>;
 
-/**
- * worldsImportTool defines the configuration for the data import tool.
- */
 export const worldsImportTool: WorldsTool<ImportWorldRequest, void> = {
   name: "worlds_import",
   description:
-    "Loads RDF data into a world. The data can be provided in various formats such as Turtle, JSON-LD, or N-Quads. Use this tool when you need to populate a world with external data or large blocks of RDF.",
+    "Loads RDF data into a world.",
   inputSchema: ImportWorldRequestSchema,
   outputSchema: z.void(),
   isWrite: true,
 };
 
-/**
- * createWorldsImportTool instantiates the data import tool.
- */
 export function createWorldsImportTool(
-  { worlds }: CreateToolsOptions,
+  { data }: CreateToolsOptions,
 ): WorldsImportTool {
   return tool({
     ...worldsImportTool,
-    execute: async (input) => {
-      return await importWorld(worlds, input);
+    execute: async (input: ImportWorldRequest) => {
+      return await data.import(input);
     },
   });
 }

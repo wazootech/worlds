@@ -15,6 +15,7 @@
     "lint": "deno lint --json",
     "fmt": "deno fmt --check",
     "check": "deno check",
+    "generate": "deno task --cwd packages/worlds generate",
     "publish:dry": "deno publish --dry-run --allow-dirty --quiet",
     "reset:console": "npm run reset --prefix ./packages/console",
     "precommit:console": "npm run precommit --prefix packages/console",

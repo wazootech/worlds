@@ -1,11 +1,10 @@
-import type { WorldsManagement, WorldsOptions } from "../engine/factory.ts";
+import type { WorldsManagementPlane, WorldsDataPlane, WorldsOptions } from "../engine/factory.ts";
 import { parseError } from "../utils.ts";
 import { encodeBase64 } from "@std/encoding/base64";
 import type {
   CreateWorldRequest,
   DeleteWorldRequest,
   ExportWorldRequest,
-  GetServiceDescriptionRequest,
   GetWorldRequest,
   ImportWorldRequest,
   ListWorldsRequest,
@@ -21,21 +20,15 @@ import type {
 /**
  * RemoteWorldsManagement handles the management plane (lifecycle) of worlds via RPC.
  */
-export class RemoteWorldsManagement implements WorldsManagement {
+export class RemoteWorldsManagement implements WorldsManagementPlane {
   constructor(private readonly client: WorldsClient) {}
 
-  /**
-   * listWorlds paginates all worlds.
-   */
   public async listWorlds(
     input?: ListWorldsRequest,
   ): Promise<ListWorldsResponse> {
     return await this.client.callRpc<ListWorldsResponse>("list", input ?? {});
   }
 
-  /**
-   * getWorld fetches a single world.
-   */
   public async getWorld(input: GetWorldRequest): Promise<World | null> {
     try {
       return await this.client.callRpc<World>("get", input);
@@ -51,42 +44,30 @@ export class RemoteWorldsManagement implements WorldsManagement {
     }
   }
 
-  /**
-   * createWorld creates a new world.
-   */
   public async createWorld(input: CreateWorldRequest): Promise<World> {
     return await this.client.callRpc<World>("create", input);
   }
 
-  /**
-   * updateWorld updates world metadata.
-   */
   public async updateWorld(input: UpdateWorldRequest): Promise<World> {
     return await this.client.callRpc<World>("update", input);
   }
 
-  /**
-   * deleteWorld deletes a world.
-   */
   public async deleteWorld(input: DeleteWorldRequest): Promise<void> {
     return await this.client.callRpc<void>("delete", input);
   }
 }
 
 /**
- * RemoteWorlds handles the data plane (knowledge) of worlds via RPC.
+ * RemoteWorldsData handles the data plane (operations) of worlds via RPC.
  */
-export class RemoteWorlds {
+export class RemoteWorldsData implements WorldsDataPlane {
   constructor(private readonly client: WorldsClient) {}
 
-  /**
-   * querySparql executes a SPARQL query.
-   */
-  public async querySparql(
+  public async sparql(
     input: SparqlQueryRequest,
   ): Promise<SparqlQueryResponse> {
     return await this.client.callRpc<SparqlQueryResponse>(
-      "querySparql",
+      "sparql",
       input,
       {
         accept: "application/sparql-results+json",
@@ -94,72 +75,33 @@ export class RemoteWorlds {
     );
   }
 
-  /**
-   * sparql executes a SPARQL query (legacy alias for querySparql).
-   */
-  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
-    return this.querySparql(input);
-  }
-
-  /**
-   * searchWorlds performs semantic/text search using vector embeddings.
-   */
-  public async searchWorlds(
+  public async search(
     input: SearchWorldsRequest,
   ): Promise<SearchWorldsResponse> {
     return await this.client.callRpc<SearchWorldsResponse>(
-      "searchWorlds",
+      "search",
       input,
     );
   }
 
-  /**
-   * search performs semantic/text search (legacy alias for searchWorlds).
-   */
-  public async search(
-    input: SearchWorldsRequest,
-  ): Promise<SearchWorldsResponse> {
-    return this.searchWorlds(input);
-  }
-
-  /**
-   * importData ingests RDF data into a world.
-   */
-  public async importData(input: ImportWorldRequest): Promise<void> {
+  public async import(input: ImportWorldRequest): Promise<void> {
     const { data, contentType = "application/n-quads" } = input;
     const binaryData = typeof data === "string"
       ? new TextEncoder().encode(data)
       : new Uint8Array(data);
 
     const base64Data = encodeBase64(binaryData);
-    return await this.client.callRpc<void>("importData", {
+    return await this.client.callRpc<void>("import", {
       ...input,
       data: base64Data,
       contentType,
     });
   }
 
-  /**
-   * import ingests RDF data (legacy alias for importData).
-   */
-  public async import(input: ImportWorldRequest): Promise<void> {
-    return this.importData(input);
-  }
-
-  /**
-   * exportData exports a world in the specified RDF content type.
-   */
-  public async exportData(input: ExportWorldRequest): Promise<ArrayBuffer> {
-    return await this.client.callRpc<ArrayBuffer>("exportData", input, {
+  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
+    return await this.client.callRpc<ArrayBuffer>("export", input, {
       responseType: "arrayBuffer",
     });
-  }
-
-  /**
-   * export exports a world (legacy alias for exportData).
-   */
-  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
-    return this.exportData(input);
   }
 }
 
@@ -177,7 +119,7 @@ export class WorldsClient {
   /**
    * worlds provides handles for data-plane operations.
    */
-  public readonly worlds: RemoteWorlds;
+  public readonly worlds: RemoteWorldsData;
 
   /**
    * WorldsClient initializes the TypeScript SDK client.
@@ -187,7 +129,7 @@ export class WorldsClient {
   ) {
     this.fetch = options.fetch ?? globalThis.fetch;
     this.management = new RemoteWorldsManagement(this);
-    this.worlds = new RemoteWorlds(this);
+    this.worlds = new RemoteWorldsData(this);
   }
 
   /**
@@ -227,29 +169,14 @@ export class WorldsClient {
       return null as T;
     }
 
-    switch (options.responseType) {
-      case "text":
-        return await response.text() as T;
-      case "arrayBuffer":
-        return await response.arrayBuffer() as T;
-      default:
-        return await response.json() as T;
+    const responseType = options.responseType ?? "json";
+    if (responseType === "arrayBuffer") {
+      return await response.arrayBuffer() as unknown as T;
     }
-  }
-
-  /**
-   * getServiceDescription retrieves the SPARQL service description.
-   */
-  public async getServiceDescription(
-    input: GetServiceDescriptionRequest,
-  ): Promise<string> {
-    return await this.callRpc<string>("sparql", {
-      ...input,
-      query: "",
-    }, {
-      accept: input.contentType ?? "application/n-quads",
-      responseType: "text",
-    });
+    if (responseType === "text") {
+      return await response.text() as unknown as T;
+    }
+    return await response.json();
   }
 
   /**

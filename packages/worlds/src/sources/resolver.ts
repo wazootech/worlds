@@ -1,13 +1,27 @@
-import type { TransactionMode } from "../api/v1/common.types.ts";
-import type {
-  BaseSource,
-  FullyQualifiedSource,
-  NamedSource,
-  QualifiedSource,
-  Source,
-} from "../api/v1/source.types.ts";
+import type { TransactionMode, Source } from "../api/v1/types.gen.ts";
 
 import type { WorldsRegistry } from "../testing/registry.ts";
+
+export type NamedSource = {
+  name: string;
+  mode?: TransactionMode;
+};
+
+export type QualifiedSource = {
+  id?: string;
+  namespace?: string;
+  mode?: TransactionMode;
+};
+
+export type BaseSource = {
+  mode?: TransactionMode;
+};
+
+export type FullyQualifiedSource = {
+  id: string;
+  namespace: string;
+  mode: TransactionMode;
+};
 
 /**
  * defaultNamespace is the fallback used when storing/looking up

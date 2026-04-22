@@ -134,7 +134,7 @@ export class ChunksSearchEngine implements SearchEngine {
             predicate: c.predicate,
             object: c.text,
             vecRank,
-            ftsRank: null,
+            ftsRank: undefined,
             score,
             world: {
               name: worldRow.namespace

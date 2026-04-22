@@ -9,7 +9,7 @@ import {
   SourceParseError,
   toWorldName,
 } from "./resolver.ts";
-import type { Source } from "../api/v1/source.types.ts";
+import type { Source } from "../api/v1/types.gen.ts";
 
 Deno.test("Resolver Helpers - Type Guards", async (t) => {
   await t.step("isNamedSource identifies valid objects", () => {

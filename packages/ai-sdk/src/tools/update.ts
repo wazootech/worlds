@@ -3,48 +3,29 @@ import type { Tool } from "ai";
 import type {
   UpdateWorldRequest,
   World,
-  WorldsManagement,
+  WorldsManagementPlane,
 } from "@wazoo/worlds-sdk";
 import { UpdateWorldRequestSchema, WorldSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-/**
- * update modifies an existing world's metadata.
- */
-export async function update(
-  management: WorldsManagement,
-  input: UpdateWorldRequest,
-): Promise<World> {
-  return await management.updateWorld(input);
-}
-
-/**
- * WorldsUpdateTool is a tool for updating a world.
- */
 export type WorldsUpdateTool = Tool<UpdateWorldRequest, World>;
 
-/**
- * worldsUpdateTool defines the configuration for the world update tool.
- */
 export const worldsUpdateTool: WorldsTool<UpdateWorldRequest, World> = {
   name: "worlds_update",
   description:
-    "Modifies metadata for an existing dataset (world), such as its display name or description. Use this tool when a user wants to rename a world or update its documentation.",
+    "Modifies metadata for an existing dataset (world), such as its display name or description.",
   inputSchema: UpdateWorldRequestSchema,
   outputSchema: WorldSchema,
   isWrite: true,
 };
 
-/**
- * createWorldsUpdateTool instantiates the world update tool.
- */
 export function createWorldsUpdateTool(
   { management }: CreateToolsOptions,
 ): WorldsUpdateTool {
   return tool({
     ...worldsUpdateTool,
-    execute: async (input) => {
-      return await update(management, input);
+    execute: async (input: UpdateWorldRequest) => {
+      return await management.updateWorld(input);
     },
   });
 }

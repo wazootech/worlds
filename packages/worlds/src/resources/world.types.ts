@@ -1,12 +1,4 @@
-import type { components } from "../api/v1/types.generated.ts";
+import type { World as WorldGenerated, WorldId } from "../api/v1/types.gen.ts";
 
-/**
- * WorldId is an alias for a string.
- */
-export type WorldId = string;
-
-/**
- * World is the interface for a World resource.
- * We rely on the generated TypeScript interface from OpenAPI for the object structure.
- */
-export type World = components["schemas"]["World"];
+export type World = WorldGenerated;
+export type { WorldId };

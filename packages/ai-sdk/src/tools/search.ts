@@ -1,25 +1,40 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
+import type { Tool } from "ai";
 import type {
   SearchWorldsRequest,
   SearchWorldsResponse,
-  WorldsData,
+  WorldsDataPlane,
 } from "@wazoo/worlds-sdk";
-import {
-  SearchWorldsRequestSchema,
-  SearchWorldsResultSchema,
-} from "#/utils/validation.ts";
+import { SearchWorldsRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 import { z } from "zod";
 
-/**
- * search performs a semantic search across worlds.
- */
-export async function search(
-  worlds: WorldsData,
-  input: SearchWorldsRequest,
-): Promise<SearchWorldsResponse> {
-  return await worlds.searchWorlds(input);
+export type WorldsSearchTool = Tool<
+  SearchWorldsRequest,
+  SearchWorldsResponse
+>;
+
+export const worldsSearchTool: WorldsTool<
+  SearchWorldsRequest,
+  SearchWorldsResponse
+> = {
+  name: "worlds_search",
+  description:
+    "Performs a semantic search across one or more worlds.",
+  inputSchema: SearchWorldsRequestSchema,
+  outputSchema: z.any(),
+  isWrite: false,
+};
+
+export function createWorldsSearchTool(
+  { data }: CreateToolsOptions,
+): WorldsSearchTool {
+  return tool({
+    ...worldsSearchTool,
+    execute: async (input: SearchWorldsRequest) => {
+      return await data.search(input);
+    },
+  });
 }
 
 /**
@@ -52,12 +67,12 @@ export const worldsSearchTool: WorldsTool<
  * createWorldsSearchTool instantiates the world search tool.
  */
 export function createWorldsSearchTool(
-  { worlds }: CreateToolsOptions,
+  { data }: CreateToolsOptions,
 ): WorldsSearchTool {
   return tool({
     ...worldsSearchTool,
-    execute: async (input) => {
-      return await search(worlds, input);
+    execute: async (input: SearchWorldsRequest) => {
+      return await search(data, input);
     },
   });
 }

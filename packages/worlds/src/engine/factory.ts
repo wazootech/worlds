@@ -64,25 +64,31 @@ export interface WorldsManagement {
  * WorldsData defines the data plane interface for worlds (SPARQL, Search, Import/Export).
  */
 export interface WorldsData {
-  /**
-   * querySparql executes a SPARQL query.
-   */
-  querySparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
+  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
+  search(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
+  import(input: ImportWorldRequest): Promise<void>;
+  export(input: ExportWorldRequest): Promise<ArrayBuffer>;
+}
 
-  /**
-   * searchWorlds performs semantic search.
-   */
-  searchWorlds(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
+/**
+ * WorldsManagementPlane defines the management plane interface for worlds (lifecycle).
+ */
+export interface WorldsManagementPlane {
+  listWorlds(input?: ListWorldsRequest): Promise<ListWorldsResponse>;
+  getWorld(input: GetWorldRequest): Promise<World | null>;
+  createWorld(input: CreateWorldRequest): Promise<World>;
+  updateWorld(input: UpdateWorldRequest): Promise<World>;
+  deleteWorld(input: DeleteWorldRequest): Promise<void>;
+}
 
-  /**
-   * importData imports RDF data.
-   */
-  importData(input: ImportWorldRequest): Promise<void>;
-
-  /**
-   * exportData exports RDF data.
-   */
-  exportData(input: ExportWorldRequest): Promise<ArrayBuffer>;
+/**
+ * WorldsDataPlane defines the data plane interface for worlds (operations).
+ */
+export interface WorldsDataPlane {
+  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
+  search(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
+  import(input: ImportWorldRequest): Promise<void>;
+  export(input: ExportWorldRequest): Promise<ArrayBuffer>;
 }
 
 /**
@@ -112,8 +118,9 @@ export interface WorldsOptions {
 
 /**
  * WorldsRegistry represents the global shared state and service container for a Worlds system.
+ * Combines WorldsManagementPlane (lifecycle) and WorldsDataPlane (operations).
  */
-export interface WorldsRegistry {
+export interface WorldsRegistry extends WorldsManagementPlane, WorldsDataPlane {
   /**
    * embeddings provides a vector embeddings implementation.
    */
@@ -123,16 +130,6 @@ export interface WorldsRegistry {
    * apiKey is the active administrative API key.
    */
   apiKey: string;
-
-  /**
-   * management provides the management plane service.
-   */
-  management: WorldsManagement;
-
-  /**
-   * data provides the data plane service (SPARQL, Search, etc.).
-   */
-  data: WorldsData;
 
   /**
    * repositories provides direct access to the underlying metadata stores.
@@ -260,117 +257,113 @@ export async function initRegistry(
     worlds: new WorldRepository(),
   };
 
-  const registry: WorldsRegistry = {
+const registry: WorldsRegistry = {
     embeddings,
     repositories,
     storage,
     apiKey: finalConfig.envs.WORLDS_API_KEY || "",
     namespace: finalConfig.envs.WORLDS_NS,
 
-management: {
-      async listWorlds(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
-        const namespace = input?.parent || registry.namespace;
-        const result = await repositories.worlds.list({ ...input, namespace });
-        return {
-          worlds: mapRowsToWorlds(result.worlds),
-          nextPageToken: result.nextPageToken,
-        };
-      },
-
-      async getWorld(input: GetWorldRequest): Promise<World | null> {
-        const resolved = resolveSource(input.source, {
-          namespace: registry.namespace,
-        });
-        if (!resolved.id) return null;
-
-        const row = await repositories.worlds.get(
-          resolved.id,
-          resolved.namespace,
-        );
-        if (!row) return null;
-
-        return mapRowToWorld(row);
-      },
-
-      async createWorld(input: CreateWorldRequest): Promise<World> {
-        const nameOrId = input.id ||
-          (input as Record<string, unknown>).name as string ||
-          (input as Record<string, unknown>).world as string;
-        if (!nameOrId) throw new Error("World identity required");
-
-        const resolved = resolveSource(nameOrId, {
-          namespace: input.parent || registry.namespace,
-        });
-
-        const now = Date.now();
-        await repositories.worlds.insert({
-          namespace: resolved.namespace,
-          id: resolved.id!,
-          label: input.displayName ?? resolved.id ?? "Untitled",
-          description: input.description,
-          connection_uri: null,
-          created_at: now,
-          updated_at: now,
-          deleted_at: null,
-        });
-
-        const row = await repositories.worlds.get(
-          resolved.id!,
-          resolved.namespace,
-        );
-        return mapRowToWorld(row!);
-      },
-
-      async updateWorld(input: UpdateWorldRequest): Promise<World> {
-        const resolved = resolveSource(input.source, {
-          namespace: registry.namespace,
-        });
-        if (!resolved.id) throw new Error("World ID required");
-
-        const now = Date.now();
-        await repositories.worlds.update(resolved.id, resolved.namespace, {
-          label: input.displayName,
-          description: input.description,
-          updated_at: now,
-        });
-
-        const result = await repositories.worlds.get(
-          resolved.id,
-          resolved.namespace,
-        );
-        return mapRowToWorld(result!);
-      },
-
-      async deleteWorld(input: DeleteWorldRequest): Promise<void> {
-        const resolved = resolveSource(input.source, {
-          namespace: registry.namespace,
-        });
-        if (!resolved.id) return;
-
-        await repositories.worlds.delete(resolved.id, resolved.namespace);
-      },
+    async listWorlds(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
+      const namespace = input?.parent || registry.namespace;
+      const result = await repositories.worlds.list({ ...input, namespace });
+      return {
+        worlds: mapRowsToWorlds(result.worlds),
+        nextPageToken: result.nextPageToken,
+      };
     },
 
-    data: {
-      async querySparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
-        const engine = await registry.engine();
-        return engine.querySparql(input);
-      },
+    async getWorld(input: GetWorldRequest): Promise<World | null> {
+      const resolved = resolveSource(input.source, {
+        namespace: registry.namespace,
+      });
+      if (!resolved.id) return null;
 
-      async searchWorlds(input: SearchWorldsRequest): Promise<SearchWorldsResponse> {
-        const engine = await registry.engine();
-        return engine.searchWorlds(input);
-      },
+      const row = await repositories.worlds.get(
+        resolved.id,
+        resolved.namespace,
+      );
+      if (!row) return null;
 
-      async importData(input: ImportWorldRequest): Promise<void> {
-        const engine = await registry.engine();
-        return engine.importData(input);
-      },
+      return mapRowToWorld(row);
+    },
 
-      async exportData(input: ExportWorldRequest): Promise<ArrayBuffer> {
-        const engine = await registry.engine();
-        return engine.exportData(input);
-      },
+    async createWorld(input: CreateWorldRequest): Promise<World> {
+      const nameOrId = input.id ||
+        (input as Record<string, unknown>).name as string ||
+        (input as Record<string, unknown>).world as string;
+      if (!nameOrId) throw new Error("World identity required");
+
+      const resolved = resolveSource(nameOrId, {
+        namespace: input.parent || registry.namespace,
+      });
+
+      const now = Date.now();
+      await repositories.worlds.insert({
+        namespace: resolved.namespace,
+        id: resolved.id!,
+        label: input.displayName ?? resolved.id ?? "Untitled",
+        description: input.description,
+        connection_uri: null,
+        created_at: now,
+        updated_at: now,
+        deleted_at: null,
+      });
+
+      const row = await repositories.worlds.get(
+        resolved.id!,
+        resolved.namespace,
+      );
+      return mapRowToWorld(row!);
+    },
+
+    async updateWorld(input: UpdateWorldRequest): Promise<World> {
+      const resolved = resolveSource(input.source, {
+        namespace: registry.namespace,
+      });
+      if (!resolved.id) throw new Error("World ID required");
+
+      const now = Date.now();
+      await repositories.worlds.update(resolved.id, resolved.namespace, {
+        label: input.displayName,
+        description: input.description,
+        updated_at: now,
+      });
+
+      const result = await repositories.worlds.get(
+        resolved.id,
+        resolved.namespace,
+      );
+      return mapRowToWorld(result!);
+    },
+
+    async deleteWorld(input: DeleteWorldRequest): Promise<void> {
+      const resolved = resolveSource(input.source, {
+        namespace: registry.namespace,
+      });
+      if (!resolved.id) return;
+
+      await repositories.worlds.delete(resolved.id, resolved.namespace);
+    },
+
+    async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
+      const engine = await registry.engine();
+      return engine.sparql(input);
+    },
+
+    async search(input: SearchWorldsRequest): Promise<SearchWorldsResponse> {
+      const engine = await registry.engine();
+      return engine.search(input);
+    },
+
+    async import(input: ImportWorldRequest): Promise<void> {
+      const engine = await registry.engine();
+      return engine.import(input);
+    },
+
+    async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
+      const engine = await registry.engine();
+      return engine.export(input);
     },
 
     async engine(options?: WorldsOptions) {
