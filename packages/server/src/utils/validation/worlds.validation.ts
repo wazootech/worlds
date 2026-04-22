@@ -84,7 +84,8 @@ export const worldsSearchInputSchema = z.object({
 }) as z.ZodType<SearchWorldsRequest>;
 
 export const worldsSparqlInputSchema = z.object({
-  source: sourceSchema,
+  sources: z.array(sourceSchema).optional(),
+  parent: z.string().optional(),
   query: z.string(),
 }) as z.ZodType<SparqlQueryRequest>;
 

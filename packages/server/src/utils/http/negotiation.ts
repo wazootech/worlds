@@ -11,15 +11,16 @@ export function negotiateSerialization(
   request: Request,
   defaultContentType = "text/turtle",
 ): Serialization {
-  const supportedTypes = Object.values(SERIALIZATIONS).map((s) =>
+  const supportedTypes = Object.values(SERIALIZATIONS).map((s: Serialization) =>
     s.contentType
   );
   const preferred = accepts(request, ...supportedTypes);
 
   if (preferred) {
     return (
-      Object.values(SERIALIZATIONS).find((s) => s.contentType === preferred) ??
-        SERIALIZATIONS[defaultContentType]
+      Object.values(SERIALIZATIONS).find((s: Serialization) =>
+        s.contentType === preferred
+      ) ?? SERIALIZATIONS[defaultContentType]
     );
   }
 

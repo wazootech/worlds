@@ -1,5 +1,6 @@
 import { Router } from "@fartlabs/rt";
-import { type WorldsContext } from "@wazoo/worlds-sdk";
+import { decodeBase64 } from "@std/encoding/base64";
+import type { WorldsRegistry } from "@wazoo/worlds-sdk";
 import {
   worldsCreateInputSchema,
   worldsDeleteInputSchema,
@@ -22,11 +23,11 @@ import {
 /**
  * rpcRouter creates a router for the Unified RPC API.
  */
-export default (appContext: WorldsContext) => {
+export default (registry: WorldsRegistry) => {
   return new Router()
     .post("/rpc", async (ctx) => {
       try {
-        return await handleRpc(appContext, ctx);
+        return await handleRpc(registry, ctx);
       } catch (error: unknown) {
         // Handle standardized HTTP errors (any object with a numeric status property)
         if (
@@ -65,7 +66,7 @@ export default (appContext: WorldsContext) => {
  * handleRpc is the unified entry point for all Worlds RPC actions.
  */
 export async function handleRpc(
-  appContext: WorldsContext,
+  registry: WorldsRegistry,
   ctx: { request: Request; params?: URLPatternResult },
 ): Promise<Response> {
   const body = await ctx.request.json().catch(() => ({}));
@@ -75,12 +76,12 @@ export async function handleRpc(
     throw new BadRequestError("RPC action required in body");
   }
 
-  const engine = appContext.engine;
+  const engine = registry.activeEngine;
   if (!engine) {
     throw new InternalServerError("Engine not initialized");
   }
 
-  const authorized = await authorizeRequest(appContext, ctx.request);
+  const authorized = await authorizeRequest(registry, ctx.request);
   if (!authorized.admin && !authorized.namespaceId) {
     throw new UnauthorizedError(
       `Admin/Namespace access required for ${action}`,
@@ -165,6 +166,20 @@ export async function handleRpc(
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
         );
+      }
+      // Handle Base64 encoded transfer from SDK
+      // We only decode if it's a string without whitespace (common for base64)
+      if (
+        typeof parseResult.data.data === "string" &&
+        !/[\s\n\r\t]/.test(parseResult.data.data)
+      ) {
+        try {
+          parseResult.data.data = decodeBase64(
+            parseResult.data.data,
+          ) as unknown as ArrayBuffer;
+        } catch {
+          // Keep as string if not valid base64
+        }
       }
       await engine.import(parseResult.data);
       return new Response(null, { status: 204 });

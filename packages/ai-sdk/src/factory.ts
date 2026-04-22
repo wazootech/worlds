@@ -1,9 +1,9 @@
-import type { WorldSource } from "@wazoo/worlds-sdk";
-import type { CreateToolsOptions } from "./types.ts";
-
-import type { WorldsSparqlTool } from "./tools/sparql.ts";
-import { resolveSource, toWorldName } from "@wazoo/worlds-sdk";
-import { createWorldsSparqlTool } from "./tools/sparql.ts";
+import { toWorldName } from "@wazoo/worlds-sdk";
+import type { CreateToolsOptions, WorldSource } from "./types.ts";
+import {
+  createWorldsSparqlTool,
+  type WorldsSparqlTool,
+} from "./tools/sparql.ts";
 import type { WorldsSearchTool } from "./tools/search.ts";
 import { createWorldsSearchTool } from "./tools/search.ts";
 import type { WorldsListTool } from "./tools/list.ts";
@@ -77,7 +77,7 @@ export function validateCreateToolsOptions(options: CreateToolsOptions) {
     seen.add(worldName);
 
     if (typeof source === "object" && source !== null) {
-      const s = source as any; // Cast for mode check
+      const s = source as Record<string, unknown>; // Cast for mode check
       if (s.mode === "write" || s.write === true) {
         if (writable) {
           throw new Error("Multiple writable sources are not allowed.");

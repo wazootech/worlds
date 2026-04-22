@@ -1,9 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { ChunksRepository } from "./repository.ts";
-import type {
-  ChunkId,
-  ChunkTableUpsert,
-} from "../../resources/chunk.types.ts";
+import type { ChunkId, ChunkTableUpsert } from "../../resources/chunk.types.ts";
 
 Deno.test("ChunksRepository", async (t) => {
   await t.step("upsert stores chunk", () => {

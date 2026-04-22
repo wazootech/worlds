@@ -1,24 +1,34 @@
 import { assert, assertEquals } from "@std/assert";
 import {
-  createTestContext,
+  initRegistry,
   LocalWorlds,
   RemoteWorlds as Worlds,
 } from "@wazoo/worlds-sdk";
-import type { SparqlSelectResults } from "@wazoo/worlds-sdk/schema";
+import type { SparqlSelectResult } from "@wazoo/worlds-sdk/schema";
 import { createServer } from "../server.ts";
 
 Deno.test("World routes", async (t) => {
-  await using appContext = await createTestContext();
-  await using engine = new LocalWorlds(appContext);
-  appContext.engine = engine;
+  await using registry = await initRegistry();
+  // Mock embeddings to avoid external API calls
+  registry.embeddings = {
+    dimensions: 768,
+    embed: (texts: string | string[]) => {
+      if (Array.isArray(texts)) {
+        return Promise.resolve(Array(texts.length).fill(Array(768).fill(1)));
+      }
+      return Promise.resolve(Array(768).fill(1));
+    },
+  };
+  await using engine = new LocalWorlds(registry);
+  registry.activeEngine = engine;
   await engine.init();
-  const server = await createServer(appContext);
+  const server = await createServer(registry);
 
   // Use the admin API key for setup
   // This shows how to use the server.fetch as a fetcher for the SDK
   const worlds = new Worlds({
     baseUrl: "http://localhost",
-    apiKey: appContext.apiKey!,
+    apiKey: registry.apiKey!,
     fetch: (url: string | URL | Request, init?: RequestInit) =>
       server.fetch(new Request(url, init)),
   });
@@ -27,32 +37,32 @@ Deno.test("World routes", async (t) => {
 
   await t.step("create world", async () => {
     const createdWorld = await worlds.create({
-      name: "sdk-world",
-      label: "SDK World",
+      id: "sdk-world",
+      displayName: "SDK World",
       description: "Test World",
     });
-    assert(createdWorld.world !== undefined);
-    assertEquals(createdWorld.label, "SDK World");
-    world = createdWorld.world;
+    assert(createdWorld.id !== undefined);
+    assertEquals(createdWorld.displayName, "SDK World");
+    world = createdWorld.id;
   });
 
   await t.step("list worlds pagination", async () => {
     // Ensure unique timestamps
     await new Promise((r) => setTimeout(r, 10));
     await worlds.create({
-      name: "world-1",
-      label: "World 1",
+      id: "world-1",
+      displayName: "World 1",
     });
     await new Promise((r) => setTimeout(r, 10));
     await worlds.create({
-      name: "world-2",
-      label: "World 2",
+      id: "world-2",
+      displayName: "World 2",
     });
 
     const list1 = await worlds.list({
       pageSize: 1,
     });
-    assertEquals(list1.length, 1);
+    assertEquals(list1.worlds.length, 1);
 
     // We don't have an easy way to get the token from the SDK currently
     // because list returns World[] instead of { worlds, nextPageToken }.
@@ -60,21 +70,21 @@ Deno.test("World routes", async (t) => {
     // For now, let's just test that list works and we can skip the token test
     // or just list more.
     const all = await worlds.list({ pageSize: 10 });
-    assert(all.length >= 3); // sdk-world, world-1, world-2
+    assert(all.worlds.length >= 3); // sdk-world, world-1, world-2
   });
 
   await t.step("get world", async () => {
-    const result = await worlds.get({ source: { world } });
+    const result = await worlds.get({ source: { id: world! } });
     assert(result !== null);
-    assertEquals(result.label, "SDK World");
+    assertEquals(result.displayName, "SDK World");
   });
 
   await t.step("update world", async () => {
     await worlds.update({
-      source: { world },
+      source: { id: world! },
       description: "Updated Description",
     });
-    const result = await worlds.get({ source: { world } });
+    const result = await worlds.get({ source: { id: world! } });
     assert(result !== null);
     assertEquals(result.description, "Updated Description");
   });
@@ -86,7 +96,7 @@ Deno.test("World routes", async (t) => {
     }
   `;
     const result = await worlds.sparql({
-      sources: [{ world }],
+      sources: [{ id: world! }],
       query: updateQuery,
     });
     assertEquals(result, null);
@@ -99,9 +109,9 @@ Deno.test("World routes", async (t) => {
     }
   `;
     const result = (await worlds.sparql({
-      sources: [{ world }],
+      sources: [{ id: world! }],
       query: selectQuery,
-    })) as SparqlSelectResults;
+    })) as SparqlSelectResult;
     assert(result.results.bindings.length > 0);
     assertEquals(result.results.bindings[0].o.value, "Update Object");
   });
@@ -109,7 +119,7 @@ Deno.test("World routes", async (t) => {
   await t.step("search world", async () => {
     // Seed diverse data via import to ensure indexing
     await worlds.import({
-      source: { world },
+      source: { id: world! },
       data: `
         <http://example.org/subject> <http://example.org/predicate> "Update Object" .
         <http://example.org/alice> a <http://example.org/Person> ;
@@ -127,73 +137,81 @@ Deno.test("World routes", async (t) => {
 
     // 1. Basic search
     const results = await worlds.search({
-      sources: [{ world }],
+      sources: [{ id: world! }],
       query: "Update Object",
     });
-    assert(results.length > 0);
-    assertEquals(results[0].object, "Update Object");
+    assert(results.results.length > 0);
+    assertEquals(results.results[0].object, "Update Object");
 
     // 2. Search with limit
     const limitResults = await worlds.search({
-      sources: [{ world }],
+      sources: [{ id: world! }],
       query: "",
-      limit: 1,
+      pageSize: 1,
     });
-    assertEquals(limitResults.length, 1);
+    assertEquals(limitResults.results.length, 1);
 
     // 3. Search with subjects filter
     const subjectResults = await worlds.search({
-      sources: [{ world }],
+      sources: [{ id: world! }],
       query: "",
       subjects: ["http://example.org/alice"],
     });
-    assert(subjectResults.length > 0);
+    assert(subjectResults.results.length > 0);
     assert(
-      subjectResults.every((r) => r.subject === "http://example.org/alice"),
+      subjectResults.results.every((r: Record<string, unknown>) =>
+        r.subject === "http://example.org/alice"
+      ),
     );
 
     // 4. Search with predicates filter
     const predicateResults = await worlds.search({
-      sources: [{ world }],
+      sources: [{ id: world! }],
       query: "",
       predicates: ["http://example.org/name"],
     });
-    assert(predicateResults.length > 0);
+    assert(predicateResults.results.length > 0);
     assert(
-      predicateResults.every((r) => r.predicate === "http://example.org/name"),
+      predicateResults.results.every((r: Record<string, unknown>) =>
+        r.predicate === "http://example.org/name"
+      ),
     );
 
     // 5. Search with types filter
     // Note: types filter relies on 'a' (rdf:type) triples being indexed
     const typeResults = await worlds.search({
-      sources: [{ world }],
+      sources: [{ id: world! }],
       query: "",
       types: ["http://example.org/Vehicle"],
     });
-    assert(typeResults.length > 0);
-    assert(typeResults.every((r) => r.subject === "http://example.org/car"));
+    assert(typeResults.results.length > 0);
+    assert(
+      typeResults.results.every((r: Record<string, unknown>) =>
+        r.subject === "http://example.org/car"
+      ),
+    );
 
     // 6. Search with combined filters
     const combinedResults = await worlds.search({
-      sources: [{ world }],
+      sources: [{ id: world! }],
       query: "Tesla",
       types: ["http://example.org/Vehicle"],
       predicates: ["http://example.org/model"],
     });
-    assertEquals(combinedResults.length, 1);
-    assertEquals(combinedResults[0].object, "Tesla");
+    assertEquals(combinedResults.results.length, 1);
+    assertEquals(combinedResults.results[0].object, "Tesla");
   });
 
   await t.step("export world", async () => {
     // 1. Add some data if not already there (should be there from previous steps)
     // 2. Export in default format (N-Quads)
-    const nQuadsBuffer = await worlds.export({ source: { world } });
+    const nQuadsBuffer = await worlds.export({ source: { id: world! } });
     const nQuads = new TextDecoder().decode(nQuadsBuffer);
     assert(nQuads.includes("http://example.org/subject"));
 
     // 3. Export in Turtle format
     const turtleBuffer = await worlds.export({
-      source: { world },
+      source: { id: world! },
       contentType: "text/turtle",
     });
     const turtle = new TextDecoder().decode(turtleBuffer);
@@ -204,20 +222,20 @@ Deno.test("World routes", async (t) => {
     const turtleData =
       '<http://example.org/subject2> <http://example.org/predicate> "Imported Object" .';
     await worlds.import({
-      source: { world },
+      source: { id: world! },
       data: turtleData,
       contentType: "text/turtle",
     });
 
-    const nQuadsBuffer = await worlds.export({ source: { world } });
-    const nQuads = new TextDecoder().decode(nQuadsBuffer);
-    assert(nQuads.includes("http://example.org/subject2"));
-    assert(nQuads.includes("Imported Object"));
+    const nQuadsBuffer2 = await worlds.export({ source: { id: world! } });
+    const nQuads2 = new TextDecoder().decode(nQuadsBuffer2);
+    assert(nQuads2.includes("http://example.org/subject2"));
+    assert(nQuads2.includes("Imported Object"));
   });
 
   await t.step("delete world", async () => {
-    await worlds.delete({ source: { world } });
-    const result = await worlds.get({ source: { world } });
+    await worlds.delete({ source: { id: world! } });
+    const result = await worlds.get({ source: { id: world! } });
     assertEquals(result, null);
   });
 });

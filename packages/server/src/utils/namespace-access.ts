@@ -1,5 +1,4 @@
 import type { AuthorizedRequest } from "#/middleware/auth.ts";
-import { ErrorResponse } from "#/utils/errors/errors.ts";
 
 /**
  * assertNamespacePathAllowed returns an error response when the caller may not
@@ -13,10 +12,16 @@ export function assertNamespacePathAllowed(
     return null;
   }
   if (!authorized.namespaceId) {
-    return ErrorResponse.Unauthorized();
+    return Response.json(
+      { error: { message: "Unauthorized" } },
+      { status: 401 },
+    );
   }
   if (authorized.namespaceId !== resolvedNamespace) {
-    return ErrorResponse.Forbidden("Namespace does not match credentials");
+    return Response.json(
+      { error: { message: "Namespace does not match credentials" } },
+      { status: 403 },
+    );
   }
   return null;
 }

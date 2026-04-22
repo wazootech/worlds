@@ -1,30 +1,31 @@
 import { assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
-import type { WorldsContext } from "@wazoo/worlds-sdk";
+import type { WorldsRegistry } from "@wazoo/worlds-sdk";
 import {
-  createTestContext,
   createTestNamespace,
+  createTestRegistry,
   LocalWorlds,
 } from "@wazoo/worlds-sdk";
 
 Deno.test("Worlds RPC API", async (t) => {
-  await using testContext = (await createTestContext()) as WorldsContext;
-  await using worlds = new LocalWorlds(testContext);
-  testContext.engine = worlds;
+  await using registry = (await createTestRegistry()) as WorldsRegistry;
+  await using worlds = new LocalWorlds(registry);
+  registry.activeEngine = worlds;
   await worlds.init();
 
-  const worldsRepository = testContext.management.worlds;
+  const worldsRepository = registry.management.worlds;
   const { createServer } = await import("../../server.ts");
-  const app = await createServer(testContext);
+  const app = await createServer(registry);
 
   await t.step(
     "POST /rpc (action: get) returns world metadata (Admin)",
     async () => {
       const { apiKey, id: namespaceId } = await createTestNamespace(
-        testContext,
+        registry,
       );
       const world = "test-world-" + ulid();
       const now = Date.now();
+      // WorldsRepository insert uses internal record format
       await worldsRepository.insert({
         namespace: namespaceId,
         id: world,
@@ -35,10 +36,7 @@ Deno.test("Worlds RPC API", async (t) => {
         updated_at: now,
         deleted_at: null,
       });
-      await testContext.storage.create({
-        namespace: namespaceId,
-        id: world,
-      });
+      // Storage create is now lazy or handled by engine
 
       const response = await app.fetch(
         new Request(`http://localhost/rpc`, {
@@ -56,7 +54,7 @@ Deno.test("Worlds RPC API", async (t) => {
 
       assertEquals(response.status, 200);
       const worldResult = await response.json();
-      assertEquals(worldResult.label, "Test World");
+      assertEquals(worldResult.displayName, "Test World");
       assertEquals(worldResult.id, world);
     },
   );
@@ -64,7 +62,7 @@ Deno.test("Worlds RPC API", async (t) => {
   await t.step(
     "POST /rpc (action: create) creates a new world (Admin Only)",
     async () => {
-      const { apiKey } = await createTestNamespace(testContext);
+      const { apiKey } = await createTestNamespace(registry);
 
       const world = ("new-world-" + ulid()).toLowerCase();
       const req = new Request("http://localhost/rpc", {
@@ -75,8 +73,8 @@ Deno.test("Worlds RPC API", async (t) => {
         },
         body: JSON.stringify({
           action: "create",
-          name: world,
-          label: "New World",
+          id: world,
+          displayName: "New World",
           description: "New Description",
         }),
       });
@@ -84,7 +82,7 @@ Deno.test("Worlds RPC API", async (t) => {
       assertEquals(response.status, 201);
 
       const worldResult = await response.json();
-      assertEquals(worldResult.label, "New World");
+      assertEquals(worldResult.displayName, "New World");
       assertEquals(worldResult.id, world);
     },
   );
@@ -93,7 +91,7 @@ Deno.test("Worlds RPC API", async (t) => {
     "POST /rpc (action: export) - Content Negotiation (Turtle)",
     async () => {
       const { apiKey, id: namespaceId } = await createTestNamespace(
-        testContext,
+        registry,
       );
       const world = "export-world-" + ulid();
       const now = Date.now();
@@ -106,10 +104,6 @@ Deno.test("Worlds RPC API", async (t) => {
         created_at: now,
         updated_at: now,
         deleted_at: null,
-      });
-      await testContext.storage.create({
-        namespace: namespaceId,
-        id: world,
       });
 
       const response = await app.fetch(
@@ -135,17 +129,17 @@ Deno.test("Worlds RPC API", async (t) => {
   await t.step(
     "POST /rpc (action: get) returns 200 without Auth if no apiKey is set",
     async () => {
-      await using unprotectedContext = await createTestContext();
-      await using unprotectedWorlds = new LocalWorlds(unprotectedContext);
-      unprotectedContext.engine = unprotectedWorlds;
+      await using unprotectedRegistry = await createTestRegistry();
+      await using unprotectedWorlds = new LocalWorlds(unprotectedRegistry);
+      unprotectedRegistry.activeEngine = unprotectedWorlds;
       await unprotectedWorlds.init();
 
-      unprotectedContext.apiKey = undefined;
-      const appUnprotected = await createServer(unprotectedContext);
+      unprotectedRegistry.apiKey = undefined as unknown as string;
+      const appUnprotected = await createServer(unprotectedRegistry);
       const world = "unprotected-world-" + ulid();
       const now = Date.now();
-      const unprotectedWorldsRepository = unprotectedContext.management.worlds;
-      const namespace = unprotectedContext.namespace ?? "_";
+      const unprotectedWorldsRepository = unprotectedRegistry.management.worlds;
+      const namespace = unprotectedRegistry.namespace ?? "_";
       await unprotectedWorldsRepository.insert({
         namespace,
         id: world,
@@ -155,10 +149,6 @@ Deno.test("Worlds RPC API", async (t) => {
         created_at: now,
         updated_at: now,
         deleted_at: null,
-      });
-      await unprotectedContext.storage.create({
-        namespace,
-        id: world,
       });
 
       const response = await appUnprotected.fetch(
@@ -176,7 +166,7 @@ Deno.test("Worlds RPC API", async (t) => {
 
       assertEquals(response.status, 200);
       const worldResult = await response.json();
-      assertEquals(worldResult.label, "Unprotected World");
+      assertEquals(worldResult.displayName, "Unprotected World");
       assertEquals(worldResult.id, world);
     },
   );

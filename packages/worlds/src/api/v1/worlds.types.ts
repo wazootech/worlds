@@ -1,5 +1,4 @@
 import type { components } from "./types.generated.ts";
-import type { World } from "../../resources/world.types.ts";
 import type { ContentType } from "./common.types.ts";
 import type { Source } from "./source.types.ts";
 
@@ -41,10 +40,12 @@ export type ListWorldsResponse = components["schemas"]["ListWorldsResponse"];
 /**
  * ImportWorldRequest represents the parameters for importing data into a world.
  */
-export type ImportWorldRequest = components["schemas"]["ImportWorldRequest"] & {
-  /** Engine-compatible data type override. */
-  data: string | ArrayBuffer;
-};
+export type ImportWorldRequest =
+  & Omit<components["schemas"]["ImportWorldRequest"], "data">
+  & {
+    /** Engine-compatible data type override. */
+    data: string | ArrayBuffer | Uint8Array;
+  };
 
 /**
  * ExportWorldRequest represents the parameters for exporting data from a world.

@@ -19,7 +19,7 @@ export function mapRowToWorld(row: WorldRow): World {
   return {
     name: toWorldName({
       namespace: row.namespace ?? undefined,
-      world: row.id ?? undefined,
+      id: row.id ?? undefined,
     }),
     id: row.id as WorldId, // Cast for branded id
     namespace: row.namespace ?? undefined,

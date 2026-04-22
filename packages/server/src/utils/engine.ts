@@ -1,4 +1,4 @@
-import type { WorldsContext } from "@wazoo/worlds-sdk";
+import type { WorldsRegistry } from "@wazoo/worlds-sdk";
 
 /**
  * getNamespacedEngine returns a Worlds engine scoped to the given namespace.
@@ -9,8 +9,8 @@ import type { WorldsContext } from "@wazoo/worlds-sdk";
  * at the LocalWorlds layer via assertSourceAuthorized.
  */
 export function getNamespacedEngine(
-  appContext: WorldsContext,
+  registry: WorldsRegistry,
   _namespaceId?: string,
 ) {
-  return appContext.engine!;
+  return registry.activeEngine!;
 }

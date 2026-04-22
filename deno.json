@@ -32,6 +32,7 @@
     "zod": "npm:zod@^4.3.6",
     "@std/assert": "jsr:@std/assert@^1.0.19",
     "@std/ulid": "jsr:@std/ulid@1",
+    "@std/encoding": "jsr:@std/encoding@^1.0.7",
     "@std/path": "jsr:@std/path@^1.1.4",
     "@libsql/client": "npm:@libsql/client@^0.17.2",
     "@tursodatabase/api": "npm:@tursodatabase/api@^2.0.0",

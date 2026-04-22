@@ -1,7 +1,11 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
 import { z } from "zod";
-import type { ListWorldsRequest, ListWorldsResponse, WorldsEngine } from "@wazoo/worlds-sdk";
+import type {
+  ListWorldsRequest,
+  ListWorldsResponse,
+  WorldsEngine,
+} from "@wazoo/worlds-sdk";
 import { ListWorldsRequestSchema, WorldSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 

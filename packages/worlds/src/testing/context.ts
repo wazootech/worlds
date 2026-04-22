@@ -1,69 +1,22 @@
-import { ulid } from "@std/ulid";
-import { KvStoreEngine } from "../infrastructure/store.ts";
-import { ApiKeyRepository } from "../management/keys.ts";
-import { NamespaceRepository } from "../management/namespaces.ts";
-import { WorldRepository } from "../management/worlds.ts";
-import type { Embeddings } from "../vectors/embeddings.ts";
-import type { WorldsContext } from "../engine/factory.ts";
+import type { WorldsRegistry } from "../engine/factory.ts";
 
-export type { WorldsContext };
+export type { WorldsRegistry as WorldsContext };
 
 /**
- * createTestContext creates a test application context with in-memory
- * Map-based management repositories and store manager.
+ * createTestContext is a legacy alias for createTestRegistry.
  */
-export async function createTestContext(): Promise<WorldsContext> {
-  const keys = new ApiKeyRepository();
-  const namespaces = new NamespaceRepository();
-  const worlds = new WorldRepository();
-
-  const mockEmbeddings: Embeddings = {
-    dimensions: 768,
-    embed: (texts: string | string[]) => {
-      if (Array.isArray(texts)) {
-        return Promise.resolve(Array(texts.length).fill(Array(768).fill(1)));
-      }
-      return Promise.resolve(Array(768).fill(1));
-    },
-  };
-
-  const storage = new KvStoreEngine();
-  const apiKey = ulid();
-  const namespaceId = "test-admin";
-  const now = Date.now();
-
-  await keys.create(apiKey, namespaceId);
-  await namespaces.insert({
-    id: namespaceId,
-    label: "Test Admin",
-    created_at: now,
-    updated_at: now,
-  });
-
-  return {
-    embeddings: mockEmbeddings,
-    management: {
-      keys,
-      namespaces,
-      worlds,
-    },
-    storage,
-    apiKey,
-    namespace: namespaceId,
-    id: "test-world",
-    async [Symbol.asyncDispose]() {
-      await storage.close();
-    },
-  };
+export async function createTestContext(): Promise<WorldsRegistry> {
+  const { createTestRegistry } = await import("./registry.ts");
+  return await createTestRegistry();
 }
 
 /**
- * createTestNamespace creates a test namespace and returns its ID and the admin API key.
+ * createTestNamespace creates a test namespace using the new registry.
  */
-export function createTestNamespace(
-  context: WorldsContext,
-  _options?: { plan?: string },
+export async function createTestNamespace(
+  registry: WorldsRegistry,
+  options?: { plan?: string },
 ): Promise<{ id: string; apiKey: string | undefined }> {
-  const id = ulid();
-  return Promise.resolve({ id, apiKey: context.apiKey });
+  const { createTestNamespace: create } = await import("./registry.ts");
+  return await create(registry, options);
 }

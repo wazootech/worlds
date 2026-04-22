@@ -7074,6 +7074,7 @@
     "dependencies": [
       "jsr:@std/assert@^1.0.19",
       "jsr:@std/cli@1.0.28",
+      "jsr:@std/encoding@^1.0.7",
       "jsr:@std/path@^1.1.4",
       "jsr:@std/ulid@1",
       "npm:@comunica/query-sparql-rdfjs-lite@^5.1.3",
@@ -7098,6 +7099,7 @@
       "packages/server": {
         "dependencies": [
           "jsr:@fartlabs/rt@^0.0.11",
+          "jsr:@std/encoding@^1.0.5",
           "jsr:@std/http@^1.0.25",
           "jsr:@std/path@^1.0.8"
         ]

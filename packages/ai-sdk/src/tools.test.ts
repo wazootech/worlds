@@ -7,7 +7,7 @@ import type {
   ImportWorldRequest,
   UpdateWorldRequest,
 } from "@wazoo/worlds-sdk";
-import type { World, SearchWorldsResult } from "@wazoo/worlds-sdk";
+import type { SearchWorldsResult, World } from "@wazoo/worlds-sdk";
 
 import { sparql, worldsSparqlTool } from "./tools/sparql.ts";
 import { search, worldsSearchTool } from "./tools/search.ts";
@@ -23,30 +23,28 @@ function createMockWorld(overrides?: Partial<World>): World {
   const now = Date.now();
   return {
     name: "worlds/test",
-    world: "test",
+    id: "test",
     namespace: undefined,
-    label: "Test",
+    displayName: "Test",
     description: undefined,
-    createdAt: now,
-    updatedAt: now,
-    deletedAt: undefined,
+    createTime: now,
+    updateTime: now,
+    deleteTime: undefined,
     ...overrides,
   };
 }
 
 const mockWorldsBase: WorldsEngine = {
-  list: () => Promise.resolve([]),
+  list: () => Promise.resolve({ worlds: [], nextPageToken: undefined }),
   get: () => Promise.resolve(null),
   create: () => Promise.resolve(createMockWorld()),
-  update: () => Promise.resolve(),
+  update: () => Promise.resolve(createMockWorld()),
   delete: () => Promise.resolve(),
   sparql: () => Promise.resolve(null),
-  search: () => Promise.resolve([]),
+  search: () => Promise.resolve({ results: [], nextPageToken: undefined }),
   import: () => Promise.resolve(),
   export: () => Promise.resolve(new ArrayBuffer(0)),
-  getServiceDescription: () => Promise.resolve("{}"),
 
-  close: () => Promise.resolve(),
   init: () => Promise.resolve(),
   [Symbol.asyncDispose]: () => Promise.resolve(),
 };
@@ -90,9 +88,9 @@ Deno.test("sparql tool", async (t) => {
       const mockWorlds = createMockWorlds({
         sparql: () => Promise.resolve(null),
       });
-      const writableSources = [{ world: "test-world", write: true }];
+      const writableSources = [{ id: "test-world", mode: "write" }];
       const result = await sparql(mockWorlds, writableSources as never, {
-        sources: ["test-world"],
+        sources: [{ id: "test-world", mode: "write" }],
         query: "INSERT DATA { <http://s> <http://p> <http://o> }",
       });
       assertEquals(result, null);
@@ -100,7 +98,7 @@ Deno.test("sparql tool", async (t) => {
   );
 
   await t.step("throws on write operation with read-only source", async () => {
-    const sources = [{ world: "test-world", write: false }];
+    const sources = [{ id: "test-world", mode: "read" }];
     await assertRejects(
       () =>
         sparql(createMockWorlds(), sources as never, {
@@ -108,7 +106,7 @@ Deno.test("sparql tool", async (t) => {
           query: "INSERT DATA { <http://s> <http://p> <http://o> }",
         }),
       Error,
-      "Write operations are disabled",
+      "is not writable",
     );
   });
 
@@ -124,14 +122,17 @@ Deno.test("list tool", async (t) => {
   await t.step("returns list of worlds", async () => {
     const mockWorlds = createMockWorlds({
       list: () =>
-        Promise.resolve([
-          createMockWorld({ world: "world-1", label: "World 1" }),
-          createMockWorld({ world: "world-2", label: "World 2" }),
-        ]),
+        Promise.resolve({
+          worlds: [
+            createMockWorld({ id: "world-1", displayName: "World 1" }),
+            createMockWorld({ id: "world-2", displayName: "World 2" }),
+          ],
+          nextPageToken: undefined,
+        }),
     });
-    const result = await list(mockWorlds, { page: 1, pageSize: 10 });
+    const result = await list(mockWorlds, { pageToken: "1", pageSize: 10 });
     assertEquals(result.worlds.length, 2);
-    assertEquals(result.worlds[0].world, "world-1");
+    assertEquals(result.worlds[0].id, "world-1");
   });
 
   await t.step("tool definition has correct shape", () => {
@@ -145,15 +146,15 @@ Deno.test("list tool", async (t) => {
 Deno.test("get tool", async (t) => {
   await t.step("returns world by ID", async () => {
     const mockWorld = createMockWorld({
-      label: "Test World",
-      world: "test-id",
+      displayName: "Test World",
+      id: "test-id",
     });
     const mockWorlds = createMockWorlds({
       get: () => Promise.resolve(mockWorld),
     });
     const result = await get(mockWorlds, { source: "test-id" });
-    assertEquals(result.world, "test-id");
-    assertEquals(result.label, "Test World");
+    assertEquals(result!.id, "test-id");
+    assertEquals(result!.displayName, "Test World");
   });
 
   await t.step("throws when world not found", async () => {
@@ -181,18 +182,18 @@ Deno.test("create tool", async (t) => {
       create: (input: CreateWorldRequest) =>
         Promise.resolve(
           createMockWorld({
-            world: input.world,
-            label: input.label,
+            id: input.id,
+            displayName: input.displayName,
             description: input.description ?? undefined,
           }),
         ),
     });
     const result = await create(mockWorlds, {
-      world: "new-world",
-      label: "New World",
+      id: "new-world",
+      displayName: "New World",
     });
-    assertEquals(result.world, "new-world");
-    assertEquals(result.label, "New World");
+    assertEquals(result.id, "new-world");
+    assertEquals(result.displayName, "New World");
   });
 
   await t.step("tool definition has correct shape", () => {
@@ -209,7 +210,7 @@ Deno.test("update tool", async (t) => {
     const mockWorlds = createMockWorlds({
       update: (input: UpdateWorldRequest) => {
         calledWith = input;
-        return Promise.resolve();
+        return Promise.resolve(createMockWorld());
       },
     });
     await update(mockWorlds, {
@@ -262,7 +263,8 @@ Deno.test("search tool", async (t) => {
       },
     ];
     const mockWorlds = createMockWorlds({
-      search: () => Promise.resolve(mockResults),
+      search: () =>
+        Promise.resolve({ results: mockResults, nextPageToken: undefined }),
     });
     const result = await search(mockWorlds, {
       sources: ["test-world"],
@@ -274,12 +276,12 @@ Deno.test("search tool", async (t) => {
 
   await t.step("respects limit parameter", async () => {
     const mockWorlds = createMockWorlds({
-      search: () => Promise.resolve([]),
+      search: () => Promise.resolve({ results: [], nextPageToken: undefined }),
     });
     const result = await search(mockWorlds, {
       sources: ["test-world"],
       query: "test",
-      limit: 5,
+      pageSize: 5,
     });
     assertEquals(result.results.length, 0);
   });
@@ -328,7 +330,8 @@ Deno.test("export tool", async (t) => {
       export: () => Promise.resolve(new TextEncoder().encode(mockData).buffer),
     });
     const result = await exportWorld(mockWorlds, { source: "test-world" });
-    assert(result.data.includes("http://example.org/s"));
+    const text = new TextDecoder().decode(result as ArrayBuffer);
+    assert(text.includes("http://example.org/s"));
   });
 
   await t.step("exports world as turtle", async () => {

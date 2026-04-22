@@ -7,7 +7,7 @@ Deno.test("Worlds Engine Lifecycle", async (t) => {
     await using context = await createTestContext();
     const worlds = new Worlds({
       management: context.management,
-      storeEngine: context.storage,
+      storage: context.storage,
     });
 
     await Promise.all([
@@ -25,11 +25,11 @@ Deno.test("Worlds Engine Lifecycle", async (t) => {
 
     const w1 = new Worlds({
       management: context.management,
-      storeEngine: context.storage,
+      storage: context.storage,
     });
     const w2 = new Worlds({
       management: context.management,
-      storeEngine: context.storage,
+      storage: context.storage,
     });
 
     await w1.init();

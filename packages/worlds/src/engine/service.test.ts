@@ -16,7 +16,7 @@ Deno.test({
 
     // Wire up a Managed Shell engine for testing
     const worlds = new Worlds({
-      storeEngine: context.storage,
+      storage: context.storage,
       embeddings: context.embeddings,
       management: context.management,
       namespace: context.namespace,
@@ -118,7 +118,7 @@ Deno.test({
         worlds: worldsRepo,
       },
       namespace: namespaceId,
-      storeEngine: storage,
+      storage: storage,
       id: "test-world",
     });
 

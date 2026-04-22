@@ -7,7 +7,7 @@ import type {
   Source,
 } from "../api/v1/source.types.ts";
 
-import type { WorldsContext } from "../testing/context.ts";
+import type { WorldsRegistry } from "../testing/registry.ts";
 
 /**
  * defaultNamespace is the fallback used when storing/looking up
@@ -163,7 +163,7 @@ export class SourceParseError extends Error {
  */
 export function resolveSource(
   source?: Source,
-  context?: Partial<WorldsContext>,
+  registry?: Partial<WorldsRegistry>,
 ): ResolvedSource {
   if (source === null || source === undefined) {
     return { mode: "deferred" };
@@ -176,13 +176,13 @@ export function resolveSource(
     const parsed = parseSourceName(source);
     return {
       id: parsed.id ?? defaultWorld,
-      namespace: parsed.namespace ?? context?.namespace ?? defaultNamespace,
+      namespace: parsed.namespace ?? registry?.namespace ?? defaultNamespace,
       mode: "deferred",
     };
   }
 
   const mode: TransactionMode = (source as { mode?: TransactionMode }).mode ??
-    "deferred";
+    ((source as { write?: boolean }).write ? "write" : "deferred");
 
   if (isNamedSource(source)) {
     if (!source.name || !source.name.trim()) {
@@ -191,7 +191,7 @@ export function resolveSource(
     const parsed = parseSourceName(source.name);
     return {
       id: parsed.id ?? defaultWorld,
-      namespace: parsed.namespace ?? context?.namespace ?? defaultNamespace,
+      namespace: parsed.namespace ?? registry?.namespace ?? defaultNamespace,
       mode,
     };
   }
@@ -199,7 +199,7 @@ export function resolveSource(
   if (isQualifiedSource(source)) {
     const worldId = ("id" in source ? source.id : undefined) || defaultWorld;
     const namespace = ("namespace" in source ? source.namespace : undefined) ||
-      context?.namespace ||
+      registry?.namespace ||
       defaultNamespace;
 
     return {
@@ -212,7 +212,7 @@ export function resolveSource(
   if (isBaseSource(source)) {
     return {
       id: defaultWorld,
-      namespace: context?.namespace || defaultNamespace,
+      namespace: registry?.namespace || defaultNamespace,
       mode,
     };
   }

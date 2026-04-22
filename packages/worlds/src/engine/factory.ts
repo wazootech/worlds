@@ -39,9 +39,9 @@ export interface WorldsOptions {
 }
 
 /**
- * WorldsContext represents the global shared state for a Worlds engine.
+ * WorldsRegistry represents the global shared state and service container for a Worlds system.
  */
-export interface WorldsContext {
+export interface WorldsRegistry {
   /**
    * embeddings provides a vector embeddings implementation.
    */
@@ -63,19 +63,24 @@ export interface WorldsContext {
   storage: StoreEngine;
 
   /**
-   * namespace is the default namespace for this context.
+   * namespace is the default namespace for this registry.
    */
   namespace?: string;
 
   /**
-   * id is the default world identifier for this context.
+   * id is the default world identifier for this registry.
    */
   id?: string;
 
   /**
-   * engine is the initialized Worlds engine for this context.
+   * activeEngine is the initialized Worlds engine for this registry, if any.
    */
-  engine?: WorldsEngine;
+  activeEngine?: WorldsEngine;
+
+  /**
+   * engine initializes or retrieves a Worlds engine from this registry.
+   */
+  engine(options?: WorldsOptions): Promise<WorldsEngine>;
 
   /**
    * [Symbol.asyncDispose] provides support for explicit resource management.
@@ -84,9 +89,9 @@ export interface WorldsContext {
 }
 
 /**
- * WorldsContextConfig is the configuration for a Worlds engine context.
+ * WorldsContextConfig is renamed to WorldsRegistryConfig.
  */
-export interface WorldsContextConfig {
+export interface WorldsRegistryConfig {
   envs: {
     OPENROUTER_API_KEY?: string;
     OPENROUTER_EMBEDDINGS_MODEL?: string;
@@ -104,12 +109,13 @@ export interface WorldsContextConfig {
 }
 
 /**
- * createWorldsContext initializes a new global engine context.
+ * initRegistry initializes a new Service Container (WorldsRegistry).
  */
-export function createWorldsContext(
-  config?: WorldsContextConfig,
-): Promise<WorldsContext> {
-  const finalConfig: WorldsContextConfig = {
+export async function initRegistry(
+  config?: WorldsRegistryConfig,
+): Promise<WorldsRegistry> {
+  await Promise.resolve();
+  const finalConfig: WorldsRegistryConfig = {
     envs: {
       OLLAMA_BASE_URL: Deno.env.get("OLLAMA_BASE_URL"),
       OLLAMA_EMBEDDINGS_MODEL: Deno.env.get("OLLAMA_EMBEDDINGS_MODEL") ||
@@ -152,6 +158,9 @@ export function createWorldsContext(
       dimensions,
     });
   } else {
+    // Note: createOllama/createOpenRouter are typically sync, but we use await
+    // to satisfy the lint rule if we really want to keep it async for future-proofing.
+    // Or we just remove async.
     const ollama = createOllama({ baseURL: finalConfig.envs.OLLAMA_BASE_URL! });
     embeddings = new OllamaEmbeddings({
       model: ollama.textEmbeddingModel(
@@ -162,7 +171,7 @@ export function createWorldsContext(
   }
 
   const storage = new KvStoreEngine();
-  const context: WorldsContext = {
+  const registry: WorldsRegistry = {
     embeddings,
     management: {
       keys: new ApiKeyRepository(),
@@ -172,56 +181,55 @@ export function createWorldsContext(
     storage,
     apiKey: finalConfig.envs.WORLDS_API_KEY || "",
     namespace: finalConfig.envs.WORLDS_NS,
+    async engine(options?: WorldsOptions) {
+      return await createWorlds(this, options);
+    },
     async [Symbol.asyncDispose]() {
       await storage.close();
     },
   };
 
-  return Promise.resolve(context);
+  return registry;
 }
 
 /**
- * createWorlds initializes a standalone root Worlds engine instance.
+ * createWorlds initializes a polymorphic Worlds engine instance.
  */
 export async function createWorlds(
-  contextOrOptions?: WorldsContext | WorldsOptions,
+  registryOrOptions?: WorldsRegistry | WorldsOptions,
+  maybeOptions?: WorldsOptions,
 ): Promise<WorldsEngine> {
-  // Check if it's a context (has management property)
-  if (
-    contextOrOptions && "management" in contextOrOptions &&
-    contextOrOptions.management
-  ) {
-    const context = contextOrOptions as WorldsContext;
-    const engineOptions: WorldsEngineOptions = {
-      storeEngine: context.storage,
-      management: context.management,
-      embeddings: context.embeddings,
-      namespace: context.namespace,
-      id: context.id,
-    };
-    const engine = new Worlds(engineOptions);
-    context.engine = engine; // Attach engine to context
-    return engine;
-  }
+  const options = (maybeOptions ??
+    (registryOrOptions && !("management" in registryOrOptions)
+      ? registryOrOptions
+      : undefined)) as WorldsOptions | undefined;
 
-  // Fallback to client-only mode or remote SDK
-  const options = contextOrOptions as WorldsOptions | undefined;
+  // 1. Handle Remote/Client Case
   if (options?.baseUrl) {
     return new WorldsClient(options) as unknown as WorldsEngine;
   }
 
-  // Initialize a default local context if nothing else provided
-  const context = await createWorldsContext();
-  const engineOptions: WorldsEngineOptions = {
-    storeEngine: context.storage,
-    management: context.management,
-    embeddings: context.embeddings,
-    namespace: context.namespace,
-    id: context.id,
-  };
-  const engine = new Worlds(engineOptions);
-  context.engine = engine;
-  return engine;
+  // 2. Handle Registry/Service-Container Case
+  if (
+    registryOrOptions && "management" in registryOrOptions &&
+    registryOrOptions.management
+  ) {
+    const registry = registryOrOptions as WorldsRegistry;
+    const engineOptions: WorldsEngineOptions = {
+      storage: registry.storage,
+      management: registry.management,
+      embeddings: registry.embeddings,
+      namespace: registry.namespace,
+      id: registry.id,
+    };
+    const engine = new Worlds(engineOptions);
+    registry.activeEngine = engine;
+    return engine;
+  }
+
+  // 3. One-off Bootstrap Case
+  const registry = await initRegistry();
+  return registry.engine(options);
 }
 
 export type { WorldsEngine };

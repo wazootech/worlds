@@ -1,5 +1,7 @@
-import type { z } from "zod";
-import type { WorldSource, WorldsEngine } from "@wazoo/worlds-sdk";
+import type { ZodType } from "zod";
+import type { WorldsEngine, WorldSource } from "@wazoo/worlds-sdk";
+
+export type { WorldSource };
 
 /**
  * SourceInput is a flexible way to specify a data source.
@@ -24,12 +26,8 @@ export interface WorldsTool<TInput = unknown, TOutput = unknown> {
   /**
    * inputSchema is the Zod schema for the tool's arguments.
    */
-  inputSchema: z.ZodType<TInput>;
-
-  /**
-   * outputSchema is the Zod schema for the tool's response.
-   */
-  outputSchema: z.ZodType<TOutput>;
+  inputSchema: ZodType<TInput>;
+  outputSchema: ZodType<TOutput>;
 
   /**
    * isWrite indicates if the tool can modify state or data.

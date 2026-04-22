@@ -46,7 +46,7 @@ export interface SyncableStore {
  * WorldsEngineOptions are the options for creating a Worlds instance.
  */
 export interface WorldsEngineOptions {
-  storeEngine?: StoreEngine;
+  storage?: StoreEngine;
   sparqlEngine?: SparqlEngine;
   searchEngine?: SearchEngine;
   embeddings?: Embeddings;
@@ -98,16 +98,16 @@ function mapRowsToWorlds(rows: WorldRow[]): World[] {
  * Worlds is an engine-agnostic implementation of the Worlds API.
  */
 export class Worlds implements WorldsEngine {
-  private readonly storeEngine?: StoreEngine;
-  private readonly sparqlEngine?: SparqlEngine;
-  private readonly searchEngine?: SearchEngine;
+  private readonly storage?: StoreEngine;
+  private searchEngine?: SearchEngine;
+  private sparqlEngine?: SparqlEngine;
   private readonly management?: ManagementLayer;
   private readonly namespace?: string;
   private readonly id?: string;
   private readonly embeddings?: Embeddings;
 
   constructor(options: WorldsEngineOptions) {
-    this.storeEngine = options.storeEngine;
+    this.storage = options.storage;
     this.management = options.management;
     this.namespace = options.namespace;
     this.id = options.id;
@@ -135,7 +135,7 @@ export class Worlds implements WorldsEngine {
     const resolved = resolveSource(inputSource, { namespace: this.namespace });
     const worldId = resolved.id ?? this.id;
 
-    if (!this.storeEngine) {
+    if (!this.storage) {
       throw new Error(
         "StoreEngine is required for data-plane operations",
       );
@@ -145,7 +145,7 @@ export class Worlds implements WorldsEngine {
       throw new Error("World identity required");
     }
 
-    const rawStore = await this.storeEngine.getStore(
+    const rawStore = await this.storage.getStore(
       worldId,
       resolved.namespace,
     );
@@ -196,7 +196,9 @@ export class Worlds implements WorldsEngine {
 
   public async create(input: CreateWorldRequest): Promise<World> {
     const mgmt = this.ensureManagement();
-    const nameOrId = input.id || (input as any).name || (input as any).world;
+    const nameOrId = input.id ||
+      (input as Record<string, unknown>).name as string ||
+      (input as Record<string, unknown>).world as string;
     if (!nameOrId) throw new Error("World identity required");
 
     const resolved = resolveSource(nameOrId, {
@@ -241,8 +243,8 @@ export class Worlds implements WorldsEngine {
     if (!resolved.id) return;
 
     await mgmt.worlds.delete(resolved.id, resolved.namespace);
-    if (this.storeEngine) {
-      await this.storeEngine.delete(resolved.id, resolved.namespace);
+    if (this.storage) {
+      await this.storage.delete(resolved.id, resolved.namespace);
     }
   }
 
@@ -255,9 +257,7 @@ export class Worlds implements WorldsEngine {
       input.sources?.[0] || input.parent,
     );
 
-    if (!this.sparqlEngine && !this.storeEngine) {
-      throw new Error("SparqlEngine is required for SPARQL operations");
-    }
+    // Dynamic import to keep engine core lean
 
     const { executeSparql } = await import(
       "../infrastructure/rdf/sparql-engine.ts"
@@ -271,7 +271,19 @@ export class Worlds implements WorldsEngine {
     input: SearchWorldsRequest,
   ): Promise<SearchWorldsResponse> {
     if (!this.searchEngine) {
-      throw new Error("SearchEngine is required for search operations");
+      if (this.embeddings && this.management) {
+        const { ChunksSearchEngine } = await import(
+          "../infrastructure/search.ts"
+        );
+        this.searchEngine = new ChunksSearchEngine({
+          embeddings: this.embeddings,
+          management: this.management,
+          namespace: this.namespace,
+          storeEngine: this.storage,
+        });
+      } else {
+        throw new Error("SearchEngine is required for search operations");
+      }
     }
 
     const resolved = resolveSource(
@@ -295,7 +307,10 @@ export class Worlds implements WorldsEngine {
       ? new TextEncoder().encode(input.data).buffer
       : input.data;
 
-    const n3Store = await generateN3StoreFromBlob(new Blob([data]));
+    const n3Store = await generateN3StoreFromBlob(
+      new Blob([data as unknown as BlobPart]),
+      input.contentType || "application/n-quads",
+    );
     const quads = n3Store.getQuads(null, null, null, null);
 
     // @ts-ignore - n3 types
@@ -321,9 +336,9 @@ export class Worlds implements WorldsEngine {
   }
 
   public async [Symbol.asyncDispose](): Promise<void> {
-    if (this.storeEngine) {
+    if (this.storage) {
       // deno-lint-ignore no-explicit-any
-      const engine = this.storeEngine as any;
+      const engine = this.storage as any;
       if (typeof engine[Symbol.asyncDispose] === "function") {
         await engine[Symbol.asyncDispose]();
       }

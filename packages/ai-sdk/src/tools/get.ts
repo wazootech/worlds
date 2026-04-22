@@ -10,24 +10,28 @@ import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 export async function get(
   worlds: WorldsEngine,
   input: GetWorldRequest,
-): Promise<World | null> {
-  return await worlds.get(input);
+): Promise<World> {
+  const world = await worlds.get(input);
+  if (!world) {
+    throw new Error(`World not found: ${JSON.stringify(input.source)}`);
+  }
+  return world;
 }
 
 /**
  * WorldsGetTool is a tool for getting a world.
  */
-export type WorldsGetTool = Tool<GetWorldRequest, World | null>;
+export type WorldsGetTool = Tool<GetWorldRequest, World>;
 
 /**
  * worldsGetTool defines the configuration for the world retrieval tool.
  */
-export const worldsGetTool: WorldsTool<GetWorldRequest, World | null> = {
+export const worldsGetTool: WorldsTool<GetWorldRequest, World> = {
   name: "worlds_get",
   description:
     "Retrieves metadata for a single dataset (world) by its identifier or name. Use this tool when you need detailed information about a specific world such as its created/updated times.",
   inputSchema: GetWorldRequestSchema,
-  outputSchema: WorldSchema.nullable(),
+  outputSchema: WorldSchema,
   isWrite: false,
 };
 

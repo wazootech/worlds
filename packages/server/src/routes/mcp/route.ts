@@ -7,11 +7,10 @@ import type {
   GetWorldRequest,
   ImportWorldRequest,
   ListWorldsRequest,
-  QueryWorldRequest,
   SearchWorldsRequest,
   SparqlQueryRequest,
   UpdateWorldRequest,
-  WorldsContext,
+  WorldsRegistry,
 } from "@wazoo/worlds-sdk";
 import type {
   CreateToolsOptions,
@@ -154,16 +153,16 @@ type McpResponse = {
 /**
  * mcpRouter creates a router for the MCP server.
  */
-export default (appContext: WorldsContext) => {
-  const engine = appContext.engine;
+export default (registry: WorldsRegistry) => {
+  const engine = registry.activeEngine; // Registry uses activeEngine property or .engine()
   if (!engine) {
-    throw new Error("Engine not initialized in context");
+    throw new Error("Engine not initialized in registry");
   }
 
   const sources: SourceInput[] = [];
 
   const handleMcpRequest = async (request: Request): Promise<Response> => {
-    const authorized = await authorizeRequest(appContext, request);
+    const authorized = await authorizeRequest(registry, request);
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });
     }

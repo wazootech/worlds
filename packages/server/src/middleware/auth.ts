@@ -1,4 +1,4 @@
-import type { WorldsContext } from "@wazoo/worlds-sdk";
+import type { WorldsRegistry } from "@wazoo/worlds-sdk";
 
 /**
  * AuthorizedRequest is the result of a successful authentication.
@@ -13,17 +13,16 @@ export interface AuthorizedRequest {
  * Validates the token against the Registry World multitenancy registry.
  */
 export async function authorizeRequest(
-  appContext: WorldsContext,
+  registry: WorldsRegistry,
   request: Request,
 ): Promise<AuthorizedRequest> {
-  // If no admin API key is set, the server is in "open" mode (e.g. for local dev)
-  if (!appContext.apiKey) {
+  if (!registry.apiKey) {
     return { admin: true };
   }
 
-  const engine = appContext.engine;
+  const engine = registry.activeEngine;
   if (!engine) {
-    throw new Error("Engine not initialized in context");
+    throw new Error("Engine not initialized in registry");
   }
 
   const authHeader = request.headers.get("Authorization");
@@ -33,13 +32,13 @@ export async function authorizeRequest(
 
   const apiKey = authHeader.slice("Bearer ".length).trim();
 
-  // Admin key bypass (if configured in context)
-  if (appContext.apiKey && apiKey === appContext.apiKey) {
+  // Admin key bypass (if configured in registry)
+  if (registry.apiKey && apiKey === registry.apiKey) {
     return { admin: true };
   }
 
   // Resolve namespace via ApiKeyRepository
-  const apiKeysRepo = appContext.management.keys;
+  const apiKeysRepo = registry.management.keys;
   const namespaceId = await apiKeysRepo.resolveNamespace(apiKey);
 
   if (namespaceId) {

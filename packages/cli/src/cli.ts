@@ -1,5 +1,5 @@
 import type { ModelMessage } from "ai";
-import type { Worlds, WorldsContentType } from "@wazoo/worlds-sdk";
+import type { WorldsContentType, WorldsEngine } from "@wazoo/worlds-sdk";
 import { parseArgs } from "@std/cli/parse-args";
 import { Spinner } from "@std/cli/unstable-spinner";
 import { render } from "cfonts";
@@ -11,7 +11,7 @@ import { createTools } from "@wazoo/worlds-ai-sdk";
  * WorldsCli is a command line application for the Worlds API.
  */
 export class WorldsCli {
-  public constructor(private readonly worlds: Worlds) {}
+  public constructor(private readonly worlds: WorldsEngine) {}
 
   public static logo() {
     const renderResult = render("Worlds CLI", {
@@ -57,15 +57,15 @@ export class WorldsCli {
       return;
     }
 
-    const slug = parsed.slug ||
+    const worldId = parsed.slug ||
       parsed.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(
         /^-+|-+$/g,
         "",
       );
 
     const world = await this.worlds.create({
-      slug,
-      label: parsed.label,
+      id: worldId,
+      displayName: parsed.label,
       description: parsed.description,
     });
     console.log(JSON.stringify(world, null, 2));
@@ -88,19 +88,19 @@ export class WorldsCli {
       );
       return;
     }
-    const slug = parsed.slug as string;
-    if (!slug) {
+    const worldId = parsed.slug as string;
+    if (!worldId) {
       console.error(
         "Usage: worlds update --slug <slug> [--label <label>] [--description <desc>]",
       );
       return;
     }
     await this.worlds.update({
-      source: slug,
-      label: parsed.label,
+      source: worldId,
+      displayName: parsed.label,
       description: parsed.description,
     });
-    console.log(`Updated world ${slug}`);
+    console.log(`Updated world ${worldId}`);
   }
 
   /**
@@ -119,14 +119,14 @@ export class WorldsCli {
       return;
     }
 
-    const slug = parsed.slug as string;
-    if (!slug) {
-      console.error("Usage: worlds delete --slug <slug>");
+    const worldId = (parsed.slug as string) || (parsed.id as string);
+    if (!worldId) {
+      console.error("Usage: worlds delete --slug <id>");
       return;
     }
 
-    await this.worlds.delete({ source: slug });
-    console.log(`Deleted world ${slug}`);
+    await this.worlds.delete({ source: worldId });
+    console.log(`Deleted world ${worldId}`);
   }
 
   /**
@@ -146,13 +146,13 @@ export class WorldsCli {
       );
       return;
     }
-    const worlds = await this.worlds.list({
-      page: parsed.page ? parseInt(parsed.page as string) : undefined,
+    const response = await this.worlds.list({
+      pageToken: parsed.page ? parsed.page as string : undefined,
       pageSize: parsed["page-size"]
         ? parseInt(parsed["page-size"] as string)
         : undefined,
     });
-    console.log(JSON.stringify(worlds, null, 2));
+    console.log(JSON.stringify(response.worlds, null, 2));
   }
 
   /**
@@ -205,7 +205,7 @@ export class WorldsCli {
       );
       return;
     }
-    const slug = (parsed.slug as string) || "_";
+    const worldId = (parsed.slug as string) || (parsed.id as string) || "_";
     const query = parsed.query as string;
     if (!query) {
       console.error(
@@ -213,14 +213,14 @@ export class WorldsCli {
       );
       return;
     }
-    const results = await this.worlds.search({
-      sources: [slug],
+    const response = await this.worlds.search({
+      sources: [worldId],
       query,
-      limit: parsed.limit ? parseInt(parsed.limit as string) : undefined,
+      pageSize: parsed.limit ? parseInt(parsed.limit as string) : undefined,
       subjects: parsed.subjects as string[] | undefined,
       predicates: parsed.predicates as string[] | undefined,
     });
-    console.log(JSON.stringify(results, null, 2));
+    console.log(JSON.stringify(response.results, null, 2));
   }
 
   /**
@@ -241,7 +241,7 @@ export class WorldsCli {
       return;
     }
 
-    const slug = (parsed.slug as string) || "_";
+    const worldId = (parsed.slug as string) || (parsed.id as string) || "_";
     const queryOrPath = parsed.query as string;
     if (!queryOrPath) {
       console.error(
@@ -258,7 +258,7 @@ export class WorldsCli {
     }
 
     const results = await this.worlds.sparql({
-      sources: [slug],
+      sources: [worldId],
       query,
     });
     console.log(JSON.stringify(results, null, 2));
@@ -278,7 +278,7 @@ export class WorldsCli {
       );
       return;
     }
-    const slug = (parsed.slug as string) || "_";
+    const worldId = (parsed.slug as string) || (parsed.id as string) || "_";
     const path = parsed.file as string;
     if (!path) {
       console.error(
@@ -286,13 +286,13 @@ export class WorldsCli {
       );
       return;
     }
-    const data = await Deno.readFile(path);
+    const data = await Deno.readTextFile(path);
     await this.worlds.import({
-      source: slug,
-      data: data.buffer as ArrayBuffer,
+      source: worldId,
+      data,
       contentType: parsed["content-type"] as WorldsContentType,
     });
-    console.log(`Imported data into world ${slug}`);
+    console.log(`Imported data into world ${worldId}`);
   }
 
   /**
@@ -312,9 +312,9 @@ export class WorldsCli {
       );
       return;
     }
-    const slug = (parsed.slug as string) || "_";
+    const worldId = (parsed.slug as string) || (parsed.id as string) || "_";
     const buffer = await this.worlds.export({
-      source: slug,
+      source: worldId,
       contentType: parsed["content-type"] as WorldsContentType,
     });
     await Deno.stdout.write(new Uint8Array(buffer));
@@ -389,7 +389,7 @@ export class WorldsCli {
     const tools = createTools({
       worlds: this.worlds,
       sources: [
-        { slug: parsed.world, write: parsed.write ?? false },
+        { id: parsed.world, mode: parsed.write ? "write" : "read" },
       ],
     });
 
