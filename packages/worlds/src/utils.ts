@@ -1,108 +1,93 @@
-import { errorResponseDataSchema } from "./api/v1/common.schema.ts";
-
+import type { ErrorResponseData } from "./api/v1/common.types.ts";
 
 /**
- * parseError parses an error response from the API.
+ * isErrorResponseData check if a value is an ErrorResponseData.
  */
-export async function parseError(response: Response): Promise<string> {
-  let errorMessage = `${response.status} ${response.statusText}`;
-  try {
-    const contentTypeHeader = response.headers.get("content-type");
-    if (contentTypeHeader?.includes("application/json")) {
-      const json = await response.json();
-      const result = errorResponseDataSchema.safeParse(json);
-      if (result.success) {
-        errorMessage = result.data.error.message;
-      }
-    } else {
-      const text = await response.text();
-      if (text) {
-        errorMessage = text;
-      }
-    }
-  } catch {
-    // Ignore parsing errors and return the default status text
+export function isErrorResponseData(
+  value: unknown,
+): value is ErrorResponseData {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "error" in value &&
+    typeof (value as Record<string, unknown>).error === "object" &&
+    (value as { error: { message?: unknown } }).error.message !== undefined
+  );
+}
+
+/**
+ * parseError extracts a message from an ErrorResponseData or unknown error.
+ */
+export function parseError(error: unknown): string {
+  if (isErrorResponseData(error)) {
+    return error.error.message;
   }
-  return errorMessage;
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
+/**
+ * decodeCursor converts a base64 string to a generic data object.
+ */
+// deno-lint-ignore no-explicit-any
+export function decodeCursor(cursor?: string): any {
+  if (!cursor) return undefined;
+  try {
+    return JSON.parse(atob(cursor));
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * encodeCursor converts a generic data object to a base64 string.
+ */
+export function encodeCursor(data: unknown): string {
+  return btoa(JSON.stringify(data));
 }
 
 /**
  * isSparqlUpdate checks if a SPARQL query is an update operation.
  */
 export function isSparqlUpdate(query: string): boolean {
-  const normalized = query
-    .replace(/(^|\s)#[^\n]*/g, "$1")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toUpperCase();
-
+  const normalized = query.trim().toUpperCase();
   const updateKeywords = [
     "INSERT",
     "DELETE",
     "LOAD",
     "CLEAR",
-    "DROP",
     "CREATE",
-    "ADD",
-    "MOVE",
+    "DROP",
     "COPY",
+    "MOVE",
+    "ADD",
   ];
 
-  const prologueMatch = normalized.match(
-    /^(?:(?:PREFIX\s+\w+:\s*<[^>]+>|BASE\s+<[^>]+>)\s*)*/,
-  );
-  const afterPrologue = normalized.slice(prologueMatch?.[0]?.length ?? 0)
-    .trim();
+  // Remove prologue (PREFIX/BASE) for check
+  const body = normalized.replace(/^(PREFIX|BASE).*/gim, "").trim();
 
-  return updateKeywords.some((keyword) => afterPrologue.startsWith(keyword));
+  return updateKeywords.some((kw) => body.startsWith(kw));
 }
 
 /**
- * escapeSparqlLiteral escapes a string for use as a SPARQL literal.
+ * escapeSparqlLiteral escapes a string for use in a SPARQL literal.
  */
 export function escapeSparqlLiteral(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return value
+    .replace(/\\/g, "\\\\") // \ -> \\
+    .replace(/"/g, '\\"') // " -> \"
+    .replace(/\n/g, "\\n") // newline
+    .replace(/\r/g, "\\r") // carriage return
+    .replace(/\t/g, "\\t"); // tab
 }
 
 /**
- * escapeSparqlUri escapes a string for use as a SPARQL URI.
+ * escapeSparqlUri escapes a string for use in a SPARQL URI.
  */
 export function escapeSparqlUri(value: string): string {
   return value
-    .replace(/\\/g, "\\\\")
-    .replace(/</g, "\\<")
-    .replace(/>/g, "\\>");
-}
-
-/**
- * CursorParams represents the decoded cursor values.
- */
-export interface CursorParams {
-  created_at: number;
-  id: string;
-}
-
-/**
- * encodeCursor encodes cursor params into a base64 string.
- */
-export function encodeCursor(params: CursorParams): string {
-  const str = `${params.created_at}:${params.id}`;
-  return btoa(str);
-}
-
-/**
- * decodeCursor decodes a base64 cursor string into CursorParams.
- * Returns null if the cursor is invalid.
- */
-export function decodeCursor(cursor: string): CursorParams | null {
-  try {
-    const str = atob(cursor);
-    const parts = str.split(":");
-    if (parts.length !== 2) return null;
-    const created_at = parseInt(parts[0], 10);
-    if (isNaN(created_at)) return null;
-    return { created_at, id: parts[1] };
-  } catch {
-    return null;
-  }
+    .replace(/\\/g, "\\\\") // \ -> \\
+    .replace(/>/g, "\\>"); // > -> \>
 }

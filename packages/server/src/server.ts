@@ -8,7 +8,7 @@ import worldsRouter from "./routes/rpc/route.ts";
  */
 export function createServer(
   appContext: WorldsContext,
-): Promise<Router> {
+): Router {
   const app = new Router();
 
   // Connect Modular Worlds RPC Router

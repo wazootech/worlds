@@ -1,8 +1,8 @@
-import type { WorldsSource } from "@wazoo/worlds-sdk";
+import type { WorldSource } from "@wazoo/worlds-sdk";
 import type { CreateToolsOptions } from "./types.ts";
 
 import type { WorldsSparqlTool } from "./tools/sparql.ts";
-import { resolveSource } from "@wazoo/worlds-sdk";
+import { resolveSource, toWorldName } from "@wazoo/worlds-sdk";
 import { createWorldsSparqlTool } from "./tools/sparql.ts";
 import type { WorldsSearchTool } from "./tools/search.ts";
 import { createWorldsSearchTool } from "./tools/search.ts";
@@ -35,8 +35,8 @@ export function createTools(options: CreateToolsOptions): {
   import: WorldsImportTool;
   export: WorldsExportTool;
 } {
-  const normalizedSources: WorldsSource[] = options.sources.map((source) =>
-    typeof source === "string" ? { world: source } : source
+  const normalizedSources: WorldSource[] = options.sources.map((source) =>
+    typeof source === "string" ? source : source as WorldSource
   );
   const normalizedOptions: CreateToolsOptions = {
     ...options,
@@ -67,21 +67,24 @@ export function validateCreateToolsOptions(options: CreateToolsOptions) {
   }
 
   let writable = false;
-  const seen = new Set<string | null>();
+  const seen = new Set<string>();
   for (const source of options.sources) {
-    const { world } = resolveSource(source);
-    if (seen.has(world)) {
-      throw new Error(`Duplicate source: ${world}`);
+    const worldName = toWorldName(source);
+    if (seen.has(worldName)) {
+      throw new Error(`Duplicate source: ${worldName}`);
     }
 
-    seen.add(world);
+    seen.add(worldName);
 
-    if (typeof source === "object" && source !== null && source.write) {
-      if (writable) {
-        throw new Error("Multiple writable sources are not allowed.");
+    if (typeof source === "object" && source !== null) {
+      const s = source as any; // Cast for mode check
+      if (s.mode === "write" || s.write === true) {
+        if (writable) {
+          throw new Error("Multiple writable sources are not allowed.");
+        }
+
+        writable = true;
       }
-
-      writable = true;
     }
   }
 }

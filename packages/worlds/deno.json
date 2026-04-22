@@ -3,14 +3,13 @@
   "version": "0.1.0",
   "exports": {
     ".": "./src/mod.ts",
-    "./engine": "./src/worlds/local.ts",
-    "./remote": "./src/worlds/remote.ts",
+    "./engine": "./src/engine/service.ts",
+    "./remote": "./src/sdk/client.ts",
     "./schema": "./src/schema.ts",
-    "./schema/world": "./src/worlds/schema.ts",
-    "./schema/sparql": "./src/worlds/sparql.schema.ts",
-    "./schema/search": "./src/worlds/search.schema.ts",
-    "./types": "./src/types.ts",
-    "./testing": "./src/engine-context.ts"
+    "./types/world": "./src/resources/world.types.ts",
+    "./types/sparql": "./src/api/v1/sparql.types.ts",
+    "./types/search": "./src/api/v1/search.types.ts",
+    "./testing": "./src/testing/context.ts"
   },
   "imports": {
     "#/": "./src/",
@@ -24,12 +23,10 @@
     "@openrouter/ai-sdk-provider": "npm:@openrouter/ai-sdk-provider@^2.8.0",
     "ai": "npm:ai@^4.0.0",
     "ollama": "npm:ollama@^0.5.12",
-
     "rdf-canonize": "npm:rdf-canonize@^5.0.0",
     "@std/encoding": "jsr:@std/encoding@^1.0.5",
     "@std/path": "jsr:@std/path@^1.0.8",
-    "n3": "npm:n3@^2.0.3",
-    "zod": "npm:zod@^4.3.6"
+    "n3": "npm:n3@^2.0.3"
   },
   "tasks": {
     "test": "deno test -A"

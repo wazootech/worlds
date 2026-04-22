@@ -1,43 +1,33 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
-import type {
-  World,
-  WorldsCreateInput,
-  WorldsInterface,
-} from "@wazoo/worlds-sdk";
-import {
-  worldSchema as worldsCreateOutputSchema,
-  worldsCreateInputSchema,
-} from "@wazoo/worlds-sdk";
+import type { Tool } from "ai";
+import type { CreateWorldRequest, World, WorldsEngine } from "@wazoo/worlds-sdk";
+import { CreateWorldRequestSchema, WorldSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
 /**
- * create creates a new isolated world.
+ * create initializes a new world (dataset).
  */
 export async function create(
-  worlds: WorldsInterface,
-  input: WorldsCreateInput,
+  worlds: WorldsEngine,
+  input: CreateWorldRequest,
 ): Promise<World> {
   return await worlds.create(input);
 }
 
 /**
- * WorldsCreateTool is a tool for creating a new world.
+ * WorldsCreateTool is a tool for creating a world.
  */
-export type WorldsCreateTool = Tool<WorldsCreateInput, World>;
+export type WorldsCreateTool = Tool<CreateWorldRequest, World>;
 
 /**
  * worldsCreateTool defines the configuration for the world creation tool.
  */
-export const worldsCreateTool: WorldsTool<
-  WorldsCreateInput,
-  World
-> = {
+export const worldsCreateTool: WorldsTool<CreateWorldRequest, World> = {
   name: "worlds_create",
   description:
-    "Creates a new isolated knowledge graph (world). Use this tool when the user wants to start a fresh dataset or project space. Input must include a unique 'world' and a human-readable 'label'. Returns the newly created world object.",
-  inputSchema: worldsCreateInputSchema,
-  outputSchema: worldsCreateOutputSchema,
+    "Initializes a new dataset (world) with a provided display name and optional description. Use this tool when a user wants to start a new project or create a new logical space for their data.",
+  inputSchema: CreateWorldRequestSchema,
+  outputSchema: WorldSchema,
   isWrite: true,
 };
 

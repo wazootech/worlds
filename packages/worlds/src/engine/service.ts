@@ -1,20 +1,21 @@
 import type { Quad } from "n3";
+import type { WorldId } from "../resources/world.types.ts";
 import type {
+  CreateWorldRequest,
+  DeleteWorldRequest,
   ExportWorldRequest,
+  GetServiceDescriptionRequest,
+  GetWorldRequest,
   ImportWorldRequest,
   ListWorldsRequest,
-  DeleteWorldRequest,
-  GetWorldRequest,
-  GetServiceDescriptionRequest,
-  SparqlQueryRequest,
-  SparqlQueryResponse,
-  UpdateWorldRequest,
-  World,
-  CreateWorldRequest,
   ListWorldsResponse,
   SearchWorldsRequest,
   SearchWorldsResponse,
   Source,
+  SparqlQueryRequest,
+  SparqlQueryResponse,
+  UpdateWorldRequest,
+  World,
 } from "../schema.ts";
 
 import type { ManagementLayer, WorldRow } from "../management/worlds.ts";
@@ -27,7 +28,10 @@ import type {
   SparqlEngine,
   StoreEngine,
 } from "../infrastructure/mod.ts";
-import { generateBlobFromN3Store, generateN3StoreFromBlob } from "../infrastructure/rdf/n3.ts";
+import {
+  generateBlobFromN3Store,
+  generateN3StoreFromBlob,
+} from "../infrastructure/rdf/n3.ts";
 import { Store } from "n3";
 
 /**
@@ -35,7 +39,7 @@ import { Store } from "n3";
  */
 export interface SyncableStore {
   store: Store<Quad, Quad, Quad, Quad>;
-  sync: (patches?: any[]) => Promise<void>;
+  sync: (patches?: unknown[]) => Promise<void>;
 }
 
 /**
@@ -73,7 +77,7 @@ export interface WorldsEngine {
  */
 function mapRowToWorld(row: WorldRow): World {
   return {
-    id: row.id,
+    id: row.id as WorldId,
     namespace: row.namespace,
     displayName: row.label,
     description: row.description,
@@ -112,7 +116,7 @@ export class Worlds implements WorldsEngine {
     this.searchEngine = options.searchEngine;
   }
 
-  public async init(): Promise<void> {
+  public init(): Promise<void> {
     return Promise.resolve();
   }
 
@@ -125,7 +129,6 @@ export class Worlds implements WorldsEngine {
     return this.management;
   }
 
-
   private async resolveStore(
     inputSource?: Source,
   ): Promise<SyncableStore> {
@@ -137,7 +140,6 @@ export class Worlds implements WorldsEngine {
         "StoreEngine is required for data-plane operations",
       );
     }
-
 
     if (!worldId) {
       throw new Error("World identity required");
@@ -154,14 +156,18 @@ export class Worlds implements WorldsEngine {
         worldId,
         resolved.namespace,
       );
-      const indexed = createIndexedStore(rawStore as any, [handler]);
+      const indexed = createIndexedStore(rawStore as unknown as Store, [
+        handler,
+      ]);
       return {
+        // deno-lint-ignore no-explicit-any
         store: indexed.store as any,
         sync: indexed.sync,
       };
     }
 
     return {
+      // deno-lint-ignore no-explicit-any
       store: rawStore as any,
       sync: async () => {},
     };
@@ -190,7 +196,7 @@ export class Worlds implements WorldsEngine {
 
   public async create(input: CreateWorldRequest): Promise<World> {
     const mgmt = this.ensureManagement();
-    const nameOrId = input.id || input.name || input.world;
+    const nameOrId = input.id || (input as any).name || (input as any).world;
     if (!nameOrId) throw new Error("World identity required");
 
     const resolved = resolveSource(nameOrId, {
@@ -253,17 +259,20 @@ export class Worlds implements WorldsEngine {
       throw new Error("SparqlEngine is required for SPARQL operations");
     }
 
-    const { executeSparql } = await import("../infrastructure/rdf/sparql-engine.ts");
-    const result = await executeSparql(store as any, input.query);
+    const { executeSparql } = await import(
+      "../infrastructure/rdf/sparql-engine.ts"
+    );
+    const result = await executeSparql(store as unknown as Store, input.query);
     await sync();
     return result;
   }
 
-  public async search(input: SearchWorldsRequest): Promise<SearchWorldsResponse> {
+  public async search(
+    input: SearchWorldsRequest,
+  ): Promise<SearchWorldsResponse> {
     if (!this.searchEngine) {
       throw new Error("SearchEngine is required for search operations");
     }
-
 
     const resolved = resolveSource(
       input.sources?.[0] || input.parent,
@@ -306,15 +315,17 @@ export class Worlds implements WorldsEngine {
   public async getServiceDescription(
     input: GetServiceDescriptionRequest,
   ): Promise<string> {
-    const { store } = await this.resolveStore(input.sources?.[0]);
+    const { store: _store } = await this.resolveStore(input.sources?.[0]);
     // TODO: Implement actual service description
     return "";
   }
 
   public async [Symbol.asyncDispose](): Promise<void> {
     if (this.storeEngine) {
-      if (typeof (this.storeEngine as any)[Symbol.asyncDispose] === "function") {
-        await (this.storeEngine as any)[Symbol.asyncDispose]();
+      // deno-lint-ignore no-explicit-any
+      const engine = this.storeEngine as any;
+      if (typeof engine[Symbol.asyncDispose] === "function") {
+        await engine[Symbol.asyncDispose]();
       }
     }
   }

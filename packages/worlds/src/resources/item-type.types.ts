@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 /**
  * ItemTypeRow represents an item type record in the database.
  */
@@ -14,11 +12,3 @@ export interface ItemTypeRow {
    */
   type: string;
 }
-
-/**
- * itemTypeRowSchema is the Zod schema for ItemTypeRow.
- */
-export const itemTypeRowSchema: z.ZodType<ItemTypeRow> = z.object({
-  subject: z.string(),
-  type: z.string(),
-});

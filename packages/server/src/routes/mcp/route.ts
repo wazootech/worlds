@@ -1,16 +1,17 @@
 import { Router } from "@fartlabs/rt";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import type {
+  CreateWorldRequest,
+  DeleteWorldRequest,
+  ExportWorldRequest,
+  GetWorldRequest,
+  ImportWorldRequest,
+  ListWorldsRequest,
+  QueryWorldRequest,
+  SearchWorldsRequest,
+  SparqlQueryRequest,
+  UpdateWorldRequest,
   WorldsContext,
-  WorldsCreateInput,
-  WorldsDeleteInput,
-  WorldsExportInput,
-  WorldsGetInput,
-  WorldsImportInput,
-  WorldsListInput,
-  WorldsSearchInput,
-  WorldsSparqlInput,
-  WorldsUpdateInput,
 } from "@wazoo/worlds-sdk";
 import type {
   CreateToolsOptions,
@@ -63,7 +64,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (w, s, a) => sparql(w, s, a as WorldsSparqlInput),
+    fn: (w, s, a) => sparql(w, s, a as SparqlQueryRequest),
   },
   {
     tool: {
@@ -72,7 +73,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (w, _s, a) => list(w, a as WorldsListInput),
+    fn: (w, _s, a) => list(w, a as ListWorldsRequest),
   },
   {
     tool: {
@@ -81,35 +82,35 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (w, _s, a) => get(w, a as WorldsGetInput),
+    fn: (w, _s, a) => get(w, a as GetWorldRequest),
   },
   {
     tool: {
       ...worldsCreateTool,
       title: "Create",
     },
-    fn: (w, _s, a) => create(w, a as WorldsCreateInput),
+    fn: (w, _s, a) => create(w, a as CreateWorldRequest),
   },
   {
     tool: {
       ...worldsUpdateTool,
       title: "Update",
     },
-    fn: (w, _s, a) => update(w, a as WorldsUpdateInput),
+    fn: (w, _s, a) => update(w, a as UpdateWorldRequest),
   },
   {
     tool: {
       ...worldsDeleteTool,
       title: "Delete",
     },
-    fn: (w, _s, a) => deleteWorld(w, a as WorldsDeleteInput),
+    fn: (w, _s, a) => deleteWorld(w, a as DeleteWorldRequest),
   },
   {
     tool: {
       ...worldsImportTool,
       title: "Import",
     },
-    fn: (w, _s, a) => importWorld(w, a as WorldsImportInput),
+    fn: (w, _s, a) => importWorld(w, a as ImportWorldRequest),
   },
   {
     tool: {
@@ -118,7 +119,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (w, _s, a) => exportWorld(w, a as WorldsExportInput),
+    fn: (w, _s, a) => exportWorld(w, a as ExportWorldRequest),
   },
   {
     tool: {
@@ -127,7 +128,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (w, _s, a) => search(w, a as WorldsSearchInput),
+    fn: (w, _s, a) => search(w, a as SearchWorldsRequest),
   },
 ];
 

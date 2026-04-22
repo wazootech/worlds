@@ -1,59 +1,39 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
-import { z } from "zod";
-import type { WorldsImportInput, WorldsInterface } from "@wazoo/worlds-sdk";
-import { worldsImportInputSchema } from "@wazoo/worlds-sdk";
+import type { Tool } from "ai";
+import type { ImportWorldRequest, WorldsEngine } from "@wazoo/worlds-sdk";
+import { ImportWorldRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
+import { z } from "zod";
 
 /**
- * WorldsImportOutput is the output for importing RDF data into a world.
- */
-export interface WorldsImportOutput {
-  success: boolean;
-}
-
-/**
- * worldsImportOutputSchema is the Zod schema for world import output.
- */
-export const worldsImportOutputSchema: z.ZodType<WorldsImportOutput> = z.object(
-  {
-    success: z.boolean(),
-  },
-);
-
-/**
- * importWorld ingests RDF data into a world.
+ * importWorld loads data into a world.
  */
 export async function importWorld(
-  worlds: WorldsInterface,
-  input: WorldsImportInput,
-): Promise<WorldsImportOutput> {
+  worlds: WorldsEngine,
+  input: ImportWorldRequest,
+): Promise<void> {
   await worlds.import(input);
-  return { success: true };
 }
 
 /**
- * WorldsImportTool is a tool for importing RDF data into a world.
+ * WorldsImportTool is a tool for importing data.
  */
-export type WorldsImportTool = Tool<WorldsImportInput, WorldsImportOutput>;
+export type WorldsImportTool = Tool<ImportWorldRequest, void>;
 
 /**
- * worldsImportTool defines the configuration for the world import tool.
+ * worldsImportTool defines the configuration for the data import tool.
  */
-export const worldsImportTool: WorldsTool<
-  WorldsImportInput,
-  WorldsImportOutput
-> = {
+export const worldsImportTool: WorldsTool<ImportWorldRequest, void> = {
   name: "worlds_import",
   description:
-    "Ingests RDF data into an existing world's graph. Use this tool when you have raw Turtle, N-Triples, or N-Quads data to upload. Input must be a 'world' and a 'data' string. Returns a success indicator.",
-  inputSchema: worldsImportInputSchema,
-  outputSchema: worldsImportOutputSchema,
+    "Loads RDF data into a world. The data can be provided in various formats such as Turtle, JSON-LD, or N-Quads. Use this tool when you need to populate a world with external data or large blocks of RDF.",
+  inputSchema: ImportWorldRequestSchema,
+  outputSchema: z.void(),
   isWrite: true,
 };
 
 /**
- * createWorldsImportTool instantiates the world import tool.
+ * createWorldsImportTool instantiates the data import tool.
  */
 export function createWorldsImportTool(
   { worlds }: CreateToolsOptions,

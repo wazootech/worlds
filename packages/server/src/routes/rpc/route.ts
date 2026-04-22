@@ -1,6 +1,6 @@
 import { Router } from "@fartlabs/rt";
+import { type WorldsContext } from "@wazoo/worlds-sdk";
 import {
-  type WorldsContext,
   worldsCreateInputSchema,
   worldsDeleteInputSchema,
   worldsExportInputSchema,
@@ -10,7 +10,7 @@ import {
   worldsSearchInputSchema,
   worldsSparqlInputSchema,
   worldsUpdateInputSchema,
-} from "@wazoo/worlds-sdk";
+} from "#/utils/validation/worlds.validation.ts";
 import { authorizeRequest } from "#/middleware/auth.ts";
 import {
   BadRequestError,

@@ -26,7 +26,6 @@ export interface StoreEngine {
   delete(id: string, namespace?: string): void | Promise<void>;
 }
 
-
 /**
  * KvStoreEngine manages in-memory N3 Stores using KV pattern.
  *

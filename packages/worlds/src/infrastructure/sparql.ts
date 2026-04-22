@@ -1,10 +1,9 @@
 import type {
-  SparqlQueryRequest,
-  SparqlQueryResponse,
   ExportWorldRequest,
   ImportWorldRequest,
+  SparqlQueryRequest,
+  SparqlQueryResponse,
 } from "../schema.ts";
-
 
 /**
  * SparqlEngine handles RDF store operations.

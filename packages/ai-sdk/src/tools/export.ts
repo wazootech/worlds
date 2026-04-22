@@ -1,59 +1,39 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
-import { z } from "zod";
-import type { WorldsExportInput, WorldsInterface } from "@wazoo/worlds-sdk";
-import { worldsExportInputSchema } from "@wazoo/worlds-sdk";
+import type { Tool } from "ai";
+import type { ExportWorldRequest, WorldsEngine } from "@wazoo/worlds-sdk";
+import { ExportWorldRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
+import { z } from "zod";
 
 /**
- * WorldsExportOutput is the output for exporting RDF data from a world in the AI SDK.
- */
-export interface WorldsExportOutput {
-  data: string;
-}
-
-/**
- * worldsExportOutputSchema is the Zod schema for world export output.
- */
-export const worldsExportOutputSchema: z.ZodType<WorldsExportOutput> = z.object(
-  {
-    data: z.string(),
-  },
-);
-
-/**
- * exportWorld retrieves a world's facts in RDF format.
+ * exportWorld retrieves data from a world.
  */
 export async function exportWorld(
-  worlds: WorldsInterface,
-  input: WorldsExportInput,
-): Promise<WorldsExportOutput> {
-  const buffer = await worlds.export(input);
-  return { data: new TextDecoder().decode(buffer) };
+  worlds: WorldsEngine,
+  input: ExportWorldRequest,
+): Promise<ArrayBuffer> {
+  return await worlds.export(input);
 }
 
 /**
- * WorldsExportTool is a tool for exporting RDF data from a world.
+ * WorldsExportTool is a tool for exporting data.
  */
-export type WorldsExportTool = Tool<WorldsExportInput, WorldsExportOutput>;
+export type WorldsExportTool = Tool<ExportWorldRequest, ArrayBuffer>;
 
 /**
- * worldsExportTool defines the configuration for the world export tool.
+ * worldsExportTool defines the configuration for the data export tool.
  */
-export const worldsExportTool: WorldsTool<
-  WorldsExportInput,
-  WorldsExportOutput
-> = {
+export const worldsExportTool: WorldsTool<ExportWorldRequest, ArrayBuffer> = {
   name: "worlds_export",
   description:
-    "Retrieves the entire collection of facts from a world in RDF format. Use this tool when you need to back up a dataset or move data between environments. Input must be a 'world'. Returns a string containing the world's facts in N-Quads format.",
-  inputSchema: worldsExportInputSchema,
-  outputSchema: worldsExportOutputSchema,
+    "Retrieves the data stored in a world and returns it as an ArrayBuffer. Default content type is application/n-quads. Use this tool when you need to extract the raw graph data from a world.",
+  inputSchema: ExportWorldRequestSchema,
+  outputSchema: z.instanceof(ArrayBuffer),
   isWrite: false,
 };
 
 /**
- * createWorldsExportTool instantiates the world export tool.
+ * createWorldsExportTool instantiates the data export tool.
  */
 export function createWorldsExportTool(
   { worlds }: CreateToolsOptions,

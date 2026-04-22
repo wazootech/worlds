@@ -8,7 +8,6 @@ import type { WorldsContext } from "../engine/factory.ts";
 
 export type { WorldsContext };
 
-
 /**
  * createTestContext creates a test application context with in-memory
  * Map-based management repositories and store manager.

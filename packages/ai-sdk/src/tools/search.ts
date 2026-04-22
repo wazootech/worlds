@@ -1,68 +1,55 @@
 import type { Tool } from "ai";
 import { tool } from "ai";
-import { z } from "zod";
 import type {
-  WorldsInterface,
-  WorldsSearchInput,
-  WorldsSearchOutput,
+  SearchWorldsRequest,
+  SearchWorldsResponse,
+  WorldsEngine,
 } from "@wazoo/worlds-sdk";
 import {
-  worldsSearchInputSchema,
-  worldsSearchOutputSchema as engineWorldsSearchOutputSchema,
-} from "@wazoo/worlds-sdk";
+  SearchWorldsRequestSchema,
+  SearchWorldsResultSchema,
+} from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
+import { z } from "zod";
 
 /**
- * WorldsSearchOutputData is the wrapper for search results in the AI SDK.
- */
-export interface WorldsSearchOutputData {
-  results: WorldsSearchOutput[];
-}
-
-/**
- * worldsSearchOutputSchema is the Zod schema for search output.
- */
-export const worldsSearchOutputSchema: z.ZodType<WorldsSearchOutputData> = z
-  .object({
-    results: z.array(engineWorldsSearchOutputSchema),
-  });
-
-/**
- * search performs a semantic or text search for entities within a world.
+ * search performs a semantic search across worlds.
  */
 export async function search(
-  worlds: WorldsInterface,
-  input: WorldsSearchInput,
-): Promise<WorldsSearchOutputData> {
-  const results = await worlds.search(input);
-  return { results };
+  worlds: WorldsEngine,
+  input: SearchWorldsRequest,
+): Promise<SearchWorldsResponse> {
+  return await worlds.search(input);
 }
 
 /**
- * WorldsSearchTool is a tool for searching entities within a world.
+ * WorldsSearchTool is a tool for searching worlds.
  */
 export type WorldsSearchTool = Tool<
-  WorldsSearchInput,
-  WorldsSearchOutputData
+  SearchWorldsRequest,
+  SearchWorldsResponse
 >;
 
 /**
- * worldsSearchTool defines the configuration for the entity search tool.
+ * worldsSearchTool defines the configuration for the world search tool.
  */
 export const worldsSearchTool: WorldsTool<
-  WorldsSearchInput,
-  WorldsSearchOutputData
+  SearchWorldsRequest,
+  SearchWorldsResponse
 > = {
   name: "worlds_search",
   description:
-    "Performs semantic or text search for entities and facts within one or more worlds. Use this tool when a user asks about an entity by a natural language name or needs to find related information by proximity. Input must be an array of 'sources' and a 'query' string. Returns an array of search results including IRIs and relevance scores.",
-  inputSchema: worldsSearchInputSchema,
-  outputSchema: worldsSearchOutputSchema,
+    "Performs a semantic search across one or more worlds. Use this tool when you need to find information based on its meaning or context. Returns an array of match results with similarity scores.",
+  inputSchema: SearchWorldsRequestSchema,
+  outputSchema: z.object({
+    results: z.array(SearchWorldsResultSchema),
+    nextPageToken: z.string().optional(),
+  }),
   isWrite: false,
 };
 
 /**
- * createWorldsSearchTool instantiates the entity search tool.
+ * createWorldsSearchTool instantiates the world search tool.
  */
 export function createWorldsSearchTool(
   { worlds }: CreateToolsOptions,

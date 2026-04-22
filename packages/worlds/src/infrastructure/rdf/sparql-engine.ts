@@ -3,10 +3,9 @@ import type { Store } from "n3";
 import type {
   SparqlBinding,
   SparqlQuad,
-  SparqlValue,
   SparqlQueryResponse,
+  SparqlValue,
 } from "../../schema.ts";
-
 
 export const queryEngine: QueryEngine = new QueryEngine();
 
@@ -25,19 +24,26 @@ export async function executeSparql(
     return null as unknown as SparqlQueryResponse;
   }
 
-
   if (queryType.resultType === "bindings") {
-    return await handleBindings(queryType as any);
+    return await handleBindings(
+      queryType as unknown as {
+        execute(): Promise<unknown>;
+        metadata(): Promise<{ variables: { value: string }[] }>;
+      },
+    );
   }
 
   if (queryType.resultType === "boolean") {
-    return await handleBoolean(queryType as any);
+    return await handleBoolean(
+      queryType as unknown as { execute(): Promise<boolean> },
+    );
   }
 
   if (queryType.resultType === "quads") {
-    return await handleQuads(queryType as any);
+    return await handleQuads(
+      queryType as unknown as { execute(): Promise<unknown> },
+    );
   }
-
 
   throw new Error("Unsupported query type");
 }
@@ -65,7 +71,14 @@ async function handleBindings(queryType: {
         // @ts-ignore - term iteration
         const term = bindingMap.get(v);
         if (term) {
-          bindingObj[v] = toSparqlValue(term as any);
+          bindingObj[v] = toSparqlValue(
+            term as {
+              termType: string;
+              value: string;
+              language?: string;
+              datatype?: { value: string };
+            },
+          );
         }
       }
       b.push(bindingObj);

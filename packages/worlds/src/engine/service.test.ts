@@ -1,5 +1,5 @@
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
-import type { SparqlSelectResults } from "../schema.ts";
+import type { SparqlSelectResult, World } from "../schema.ts";
 import { createTestContext } from "../testing/context.ts";
 import { Worlds } from "./service.ts";
 import { ApiKeyRepository } from "../management/keys.ts";
@@ -46,10 +46,9 @@ Deno.test({
 
     await t.step("list worlds", async () => {
       const list = await worlds.list({ pageSize: 10 });
-      const found = list.worlds.find((w: any) => w.id === worldId);
+      const found = list.worlds.find((w: World) => w.id === worldId);
       assertExists(found);
     });
-
 
     await t.step("update world", async () => {
       await worlds.update({
@@ -76,7 +75,7 @@ Deno.test({
       });
 
       if (result && "results" in result) {
-        const selectResult = result as SparqlSelectResults;
+        const selectResult = result as SparqlSelectResult;
         assertEquals(
           selectResult.results.bindings[0].o.value,
           "Core Value",

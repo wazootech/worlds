@@ -1,13 +1,13 @@
 import { assert, assertEquals, assertExists, assertRejects } from "@std/assert";
-import type { WorldsInterface } from "@wazoo/worlds-sdk";
+import type { WorldsEngine } from "@wazoo/worlds-sdk";
 import type {
-  WorldsCreateInput,
-  WorldsDeleteInput,
-  WorldsExportInput,
-  WorldsImportInput,
-  WorldsUpdateInput,
+  CreateWorldRequest,
+  DeleteWorldRequest,
+  ExportWorldRequest,
+  ImportWorldRequest,
+  UpdateWorldRequest,
 } from "@wazoo/worlds-sdk";
-import type { World, WorldsSearchOutput } from "@wazoo/worlds-sdk";
+import type { World, SearchWorldsResult } from "@wazoo/worlds-sdk";
 
 import { sparql, worldsSparqlTool } from "./tools/sparql.ts";
 import { search, worldsSearchTool } from "./tools/search.ts";
@@ -34,7 +34,7 @@ function createMockWorld(overrides?: Partial<World>): World {
   };
 }
 
-const mockWorldsBase: WorldsInterface = {
+const mockWorldsBase: WorldsEngine = {
   list: () => Promise.resolve([]),
   get: () => Promise.resolve(null),
   create: () => Promise.resolve(createMockWorld()),
@@ -54,11 +54,11 @@ const mockWorldsBase: WorldsInterface = {
 function createMockWorlds(
   overrides?: Partial<
     {
-      [K in keyof WorldsInterface]?: WorldsInterface[K];
+      [K in keyof WorldsEngine]?: WorldsEngine[K];
     }
   >,
-): WorldsInterface {
-  return { ...mockWorldsBase, ...overrides } as WorldsInterface;
+): WorldsEngine {
+  return { ...mockWorldsBase, ...overrides } as WorldsEngine;
 }
 
 Deno.test("sparql tool", async (t) => {
@@ -178,7 +178,7 @@ Deno.test("get tool", async (t) => {
 Deno.test("create tool", async (t) => {
   await t.step("creates world with required fields", async () => {
     const mockWorlds = createMockWorlds({
-      create: (input: WorldsCreateInput) =>
+      create: (input: CreateWorldRequest) =>
         Promise.resolve(
           createMockWorld({
             world: input.world,
@@ -205,9 +205,9 @@ Deno.test("create tool", async (t) => {
 
 Deno.test("update tool", async (t) => {
   await t.step("updates world description", async () => {
-    let calledWith: WorldsUpdateInput | undefined;
+    let calledWith: UpdateWorldRequest | undefined;
     const mockWorlds = createMockWorlds({
-      update: (input: WorldsUpdateInput) => {
+      update: (input: UpdateWorldRequest) => {
         calledWith = input;
         return Promise.resolve();
       },
@@ -229,9 +229,9 @@ Deno.test("update tool", async (t) => {
 
 Deno.test("delete tool", async (t) => {
   await t.step("deletes world by ID", async () => {
-    let calledWith: WorldsDeleteInput | undefined;
+    let calledWith: DeleteWorldRequest | undefined;
     const mockWorlds = createMockWorlds({
-      delete: (input: WorldsDeleteInput) => {
+      delete: (input: DeleteWorldRequest) => {
         calledWith = input;
         return Promise.resolve();
       },
@@ -250,7 +250,7 @@ Deno.test("delete tool", async (t) => {
 
 Deno.test("search tool", async (t) => {
   await t.step("returns search results", async () => {
-    const mockResults: WorldsSearchOutput[] = [
+    const mockResults: SearchWorldsResult[] = [
       {
         subject: "http://example.org/s",
         predicate: "http://example.org/p",
@@ -294,9 +294,9 @@ Deno.test("search tool", async (t) => {
 
 Deno.test("import tool", async (t) => {
   await t.step("imports RDF data", async () => {
-    let calledWith: WorldsImportInput | undefined;
+    let calledWith: ImportWorldRequest | undefined;
     const mockWorlds = createMockWorlds({
-      import: (input: WorldsImportInput) => {
+      import: (input: ImportWorldRequest) => {
         calledWith = input;
         return Promise.resolve();
       },
@@ -332,9 +332,9 @@ Deno.test("export tool", async (t) => {
   });
 
   await t.step("exports world as turtle", async () => {
-    let calledWith: WorldsExportInput | undefined;
+    let calledWith: ExportWorldRequest | undefined;
     const mockWorlds = createMockWorlds({
-      export: (input: WorldsExportInput) => {
+      export: (input: ExportWorldRequest) => {
         calledWith = input;
         return Promise.resolve(new ArrayBuffer(0));
       },

@@ -1,40 +1,33 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
-import type { World, WorldsGetInput, WorldsInterface } from "@wazoo/worlds-sdk";
-import {
-  worldSchema as worldsGetOutputSchema,
-  worldsGetInputSchema,
-} from "@wazoo/worlds-sdk";
+import type { Tool } from "ai";
+import type { GetWorldRequest, World, WorldsEngine } from "@wazoo/worlds-sdk";
+import { GetWorldRequestSchema, WorldSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
 /**
- * get retrieves detailed metadata for a specific world.
+ * get retrieves a single world by ID or name.
  */
 export async function get(
-  worlds: WorldsInterface,
-  input: WorldsGetInput,
-): Promise<World> {
-  const world = await worlds.get(input);
-  if (!world) {
-    throw new Error("World not found");
-  }
-  return world;
+  worlds: WorldsEngine,
+  input: GetWorldRequest,
+): Promise<World | null> {
+  return await worlds.get(input);
 }
 
 /**
- * WorldsGetTool is a tool for retrieving world metadata.
+ * WorldsGetTool is a tool for getting a world.
  */
-export type WorldsGetTool = Tool<WorldsGetInput, World>;
+export type WorldsGetTool = Tool<GetWorldRequest, World | null>;
 
 /**
  * worldsGetTool defines the configuration for the world retrieval tool.
  */
-export const worldsGetTool: WorldsTool<WorldsGetInput, World> = {
+export const worldsGetTool: WorldsTool<GetWorldRequest, World | null> = {
   name: "worlds_get",
   description:
-    "Retrieves detailed metadata for a specific world. Use this tool when you have a world and need to check its configuration, labels, or creation date. Input must be a 'world'. Returns a world metadata object.",
-  inputSchema: worldsGetInputSchema,
-  outputSchema: worldsGetOutputSchema,
+    "Retrieves metadata for a single dataset (world) by its identifier or name. Use this tool when you need detailed information about a specific world such as its created/updated times.",
+  inputSchema: GetWorldRequestSchema,
+  outputSchema: WorldSchema.nullable(),
   isWrite: false,
 };
 

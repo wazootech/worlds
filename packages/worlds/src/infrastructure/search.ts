@@ -1,13 +1,11 @@
 import type { Patch } from "./rdf/patch/types.ts";
-import type {
-  SearchWorldsRequest,
-  SearchWorldsResult,
-} from "../schema.ts";
-
+import type { SearchWorldsRequest, SearchWorldsResult } from "../schema.ts";
 
 import type { Embeddings } from "../vectors/embeddings.ts";
 import type { ManagementLayer } from "../management/worlds.ts";
 import type { StoreEngine } from "./store.ts";
+import type { WorldId } from "../resources/world.types.ts";
+import type { ChunkId } from "../resources/chunk.types.ts";
 
 /**
  * SearchEngine handles semantic search operations.
@@ -18,7 +16,6 @@ export interface SearchEngine {
    * search executes a semantic search against the world.
    */
   search(input: SearchWorldsRequest): Promise<SearchWorldsResult[]>;
-
 
   /**
    * applyPatches handles patches when data changes (sync mechanism).
@@ -58,7 +55,6 @@ export class ChunksSearchEngine implements SearchEngine {
 
     const namespace = parent ?? this.options.namespace;
 
-
     const queryVector = query
       ? await this.options.embeddings.embed(query)
       : new Array(this.options.embeddings.dimensions).fill(0);
@@ -69,7 +65,6 @@ export class ChunksSearchEngine implements SearchEngine {
     });
 
     const allResults: SearchWorldsResult[] = [];
-
 
     for (const worldRow of result.worlds) {
       const { ChunksRepository } = await import(
@@ -108,9 +103,18 @@ export class ChunksSearchEngine implements SearchEngine {
           let vecRank = null;
 
           if (c.vector) {
-            const chunkVector = c.vector instanceof ArrayBuffer
-              ? new Float32Array(c.vector)
-              : new Float32Array(c.vector.buffer);
+            const chunkVector = c.vector instanceof Uint8Array
+              ? new Float32Array(c.vector.buffer)
+              : typeof c.vector === "string"
+              ? new Float32Array(
+                new Uint8Array(
+                  // deno-lint-ignore no-explicit-any
+                  (atob as any)(c.vector).split("").map((char: string) =>
+                    char.charCodeAt(0)
+                  ),
+                ).buffer,
+              )
+              : new Float32Array(c.vector as unknown as ArrayBuffer);
 
             score = (queryVector as number[]).reduce(
               (acc, val, i) => acc + val * (chunkVector[i] || 0),
@@ -136,7 +140,7 @@ export class ChunksSearchEngine implements SearchEngine {
               name: worldRow.namespace
                 ? `${worldRow.namespace}/${worldRow.id}`
                 : worldRow.id,
-              id: worldRow.id as any,
+              id: worldRow.id as WorldId,
               namespace: worldRow.namespace ?? undefined,
               displayName: worldRow.label ?? undefined,
               description: worldRow.description ?? undefined,
@@ -145,7 +149,6 @@ export class ChunksSearchEngine implements SearchEngine {
               deleteTime: worldRow.deleted_at ?? undefined,
             },
           } as SearchWorldsResult;
-
         })
         .filter((r) => r.score > 0);
 
@@ -183,7 +186,7 @@ export class ChunksSearchEngine implements SearchEngine {
         const vector = await this.options.embeddings.embed(objectText);
 
         repo.upsert({
-          id: crypto.randomUUID() as any,
+          id: crypto.randomUUID() as ChunkId,
 
           fact_id: insertion.subject.value,
           subject: insertion.subject.value,

@@ -2,22 +2,21 @@ import type { WorldsOptions } from "../engine/factory.ts";
 import { parseError } from "../utils.ts";
 import { encodeBase64 } from "@std/encoding/base64";
 import type {
-  World,
   CreateWorldRequest,
   DeleteWorldRequest,
-  GetWorldRequest,
-  UpdateWorldRequest,
   ExportWorldRequest,
+  GetServiceDescriptionRequest,
+  GetWorldRequest,
   ImportWorldRequest,
   ListWorldsRequest,
   ListWorldsResponse,
-  GetServiceDescriptionRequest,
-  SparqlQueryRequest,
-  SparqlQueryResponse,
   SearchWorldsRequest,
   SearchWorldsResponse,
+  SparqlQueryRequest,
+  SparqlQueryResponse,
+  UpdateWorldRequest,
+  World,
 } from "../schema.ts";
-
 
 /**
  * WorldsClient is a TypeScript SDK client for the Worlds API.
@@ -87,8 +86,6 @@ export class WorldsClient {
     return await this.callRpc<ListWorldsResponse>("list", input ?? {});
   }
 
-
-
   /**
    * get fetches a single world from the Worlds API.
    */
@@ -107,14 +104,12 @@ export class WorldsClient {
     }
   }
 
-
   /**
    * create creates a world in the Worlds API.
    */
   public async create(input: CreateWorldRequest): Promise<World> {
     return await this.callRpc<World>("create", input);
   }
-
 
   /**
    * update updates a world in the Worlds API.
@@ -123,15 +118,12 @@ export class WorldsClient {
     return await this.callRpc<World>("update", input);
   }
 
-
-
   /**
    * delete deletes a world from the Worlds API.
    */
   public async delete(input: DeleteWorldRequest): Promise<void> {
     return await this.callRpc<void>("delete", input);
   }
-
 
   /**
    * sparql executes a SPARQL query or update against a world.
@@ -142,8 +134,6 @@ export class WorldsClient {
     });
   }
 
-
-
   /**
    * search performs semantic/text search on a world using vector embeddings.
    */
@@ -152,8 +142,6 @@ export class WorldsClient {
   ): Promise<SearchWorldsResponse> {
     return await this.callRpc<SearchWorldsResponse>("search", input);
   }
-
-
 
   /**
    * import ingests RDF data into a world.
@@ -172,7 +160,6 @@ export class WorldsClient {
     });
   }
 
-
   /**
    * export exports a world in the specified RDF content type.
    */
@@ -181,7 +168,6 @@ export class WorldsClient {
       responseType: "arrayBuffer",
     });
   }
-
 
   /**
    * getServiceDescription retrieves the SPARQL service description.
@@ -197,7 +183,6 @@ export class WorldsClient {
       responseType: "text",
     });
   }
-
 
   /**
    * close shuts down the SDK client.

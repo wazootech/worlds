@@ -2,6 +2,7 @@ import type { Store } from "n3";
 import type { World } from "../schema.ts";
 import type { WorldRow } from "../management/worlds.ts";
 import { toWorldName } from "../sources/resolver.ts";
+import type { WorldId } from "../resources/world.types.ts";
 
 /**
  * SyncableStore combines an RDF store with a sync operation for indexing.
@@ -20,7 +21,7 @@ export function mapRowToWorld(row: WorldRow): World {
       namespace: row.namespace ?? undefined,
       world: row.id ?? undefined,
     }),
-    id: row.id as any, // Cast for branded id
+    id: row.id as WorldId, // Cast for branded id
     namespace: row.namespace ?? undefined,
     displayName: row.label ?? undefined,
     description: row.description ?? undefined,
@@ -29,7 +30,6 @@ export function mapRowToWorld(row: WorldRow): World {
     deleteTime: row.deleted_at ?? undefined,
   };
 }
-
 
 /**
  * mapRowsToWorlds converts an array of database rows to World objects.

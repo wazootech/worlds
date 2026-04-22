@@ -1,0 +1,429 @@
+openapi: 3.1.0
+info:
+  title: Worlds API
+  version: 1.0.0
+  description: API for managing decentralized, multi-model semantic worlds.
+
+components:
+  schemas:
+    # --- Common Types ---
+    ContentType:
+      type: string
+      enum:
+        - text/turtle
+        - application/n-quads
+        - application/n-triples
+        - text/n3
+      description: Supported RDF serialization content types.
+
+    TransactionMode:
+      type: string
+      enum:
+        - write
+        - read
+        - deferred
+      description: Transaction behavior for source access.
+
+    ErrorResponseData:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
+
+    Log:
+      type: object
+      required:
+        - level
+        - message
+        - timestamp
+      properties:
+        level:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: integer
+          format: int64
+        metadata:
+          type: object
+          additionalProperties: true
+
+    # --- Identifiers (Branded) ---
+    WorldId:
+      type: string
+      description: A branded identifier for a World resource.
+      x-brand: "World"
+
+    FactId:
+      type: string
+      description: A branded identifier for a Fact resource.
+      x-brand: "Fact"
+
+    ChunkId:
+      type: string
+      description: A branded identifier for a Chunk resource.
+      x-brand: "Chunk"
+
+    # --- Resources ---
+    World:
+      type: object
+      description: Metadata for a single world.
+      required:
+        - displayName
+      properties:
+        name:
+          type: string
+          description: The canonical resource name.
+          readOnly: true
+        id:
+          $ref: "#/components/schemas/WorldId"
+        namespace:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        updateTime:
+          type: integer
+          format: int64
+        deleteTime:
+          type: integer
+          format: int64
+          nullable: true
+
+    Fact:
+      type: object
+      description: A single triple/quad in a world.
+      required:
+        - subject
+        - predicate
+        - object
+        - type
+      properties:
+        id:
+          $ref: "#/components/schemas/FactId"
+        subject:
+          type: string
+        predicate:
+          type: string
+        object:
+          type: string
+        type:
+          type: string
+        lang:
+          type: string
+        datatype:
+          type: string
+        world_id:
+          type: string
+        created_at:
+          type: integer
+          format: int64
+        deleted_at:
+          type: integer
+          format: int64
+          nullable: true
+
+    Chunk:
+      type: object
+      description: A text chunk with an optional embedding vector.
+      required:
+        - id
+        - fact_id
+        - subject
+        - predicate
+        - text
+      properties:
+        id:
+          $ref: "#/components/schemas/ChunkId"
+        fact_id:
+          type: string
+        subject:
+          type: string
+        predicate:
+          type: string
+        text:
+          type: string
+        vector:
+          type: string
+          format: byte
+          description: Base64-encoded embedding vector (Uint8Array).
+          nullable: true
+
+    # --- Source Identification ---
+    Source:
+      oneOf:
+        - type: string
+          description: A source name identifier.
+        - type: object
+          properties:
+            name:
+              type: string
+            id:
+              type: string
+            namespace:
+              type: string
+            mode:
+              $ref: "#/components/schemas/TransactionMode"
+
+    # --- SPARQL Types ---
+    SparqlValue:
+      description: A value in a SPARQL result.
+      oneOf:
+        - type: object
+          required: [type, value]
+          properties:
+            type: { type: string, enum: [uri] }
+            value: { type: string }
+        - type: object
+          required: [type, value]
+          properties:
+            type: { type: string, enum: [bnode] }
+            value: { type: string }
+        - type: object
+          required: [type, value]
+          properties:
+            type: { type: string, enum: [literal] }
+            value: { type: string }
+            xml:lang: { type: string }
+            datatype: { type: string }
+        - type: object
+          required: [type, value]
+          properties:
+            type: { type: string, enum: [triple] }
+            value:
+              type: object
+              required: [subject, predicate, object]
+              properties:
+                subject: { $ref: "#/components/schemas/SparqlValue" }
+                predicate: { $ref: "#/components/schemas/SparqlValue" }
+                object: { $ref: "#/components/schemas/SparqlValue" }
+
+    SparqlBinding:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/SparqlValue"
+
+    SparqlSelectResults:
+      type: object
+      required: [head, results]
+      properties:
+        head:
+          type: object
+          required: [vars]
+          properties:
+            vars: { type: array, items: { type: string } }
+            link: { type: array, items: { type: string }, nullable: true }
+        results:
+          type: object
+          required: [bindings]
+          properties:
+            bindings: {
+              type: array,
+              items: { $ref: "#/components/schemas/SparqlBinding" },
+            }
+
+    SparqlAskResults:
+      type: object
+      required: [head, boolean]
+      properties:
+        head:
+          type: object
+          properties:
+            link: { type: array, items: { type: string }, nullable: true }
+        boolean: { type: boolean }
+
+    SparqlQuad:
+      type: object
+      required: [subject, predicate, object, graph]
+      properties:
+        subject:
+          type: object
+          required: [type, value]
+          properties:
+            type: { type: string, enum: [uri, bnode] }
+            value: { type: string }
+        predicate:
+          type: object
+          required: [type, value]
+          properties:
+            type: { type: string, enum: [uri] }
+            value: { type: string }
+        object:
+          $ref: "#/components/schemas/SparqlValue"
+        graph:
+          type: object
+          required: [type, value]
+          properties:
+            type: { type: string, enum: [default, uri] }
+            value: { type: string }
+
+    SparqlQuadsResults:
+      type: object
+      required: [head, results]
+      properties:
+        head:
+          type: object
+          properties:
+            link: { type: array, items: { type: string }, nullable: true }
+        results:
+          type: object
+          required: [quads]
+          properties:
+            quads: {
+              type: array,
+              items: { $ref: "#/components/schemas/SparqlQuad" },
+            }
+
+    SparqlQueryResponse:
+      oneOf:
+        - $ref: "#/components/schemas/SparqlSelectResults"
+        - $ref: "#/components/schemas/SparqlAskResults"
+        - $ref: "#/components/schemas/SparqlQuadsResults"
+        - type: "null"
+
+    # --- Search Types ---
+    SearchResult:
+      type: object
+      required: [subject, predicate, object, score, world]
+      properties:
+        subject: { type: string }
+        predicate: { type: string }
+        object: { type: string }
+        vecRank: { type: number, nullable: true }
+        ftsRank: { type: number, nullable: true }
+        score: { type: number }
+        world: { $ref: "#/components/schemas/World" }
+
+    # --- API Request/Response Types ---
+    GetWorldRequest:
+      type: object
+      required: [source]
+      properties:
+        source: { $ref: "#/components/schemas/Source" }
+
+    CreateWorldRequest:
+      type: object
+      properties:
+        parent: { type: string }
+        id: { type: string }
+        displayName: { type: string }
+        description: { type: string }
+
+    UpdateWorldRequest:
+      type: object
+      required: [source]
+      properties:
+        source: { $ref: "#/components/schemas/Source" }
+        displayName: { type: string }
+        description: { type: string }
+
+    DeleteWorldRequest:
+      type: object
+      required: [source]
+      properties:
+        source: { $ref: "#/components/schemas/Source" }
+
+    ListWorldsRequest:
+      type: object
+      properties:
+        parent: { type: string }
+        pageSize: { type: integer }
+        pageToken: { type: string }
+
+    ListWorldsResponse:
+      type: object
+      required: [worlds]
+      properties:
+        worlds: { type: array, items: { $ref: "#/components/schemas/World" } }
+        nextPageToken: { type: string }
+
+    ImportWorldRequest:
+      type: object
+      required: [source, data]
+      properties:
+        source: { $ref: "#/components/schemas/Source" }
+        data:
+          oneOf:
+            - type: string
+            - type: string
+              format: byte
+        contentType: { $ref: "#/components/schemas/ContentType" }
+
+    ExportWorldRequest:
+      type: object
+      required: [source]
+      properties:
+        source: { $ref: "#/components/schemas/Source" }
+        contentType: { $ref: "#/components/schemas/ContentType" }
+
+    SearchWorldsRequest:
+      type: object
+      required: [query]
+      properties:
+        sources: { type: array, items: { $ref: "#/components/schemas/Source" } }
+        parent: { type: string }
+        query: { type: string }
+        pageSize: { type: integer }
+        pageToken: { type: string }
+        subjects: { type: array, items: { type: string } }
+        predicates: { type: array, items: { type: string } }
+        types: { type: array, items: { type: string } }
+
+    SparqlQueryRequest:
+      type: object
+      required: [query]
+      properties:
+        sources: { type: array, items: { $ref: "#/components/schemas/Source" } }
+        parent: { type: string }
+        query: { type: string }
+        defaultGraphUris: { type: array, items: { type: string } }
+        namedGraphUris: { type: array, items: { type: string } }
+
+paths:
+  /rpc/worlds:
+    post:
+      summary: Unified RPC endpoint for worlds.
+      operationId: worldsRpc
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/GetWorldRequest"
+                - $ref: "#/components/schemas/CreateWorldRequest"
+                - $ref: "#/components/schemas/UpdateWorldRequest"
+                - $ref: "#/components/schemas/DeleteWorldRequest"
+                - $ref: "#/components/schemas/ListWorldsRequest"
+                - $ref: "#/components/schemas/ImportWorldRequest"
+                - $ref: "#/components/schemas/ExportWorldRequest"
+                - $ref: "#/components/schemas/SearchWorldsRequest"
+                - $ref: "#/components/schemas/SparqlQueryRequest"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/World"
+                  - $ref: "#/components/schemas/ListWorldsResponse"
+                  - $ref: "#/components/schemas/SparqlQueryResponse"
+                  - type: object
+                    properties:
+                      results: {
+                        type: array,
+                        items: { $ref: "#/components/schemas/SearchResult" },
+                      }
+                      nextPageToken: { type: string }

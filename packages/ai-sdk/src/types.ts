@@ -1,11 +1,11 @@
 import type { z } from "zod";
-import type { WorldsInterface, WorldsSource } from "@wazoo/worlds-sdk";
+import type { WorldSource, WorldsEngine } from "@wazoo/worlds-sdk";
 
 /**
  * SourceInput is a flexible way to specify a data source.
  * It can be a string (ID or world) for read-only access, or a Source object for granular control.
  */
-export type SourceInput = string | WorldsSource;
+export type SourceInput = string | WorldSource;
 
 /**
  * WorldsTool defines the metadata and schema for a Worlds tool.
@@ -44,7 +44,7 @@ export interface CreateToolsOptions {
   /**
    * worlds is the Worlds interface to use for the tools.
    */
-  worlds: WorldsInterface;
+  worlds: WorldsEngine;
 
   /**
    * sources is the list of sources visible to the tools.

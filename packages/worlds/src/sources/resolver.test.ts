@@ -2,7 +2,6 @@ import { assert, assertEquals, assertThrows } from "@std/assert";
 import {
   defaultNamespace,
   defaultWorld,
-  isBaseSource,
   isNamedSource,
   isQualifiedSource,
   isSource,
@@ -10,8 +9,7 @@ import {
   SourceParseError,
   toWorldName,
 } from "./resolver.ts";
-import type { Source } from "../api/v1/source.schema.ts";
-
+import type { Source } from "../api/v1/source.types.ts";
 
 Deno.test("Resolver Helpers - Type Guards", async (t) => {
   await t.step("isNamedSource identifies valid objects", () => {
@@ -65,12 +63,20 @@ Deno.test("resolveSource - Edge cases", async (t) => {
 
   await t.step("parses world-only (uses undefined namespace)", () => {
     const result = resolveSource("world");
-    assertEquals(result, { namespace: undefined, id: "world", mode: "deferred" });
+    assertEquals(result, {
+      namespace: undefined,
+      id: "world",
+      mode: "deferred",
+    });
   });
 
   await t.step("'_' in namespace returns undefined", () => {
     const result = resolveSource("_/world");
-    assertEquals(result, { namespace: undefined, id: "world", mode: "deferred" });
+    assertEquals(result, {
+      namespace: undefined,
+      id: "world",
+      mode: "deferred",
+    });
   });
 
   await t.step("'_' in world is returned as literal world ID", () => {
@@ -124,12 +130,20 @@ Deno.test("resolveSource - Object inputs with name", async (t) => {
 
   await t.step("name with '_' in namespace resolves to undefined", () => {
     const result = resolveSource({ name: "_/world" });
-    assertEquals(result, { namespace: undefined, id: "world", mode: "deferred" });
+    assertEquals(result, {
+      namespace: undefined,
+      id: "world",
+      mode: "deferred",
+    });
   });
 
   await t.step("name only (world-only)", () => {
     const result = resolveSource({ name: "world" });
-    assertEquals(result, { namespace: undefined, id: "world", mode: "deferred" });
+    assertEquals(result, {
+      namespace: undefined,
+      id: "world",
+      mode: "deferred",
+    });
   });
 
   await t.step("name with explicit mode", () => {
@@ -219,12 +233,15 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
     );
   });
 
-  await t.step("empty object resolves to default source instead of throwing", () => {
-    const result = resolveSource({} as unknown as Source);
-    assertEquals(result.id, defaultWorld);
-    assertEquals(result.namespace, defaultNamespace);
-    assertEquals(result.mode, "deferred");
-  });
+  await t.step(
+    "empty object resolves to default source instead of throwing",
+    () => {
+      const result = resolveSource({} as unknown as Source);
+      assertEquals(result.id, defaultWorld);
+      assertEquals(result.namespace, defaultNamespace);
+      assertEquals(result.mode, "deferred");
+    },
+  );
 
   await t.step("number input throws error", () => {
     try {

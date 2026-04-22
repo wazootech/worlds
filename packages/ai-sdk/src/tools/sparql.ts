@@ -1,44 +1,33 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
-import type {
-  WorldsInterface,
-  WorldsSparqlInput,
-  WorldsSparqlOutput,
-} from "@wazoo/worlds-sdk";
+import type { Tool } from "ai";
 import {
   isSparqlUpdate,
   resolveSource,
-  worldsSparqlInputSchema,
-  worldsSparqlOutputSchema,
+  type SparqlQueryRequest,
+  type SparqlQueryResponse,
+  type WorldsEngine,
 } from "@wazoo/worlds-sdk";
-import type { CreateToolsOptions, SourceInput, WorldsTool } from "#/types.ts";
+import { SparqlQueryRequestSchema } from "#/utils/validation.ts";
+import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
+import { z } from "zod";
 
 /**
- * sparql executes a SPARQL query or update against a specific world.
+ * sparql executes a SPARQL query against one or more worlds.
  */
 export async function sparql(
-  worlds: WorldsInterface,
-  sources: SourceInput[],
-  input: WorldsSparqlInput,
-): Promise<WorldsSparqlOutput> {
-  const { query, sources: inputSources } = input;
-  const targetSources = inputSources ?? [];
+  worlds: WorldsEngine,
+  _sources: unknown[],
+  input: SparqlQueryRequest,
+): Promise<SparqlQueryResponse> {
+  const isUpdate = isSparqlUpdate(input.query);
 
-  if (isSparqlUpdate(query)) {
-    // For updates, ensure all targeted sources are writable
-    for (const source of targetSources) {
-      const { world } = resolveSource(source);
-
-      const s = sources.find((src) => {
-        const resolved = resolveSource(src);
-        return resolved.world === world;
-      });
-      const isWritable = typeof s === "object" ? s.write : false;
-
-      if (!isWritable) {
+  if (isUpdate) {
+    const sourceArr = input.sources || [input.parent || "_"];
+    for (const s of sourceArr) {
+      const resolved = resolveSource(s);
+      if (resolved.mode !== "write") {
         throw new Error(
-          `Write operations are disabled for source: ${world}. ` +
-            "Only SELECT, ASK, CONSTRUCT, and DESCRIBE queries are allowed.",
+          `Permission denied: Source ${JSON.stringify(s)} is not writable`,
         );
       }
     }
@@ -48,34 +37,37 @@ export async function sparql(
 }
 
 /**
- * WorldsSparqlTool is a tool for executing SPARQL queries and updates.
+ * WorldsSparqlTool is a tool for executing SPARQL queries.
  */
-export type WorldsSparqlTool = Tool<WorldsSparqlInput, WorldsSparqlOutput>;
+export type WorldsSparqlTool = Tool<
+  SparqlQueryRequest,
+  SparqlQueryResponse
+>;
 
 /**
- * worldsSparqlTool defines the configuration for the SPARQL execution tool.
+ * worldsSparqlTool defines the configuration for the SPARQL tool.
  */
 export const worldsSparqlTool: WorldsTool<
-  WorldsSparqlInput,
-  WorldsSparqlOutput
+  SparqlQueryRequest,
+  SparqlQueryResponse
 > = {
   name: "worlds_sparql",
   description:
-    "Executes a SPARQL query or update against one or more worlds. Use this tool when you need to retrieve raw facts, perform complex joins, or modify the knowledge graph via SPARQL. Input must be an array of 'sources' and a 'query' string. Returns a JSON result object with bindings for SELECT/ASK or a boolean for updates.",
-  inputSchema: worldsSparqlInputSchema,
-  outputSchema: worldsSparqlOutputSchema,
+    "Executes a SPARQL query or update against the RDF data stored in one or more worlds. Use this tool for precise graph-based queries, pattern matching, or to perform granular data updates. Supports SELECT, ASK, CONSTRUCT, and UPDATE operations.",
+  inputSchema: SparqlQueryRequestSchema,
+  outputSchema: z.any(), // SPARQL result structure is complex and varied
   isWrite: true,
 };
 
 /**
- * createWorldsSparqlTool instantiates the SPARQL execution tool.
+ * createWorldsSparqlTool instantiates the SPARQL tool.
  */
 export function createWorldsSparqlTool(
   { worlds, sources }: CreateToolsOptions,
 ): WorldsSparqlTool {
   return tool({
     ...worldsSparqlTool,
-    execute: async (input) => {
+    execute: async (input: SparqlQueryRequest) => {
       return await sparql(worlds, sources, input);
     },
   });

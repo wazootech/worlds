@@ -1,14 +1,13 @@
-import type { TransactionMode } from "../api/v1/common.schema.ts";
+import type { TransactionMode } from "../api/v1/common.types.ts";
 import type {
   BaseSource,
   FullyQualifiedSource,
   NamedSource,
   QualifiedSource,
   Source,
-} from "../api/v1/source.schema.ts";
+} from "../api/v1/source.types.ts";
 
 import type { WorldsContext } from "../testing/context.ts";
-
 
 /**
  * defaultNamespace is the fallback used when storing/looking up
@@ -43,7 +42,7 @@ export function isNamedSource(
     typeof source === "object" &&
     source !== null &&
     "name" in source &&
-    typeof (source as any).name === "string"
+    typeof (source as Record<string, unknown>).name === "string"
   );
 }
 
@@ -94,7 +93,6 @@ export function isSource(source: unknown): source is Source {
  * potentially carrying a transaction mode.
  */
 export type ResolvedSource = Partial<FullyQualifiedSource>;
-
 
 /**
  * parseSourceName parses a "namespace/world" string into components.
@@ -183,10 +181,11 @@ export function resolveSource(
     };
   }
 
-  const mode: TransactionMode = (source as any).mode ?? "deferred";
+  const mode: TransactionMode = (source as { mode?: TransactionMode }).mode ??
+    "deferred";
 
   if (isNamedSource(source)) {
-    if (!source.name.trim()) {
+    if (!source.name || !source.name.trim()) {
       throw new SourceParseError("Source name cannot be empty");
     }
     const parsed = parseSourceName(source.name);
@@ -235,8 +234,8 @@ export function toWorldName(
     | Source
     | ResolvedSource
     | {
-      id?: string | null;
-      namespace?: string | null;
+      id?: string;
+      namespace?: string;
     },
 ): string {
   let resolved: ResolvedSource;

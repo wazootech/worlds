@@ -1,54 +1,34 @@
-import type { Tool } from "ai";
 import { tool } from "ai";
-import { z } from "zod";
-import type { WorldsDeleteInput, WorldsInterface } from "@wazoo/worlds-sdk";
-import { worldsDeleteInputSchema } from "@wazoo/worlds-sdk";
+import type { Tool } from "ai";
+import type { DeleteWorldRequest, WorldsEngine } from "@wazoo/worlds-sdk";
+import { DeleteWorldRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
+import { z } from "zod";
 
 /**
- * WorldsDeleteOutput is the output for deleting a world.
- */
-export interface WorldsDeleteOutput {
-  success: boolean;
-}
-
-/**
- * worldsDeleteOutputSchema is the Zod schema for world deletion output.
- */
-export const worldsDeleteOutputSchema: z.ZodType<WorldsDeleteOutput> = z.object(
-  {
-    success: z.boolean(),
-  },
-);
-
-/**
- * deleteWorld permanently deletes a world and all its data.
+ * deleteWorld removes an existing world and all its associated data.
  */
 export async function deleteWorld(
-  worlds: WorldsInterface,
-  input: WorldsDeleteInput,
-): Promise<WorldsDeleteOutput> {
+  worlds: WorldsEngine,
+  input: DeleteWorldRequest,
+): Promise<void> {
   await worlds.delete(input);
-  return { success: true };
 }
 
 /**
  * WorldsDeleteTool is a tool for deleting a world.
  */
-export type WorldsDeleteTool = Tool<WorldsDeleteInput, WorldsDeleteOutput>;
+export type WorldsDeleteTool = Tool<DeleteWorldRequest, void>;
 
 /**
  * worldsDeleteTool defines the configuration for the world deletion tool.
  */
-export const worldsDeleteTool: WorldsTool<
-  WorldsDeleteInput,
-  WorldsDeleteOutput
-> = {
+export const worldsDeleteTool: WorldsTool<DeleteWorldRequest, void> = {
   name: "worlds_delete",
   description:
-    "Permanently deletes a world and all its associated data. This action is irreversible. Use this tool only when you are certain the world and its data are no longer needed. Input must be a 'world'. Returns a success indicator.",
-  inputSchema: worldsDeleteInputSchema,
-  outputSchema: worldsDeleteOutputSchema,
+    "Permanently deletes a dataset (world) and all of the RDF data and vector embeddings contained within it. CAUTION: This operation is destructive and cannot be undone.",
+  inputSchema: DeleteWorldRequestSchema,
+  outputSchema: z.void(),
   isWrite: true,
 };
 

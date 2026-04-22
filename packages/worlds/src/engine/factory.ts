@@ -10,9 +10,8 @@ import { WorldsClient } from "../sdk/client.ts";
 import { OllamaEmbeddings } from "../vectors/ollama.ts";
 import { OpenRouterEmbeddings } from "../vectors/openrouter.ts";
 import { createOllama } from "ollama-ai-provider";
+import type { EmbeddingModel } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-
-export type { WorldsEngine };
 
 /**
  * WorldsOptions are the options for the Worlds API SDK.
@@ -27,6 +26,11 @@ export interface WorldsOptions {
    * apiKey is the API key for the Worlds API.
    */
   apiKey?: string;
+
+  /**
+   * remote is the remote URL for the Worlds API.
+   */
+  remote?: string;
 
   /**
    * fetch fetches a resource from the network.
@@ -69,6 +73,11 @@ export interface WorldsContext {
   id?: string;
 
   /**
+   * engine is the initialized Worlds engine for this context.
+   */
+  engine?: WorldsEngine;
+
+  /**
    * [Symbol.asyncDispose] provides support for explicit resource management.
    */
   [Symbol.asyncDispose](): Promise<void>;
@@ -86,13 +95,18 @@ export interface WorldsContextConfig {
     WORLDS_EMBEDDINGS_DIMENSIONS?: string;
     WORLDS_API_KEY?: string;
     WORLDS_NS?: string;
+    LIBSQL_URL?: string;
+    LIBSQL_AUTH_TOKEN?: string;
+    TURSO_API_TOKEN?: string;
+    TURSO_ORG?: string;
+    WORLDS_BASE_DIR?: string;
   };
 }
 
 /**
  * createWorldsContext initializes a new global engine context.
  */
-export async function createWorldsContext(
+export function createWorldsContext(
   config?: WorldsContextConfig,
 ): Promise<WorldsContext> {
   const finalConfig: WorldsContextConfig = {
@@ -101,12 +115,19 @@ export async function createWorldsContext(
       OLLAMA_EMBEDDINGS_MODEL: Deno.env.get("OLLAMA_EMBEDDINGS_MODEL") ||
         "nomic-embed-text",
       OPENROUTER_API_KEY: Deno.env.get("OPENROUTER_API_KEY"),
-      OPENROUTER_EMBEDDINGS_MODEL: Deno.env.get("OPENROUTER_EMBEDDINGS_MODEL") ||
+      OPENROUTER_EMBEDDINGS_MODEL:
+        Deno.env.get("OPENROUTER_EMBEDDINGS_MODEL") ||
         "openai/text-embedding-3-small",
-      WORLDS_EMBEDDINGS_DIMENSIONS: Deno.env.get("WORLDS_EMBEDDINGS_DIMENSIONS") ||
+      WORLDS_EMBEDDINGS_DIMENSIONS:
+        Deno.env.get("WORLDS_EMBEDDINGS_DIMENSIONS") ||
         "768",
       WORLDS_API_KEY: Deno.env.get("WORLDS_API_KEY"),
       WORLDS_NS: Deno.env.get("WORLDS_NS"),
+      LIBSQL_URL: Deno.env.get("LIBSQL_URL"),
+      LIBSQL_AUTH_TOKEN: Deno.env.get("LIBSQL_AUTH_TOKEN"),
+      TURSO_API_TOKEN: Deno.env.get("TURSO_API_TOKEN"),
+      TURSO_ORG: Deno.env.get("TURSO_ORG"),
+      WORLDS_BASE_DIR: Deno.env.get("WORLDS_BASE_DIR"),
       ...config?.envs,
     },
   };
@@ -127,7 +148,7 @@ export async function createWorldsContext(
     embeddings = new OpenRouterEmbeddings({
       model: openrouter.textEmbeddingModel(
         finalConfig.envs.OPENROUTER_EMBEDDINGS_MODEL,
-      ) as any,
+      ) as unknown as EmbeddingModel<string>,
       dimensions,
     });
   } else {
@@ -156,7 +177,7 @@ export async function createWorldsContext(
     },
   };
 
-  return context;
+  return Promise.resolve(context);
 }
 
 /**
@@ -179,6 +200,7 @@ export async function createWorlds(
       id: context.id,
     };
     const engine = new Worlds(engineOptions);
+    context.engine = engine; // Attach engine to context
     return engine;
   }
 
@@ -197,5 +219,9 @@ export async function createWorlds(
     namespace: context.namespace,
     id: context.id,
   };
-  return new Worlds(engineOptions);
+  const engine = new Worlds(engineOptions);
+  context.engine = engine;
+  return engine;
 }
+
+export type { WorldsEngine };
