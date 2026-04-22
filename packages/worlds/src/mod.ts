@@ -1,11 +1,20 @@
 // Core Entry Points
 export { Worlds, Worlds as LocalWorlds } from "./engine/service.ts";
-export { WorldsClient, WorldsClient as RemoteWorlds } from "./sdk/client.ts";
+export {
+  RemoteWorlds,
+  RemoteWorldsManagement,
+  WorldsClient,
+  WorldsClient as RemoteWorldsInstance,
+} from "./sdk/client.ts";
 export { createWorlds, initRegistry } from "./engine/factory.ts";
 
 // Types
 export type { WorldsEngine } from "./engine/service.ts";
-export type { WorldsRegistry } from "./engine/factory.ts";
+export type {
+  WorldsData,
+  WorldsManagement,
+  WorldsRegistry,
+} from "./engine/factory.ts";
 export type { ContentType as WorldsContentType } from "./api/v1/common.types.ts";
 export type { WorldSource } from "./api/v1/source.types.ts";
 

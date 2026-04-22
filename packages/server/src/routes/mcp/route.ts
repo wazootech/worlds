@@ -10,6 +10,7 @@ import type {
   SearchWorldsRequest,
   SparqlQueryRequest,
   UpdateWorldRequest,
+  WorldsManagement,
   WorldsRegistry,
 } from "@wazoo/worlds-sdk";
 import type {
@@ -49,6 +50,7 @@ type McpToolOptions = {
 type ToolDefinition = {
   tool: McpToolOptions;
   fn: (
+    management: WorldsManagement,
     worlds: CreateToolsOptions["worlds"],
     sources: CreateToolsOptions["sources"],
     args: unknown,
@@ -63,7 +65,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (w, s, a) => sparql(w, s, a as SparqlQueryRequest),
+    fn: (_m, w, s, a) => sparql(w, s, a as SparqlQueryRequest),
   },
   {
     tool: {
@@ -72,7 +74,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (w, _s, a) => list(w, a as ListWorldsRequest),
+    fn: (m, _w, _s, a) => list(m, a as ListWorldsRequest),
   },
   {
     tool: {
@@ -81,35 +83,35 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (w, _s, a) => get(w, a as GetWorldRequest),
+    fn: (m, _w, _s, a) => get(m, a as GetWorldRequest),
   },
   {
     tool: {
       ...worldsCreateTool,
       title: "Create",
     },
-    fn: (w, _s, a) => create(w, a as CreateWorldRequest),
+    fn: (m, _w, _s, a) => create(m, a as CreateWorldRequest),
   },
   {
     tool: {
       ...worldsUpdateTool,
       title: "Update",
     },
-    fn: (w, _s, a) => update(w, a as UpdateWorldRequest),
+    fn: (m, _w, _s, a) => update(m, a as UpdateWorldRequest),
   },
   {
     tool: {
       ...worldsDeleteTool,
       title: "Delete",
     },
-    fn: (w, _s, a) => deleteWorld(w, a as DeleteWorldRequest),
+    fn: (m, _w, _s, a) => deleteWorld(m, a as DeleteWorldRequest),
   },
   {
     tool: {
       ...worldsImportTool,
       title: "Import",
     },
-    fn: (w, _s, a) => importWorld(w, a as ImportWorldRequest),
+    fn: (_m, w, _s, a) => importWorld(w, a as ImportWorldRequest),
   },
   {
     tool: {
@@ -118,7 +120,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (w, _s, a) => exportWorld(w, a as ExportWorldRequest),
+    fn: (_m, w, _s, a) => exportWorld(w, a as ExportWorldRequest),
   },
   {
     tool: {
@@ -127,7 +129,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (w, _s, a) => search(w, a as SearchWorldsRequest),
+    fn: (_m, w, _s, a) => search(w, a as SearchWorldsRequest),
   },
 ];
 
@@ -260,7 +262,12 @@ export default (registry: WorldsRegistry) => {
           }
 
           try {
-            const result = await definition.fn(engine, sources, args);
+            const result = await definition.fn(
+              registry.management,
+              engine,
+              sources,
+              args,
+            );
             return Response.json(response({
               content: [
                 {

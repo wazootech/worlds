@@ -3,7 +3,7 @@ import { tool } from "ai";
 import type {
   SearchWorldsRequest,
   SearchWorldsResponse,
-  WorldsEngine,
+  WorldsData,
 } from "@wazoo/worlds-sdk";
 import {
   SearchWorldsRequestSchema,
@@ -16,10 +16,10 @@ import { z } from "zod";
  * search performs a semantic search across worlds.
  */
 export async function search(
-  worlds: WorldsEngine,
+  worlds: WorldsData,
   input: SearchWorldsRequest,
 ): Promise<SearchWorldsResponse> {
-  return await worlds.search(input);
+  return await worlds.searchWorlds(input);
 }
 
 /**

@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { GetWorldRequest, World, WorldsEngine } from "@wazoo/worlds-sdk";
+import type { GetWorldRequest, World, WorldsManagement } from "@wazoo/worlds-sdk";
 import { GetWorldRequestSchema, WorldSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
@@ -8,10 +8,10 @@ import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
  * get retrieves a single world by ID or name.
  */
 export async function get(
-  worlds: WorldsEngine,
+  management: WorldsManagement,
   input: GetWorldRequest,
 ): Promise<World> {
-  const world = await worlds.get(input);
+  const world = await management.getWorld(input);
   if (!world) {
     throw new Error(`World not found: ${JSON.stringify(input.source)}`);
   }
@@ -39,12 +39,12 @@ export const worldsGetTool: WorldsTool<GetWorldRequest, World> = {
  * createWorldsGetTool instantiates the world retrieval tool.
  */
 export function createWorldsGetTool(
-  { worlds }: CreateToolsOptions,
+  { management }: CreateToolsOptions,
 ): WorldsGetTool {
   return tool({
     ...worldsGetTool,
     execute: async (input) => {
-      return await get(worlds, input);
+      return await get(management, input);
     },
   });
 }

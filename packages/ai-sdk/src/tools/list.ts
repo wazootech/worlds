@@ -4,7 +4,7 @@ import { z } from "zod";
 import type {
   ListWorldsRequest,
   ListWorldsResponse,
-  WorldsEngine,
+  WorldsManagement,
 } from "@wazoo/worlds-sdk";
 import { ListWorldsRequestSchema, WorldSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
@@ -13,10 +13,10 @@ import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
  * list retrieves a list of all datasets (worlds).
  */
 export async function list(
-  worlds: WorldsEngine,
+  management: WorldsManagement,
   input: ListWorldsRequest,
 ): Promise<ListWorldsResponse> {
-  return await worlds.list(input);
+  return await management.listWorlds(input);
 }
 
 /**
@@ -46,12 +46,12 @@ export const worldsListTool: WorldsTool<
  * createWorldsListTool instantiates the world listing tool.
  */
 export function createWorldsListTool(
-  { worlds }: CreateToolsOptions,
+  { management }: CreateToolsOptions,
 ): WorldsListTool {
   return tool({
     ...worldsListTool,
     execute: async (input) => {
-      return await list(worlds, input);
+      return await list(management, input);
     },
   });
 }

@@ -3,7 +3,7 @@ import type { Tool } from "ai";
 import type {
   UpdateWorldRequest,
   World,
-  WorldsEngine,
+  WorldsManagement,
 } from "@wazoo/worlds-sdk";
 import { UpdateWorldRequestSchema, WorldSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
@@ -12,10 +12,10 @@ import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
  * update modifies an existing world's metadata.
  */
 export async function update(
-  worlds: WorldsEngine,
+  management: WorldsManagement,
   input: UpdateWorldRequest,
 ): Promise<World> {
-  return await worlds.update(input);
+  return await management.updateWorld(input);
 }
 
 /**
@@ -39,12 +39,12 @@ export const worldsUpdateTool: WorldsTool<UpdateWorldRequest, World> = {
  * createWorldsUpdateTool instantiates the world update tool.
  */
 export function createWorldsUpdateTool(
-  { worlds }: CreateToolsOptions,
+  { management }: CreateToolsOptions,
 ): WorldsUpdateTool {
   return tool({
     ...worldsUpdateTool,
     execute: async (input) => {
-      return await update(worlds, input);
+      return await update(management, input);
     },
   });
 }

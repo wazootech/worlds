@@ -1,4 +1,5 @@
 import { decodeCursor, encodeCursor } from "#/utils.ts";
+import type { World, WorldId } from "../schema.ts";
 import type { ApiKeyRepository } from "./keys.ts";
 import type { NamespaceRepository } from "./namespaces.ts";
 
@@ -178,4 +179,26 @@ export class WorldRepository {
     const key = this.getRef(id, namespace);
     this.worlds.delete(key);
   }
+}
+
+/**
+ * mapRowToWorld converts a management WorldRow to an API World object.
+ */
+export function mapRowToWorld(row: WorldRow): World {
+  return {
+    id: row.id as WorldId,
+    namespace: row.namespace,
+    displayName: row.label,
+    description: row.description,
+    createTime: row.created_at!,
+    updateTime: row.updated_at!,
+    deleteTime: row.deleted_at ?? undefined,
+  };
+}
+
+/**
+ * mapRowsToWorlds converts a list of WorldRows to API World objects.
+ */
+export function mapRowsToWorlds(rows: WorldRow[]): World[] {
+  return rows.map(mapRowToWorld);
 }

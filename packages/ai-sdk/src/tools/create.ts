@@ -3,7 +3,7 @@ import type { Tool } from "ai";
 import type {
   CreateWorldRequest,
   World,
-  WorldsEngine,
+  WorldsManagement,
 } from "@wazoo/worlds-sdk";
 import { CreateWorldRequestSchema, WorldSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
@@ -12,10 +12,10 @@ import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
  * create initializes a new world (dataset).
  */
 export async function create(
-  worlds: WorldsEngine,
+  management: WorldsManagement,
   input: CreateWorldRequest,
 ): Promise<World> {
-  return await worlds.create(input);
+  return await management.createWorld(input);
 }
 
 /**
@@ -39,12 +39,12 @@ export const worldsCreateTool: WorldsTool<CreateWorldRequest, World> = {
  * createWorldsCreateTool instantiates the world creation tool.
  */
 export function createWorldsCreateTool(
-  { worlds }: CreateToolsOptions,
+  { management }: CreateToolsOptions,
 ): WorldsCreateTool {
   return tool({
     ...worldsCreateTool,
     execute: async (input) => {
-      return await create(worlds, input);
+      return await create(management, input);
     },
   });
 }

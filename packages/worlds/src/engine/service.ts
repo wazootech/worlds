@@ -19,6 +19,7 @@ import type {
 } from "../schema.ts";
 
 import type { ManagementLayer, WorldRow } from "../management/worlds.ts";
+import { mapRowsToWorlds, mapRowToWorld } from "../management/worlds.ts";
 import { resolveSource } from "../sources/resolver.ts";
 import { createIndexedStore } from "../infrastructure/rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "../infrastructure/rdf/patch/rdf-patch.ts";
@@ -60,39 +61,37 @@ export interface WorldsEngineOptions {
  */
 export interface WorldsEngine {
   init(): Promise<void>;
-  list(input?: ListWorldsRequest): Promise<ListWorldsResponse>;
-  get(input: GetWorldRequest): Promise<World | null>;
-  create(input: CreateWorldRequest): Promise<World>;
-  update(input: UpdateWorldRequest): Promise<World>;
-  delete(input: DeleteWorldRequest): Promise<void>;
-  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
-  search(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
-  import(input: ImportWorldRequest): Promise<void>;
-  export(input: ExportWorldRequest): Promise<ArrayBuffer>;
+  querySparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
+  searchWorlds(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
+  importData(input: ImportWorldRequest): Promise<void>;
+  exportData(input: ExportWorldRequest): Promise<ArrayBuffer>;
   [Symbol.asyncDispose](): Promise<void>;
+
+  /**
+   * sparql is a legacy alias for querySparql.
+   * @deprecated Use querySparql instead.
+   */
+  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
+
+  /**
+   * search is a legacy alias for searchWorlds.
+   * @deprecated Use searchWorlds instead.
+   */
+  search(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
+
+  /**
+   * import is a legacy alias for importData.
+   * @deprecated Use importData instead.
+   */
+  import(input: ImportWorldRequest): Promise<void>;
+
+  /**
+   * export is a legacy alias for exportData.
+   * @deprecated Use exportData instead.
+   */
+  export(input: ExportWorldRequest): Promise<ArrayBuffer>;
 }
 
-/**
- * mapRowToWorld converts a management WorldRow to an API World object.
- */
-function mapRowToWorld(row: WorldRow): World {
-  return {
-    id: row.id as WorldId,
-    namespace: row.namespace,
-    displayName: row.label,
-    description: row.description,
-    createTime: row.created_at!,
-    updateTime: row.updated_at!,
-    deleteTime: row.deleted_at ?? undefined,
-  };
-}
-
-/**
- * mapRowsToWorlds converts a list of WorldRows to API World objects.
- */
-function mapRowsToWorlds(rows: WorldRow[]): World[] {
-  return rows.map(mapRowToWorld);
-}
 
 /**
  * Worlds is an engine-agnostic implementation of the Worlds API.
@@ -173,82 +172,11 @@ export class Worlds implements WorldsEngine {
     };
   }
 
-  public async list(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
-    const mgmt = this.ensureManagement();
-    const namespace = input?.parent || this.namespace;
-    const result = await mgmt.worlds.list({ ...input, namespace });
-    return {
-      worlds: mapRowsToWorlds(result.worlds),
-      nextPageToken: result.nextPageToken,
-    };
-  }
 
-  public async get(input: GetWorldRequest): Promise<World | null> {
-    const mgmt = this.ensureManagement();
-    const resolved = resolveSource(input.source, { namespace: this.namespace });
-    if (!resolved.id) return null;
 
-    const row = await mgmt.worlds.get(resolved.id, resolved.namespace);
-    if (!row) return null;
-
-    return mapRowToWorld(row);
-  }
-
-  public async create(input: CreateWorldRequest): Promise<World> {
-    const mgmt = this.ensureManagement();
-    const nameOrId = input.id ||
-      (input as Record<string, unknown>).name as string ||
-      (input as Record<string, unknown>).world as string;
-    if (!nameOrId) throw new Error("World identity required");
-
-    const resolved = resolveSource(nameOrId, {
-      namespace: input.parent || this.namespace,
-    });
-
-    const now = Date.now();
-    await mgmt.worlds.insert({
-      namespace: resolved.namespace,
-      id: resolved.id!,
-      label: input.displayName ?? resolved.id ?? "Untitled",
-      description: input.description,
-      connection_uri: null,
-      created_at: now,
-      updated_at: now,
-      deleted_at: null,
-    });
-
-    const row = await mgmt.worlds.get(resolved.id!, resolved.namespace);
-    return mapRowToWorld(row!);
-  }
-
-  public async update(input: UpdateWorldRequest): Promise<World> {
-    const mgmt = this.ensureManagement();
-    const resolved = resolveSource(input.source, { namespace: this.namespace });
-    if (!resolved.id) throw new Error("World ID required");
-
-    const now = Date.now();
-    await mgmt.worlds.update(resolved.id, resolved.namespace, {
-      label: input.displayName,
-      description: input.description,
-      updated_at: now,
-    });
-
-    const result = await mgmt.worlds.get(resolved.id, resolved.namespace);
-    return mapRowToWorld(result!);
-  }
-
-  public async delete(input: DeleteWorldRequest): Promise<void> {
-    const mgmt = this.ensureManagement();
-    const resolved = resolveSource(input.source, { namespace: this.namespace });
-    if (!resolved.id) return;
-
-    await mgmt.worlds.delete(resolved.id, resolved.namespace);
-    if (this.storage) {
-      await this.storage.delete(resolved.id, resolved.namespace);
-    }
-  }
-
-  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
+  public async querySparql(
+    input: SparqlQueryRequest,
+  ): Promise<SparqlQueryResponse> {
     if (this.sparqlEngine) {
       return await this.sparqlEngine.sparql(input);
     }
@@ -267,7 +195,11 @@ export class Worlds implements WorldsEngine {
     return result;
   }
 
-  public async search(
+  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
+    return this.querySparql(input);
+  }
+
+  public async searchWorlds(
     input: SearchWorldsRequest,
   ): Promise<SearchWorldsResponse> {
     if (!this.searchEngine) {
@@ -301,7 +233,11 @@ export class Worlds implements WorldsEngine {
     };
   }
 
-  public async import(input: ImportWorldRequest): Promise<void> {
+  public async search(input: SearchWorldsRequest): Promise<SearchWorldsResponse> {
+    return this.searchWorlds(input);
+  }
+
+  public async importData(input: ImportWorldRequest): Promise<void> {
     const { store, sync } = await this.resolveStore(input.source);
     const data = typeof input.data === "string"
       ? new TextEncoder().encode(input.data).buffer
@@ -318,13 +254,21 @@ export class Worlds implements WorldsEngine {
     await sync();
   }
 
-  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
+  public async import(input: ImportWorldRequest): Promise<void> {
+    return this.importData(input);
+  }
+
+  public async exportData(input: ExportWorldRequest): Promise<ArrayBuffer> {
     const { store } = await this.resolveStore(input.source);
     const n3Store = new Store();
     // @ts-ignore - n3 types
     n3Store.addQuads(store.getQuads());
     const blob = await generateBlobFromN3Store(n3Store);
     return await blob.arrayBuffer();
+  }
+
+  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
+    return this.exportData(input);
   }
 
   public async getServiceDescription(

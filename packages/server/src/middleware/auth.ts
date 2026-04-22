@@ -38,7 +38,7 @@ export async function authorizeRequest(
   }
 
   // Resolve namespace via ApiKeyRepository
-  const apiKeysRepo = registry.management.keys;
+  const apiKeysRepo = registry.repositories.keys;
   const namespaceId = await apiKeysRepo.resolveNamespace(apiKey);
 
   if (namespaceId) {

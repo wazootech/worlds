@@ -5,7 +5,7 @@ import {
   resolveSource,
   type SparqlQueryRequest,
   type SparqlQueryResponse,
-  type WorldsEngine,
+  type WorldsData,
 } from "@wazoo/worlds-sdk";
 import { SparqlQueryRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
@@ -15,7 +15,7 @@ import { z } from "zod";
  * sparql executes a SPARQL query against one or more worlds.
  */
 export async function sparql(
-  worlds: WorldsEngine,
+  data: WorldsData,
   _sources: unknown[],
   input: SparqlQueryRequest,
 ): Promise<SparqlQueryResponse> {
@@ -33,7 +33,7 @@ export async function sparql(
     }
   }
 
-  return await worlds.sparql(input);
+  return await data.querySparql(input);
 }
 
 /**

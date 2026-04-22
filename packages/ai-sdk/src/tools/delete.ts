@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { DeleteWorldRequest, WorldsEngine } from "@wazoo/worlds-sdk";
+import type { DeleteWorldRequest, WorldsManagement } from "@wazoo/worlds-sdk";
 import { DeleteWorldRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 import { z } from "zod";
@@ -9,10 +9,10 @@ import { z } from "zod";
  * deleteWorld removes an existing world and all its associated data.
  */
 export async function deleteWorld(
-  worlds: WorldsEngine,
+  management: WorldsManagement,
   input: DeleteWorldRequest,
 ): Promise<void> {
-  await worlds.delete(input);
+  await management.deleteWorld(input);
 }
 
 /**
@@ -36,12 +36,12 @@ export const worldsDeleteTool: WorldsTool<DeleteWorldRequest, void> = {
  * createWorldsDeleteTool instantiates the world deletion tool.
  */
 export function createWorldsDeleteTool(
-  { worlds }: CreateToolsOptions,
+  { management }: CreateToolsOptions,
 ): WorldsDeleteTool {
   return tool({
     ...worldsDeleteTool,
     execute: async (input) => {
-      return await deleteWorld(worlds, input);
+      return await deleteWorld(management, input);
     },
   });
 }

@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { ImportWorldRequest, WorldsEngine } from "@wazoo/worlds-sdk";
+import type { ImportWorldRequest, WorldsData } from "@wazoo/worlds-sdk";
 import { ImportWorldRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 import { z } from "zod";
@@ -9,10 +9,10 @@ import { z } from "zod";
  * importWorld loads data into a world.
  */
 export async function importWorld(
-  worlds: WorldsEngine,
+  worlds: WorldsData,
   input: ImportWorldRequest,
 ): Promise<void> {
-  await worlds.import(input);
+  await worlds.importData(input);
 }
 
 /**

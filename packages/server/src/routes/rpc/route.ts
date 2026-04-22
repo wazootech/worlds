@@ -100,7 +100,7 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const worlds = await engine.list(parseResult.data);
+      const worlds = await registry.management.listWorlds(parseResult.data);
       return Response.json(worlds);
     }
     case "create": {
@@ -110,7 +110,7 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const world = await engine.create(parseResult.data);
+      const world = await registry.management.createWorld(parseResult.data);
       return Response.json(world, { status: 201 });
     }
     case "get": {
@@ -120,7 +120,7 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const world = await engine.get(parseResult.data);
+      const world = await registry.management.getWorld(parseResult.data);
       if (!world) {
         throw new NotFoundError("World not found");
       }
@@ -133,7 +133,7 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const world = await engine.update(parseResult.data);
+      const world = await registry.management.updateWorld(parseResult.data);
       return Response.json(world);
     }
     case "delete": {
@@ -143,24 +143,26 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      await engine.delete(parseResult.data);
+      await registry.management.deleteWorld(parseResult.data);
       return new Response(null, { status: 204 });
     }
-    case "export": {
+    case "export":
+    case "exportData": {
       const parseResult = worldsExportInputSchema.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const data = await engine.export(parseResult.data);
+      const data = await engine.exportData(parseResult.data);
       return new Response(data, {
         headers: {
           "Content-Type": parseResult.data.contentType || "application/n-quads",
         },
       });
     }
-    case "import": {
+    case "import":
+    case "importData": {
       const parseResult = worldsImportInputSchema.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
@@ -181,27 +183,29 @@ export async function handleRpc(
           // Keep as string if not valid base64
         }
       }
-      await engine.import(parseResult.data);
+      await engine.importData(parseResult.data);
       return new Response(null, { status: 204 });
     }
-    case "sparql": {
+    case "sparql":
+    case "querySparql": {
       const parseResult = worldsSparqlInputSchema.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const result = await engine.sparql(parseResult.data);
+      const result = await engine.querySparql(parseResult.data);
       return Response.json(result);
     }
-    case "search": {
+    case "search":
+    case "searchWorlds": {
       const parseResult = worldsSearchInputSchema.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const results = await engine.search(parseResult.data);
+      const results = await engine.searchWorlds(parseResult.data);
       return Response.json(results);
     }
     default:

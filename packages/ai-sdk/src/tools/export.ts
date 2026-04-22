@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { ExportWorldRequest, WorldsEngine } from "@wazoo/worlds-sdk";
+import type { ExportWorldRequest, WorldsData } from "@wazoo/worlds-sdk";
 import { ExportWorldRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 import { z } from "zod";
@@ -9,10 +9,10 @@ import { z } from "zod";
  * exportWorld retrieves data from a world.
  */
 export async function exportWorld(
-  worlds: WorldsEngine,
+  worlds: WorldsData,
   input: ExportWorldRequest,
 ): Promise<ArrayBuffer> {
-  return await worlds.export(input);
+  return await worlds.exportData(input);
 }
 
 /**

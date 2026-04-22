@@ -1,4 +1,4 @@
-import type { WorldsOptions } from "../engine/factory.ts";
+import type { WorldsManagement, WorldsOptions } from "../engine/factory.ts";
 import { parseError } from "../utils.ts";
 import { encodeBase64 } from "@std/encoding/base64";
 import type {
@@ -19,10 +19,165 @@ import type {
 } from "../schema.ts";
 
 /**
+ * RemoteWorldsManagement handles the management plane (lifecycle) of worlds via RPC.
+ */
+export class RemoteWorldsManagement implements WorldsManagement {
+  constructor(private readonly client: WorldsClient) {}
+
+  /**
+   * listWorlds paginates all worlds.
+   */
+  public async listWorlds(
+    input?: ListWorldsRequest,
+  ): Promise<ListWorldsResponse> {
+    return await this.client.callRpc<ListWorldsResponse>("list", input ?? {});
+  }
+
+  /**
+   * getWorld fetches a single world.
+   */
+  public async getWorld(input: GetWorldRequest): Promise<World | null> {
+    try {
+      return await this.client.callRpc<World>("get", input);
+    } catch (error) {
+      if (
+        error && typeof error === "object" &&
+        "status" in error &&
+        (error as { status: number }).status === 404
+      ) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * createWorld creates a new world.
+   */
+  public async createWorld(input: CreateWorldRequest): Promise<World> {
+    return await this.client.callRpc<World>("create", input);
+  }
+
+  /**
+   * updateWorld updates world metadata.
+   */
+  public async updateWorld(input: UpdateWorldRequest): Promise<World> {
+    return await this.client.callRpc<World>("update", input);
+  }
+
+  /**
+   * deleteWorld deletes a world.
+   */
+  public async deleteWorld(input: DeleteWorldRequest): Promise<void> {
+    return await this.client.callRpc<void>("delete", input);
+  }
+}
+
+/**
+ * RemoteWorlds handles the data plane (knowledge) of worlds via RPC.
+ */
+export class RemoteWorlds {
+  constructor(private readonly client: WorldsClient) {}
+
+  /**
+   * querySparql executes a SPARQL query.
+   */
+  public async querySparql(
+    input: SparqlQueryRequest,
+  ): Promise<SparqlQueryResponse> {
+    return await this.client.callRpc<SparqlQueryResponse>(
+      "querySparql",
+      input,
+      {
+        accept: "application/sparql-results+json",
+      },
+    );
+  }
+
+  /**
+   * sparql executes a SPARQL query (legacy alias for querySparql).
+   */
+  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
+    return this.querySparql(input);
+  }
+
+  /**
+   * searchWorlds performs semantic/text search using vector embeddings.
+   */
+  public async searchWorlds(
+    input: SearchWorldsRequest,
+  ): Promise<SearchWorldsResponse> {
+    return await this.client.callRpc<SearchWorldsResponse>(
+      "searchWorlds",
+      input,
+    );
+  }
+
+  /**
+   * search performs semantic/text search (legacy alias for searchWorlds).
+   */
+  public async search(
+    input: SearchWorldsRequest,
+  ): Promise<SearchWorldsResponse> {
+    return this.searchWorlds(input);
+  }
+
+  /**
+   * importData ingests RDF data into a world.
+   */
+  public async importData(input: ImportWorldRequest): Promise<void> {
+    const { data, contentType = "application/n-quads" } = input;
+    const binaryData = typeof data === "string"
+      ? new TextEncoder().encode(data)
+      : new Uint8Array(data);
+
+    const base64Data = encodeBase64(binaryData);
+    return await this.client.callRpc<void>("importData", {
+      ...input,
+      data: base64Data,
+      contentType,
+    });
+  }
+
+  /**
+   * import ingests RDF data (legacy alias for importData).
+   */
+  public async import(input: ImportWorldRequest): Promise<void> {
+    return this.importData(input);
+  }
+
+  /**
+   * exportData exports a world in the specified RDF content type.
+   */
+  public async exportData(input: ExportWorldRequest): Promise<ArrayBuffer> {
+    return await this.client.callRpc<ArrayBuffer>("exportData", input, {
+      responseType: "arrayBuffer",
+    });
+  }
+
+  /**
+   * export exports a world (legacy alias for exportData).
+   */
+  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
+    return this.exportData(input);
+  }
+}
+
+/**
  * WorldsClient is a TypeScript SDK client for the Worlds API.
  */
 export class WorldsClient {
   private readonly fetch: typeof fetch;
+
+  /**
+   * management provides handles for metadata operations.
+   */
+  public readonly management: RemoteWorldsManagement;
+
+  /**
+   * worlds provides handles for data-plane operations.
+   */
+  public readonly worlds: RemoteWorlds;
 
   /**
    * WorldsClient initializes the TypeScript SDK client.
@@ -31,12 +186,15 @@ export class WorldsClient {
     private readonly options: WorldsOptions,
   ) {
     this.fetch = options.fetch ?? globalThis.fetch;
+    this.management = new RemoteWorldsManagement(this);
+    this.worlds = new RemoteWorlds(this);
   }
 
   /**
    * callRpc executes a unified RPC call.
+   * @internal
    */
-  private async callRpc<T, P = unknown>(
+  public async callRpc<T, P = unknown>(
     action: string,
     params: P,
     options: {
@@ -77,96 +235,6 @@ export class WorldsClient {
       default:
         return await response.json() as T;
     }
-  }
-
-  /**
-   * list paginates all worlds from the Worlds API.
-   */
-  public async list(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
-    return await this.callRpc<ListWorldsResponse>("list", input ?? {});
-  }
-
-  /**
-   * get fetches a single world from the Worlds API.
-   */
-  public async get(input: GetWorldRequest): Promise<World | null> {
-    try {
-      return await this.callRpc<World>("get", input);
-    } catch (error) {
-      if (
-        error && typeof error === "object" &&
-        "status" in error &&
-        (error as { status: number }).status === 404
-      ) {
-        return null;
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * create creates a world in the Worlds API.
-   */
-  public async create(input: CreateWorldRequest): Promise<World> {
-    return await this.callRpc<World>("create", input);
-  }
-
-  /**
-   * update updates a world in the Worlds API.
-   */
-  public async update(input: UpdateWorldRequest): Promise<World> {
-    return await this.callRpc<World>("update", input);
-  }
-
-  /**
-   * delete deletes a world from the Worlds API.
-   */
-  public async delete(input: DeleteWorldRequest): Promise<void> {
-    return await this.callRpc<void>("delete", input);
-  }
-
-  /**
-   * sparql executes a SPARQL query or update against a world.
-   */
-  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
-    return await this.callRpc<SparqlQueryResponse>("sparql", input, {
-      accept: "application/sparql-results+json",
-    });
-  }
-
-  /**
-   * search performs semantic/text search on a world using vector embeddings.
-   */
-  public async search(
-    input: SearchWorldsRequest,
-  ): Promise<SearchWorldsResponse> {
-    return await this.callRpc<SearchWorldsResponse>("search", input);
-  }
-
-  /**
-   * import ingests RDF data into a world.
-   */
-  public async import(input: ImportWorldRequest): Promise<void> {
-    const { data, contentType = "application/n-quads" } = input;
-    const binaryData = typeof data === "string"
-      ? new TextEncoder().encode(data)
-      : new Uint8Array(data);
-
-    const base64Data = encodeBase64(binaryData);
-    return await this.callRpc<void>("import", {
-      ...input,
-      data: base64Data,
-      contentType,
-    });
-  }
-
-  /**
-   * export exports a world in the specified RDF content type.
-   */
-  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
-    return await this.callRpc<ArrayBuffer>("export", input, {
-      responseType: "arrayBuffer",
-    });
   }
 
   /**
