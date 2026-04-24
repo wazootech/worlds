@@ -1,4 +1,4 @@
-import { PathItemObject } from "npm:openapi3-ts/oas31";
+import type { PathItemObject } from "npm:openapi3-ts/oas31";
 
 export const rpcWorlds: PathItemObject = {
   post: {

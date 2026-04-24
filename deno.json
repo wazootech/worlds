@@ -49,7 +49,20 @@
   },
   "exclude": ["./packages/console", "./packages/docs", "./.gemini"],
   "lint": {
-    "exclude": ["scratch"]
+    "exclude": [
+      "scratch",
+      "packages/spec/schemas",
+      "packages/spec/client.gen.ts",
+      "packages/spec/zod.gen.ts",
+      "packages/spec/types.gen.ts",
+      "packages/spec/generate.ts",
+      "packages/spec/lib.ts",
+      "packages/spec/client",
+      "packages/spec/core",
+      "packages/spec/paths",
+      "packages/worlds/src/api",
+      "packages/worlds/src/resources"
+    ]
   },
   "publish": {
     "exclude": ["**/*.test.ts", "**/*_test.ts"]

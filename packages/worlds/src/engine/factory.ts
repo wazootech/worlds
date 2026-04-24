@@ -12,21 +12,21 @@ import { OpenRouterEmbeddings } from "../vectors/openrouter.ts";
 import { createOllama } from "ollama-ai-provider";
 import type { EmbeddingModel } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { resolveSource, setResolverConfig } from "../sources/resolver.ts";
-import {
-  type CreateWorldRequest,
-  type DeleteWorldRequest,
-  type ExportWorldRequest,
-  type GetWorldRequest,
-  type ImportWorldRequest,
-  type ListWorldsRequest,
-  type ListWorldsResponse,
-  type SearchWorldsRequest,
-  type SearchWorldsResponse,
-  type SparqlQueryRequest,
-  type SparqlQueryResponse,
-  type UpdateWorldRequest,
-  type World,
+import { resolveSource } from "../sources/resolver.ts";
+import type {
+  CreateWorldRequest,
+  DeleteWorldRequest,
+  ExportWorldRequest,
+  GetWorldRequest,
+  ImportWorldRequest,
+  ListWorldsRequest,
+  ListWorldsResponse,
+  SearchWorldsRequest,
+  SearchWorldsResponse,
+  SparqlQueryRequest,
+  SparqlQueryResponse,
+  UpdateWorldRequest,
+  World,
 } from "../schema.ts";
 import { mapRowsToWorlds, mapRowToWorld } from "../management/worlds.ts";
 

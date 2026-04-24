@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { ImportWorldRequest, WorldsDataPlane } from "@wazoo/worlds-sdk";
+import type { ImportWorldRequest } from "@wazoo/worlds-sdk";
 import { ImportWorldRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 import { z } from "zod";

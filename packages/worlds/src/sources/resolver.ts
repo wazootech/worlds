@@ -40,14 +40,6 @@ export function getResolverConfig(): ResolverConfig {
   return { ..._config };
 }
 
-function getDefaultNamespace(): string | undefined {
-  return _config.defaultNamespace;
-}
-
-function getDefaultId(): string | undefined {
-  return _config.defaultId;
-}
-
 /**
  * isNamedSource checks if a source is an object with a 'name' property.
  */

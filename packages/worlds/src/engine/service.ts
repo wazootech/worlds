@@ -1,25 +1,8 @@
 import type { Quad } from "n3";
-import type { WorldId } from "@wazoo/worlds-spec";
-import type {
-  CreateWorldRequest,
-  DeleteWorldRequest,
-  ExportWorldRequest,
-  GetServiceDescriptionRequest,
-  GetWorldRequest,
-  ImportWorldRequest,
-  ListWorldsRequest,
-  ListWorldsResponse,
-  SearchWorldsRequest,
-  SearchWorldsResponse,
-  Source,
-  SparqlQueryRequest,
-  SparqlQueryResponse,
-  UpdateWorldRequest,
-  World,
-} from "../schema.ts";
 
-import type { ManagementLayer, WorldRow } from "../management/worlds.ts";
-import { mapRowsToWorlds, mapRowToWorld } from "../management/worlds.ts";
+import type { Source } from "../schema.ts";
+
+import type { ManagementLayer } from "../management/worlds.ts";
 import { resolveSource } from "../sources/resolver.ts";
 import { createIndexedStore } from "../infrastructure/rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "../infrastructure/rdf/patch/rdf-patch.ts";

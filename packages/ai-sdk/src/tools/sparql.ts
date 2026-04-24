@@ -5,7 +5,6 @@ import {
   resolveSource,
   type SparqlQueryRequest,
   type SparqlQueryResponse,
-  type WorldsDataPlane,
 } from "@wazoo/worlds-sdk";
 import { SparqlQueryRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, SourceInput, WorldsTool } from "#/types.ts";
@@ -29,7 +28,7 @@ export const worldsSparqlTool: WorldsTool<
 };
 
 export function createWorldsSparqlTool(
-  { data, sources }: CreateToolsOptions,
+  { data }: CreateToolsOptions,
 ): WorldsSparqlTool {
   return tool({
     ...worldsSparqlTool,

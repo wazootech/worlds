@@ -1,7 +1,6 @@
 import { assert, assertEquals } from "@std/assert";
 import {
   initRegistry,
-  LocalWorlds,
   WorldsClient as Worlds,
 } from "@wazoo/worlds-sdk";
 import type { SparqlSelectResult } from "@wazoo/worlds-sdk/schema";
