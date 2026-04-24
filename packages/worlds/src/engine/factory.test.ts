@@ -5,7 +5,7 @@ import { NamespaceRepository } from "../management/namespaces.ts";
 import { WorldRepository } from "../management/worlds.ts";
 import { KvStoreEngine } from "../infrastructure/store.ts";
 
-Deno.test("Worlds.embedded - creates embedded instance", async () => {
+Deno.test("Worlds with direct injection - creates embedded instance", async () => {
   const keys = new ApiKeyRepository();
   const namespaces = new NamespaceRepository();
   const worldsRepo = new WorldRepository();
@@ -18,7 +18,7 @@ Deno.test("Worlds.embedded - creates embedded instance", async () => {
     updated_at: Date.now(),
   });
 
-  const worlds = Worlds.embedded({
+  const worlds = new Worlds({
     storage,
     management: { keys, namespaces, worlds: worldsRepo },
     namespace: "test-ns",
@@ -70,4 +70,13 @@ Deno.test("EmbeddedWorlds - full lifecycle", async () => {
 
   await worlds[Symbol.asyncDispose]();
   await storage.close();
+});
+
+Deno.test("Worlds defaults to embedded in-memory", async () => {
+  const worlds = new Worlds();
+  
+  assertEquals(typeof worlds.init, "function");
+  assertEquals(typeof worlds.getWorld, "function");
+  
+  await worlds[Symbol.asyncDispose]();
 });

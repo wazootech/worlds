@@ -1,5 +1,8 @@
 // Core Entry Points
-export { Worlds, EmbeddedWorlds, RemoteWorlds, type WorldsInterface, type WorldsOptions, type EmbeddedWorldsOptions, type RemoteWorldsOptions } from "./engine/service.ts";
+export { Worlds, EmbeddedWorlds, type WorldsInterface, type WorldsOptions, type EmbeddedWorldsOptions } from "./engine/service.ts";
+
+// Config
+export { resolveConfig, parseUrl } from "./config.ts";
 
 // Types
 export type { ContentType, Source, TransactionMode } from "@wazoo/worlds-spec";

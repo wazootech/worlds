@@ -19,6 +19,8 @@ import type {
   WorldId,
 } from "../schema.ts";
 
+import { RemoteWorlds } from "../sdk/client.ts";
+
 import type { ManagementLayer, WorldRow } from "../management/worlds.ts";
 import { resolveSource } from "../sources/resolver.ts";
 import { createIndexedStore } from "../infrastructure/rdf/patch/indexed-store.ts";
@@ -34,6 +36,11 @@ import {
   generateN3StoreFromBlob,
 } from "../infrastructure/rdf/n3.ts";
 import { Store } from "n3";
+import { resolveConfig } from "../config.ts";
+import { KvStoreEngine } from "../infrastructure/store.ts";
+import { ApiKeyRepository } from "../management/keys.ts";
+import { NamespaceRepository } from "../management/namespaces.ts";
+import { WorldRepository } from "../management/worlds.ts";
 
 /**
  * SyncableStore combines an N3 store with a sync method for handlers.
@@ -74,7 +81,7 @@ export interface WorldsInterface extends DataPlane, ManagementPlane {
 }
 
 /**
- * EmbeddedWorldsOptions are the options for creating an embedded/local Worlds instance.
+ * EmbeddedWorldsOptions are the options for creating an EmbeddedWorlds instance.
  */
 export interface EmbeddedWorldsOptions {
   storage?: StoreEngine;
@@ -87,19 +94,31 @@ export interface EmbeddedWorldsOptions {
 }
 
 /**
- * RemoteWorldsOptions are the options for creating a remote/RPC Worlds instance.
+ * WorldsOptions are the options for creating a Worlds instance.
+ * Supports URL-based configuration (scheme determines backend) or direct injection.
  */
-export interface RemoteWorldsOptions {
-  baseUrl: string;
-  apiKey?: string;
+export interface WorldsOptions {
+  url?: string;
+  authToken?: string;
   fetch?: typeof fetch;
+  namespace?: string;
+  
+  storage?: StoreEngine;
+  sparqlEngine?: SparqlEngine;
+  searchEngine?: SearchEngine;
+  embeddings?: Embeddings;
+  management?: ManagementLayer;
+  id?: string;
 }
 
 /**
- * WorldsOptions are the options for creating a Worlds instance.
- * Supports both embedded (local) and remote (RPC) modes.
+ * RemoteWorldsOptions are the options for creating a RemoteWorlds instance.
  */
-export type WorldsOptions = EmbeddedWorldsOptions | RemoteWorldsOptions;
+export interface RemoteWorldsOptions {
+  baseUrl: string;
+  apiKey: string;
+  fetch?: typeof fetch;
+}
 
 /**
  * EmbeddedWorlds is the local/embedded implementation of WorldsInterface.
@@ -366,41 +385,53 @@ export class EmbeddedWorlds implements WorldsInterface {
  */
 export class Worlds implements WorldsInterface {
   private impl: WorldsInterface;
-  private _initialized = false;
 
-  constructor(options: WorldsOptions) {
-    if ("baseUrl" in options && options.baseUrl) {
-      throw new Error(
-        "Remote mode requires async initialization. Use Worlds.remote(options) instead.",
-      );
+  constructor(options: WorldsOptions = {}) {
+    const hasDirectInjection = options.storage || options.embeddings || options.management;
+    
+    if (hasDirectInjection) {
+      this.impl = new EmbeddedWorlds({
+        storage: options.storage,
+        embeddings: options.embeddings,
+        management: options.management,
+        namespace: options.namespace,
+        id: options.id,
+        sparqlEngine: options.sparqlEngine,
+        searchEngine: options.searchEngine,
+      });
+      return;
     }
 
-    this.impl = new EmbeddedWorlds(options as EmbeddedWorldsOptions);
-  }
+    const config = resolveConfig(options);
 
-  /**
-   * Creates a Worlds instance in remote/RPC mode.
-   */
-  static async remote(options: RemoteWorldsOptions): Promise<Worlds> {
-    const { RemoteWorlds } = await import("../sdk/client.ts");
-    const instance = Object.create(Worlds.prototype);
-    instance.impl = new RemoteWorlds(options);
-    instance._initialized = true;
-    return instance;
-  }
+    if (config.mode === "embedded") {
+      const storage = new KvStoreEngine();
+      const management: ManagementLayer = {
+        keys: new ApiKeyRepository(),
+        namespaces: new NamespaceRepository(),
+        worlds: new WorldRepository(),
+      };
 
-  /**
-   * Creates a Worlds instance in embedded/local mode.
-   */
-  static embedded(options: EmbeddedWorldsOptions): Worlds {
-    return new Worlds(options);
+      this.impl = new EmbeddedWorlds({
+        storage,
+        embeddings: options.embeddings,
+        management,
+        namespace: config.namespace,
+      });
+    } else {
+      if (!config.baseUrl) {
+        throw new Error("Remote mode requires a base URL");
+      }
+      this.impl = new RemoteWorlds({
+        baseUrl: config.baseUrl,
+        apiKey: config.authToken ?? "anonymous",
+        fetch: options.fetch,
+      });
+    }
   }
 
   public async init(): Promise<void> {
-    if (!this._initialized) {
-      await this.impl.init();
-    }
-    return Promise.resolve();
+    return this.impl.init();
   }
 
   public async getWorld(input: GetWorldRequest): Promise<World | null> {

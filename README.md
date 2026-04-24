@@ -83,10 +83,14 @@ import type { WorldEntry } from "@wazoo/worlds-sdk";
 import { Worlds } from "@wazoo/worlds-sdk";
 import { createTools } from "@wazoo/worlds-ai-sdk";
 
+// Remote API (via URL)
 const worlds = new Worlds({
-  baseUrl: "http://localhost:8000",
-  apiKey: "your-api-key",
+  url: "https://api.wazoo.dev",
+  authToken: "your-api-key",
 });
+
+// Embedded in-memory (default)
+const local = new Worlds();
 
 const { text } = await generateText({
   model: openai("gpt-4o"),
@@ -115,9 +119,18 @@ deno add jsr:@wazoo/worlds-sdk
 ```typescript
 import { Worlds } from "@wazoo/worlds-sdk";
 
-const worlds = new Worlds({
-  baseUrl: "http://localhost:8000",
-  apiKey: "your-api-key",
+// Embedded in-memory (default)
+const worlds = new Worlds();
+
+// Remote API
+const remote = new Worlds({
+  url: "https://api.wazoo.dev",
+  authToken: "your-api-key",
+});
+
+// File-based storage
+const local = new Worlds({
+  url: "file:./data.db",
 });
 
 const worldId = "my-knowledge-base";
