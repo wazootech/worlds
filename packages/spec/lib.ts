@@ -31,7 +31,10 @@ export const errorResponse = (): SchemaObject => ({
 /**
  * Standard int64 timestamp.
  */
-export const timestamp = (description = "", nullable = false): SchemaObject => ({
+export const timestamp = (
+  description = "",
+  nullable = false,
+): SchemaObject => ({
   type: nullable ? ["integer", "null"] : "integer",
   format: "int64",
   ...(description ? { description } : {}),

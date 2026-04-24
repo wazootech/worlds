@@ -12,7 +12,8 @@ export function buildSpec() {
     info: {
       title: "Worlds API",
       version: "1.0.0",
-      description: "API for managing decentralized, multi-model semantic worlds.",
+      description:
+        "API for managing decentralized, multi-model semantic worlds.",
     },
   });
 

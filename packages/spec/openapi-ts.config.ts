@@ -1,14 +1,14 @@
-import { defineConfig } from '@hey-api/openapi-ts';
+import { defineConfig } from "@hey-api/openapi-ts";
 
 export default defineConfig({
-  input: './spec.yaml',
+  input: "./spec.yaml",
   output: {
-    path: '.',
+    path: ".",
     index: false,
     clean: false,
   },
   plugins: [
-    '@hey-api/typescript',
-    'zod',
+    "@hey-api/typescript",
+    "zod",
   ],
 });
