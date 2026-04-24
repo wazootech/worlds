@@ -17,12 +17,12 @@ export const worldsExportTool: WorldsTool<ExportWorldRequest, ArrayBuffer> = {
 };
 
 export function createWorldsExportTool(
-  { data }: CreateToolsOptions,
+  { worlds }: CreateToolsOptions,
 ): WorldsExportTool {
   return tool({
     ...worldsExportTool,
     execute: async (input: ExportWorldRequest) => {
-      return await data.export(input);
+      return await worlds.export(input);
     },
   });
 }

@@ -51,8 +51,12 @@ export function resolveConfig(options: WorldsOptions): ResolvedConfig {
 
   const namespace = options.namespace ?? parsed.params.namespace;
 
-  if (parsed.scheme === "embedded" || parsed.scheme === "memory" || parsed.scheme === "file") {
-    const isMemory = parsed.scheme === "memory" || parsed.scheme === "embedded" || 
+  if (
+    parsed.scheme === "embedded" || parsed.scheme === "memory" ||
+    parsed.scheme === "file"
+  ) {
+    const isMemory = parsed.scheme === "memory" ||
+      parsed.scheme === "embedded" ||
       (parsed.scheme === "file" && (parsed.path === "" || parsed.path === "/"));
 
     return {
@@ -64,9 +68,13 @@ export function resolveConfig(options: WorldsOptions): ResolvedConfig {
     };
   }
 
-  if (parsed.scheme === "http" || parsed.scheme === "https" || 
-      parsed.scheme === "ws" || parsed.scheme === "wss") {
-    const baseUrl = `${parsed.scheme}://${parsed.host}${parsed.port ? ":" + parsed.port : ""}${parsed.path}`;
+  if (
+    parsed.scheme === "http" || parsed.scheme === "https" ||
+    parsed.scheme === "ws" || parsed.scheme === "wss"
+  ) {
+    const baseUrl = `${parsed.scheme}://${parsed.host}${
+      parsed.port ? ":" + parsed.port : ""
+    }${parsed.path}`;
     return {
       mode: "remote",
       storageType: "memory",
@@ -76,5 +84,7 @@ export function resolveConfig(options: WorldsOptions): ResolvedConfig {
     };
   }
 
-  throw new Error(`Unsupported URL scheme: ${parsed.scheme}. Use embedded:, file:, http:, https:, ws:, or wss:`);
+  throw new Error(
+    `Unsupported URL scheme: ${parsed.scheme}. Use embedded:, file:, http:, https:, ws:, or wss:`,
+  );
 }

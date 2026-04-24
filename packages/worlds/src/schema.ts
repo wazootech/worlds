@@ -1,10 +1,6 @@
 // Public API types - explicit exports to control what's exposed
 import type {
   ContentType,
-  Source,
-  TransactionMode,
-  World,
-  WorldId,
   CreateWorldRequest,
   DeleteWorldRequest,
   ExportWorldRequest,
@@ -12,24 +8,24 @@ import type {
   ImportWorldRequest,
   ListWorldsRequest,
   ListWorldsResponse,
-  UpdateWorldRequest,
+  SearchResult,
+  SearchWorldsRequest,
+  Source,
+  SparqlAskResults,
+  SparqlBinding,
+  SparqlQuad,
+  SparqlQuadsResults,
   SparqlQueryRequest,
   SparqlQueryResponse,
   SparqlSelectResults,
-  SparqlAskResults,
-  SparqlBinding,
   SparqlValue,
-  SparqlQuad,
-  SparqlQuadsResults,
-  SearchWorldsRequest,
-  SearchResult,
+  TransactionMode,
+  UpdateWorldRequest,
+  World,
+  WorldId,
 } from "@wazoo/worlds-spec";
 
-export type {
-  ContentType,
-  Source,
-  TransactionMode,
-};
+export type { ContentType, Source, TransactionMode };
 
 export type { World, WorldId };
 
@@ -45,20 +41,17 @@ export type {
 };
 
 export type {
+  SparqlAskResults,
+  SparqlBinding,
+  SparqlQuad,
+  SparqlQuadsResults,
   SparqlQueryRequest,
   SparqlQueryResponse,
   SparqlSelectResults,
-  SparqlAskResults,
-  SparqlBinding,
   SparqlValue,
-  SparqlQuad,
-  SparqlQuadsResults,
 };
 
-export type {
-  SearchWorldsRequest,
-  SearchResult,
-};
+export type { SearchResult, SearchWorldsRequest };
 
 // SDK-specific derived types
 export type SearchWorldsResult = SearchResult;

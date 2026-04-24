@@ -16,12 +16,12 @@ export const worldsImportTool: WorldsTool<ImportWorldRequest, void> = {
 };
 
 export function createWorldsImportTool(
-  { data }: CreateToolsOptions,
+  { worlds }: CreateToolsOptions,
 ): WorldsImportTool {
   return tool({
     ...worldsImportTool,
     execute: async (input: ImportWorldRequest) => {
-      return await data.import(input);
+      return await worlds.import(input);
     },
   });
 }

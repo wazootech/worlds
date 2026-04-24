@@ -1,5 +1,5 @@
 import type { ModelMessage } from "ai";
-import type { WorldsContentType, WorldsEngine } from "@wazoo/worlds-sdk";
+import type { ContentType, WorldsInterface } from "@wazoo/worlds-sdk";
 import { parseArgs } from "@std/cli/parse-args";
 import { Spinner } from "@std/cli/unstable-spinner";
 import { render } from "cfonts";
@@ -11,7 +11,7 @@ import { createTools } from "@wazoo/worlds-ai-sdk";
  * WorldsCli is a command line application for the Worlds API.
  */
 export class WorldsCli {
-  public constructor(private readonly worlds: WorldsEngine) {}
+  public constructor(private readonly worlds: WorldsInterface) {}
 
   public static logo() {
     const renderResult = render("Worlds CLI", {
@@ -63,7 +63,7 @@ export class WorldsCli {
         "",
       );
 
-    const world = await this.worlds.create({
+    const world = await this.worlds.createWorld({
       id: worldId,
       displayName: parsed.label,
       description: parsed.description,
@@ -95,7 +95,7 @@ export class WorldsCli {
       );
       return;
     }
-    await this.worlds.update({
+    await this.worlds.updateWorld({
       source: worldId,
       displayName: parsed.label,
       description: parsed.description,
@@ -125,7 +125,7 @@ export class WorldsCli {
       return;
     }
 
-    await this.worlds.delete({ source: worldId });
+    await this.worlds.deleteWorld({ source: worldId });
     console.log(`Deleted world ${worldId}`);
   }
 
@@ -146,7 +146,7 @@ export class WorldsCli {
       );
       return;
     }
-    const response = await this.worlds.list({
+    const response = await this.worlds.listWorlds({
       pageToken: parsed.page ? parsed.page as string : undefined,
       pageSize: parsed["page-size"]
         ? parseInt(parsed["page-size"] as string)
@@ -176,7 +176,7 @@ export class WorldsCli {
       console.error("Usage: worlds get --world <id>");
       return;
     }
-    const worldObj = await this.worlds.get({ source: world });
+    const worldObj = await this.worlds.getWorld({ source: world });
     console.log(JSON.stringify(worldObj, null, 2));
   }
 
@@ -290,7 +290,7 @@ export class WorldsCli {
     await this.worlds.import({
       source: worldId,
       data,
-      contentType: parsed["content-type"] as WorldsContentType,
+      contentType: parsed["content-type"] as ContentType,
     });
     console.log(`Imported data into world ${worldId}`);
   }
@@ -315,7 +315,7 @@ export class WorldsCli {
     const worldId = (parsed.slug as string) || (parsed.id as string) || "_";
     const buffer = await this.worlds.export({
       source: worldId,
-      contentType: parsed["content-type"] as WorldsContentType,
+      contentType: parsed["content-type"] as ContentType,
     });
     await Deno.stdout.write(new Uint8Array(buffer));
   }
@@ -366,7 +366,7 @@ export class WorldsCli {
       return;
     }
 
-    const world = await this.worlds.get({ source: parsed.world });
+    const world = await this.worlds.getWorld({ source: parsed.world });
     if (!world) {
       console.error(`World "${parsed.world}" not found.`);
       return;

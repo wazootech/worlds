@@ -1,5 +1,5 @@
 import { assertEquals, assertExists } from "@std/assert";
-import { Worlds, EmbeddedWorlds } from "./service.ts";
+import { EmbeddedWorlds, Worlds } from "./service.ts";
 import { ApiKeyRepository } from "../management/keys.ts";
 import { NamespaceRepository } from "../management/namespaces.ts";
 import { WorldRepository } from "../management/worlds.ts";
@@ -74,9 +74,9 @@ Deno.test("EmbeddedWorlds - full lifecycle", async () => {
 
 Deno.test("Worlds defaults to embedded in-memory", async () => {
   const worlds = new Worlds();
-  
+
   assertEquals(typeof worlds.init, "function");
   assertEquals(typeof worlds.getWorld, "function");
-  
+
   await worlds[Symbol.asyncDispose]();
 });

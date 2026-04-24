@@ -4,8 +4,8 @@ import type {
   CreateWorldRequest,
   DeleteWorldRequest,
   ExportWorldRequest,
-  GetWorldRequest,
   GetServiceDescriptionRequest,
+  GetWorldRequest,
   ImportWorldRequest,
   ListWorldsRequest,
   ListWorldsResponse,
@@ -102,7 +102,7 @@ export interface WorldsOptions {
   authToken?: string;
   fetch?: typeof fetch;
   namespace?: string;
-  
+
   storage?: StoreEngine;
   sparqlEngine?: SparqlEngine;
   searchEngine?: SearchEngine;
@@ -146,20 +146,20 @@ export class EmbeddedWorlds implements WorldsInterface {
     return Promise.resolve();
   }
 
-  public async getWorld(input: GetWorldRequest): Promise<World | null> {
+  public getWorld(input: GetWorldRequest): Promise<World | null> {
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
-    if (!resolved.id) return null;
+    if (!resolved.id) return Promise.resolve(null);
     const row = mgmt.worlds.get(resolved.id, resolved.namespace);
-    return row ? this.mapRowToWorld(row) : null;
+    return Promise.resolve(row ? this.mapRowToWorld(row) : null);
   }
 
-  public async createWorld(input: CreateWorldRequest): Promise<World> {
+  public createWorld(input: CreateWorldRequest): Promise<World> {
     const mgmt = this.ensureManagement();
     const nameOrId = input.id ||
       (input as Record<string, unknown>).name as string ||
       (input as Record<string, unknown>).world as string;
-    if (!nameOrId) throw new Error("World identity required");
+    if (!nameOrId) return Promise.reject(new Error("World identity required"));
 
     const resolved = resolveSource(nameOrId, {
       namespace: input.parent || this.namespace,
@@ -178,13 +178,13 @@ export class EmbeddedWorlds implements WorldsInterface {
     });
 
     const row = mgmt.worlds.get(resolved.id!, resolved.namespace);
-    return this.mapRowToWorld(row!);
+    return Promise.resolve(this.mapRowToWorld(row!));
   }
 
-  public async updateWorld(input: UpdateWorldRequest): Promise<World> {
+  public updateWorld(input: UpdateWorldRequest): Promise<World> {
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
-    if (!resolved.id) throw new Error("World ID required");
+    if (!resolved.id) return Promise.reject(new Error("World ID required"));
 
     const now = Date.now();
     mgmt.worlds.update(resolved.id, resolved.namespace, {
@@ -194,24 +194,27 @@ export class EmbeddedWorlds implements WorldsInterface {
     });
 
     const row = mgmt.worlds.get(resolved.id, resolved.namespace);
-    return this.mapRowToWorld(row!);
+    return Promise.resolve(this.mapRowToWorld(row!));
   }
 
-  public async deleteWorld(input: DeleteWorldRequest): Promise<void> {
+  public deleteWorld(input: DeleteWorldRequest): Promise<void> {
     const mgmt = this.ensureManagement();
     const resolved = resolveSource(input.source, { namespace: this.namespace });
-    if (!resolved.id) return;
+    if (!resolved.id) return Promise.resolve();
     mgmt.worlds.delete(resolved.id, resolved.namespace);
+    return Promise.resolve();
   }
 
-  public async listWorlds(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
+  public listWorlds(
+    input?: ListWorldsRequest,
+  ): Promise<ListWorldsResponse> {
     const mgmt = this.ensureManagement();
     const namespace = input?.parent || this.namespace;
     const result = mgmt.worlds.list({ ...input, namespace });
-    return {
+    return Promise.resolve({
       worlds: result.worlds.map(this.mapRowToWorld),
       nextPageToken: result.nextPageToken,
-    };
+    });
   }
 
   private mapRowToWorld(row: WorldRow): World {
@@ -387,8 +390,9 @@ export class Worlds implements WorldsInterface {
   private impl: WorldsInterface;
 
   constructor(options: WorldsOptions = {}) {
-    const hasDirectInjection = options.storage || options.embeddings || options.management;
-    
+    const hasDirectInjection = options.storage || options.embeddings ||
+      options.management;
+
     if (hasDirectInjection) {
       this.impl = new EmbeddedWorlds({
         storage: options.storage,
@@ -430,47 +434,51 @@ export class Worlds implements WorldsInterface {
     }
   }
 
-  public async init(): Promise<void> {
+  public init(): Promise<void> {
     return this.impl.init();
   }
 
-  public async getWorld(input: GetWorldRequest): Promise<World | null> {
+  public getWorld(input: GetWorldRequest): Promise<World | null> {
     return this.impl.getWorld(input);
   }
 
-  public async createWorld(input: CreateWorldRequest): Promise<World> {
+  public createWorld(input: CreateWorldRequest): Promise<World> {
     return this.impl.createWorld(input);
   }
 
-  public async updateWorld(input: UpdateWorldRequest): Promise<World> {
+  public updateWorld(input: UpdateWorldRequest): Promise<World> {
     return this.impl.updateWorld(input);
   }
 
-  public async deleteWorld(input: DeleteWorldRequest): Promise<void> {
+  public deleteWorld(input: DeleteWorldRequest): Promise<void> {
     return this.impl.deleteWorld(input);
   }
 
-  public async listWorlds(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
+  public listWorlds(
+    input?: ListWorldsRequest,
+  ): Promise<ListWorldsResponse> {
     return this.impl.listWorlds(input);
   }
 
-  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
+  public sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
     return this.impl.sparql(input);
   }
 
-  public async search(input: SearchWorldsRequest): Promise<SearchWorldsResponse> {
+  public search(
+    input: SearchWorldsRequest,
+  ): Promise<SearchWorldsResponse> {
     return this.impl.search(input);
   }
 
-  public async import(input: ImportWorldRequest): Promise<void> {
+  public import(input: ImportWorldRequest): Promise<void> {
     return this.impl.import(input);
   }
 
-  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
+  public export(input: ExportWorldRequest): Promise<ArrayBuffer> {
     return this.impl.export(input);
   }
 
-  public async [Symbol.asyncDispose](): Promise<void> {
+  public [Symbol.asyncDispose](): Promise<void> {
     return this.impl[Symbol.asyncDispose]();
   }
 }

@@ -26,12 +26,12 @@ export const worldsSearchTool: WorldsTool<
 };
 
 export function createWorldsSearchTool(
-  { data }: CreateToolsOptions,
+  { worlds }: CreateToolsOptions,
 ): WorldsSearchTool {
   return tool({
     ...worldsSearchTool,
     execute: async (input: SearchWorldsRequest) => {
-      return await data.search(input);
+      return await worlds.search(input);
     },
   });
 }

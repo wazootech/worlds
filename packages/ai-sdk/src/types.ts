@@ -1,9 +1,5 @@
 import type { ZodType } from "zod";
-import type {
-  Source,
-  WorldsDataPlane,
-  WorldsManagementPlane,
-} from "@wazoo/worlds-sdk";
+import type { Source, WorldsInterface } from "@wazoo/worlds-sdk";
 
 export type { Source };
 
@@ -44,14 +40,9 @@ export interface WorldsTool<TInput = unknown, TOutput = unknown> {
  */
 export interface CreateToolsOptions {
   /**
-   * management is the management plane service (for lifecycle ops).
+   * worlds is the Worlds interface instance.
    */
-  management: WorldsManagementPlane;
-
-  /**
-   * data is the data plane service (for knowledge ops).
-   */
-  data: WorldsDataPlane;
+  worlds: WorldsInterface;
 
   /**
    * sources is the list of sources visible to the tools.

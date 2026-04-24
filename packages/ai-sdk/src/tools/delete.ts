@@ -17,12 +17,12 @@ export const worldsDeleteTool: WorldsTool<DeleteWorldRequest, void> = {
 };
 
 export function createWorldsDeleteTool(
-  { management }: CreateToolsOptions,
+  { worlds }: CreateToolsOptions,
 ): WorldsDeleteTool {
   return tool({
     ...worldsDeleteTool,
     execute: async (input: DeleteWorldRequest) => {
-      return await management.deleteWorld(input);
+      return await worlds.deleteWorld(input);
     },
   });
 }

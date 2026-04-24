@@ -20,12 +20,12 @@ export const worldsListTool: WorldsTool<
 };
 
 export function createWorldsListTool(
-  { management }: CreateToolsOptions,
+  { worlds }: CreateToolsOptions,
 ): WorldsListTool {
   return tool({
     ...worldsListTool,
     execute: async (input: ListWorldsRequest) => {
-      return await management.listWorlds(input);
+      return await worlds.listWorlds(input);
     },
   });
 }

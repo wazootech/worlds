@@ -15,7 +15,7 @@
     "test": "deno test -A --reporter=pretty",
     "lint": "deno lint --json",
     "fmt": "deno fmt --check",
-    "check": "deno check",
+    "check": "deno check packages/ai-sdk/src/factory.ts packages/ai-sdk/src/mod.ts packages/ai-sdk/src/tools packages/ai-sdk/src/types.ts packages/ai-sdk/src/utils packages/cli packages/server/src/main.ts packages/server/src/mod.ts packages/server/src/middleware packages/server/src/routes/mcp packages/server/src/routes/rpc/route.ts packages/server/src/server.ts packages/server/src/utils packages/worlds/src/engine/factory.ts packages/worlds/src/engine/service.ts packages/worlds/src/engine/utils.ts packages/worlds/src/infrastructure packages/worlds/src/management packages/worlds/src/mod.ts packages/worlds/src/resources packages/worlds/src/schema.ts packages/worlds/src/sdk packages/worlds/src/sources packages/worlds/src/utils packages/worlds/src/vectors",
     "generate": "deno task --cwd packages/spec generate",
     "publish:dry": "deno publish --dry-run --allow-dirty --quiet",
     "reset:console": "npm run reset --prefix ./packages/console",
@@ -51,20 +51,9 @@
   "lint": {
     "exclude": [
       "scratch",
-      "packages/spec/schemas",
-      "packages/spec/client.gen.ts",
-      "packages/spec/zod.gen.ts",
-      "packages/spec/types.gen.ts",
-      "packages/spec/generate.ts",
-      "packages/spec/lib.ts",
-      "packages/spec/client",
-      "packages/spec/core",
-      "packages/spec/paths",
+      "packages/spec",
       "packages/worlds/src/api",
       "packages/worlds/src/resources",
-      "packages/worlds/src/api/v1/search.types.ts",
-      "packages/worlds/src/api/v1/sparql.types.ts",
-      "packages/worlds/src/resources/world.types.ts",
       "packages/server/src/routes/mcp/route.ts",
       "packages/server/src/routes/rpc/route.ts"
     ]

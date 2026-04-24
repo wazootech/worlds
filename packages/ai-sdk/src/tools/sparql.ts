@@ -28,7 +28,7 @@ export const worldsSparqlTool: WorldsTool<
 };
 
 export function createWorldsSparqlTool(
-  { data }: CreateToolsOptions,
+  { worlds }: CreateToolsOptions,
 ): WorldsSparqlTool {
   return tool({
     ...worldsSparqlTool,
@@ -47,7 +47,7 @@ export function createWorldsSparqlTool(
         }
       }
 
-      return await data.sparql(input);
+      return await worlds.sparql(input);
     },
   });
 }

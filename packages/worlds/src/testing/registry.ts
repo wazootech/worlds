@@ -10,14 +10,18 @@ export function createMockEmbeddings(dimensions: number = 768): Embeddings {
     dimensions,
     embed: (texts: string | string[]) => {
       if (Array.isArray(texts)) {
-        return Promise.resolve(Array(texts.length).fill(Array(dimensions).fill(1)));
+        return Promise.resolve(
+          Array(texts.length).fill(Array(dimensions).fill(1)),
+        );
       }
       return Promise.resolve(Array(dimensions).fill(1));
     },
   };
 }
 
-export async function createTestWorlds(): Promise<{ worlds: EmbeddedWorlds; storage: KvStoreEngine }> {
+export async function createTestWorlds(): Promise<
+  { worlds: EmbeddedWorlds; storage: KvStoreEngine }
+> {
   const keys = new ApiKeyRepository();
   const namespaces = new NamespaceRepository();
   const worldsRepo = new WorldRepository();

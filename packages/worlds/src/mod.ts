@@ -1,15 +1,18 @@
 // Core Entry Points
-export { Worlds, EmbeddedWorlds, type WorldsInterface, type WorldsOptions, type EmbeddedWorldsOptions } from "./engine/service.ts";
+export {
+  EmbeddedWorlds,
+  type EmbeddedWorldsOptions,
+  Worlds,
+  type WorldsInterface,
+  type WorldsOptions,
+} from "./engine/service.ts";
 
 // Config
-export { resolveConfig, parseUrl } from "./config.ts";
+export { parseUrl, resolveConfig } from "./config.ts";
 
 // Types
 export type { ContentType, Source, TransactionMode } from "@wazoo/worlds-spec";
-export type {
-  DataPlane,
-  ManagementPlane,
-} from "./engine/service.ts";
+export type { DataPlane, ManagementPlane } from "./engine/service.ts";
 
 // Utilities
 export { isSparqlUpdate } from "./utils.ts";

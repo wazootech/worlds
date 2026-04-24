@@ -17,12 +17,12 @@ export const worldsGetTool: WorldsTool<GetWorldRequest, World | null> = {
 };
 
 export function createWorldsGetTool(
-  { management }: CreateToolsOptions,
+  { worlds }: CreateToolsOptions,
 ): WorldsGetTool {
   return tool({
     ...worldsGetTool,
     execute: async (input: GetWorldRequest) => {
-      return await management.getWorld(input);
+      return await worlds.getWorld(input);
     },
   });
 }

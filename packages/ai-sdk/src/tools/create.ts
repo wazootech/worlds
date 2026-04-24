@@ -16,12 +16,12 @@ export const worldsCreateTool: WorldsTool<CreateWorldRequest, World> = {
 };
 
 export function createWorldsCreateTool(
-  { management }: CreateToolsOptions,
+  { worlds }: CreateToolsOptions,
 ): WorldsCreateTool {
   return tool({
     ...worldsCreateTool,
     execute: async (input: CreateWorldRequest) => {
-      return await management.createWorld(input);
+      return await worlds.createWorld(input);
     },
   });
 }

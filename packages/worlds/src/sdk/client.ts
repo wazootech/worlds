@@ -1,6 +1,4 @@
 import type {
-  DataPlane,
-  ManagementPlane,
   RemoteWorldsOptions,
   WorldsInterface,
 } from "../engine/service.ts";
