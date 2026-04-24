@@ -1,8 +1,5 @@
 import { assert, assertEquals } from "@std/assert";
-import {
-  initRegistry,
-  WorldsClient as Worlds,
-} from "@wazoo/worlds-sdk";
+import { initRegistry, WorldsClient as Worlds } from "@wazoo/worlds-sdk";
 import type { SparqlSelectResult } from "@wazoo/worlds-sdk/schema";
 import { createServer } from "../server.ts";
 
