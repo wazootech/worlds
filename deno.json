@@ -61,7 +61,12 @@
       "packages/spec/core",
       "packages/spec/paths",
       "packages/worlds/src/api",
-      "packages/worlds/src/resources"
+      "packages/worlds/src/resources",
+      "packages/worlds/src/api/v1/search.types.ts",
+      "packages/worlds/src/api/v1/sparql.types.ts",
+      "packages/worlds/src/resources/world.types.ts",
+      "packages/server/src/routes/mcp/route.ts",
+      "packages/server/src/routes/rpc/route.ts"
     ]
   },
   "publish": {

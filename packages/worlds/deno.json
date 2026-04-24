@@ -6,9 +6,6 @@
     "./engine": "./src/engine/service.ts",
     "./remote": "./src/sdk/client.ts",
     "./schema": "./src/schema.ts",
-    "./types/world": "./src/resources/world.types.ts",
-    "./types/sparql": "./src/api/v1/sparql.types.ts",
-    "./types/search": "./src/api/v1/search.types.ts",
     "./testing": "./src/testing/context.ts"
   },
   "imports": {
