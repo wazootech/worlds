@@ -16,7 +16,8 @@ export const worldsListTool: WorldsTool<
   ListWorldsResponse
 > = {
   name: "worlds_list",
-  description: "Retrieves a list of all datasets (worlds) currently managed by the engine.",
+  description:
+    "Retrieves a list of all datasets (worlds) currently managed by the engine.",
   inputSchema: ListWorldsRequestSchema,
   outputSchema: z.any(),
   isWrite: false,

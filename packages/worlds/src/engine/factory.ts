@@ -257,7 +257,7 @@ export async function initRegistry(
     worlds: new WorldRepository(),
   };
 
-const registry: WorldsRegistry = {
+  const registry: WorldsRegistry = {
     embeddings,
     repositories,
     storage,

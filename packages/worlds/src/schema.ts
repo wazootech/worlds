@@ -1,7 +1,14 @@
 export * from "@wazoo/worlds-spec";
 
-export type { WorldRow, WorldRowUpsert, ChunkRow, ChunkRowUpsert, FactRow, FactRowUpsert } from "./resources/table.types.ts";
-export type { WorldId, FactId, ChunkId } from "./resources/table.types.ts";
+export type {
+  ChunkRow,
+  ChunkRowUpsert,
+  FactRow,
+  FactRowUpsert,
+  WorldRow,
+  WorldRowUpsert,
+} from "./resources/table.types.ts";
+export type { ChunkId, FactId, WorldId } from "./resources/table.types.ts";
 
 export type SearchWorldsResult = import("@wazoo/worlds-spec").SearchResult;
 export type SearchWorldsResponse = {
@@ -14,7 +21,8 @@ export type GetServiceDescriptionRequest = {
   contentType?: import("@wazoo/worlds-spec").ContentType;
 };
 
-export type SparqlSelectResult = import("@wazoo/worlds-spec").SparqlSelectResults;
+export type SparqlSelectResult =
+  import("@wazoo/worlds-spec").SparqlSelectResults;
 
 import type {
   CreateWorldRequest,
@@ -40,8 +48,14 @@ export type {
 
 export type WorldsManagementPlane = {
   listWorlds(input?: ListWorldsRequest): Promise<ListWorldsResponse>;
-  getWorld(input: GetWorldRequest): Promise<import("@wazoo/worlds-spec").World | null>;
-  createWorld(input: CreateWorldRequest): Promise<import("@wazoo/worlds-spec").World>;
-  updateWorld(input: UpdateWorldRequest): Promise<import("@wazoo/worlds-spec").World>;
+  getWorld(
+    input: GetWorldRequest,
+  ): Promise<import("@wazoo/worlds-spec").World | null>;
+  createWorld(
+    input: CreateWorldRequest,
+  ): Promise<import("@wazoo/worlds-spec").World>;
+  updateWorld(
+    input: UpdateWorldRequest,
+  ): Promise<import("@wazoo/worlds-spec").World>;
   deleteWorld(input: DeleteWorldRequest): Promise<void>;
 };

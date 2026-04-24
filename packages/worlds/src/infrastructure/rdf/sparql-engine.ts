@@ -125,10 +125,10 @@ async function handleBoolean(queryType: {
   execute(): Promise<boolean>;
 }): Promise<SparqlQueryResponse> {
   const booleanResult = await queryType.execute();
-return {
-      head: { link: undefined },
-      boolean: booleanResult,
-    };
+  return {
+    head: { link: undefined },
+    boolean: booleanResult,
+  };
 }
 
 async function handleQuads(queryType: {

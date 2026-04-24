@@ -9,8 +9,7 @@ export type WorldsImportTool = Tool<ImportWorldRequest, void>;
 
 export const worldsImportTool: WorldsTool<ImportWorldRequest, void> = {
   name: "worlds_import",
-  description:
-    "Loads RDF data into a world.",
+  description: "Loads RDF data into a world.",
   inputSchema: ImportWorldRequestSchema,
   outputSchema: z.void(),
   isWrite: true,

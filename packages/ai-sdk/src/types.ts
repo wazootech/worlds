@@ -1,8 +1,8 @@
 import type { ZodType } from "zod";
 import type {
+  Source,
   WorldsDataPlane,
   WorldsManagementPlane,
-  Source,
 } from "@wazoo/worlds-sdk";
 
 export type { Source };

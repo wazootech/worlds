@@ -1,6 +1,9 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
-import type { DeleteWorldRequest, WorldsManagementPlane } from "@wazoo/worlds-sdk";
+import type {
+  DeleteWorldRequest,
+  WorldsManagementPlane,
+} from "@wazoo/worlds-sdk";
 import { DeleteWorldRequestSchema } from "#/utils/validation.ts";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 import { z } from "zod";

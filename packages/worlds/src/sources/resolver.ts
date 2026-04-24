@@ -1,4 +1,4 @@
-import type { TransactionMode, Source } from "@wazoo/worlds-spec";
+import type { Source, TransactionMode } from "@wazoo/worlds-spec";
 
 import type { WorldsRegistry } from "../testing/registry.ts";
 
@@ -101,8 +101,8 @@ export function isSource(source: unknown): source is Source {
     isNamedSource(source) ||
     isQualifiedSource(source) ||
     isBaseSource(source)
-);
-  }
+  );
+}
 
 /**
  * parseSourceName parses a "namespace/world" string into components.
@@ -207,7 +207,7 @@ export function resolveSource(
   }
 
   if (isQualifiedSource(source)) {
-    const worldId = ("id" in source ? source.id : undefined);
+    const worldId = "id" in source ? source.id : undefined;
     const namespace = ("namespace" in source ? source.namespace : undefined) ||
       registry?.namespace;
 

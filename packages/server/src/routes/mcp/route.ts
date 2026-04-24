@@ -12,9 +12,7 @@ import type {
   UpdateWorldRequest,
   WorldsRegistry,
 } from "@wazoo/worlds-sdk";
-import type {
-  SourceInput,
-} from "@wazoo/worlds-ai-sdk/types";
+import type { SourceInput } from "@wazoo/worlds-ai-sdk/types";
 
 import { worldsSparqlTool } from "@wazoo/worlds-ai-sdk/tools/sparql";
 import { worldsSearchTool } from "@wazoo/worlds-ai-sdk/tools/search";

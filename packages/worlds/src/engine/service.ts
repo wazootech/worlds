@@ -68,7 +68,6 @@ export interface WorldsEngine {
   [Symbol.asyncDispose](): Promise<void>;
 }
 
-
 /**
  * Worlds is an engine-agnostic implementation of the Worlds API.
  */
@@ -147,8 +146,6 @@ export class Worlds implements WorldsEngine {
       sync: async () => {},
     };
   }
-
-
 
   public async sparql(
     input: SparqlQueryRequest,

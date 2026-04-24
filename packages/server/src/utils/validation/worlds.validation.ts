@@ -1,15 +1,15 @@
 import { z } from "zod";
 import {
-  zSource,
-  zGetWorldRequest,
   zCreateWorldRequest,
-  zUpdateWorldRequest,
   zDeleteWorldRequest,
-  zListWorldsRequest,
   zExportWorldRequest,
+  zGetWorldRequest,
   zImportWorldRequest,
+  zListWorldsRequest,
   zSearchWorldsRequest,
+  zSource,
   zSparqlQueryRequest,
+  zUpdateWorldRequest,
 } from "@wazoo/worlds-spec/zod";
 
 export const sourceSchema = zSource;
@@ -33,5 +33,3 @@ export const worldsImportInputSchema = zImportWorldRequest;
 export const worldsSearchInputSchema = zSearchWorldsRequest;
 
 export const worldsSparqlInputSchema = zSparqlQueryRequest;
-
-

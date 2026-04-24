@@ -226,7 +226,9 @@ Deno.test("World routes", async (t) => {
       contentType: "text/turtle",
     });
 
-    const nQuadsBuffer2 = await worlds.worlds.export({ source: { id: world! } });
+    const nQuadsBuffer2 = await worlds.worlds.export({
+      source: { id: world! },
+    });
     const nQuads2 = new TextDecoder().decode(nQuadsBuffer2);
     assert(nQuads2.includes("http://example.org/subject2"));
     assert(nQuads2.includes("Imported Object"));
