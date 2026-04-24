@@ -24,5 +24,8 @@ export {
   SERIALIZATIONS,
 } from "./infrastructure/rdf/core/serialization.ts";
 
-// Export all API types (Request/Response) and resource types
+// Public API types (Request/Response, World, etc.)
 export * from "./schema.ts";
+
+// Internal types for advanced users
+export * as WorldsInternal from "./internal/mod.ts";
