@@ -1,23 +1,12 @@
 // Core Entry Points
-export { Worlds, Worlds as LocalWorlds } from "./engine/service.ts";
-export {
-  RemoteWorldsData,
-  RemoteWorldsManagement,
-  WorldsClient,
-} from "./sdk/client.ts";
-export { createWorlds, initRegistry } from "./engine/factory.ts";
+export { Worlds, EmbeddedWorlds, RemoteWorlds, type WorldsInterface, type WorldsOptions, type EmbeddedWorldsOptions, type RemoteWorldsOptions } from "./engine/service.ts";
 
 // Types
 export type { ContentType, Source, TransactionMode } from "@wazoo/worlds-spec";
 export type {
-  WorldsDataPlane,
-  WorldsManagementPlane,
-  WorldsOptions,
-  WorldsRegistry,
-} from "./engine/factory.ts";
-
-// Testing Utilities
-export { createTestNamespace, createTestRegistry } from "./testing/registry.ts";
+  DataPlane,
+  ManagementPlane,
+} from "./engine/service.ts";
 
 // Utilities
 export { isSparqlUpdate } from "./utils.ts";

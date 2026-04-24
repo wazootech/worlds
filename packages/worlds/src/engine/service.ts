@@ -1,17 +1,25 @@
 import type { Quad } from "n3";
 
 import type {
+  CreateWorldRequest,
+  DeleteWorldRequest,
   ExportWorldRequest,
+  GetWorldRequest,
   GetServiceDescriptionRequest,
   ImportWorldRequest,
+  ListWorldsRequest,
+  ListWorldsResponse,
   SearchWorldsRequest,
   SearchWorldsResponse,
   Source,
   SparqlQueryRequest,
   SparqlQueryResponse,
+  UpdateWorldRequest,
+  World,
+  WorldId,
 } from "../schema.ts";
 
-import type { ManagementLayer } from "../management/worlds.ts";
+import type { ManagementLayer, WorldRow } from "../management/worlds.ts";
 import { resolveSource } from "../sources/resolver.ts";
 import { createIndexedStore } from "../infrastructure/rdf/patch/indexed-store.ts";
 import { SearchIndexHandler } from "../infrastructure/rdf/patch/rdf-patch.ts";
@@ -36,9 +44,39 @@ export interface SyncableStore {
 }
 
 /**
- * WorldsEngineOptions are the options for creating a Worlds instance.
+ * DataPlane defines the data operations interface (SPARQL, Search, Import/Export).
  */
-export interface WorldsEngineOptions {
+export interface DataPlane {
+  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
+  search(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
+  import(input: ImportWorldRequest): Promise<void>;
+  export(input: ExportWorldRequest): Promise<ArrayBuffer>;
+}
+
+/**
+ * ManagementPlane defines the lifecycle management interface.
+ */
+export interface ManagementPlane {
+  getWorld(input: GetWorldRequest): Promise<World | null>;
+  createWorld(input: CreateWorldRequest): Promise<World>;
+  updateWorld(input: UpdateWorldRequest): Promise<World>;
+  deleteWorld(input: DeleteWorldRequest): Promise<void>;
+  listWorlds(input?: ListWorldsRequest): Promise<ListWorldsResponse>;
+}
+
+/**
+ * WorldsInterface defines the primary interface for Worlds.
+ * Combines DataPlane and ManagementPlane into a single unified interface.
+ */
+export interface WorldsInterface extends DataPlane, ManagementPlane {
+  init(): Promise<void>;
+  [Symbol.asyncDispose](): Promise<void>;
+}
+
+/**
+ * EmbeddedWorldsOptions are the options for creating an embedded/local Worlds instance.
+ */
+export interface EmbeddedWorldsOptions {
   storage?: StoreEngine;
   sparqlEngine?: SparqlEngine;
   searchEngine?: SearchEngine;
@@ -49,21 +87,24 @@ export interface WorldsEngineOptions {
 }
 
 /**
- * WorldsEngine defines the primary interface for the Worlds engine.
+ * RemoteWorldsOptions are the options for creating a remote/RPC Worlds instance.
  */
-export interface WorldsEngine {
-  init(): Promise<void>;
-  sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse>;
-  search(input: SearchWorldsRequest): Promise<SearchWorldsResponse>;
-  import(input: ImportWorldRequest): Promise<void>;
-  export(input: ExportWorldRequest): Promise<ArrayBuffer>;
-  [Symbol.asyncDispose](): Promise<void>;
+export interface RemoteWorldsOptions {
+  baseUrl: string;
+  apiKey?: string;
+  fetch?: typeof fetch;
 }
 
 /**
- * Worlds is an engine-agnostic implementation of the Worlds API.
+ * WorldsOptions are the options for creating a Worlds instance.
+ * Supports both embedded (local) and remote (RPC) modes.
  */
-export class Worlds implements WorldsEngine {
+export type WorldsOptions = EmbeddedWorldsOptions | RemoteWorldsOptions;
+
+/**
+ * EmbeddedWorlds is the local/embedded implementation of WorldsInterface.
+ */
+export class EmbeddedWorlds implements WorldsInterface {
   private readonly storage?: StoreEngine;
   private searchEngine?: SearchEngine;
   private sparqlEngine?: SparqlEngine;
@@ -72,7 +113,7 @@ export class Worlds implements WorldsEngine {
   private readonly id?: string;
   private readonly embeddings?: Embeddings;
 
-  constructor(options: WorldsEngineOptions) {
+  constructor(options: EmbeddedWorldsOptions) {
     this.storage = options.storage;
     this.management = options.management;
     this.namespace = options.namespace;
@@ -84,6 +125,86 @@ export class Worlds implements WorldsEngine {
 
   public init(): Promise<void> {
     return Promise.resolve();
+  }
+
+  public async getWorld(input: GetWorldRequest): Promise<World | null> {
+    const mgmt = this.ensureManagement();
+    const resolved = resolveSource(input.source, { namespace: this.namespace });
+    if (!resolved.id) return null;
+    const row = mgmt.worlds.get(resolved.id, resolved.namespace);
+    return row ? this.mapRowToWorld(row) : null;
+  }
+
+  public async createWorld(input: CreateWorldRequest): Promise<World> {
+    const mgmt = this.ensureManagement();
+    const nameOrId = input.id ||
+      (input as Record<string, unknown>).name as string ||
+      (input as Record<string, unknown>).world as string;
+    if (!nameOrId) throw new Error("World identity required");
+
+    const resolved = resolveSource(nameOrId, {
+      namespace: input.parent || this.namespace,
+    });
+
+    const now = Date.now();
+    mgmt.worlds.insert({
+      namespace: resolved.namespace,
+      id: resolved.id!,
+      label: input.displayName ?? resolved.id ?? "Untitled",
+      description: input.description,
+      connection_uri: null,
+      created_at: now,
+      updated_at: now,
+      deleted_at: null,
+    });
+
+    const row = mgmt.worlds.get(resolved.id!, resolved.namespace);
+    return this.mapRowToWorld(row!);
+  }
+
+  public async updateWorld(input: UpdateWorldRequest): Promise<World> {
+    const mgmt = this.ensureManagement();
+    const resolved = resolveSource(input.source, { namespace: this.namespace });
+    if (!resolved.id) throw new Error("World ID required");
+
+    const now = Date.now();
+    mgmt.worlds.update(resolved.id, resolved.namespace, {
+      label: input.displayName,
+      description: input.description,
+      updated_at: now,
+    });
+
+    const row = mgmt.worlds.get(resolved.id, resolved.namespace);
+    return this.mapRowToWorld(row!);
+  }
+
+  public async deleteWorld(input: DeleteWorldRequest): Promise<void> {
+    const mgmt = this.ensureManagement();
+    const resolved = resolveSource(input.source, { namespace: this.namespace });
+    if (!resolved.id) return;
+    mgmt.worlds.delete(resolved.id, resolved.namespace);
+  }
+
+  public async listWorlds(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
+    const mgmt = this.ensureManagement();
+    const namespace = input?.parent || this.namespace;
+    const result = mgmt.worlds.list({ ...input, namespace });
+    return {
+      worlds: result.worlds.map(this.mapRowToWorld),
+      nextPageToken: result.nextPageToken,
+    };
+  }
+
+  private mapRowToWorld(row: WorldRow): World {
+    return {
+      id: row.id as WorldId,
+      namespace: row.namespace,
+      displayName: row.label,
+      description: row.description,
+      createTime: row.created_at!,
+      updateTime: row.updated_at!,
+      deleteTime: row.deleted_at ?? undefined,
+    };
   }
 
   private ensureManagement(): ManagementLayer {
@@ -236,5 +357,89 @@ export class Worlds implements WorldsEngine {
         await engine[Symbol.asyncDispose]();
       }
     }
+  }
+}
+
+/**
+ * Worlds is the unified entry point that conditionally wraps either
+ * EmbeddedWorlds or RemoteWorlds based on configuration.
+ */
+export class Worlds implements WorldsInterface {
+  private impl: WorldsInterface;
+  private _initialized = false;
+
+  constructor(options: WorldsOptions) {
+    if ("baseUrl" in options && options.baseUrl) {
+      throw new Error(
+        "Remote mode requires async initialization. Use Worlds.remote(options) instead.",
+      );
+    }
+
+    this.impl = new EmbeddedWorlds(options as EmbeddedWorldsOptions);
+  }
+
+  /**
+   * Creates a Worlds instance in remote/RPC mode.
+   */
+  static async remote(options: RemoteWorldsOptions): Promise<Worlds> {
+    const { RemoteWorlds } = await import("../sdk/client.ts");
+    const instance = Object.create(Worlds.prototype);
+    instance.impl = new RemoteWorlds(options);
+    instance._initialized = true;
+    return instance;
+  }
+
+  /**
+   * Creates a Worlds instance in embedded/local mode.
+   */
+  static embedded(options: EmbeddedWorldsOptions): Worlds {
+    return new Worlds(options);
+  }
+
+  public async init(): Promise<void> {
+    if (!this._initialized) {
+      await this.impl.init();
+    }
+    return Promise.resolve();
+  }
+
+  public async getWorld(input: GetWorldRequest): Promise<World | null> {
+    return this.impl.getWorld(input);
+  }
+
+  public async createWorld(input: CreateWorldRequest): Promise<World> {
+    return this.impl.createWorld(input);
+  }
+
+  public async updateWorld(input: UpdateWorldRequest): Promise<World> {
+    return this.impl.updateWorld(input);
+  }
+
+  public async deleteWorld(input: DeleteWorldRequest): Promise<void> {
+    return this.impl.deleteWorld(input);
+  }
+
+  public async listWorlds(input?: ListWorldsRequest): Promise<ListWorldsResponse> {
+    return this.impl.listWorlds(input);
+  }
+
+  public async sparql(input: SparqlQueryRequest): Promise<SparqlQueryResponse> {
+    return this.impl.sparql(input);
+  }
+
+  public async search(input: SearchWorldsRequest): Promise<SearchWorldsResponse> {
+    return this.impl.search(input);
+  }
+
+  public async import(input: ImportWorldRequest): Promise<void> {
+    return this.impl.import(input);
+  }
+
+  public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
+    return this.impl.export(input);
+  }
+
+  public async [Symbol.asyncDispose](): Promise<void> {
+    return this.impl[Symbol.asyncDispose]();
   }
 }

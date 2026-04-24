@@ -1,8 +1,9 @@
 import type {
-  WorldsDataPlane,
-  WorldsManagementPlane,
-  WorldsOptions,
-} from "../engine/factory.ts";
+  DataPlane,
+  ManagementPlane,
+  RemoteWorldsOptions,
+  WorldsInterface,
+} from "../engine/service.ts";
 import { parseError } from "../utils.ts";
 import { encodeBase64 } from "@std/encoding/base64";
 import type {
@@ -21,21 +22,24 @@ import type {
   World,
 } from "../schema.ts";
 
-/**
- * RemoteWorldsManagement handles the management plane (lifecycle) of worlds via RPC.
- */
-export class RemoteWorldsManagement implements WorldsManagementPlane {
-  constructor(private readonly client: WorldsClient) {}
+export class RemoteWorlds implements WorldsInterface {
+  private readonly fetch: typeof fetch;
+
+  public constructor(
+    private readonly options: RemoteWorldsOptions,
+  ) {
+    this.fetch = options.fetch ?? globalThis.fetch;
+  }
 
   public async listWorlds(
     input?: ListWorldsRequest,
   ): Promise<ListWorldsResponse> {
-    return await this.client.callRpc<ListWorldsResponse>("list", input ?? {});
+    return await this.callRpc<ListWorldsResponse>("list", input ?? {});
   }
 
   public async getWorld(input: GetWorldRequest): Promise<World | null> {
     try {
-      return await this.client.callRpc<World>("get", input);
+      return await this.callRpc<World>("get", input);
     } catch (error) {
       if (
         error && typeof error === "object" &&
@@ -49,28 +53,21 @@ export class RemoteWorldsManagement implements WorldsManagementPlane {
   }
 
   public async createWorld(input: CreateWorldRequest): Promise<World> {
-    return await this.client.callRpc<World>("create", input);
+    return await this.callRpc<World>("create", input);
   }
 
   public async updateWorld(input: UpdateWorldRequest): Promise<World> {
-    return await this.client.callRpc<World>("update", input);
+    return await this.callRpc<World>("update", input);
   }
 
   public async deleteWorld(input: DeleteWorldRequest): Promise<void> {
-    return await this.client.callRpc<void>("delete", input);
+    return await this.callRpc<void>("delete", input);
   }
-}
-
-/**
- * RemoteWorldsData handles the data plane (operations) of worlds via RPC.
- */
-export class RemoteWorldsData implements WorldsDataPlane {
-  constructor(private readonly client: WorldsClient) {}
 
   public async sparql(
     input: SparqlQueryRequest,
   ): Promise<SparqlQueryResponse> {
-    return await this.client.callRpc<SparqlQueryResponse>(
+    return await this.callRpc<SparqlQueryResponse>(
       "sparql",
       input,
       {
@@ -82,7 +79,7 @@ export class RemoteWorldsData implements WorldsDataPlane {
   public async search(
     input: SearchWorldsRequest,
   ): Promise<SearchWorldsResponse> {
-    return await this.client.callRpc<SearchWorldsResponse>(
+    return await this.callRpc<SearchWorldsResponse>(
       "search",
       input,
     );
@@ -95,7 +92,7 @@ export class RemoteWorldsData implements WorldsDataPlane {
       : new Uint8Array(data);
 
     const base64Data = encodeBase64(binaryData);
-    return await this.client.callRpc<void>("import", {
+    return await this.callRpc<void>("import", {
       ...input,
       data: base64Data,
       contentType,
@@ -103,44 +100,12 @@ export class RemoteWorldsData implements WorldsDataPlane {
   }
 
   public async export(input: ExportWorldRequest): Promise<ArrayBuffer> {
-    return await this.client.callRpc<ArrayBuffer>("export", input, {
+    return await this.callRpc<ArrayBuffer>("export", input, {
       responseType: "arrayBuffer",
     });
   }
-}
 
-/**
- * WorldsClient is a TypeScript SDK client for the Worlds API.
- */
-export class WorldsClient {
-  private readonly fetch: typeof fetch;
-
-  /**
-   * management provides handles for metadata operations.
-   */
-  public readonly management: RemoteWorldsManagement;
-
-  /**
-   * worlds provides handles for data-plane operations.
-   */
-  public readonly worlds: RemoteWorldsData;
-
-  /**
-   * WorldsClient initializes the TypeScript SDK client.
-   */
-  public constructor(
-    private readonly options: WorldsOptions,
-  ) {
-    this.fetch = options.fetch ?? globalThis.fetch;
-    this.management = new RemoteWorldsManagement(this);
-    this.worlds = new RemoteWorldsData(this);
-  }
-
-  /**
-   * callRpc executes a unified RPC call.
-   * @internal
-   */
-  public async callRpc<T, P = unknown>(
+  private async callRpc<T, P = unknown>(
     action: string,
     params: P,
     options: {
@@ -183,23 +148,14 @@ export class WorldsClient {
     return await response.json();
   }
 
-  /**
-   * close shuts down the SDK client.
-   */
   public close(): Promise<void> {
     return Promise.resolve();
   }
 
-  /**
-   * init initializes the SDK client.
-   */
   public init(): Promise<void> {
     return Promise.resolve();
   }
 
-  /**
-   * [Symbol.asyncDispose] provides support for explicit resource management.
-   */
   public [Symbol.asyncDispose](): Promise<void> {
     return this.close();
   }

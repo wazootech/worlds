@@ -1,35 +1,42 @@
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import type { SparqlSelectResult, World } from "../schema.ts";
-import { createTestContext } from "../testing/context.ts";
-import { Worlds } from "./service.ts";
+import { EmbeddedWorlds } from "./service.ts";
 import { ApiKeyRepository } from "../management/keys.ts";
 import { NamespaceRepository } from "../management/namespaces.ts";
 import { WorldRepository } from "../management/worlds.ts";
 import { KvStoreEngine } from "../infrastructure/store.ts";
 
 Deno.test({
-  name: "Worlds Engine (Shell Architecture)",
+  name: "EmbeddedWorlds (Shell Architecture)",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn(t) {
-    await using context = await createTestContext();
+    const keys = new ApiKeyRepository();
+    const namespaces = new NamespaceRepository();
+    const worldsRepo = new WorldRepository();
+    const storage = new KvStoreEngine();
+    const namespaceId = "test-ns";
 
-    // Wire up a Managed Shell engine for testing
-    const worlds = new Worlds({
-      storage: context.storage,
-      embeddings: context.embeddings,
-      management: context.management,
-      namespace: context.namespace,
-      id: context.id,
+    await namespaces.insert({
+      id: namespaceId,
+      label: "Test Namespace",
+      created_at: Date.now(),
+      updated_at: Date.now(),
+    });
+
+    const worlds = new EmbeddedWorlds({
+      management: { keys, namespaces, worlds: worldsRepo },
+      storage,
+      namespace: namespaceId,
     });
 
     await worlds.init();
 
     let worldId: string;
 
-    await t.step("create world", async () => {
-      const world = await worlds.create({
-        name: "core-world",
+    await t.step("createWorld world", async () => {
+      const world = await worlds.createWorld({
+        id: "core-world",
         displayName: "Core World",
         description: "Test World from Core",
       });
@@ -38,24 +45,24 @@ Deno.test({
       worldId = world.id!;
     });
 
-    await t.step("get world", async () => {
-      const world = await worlds.get({ source: worldId });
+    await t.step("getWorld world", async () => {
+      const world = await worlds.getWorld({ source: worldId });
       assertExists(world);
       assertEquals(world!.displayName, "Core World");
     });
 
-    await t.step("list worlds", async () => {
-      const list = await worlds.list({ pageSize: 10 });
+    await t.step("listWorlds worlds", async () => {
+      const list = await worlds.listWorlds({ pageSize: 10 });
       const found = list.worlds.find((w: World) => w.id === worldId);
       assertExists(found);
     });
 
-    await t.step("update world", async () => {
-      await worlds.update({
+    await t.step("updateWorld world", async () => {
+      await worlds.updateWorld({
         source: worldId,
         description: "Updated from Core",
       });
-      const world = await worlds.get({ source: worldId });
+      const world = await worlds.getWorld({ source: worldId });
       assertEquals(world!.description, "Updated from Core");
     });
 
@@ -85,16 +92,19 @@ Deno.test({
       }
     });
 
-    await t.step("delete world", async () => {
-      await worlds.delete({ source: worldId });
-      const world = await worlds.get({ source: worldId });
+    await t.step("deleteWorld world", async () => {
+      await worlds.deleteWorld({ source: worldId });
+      const world = await worlds.getWorld({ source: worldId });
       assertEquals(world, null);
     });
+
+    await worlds[Symbol.asyncDispose]();
+    await storage.close();
   },
 });
 
 Deno.test({
-  name: "Worlds throws when search called without SearchEngine",
+  name: "EmbeddedWorlds throws when search called without SearchEngine",
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
@@ -111,7 +121,7 @@ Deno.test({
       updated_at: Date.now(),
     });
 
-    const worldsNoSearch = new Worlds({
+    const worldsNoSearch = new EmbeddedWorlds({
       management: {
         keys,
         namespaces,

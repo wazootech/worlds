@@ -1,6 +1,8 @@
 import type { Source, TransactionMode } from "@wazoo/worlds-spec";
 
-import type { WorldsRegistry } from "../testing/registry.ts";
+export interface ResolverContext {
+  namespace?: string;
+}
 
 export type NamedSource = {
   name: string;
@@ -165,7 +167,7 @@ export class SourceParseError extends Error {
  */
 export function resolveSource(
   source?: Source,
-  registry?: Partial<WorldsRegistry>,
+  context?: ResolverContext,
 ): ResolvedSource {
   if (source === null || source === undefined) {
     return { mode: "deferred" };
@@ -178,7 +180,7 @@ export function resolveSource(
     const parsed = parseSourceName(source);
     return {
       id: parsed.id,
-      namespace: parsed.namespace ?? registry?.namespace,
+      namespace: parsed.namespace ?? context?.namespace,
       mode: "deferred",
     };
   }
@@ -193,7 +195,7 @@ export function resolveSource(
     const parsed = parseSourceName(source.name);
     return {
       id: parsed.id,
-      namespace: parsed.namespace ?? registry?.namespace,
+      namespace: parsed.namespace ?? context?.namespace,
       mode,
     };
   }
@@ -201,7 +203,7 @@ export function resolveSource(
   if (isQualifiedSource(source)) {
     const worldId = "id" in source ? source.id : undefined;
     const namespace = ("namespace" in source ? source.namespace : undefined) ||
-      registry?.namespace;
+      context?.namespace;
 
     return {
       id: worldId,
@@ -213,7 +215,7 @@ export function resolveSource(
   if (isBaseSource(source)) {
     return {
       id: undefined,
-      namespace: registry?.namespace,
+      namespace: context?.namespace,
       mode,
     };
   }

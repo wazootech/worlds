@@ -1,28 +1,73 @@
-import { assertEquals } from "@std/assert";
-import { initRegistry } from "./factory.ts";
+import { assertEquals, assertExists } from "@std/assert";
+import { Worlds, EmbeddedWorlds } from "./service.ts";
+import { ApiKeyRepository } from "../management/keys.ts";
+import { NamespaceRepository } from "../management/namespaces.ts";
+import { WorldRepository } from "../management/worlds.ts";
+import { KvStoreEngine } from "../infrastructure/store.ts";
 
-Deno.test("initRegistry - creates a service container", async () => {
-  await using registry = await initRegistry();
+Deno.test("Worlds.embedded - creates embedded instance", async () => {
+  const keys = new ApiKeyRepository();
+  const namespaces = new NamespaceRepository();
+  const worldsRepo = new WorldRepository();
+  const storage = new KvStoreEngine();
 
-  // Should have container properties
-  assertEquals(typeof registry.apiKey, "string");
-  assertEquals(typeof registry.storage, "object");
-  assertEquals(typeof registry.embeddings, "object");
-  assertEquals(typeof registry.management, "object");
-
-  // Should spawn an engine
-  const engine = await registry.engine();
-  assertEquals(typeof engine.list, "function");
-
-  // registry should track active engine
-  assertEquals(registry.activeEngine, engine);
-});
-
-Deno.test("initRegistry - allows overrides", async () => {
-  const customApiKey = "custom-key";
-  await using registry = await initRegistry({
-    envs: { WORLDS_API_KEY: customApiKey },
+  await namespaces.insert({
+    id: "test-ns",
+    label: "Test",
+    created_at: Date.now(),
+    updated_at: Date.now(),
   });
 
-  assertEquals(registry.apiKey, customApiKey);
+  const worlds = Worlds.embedded({
+    storage,
+    management: { keys, namespaces, worlds: worldsRepo },
+    namespace: "test-ns",
+  });
+
+  assertEquals(typeof worlds.init, "function");
+  assertEquals(typeof worlds.getWorld, "function");
+  assertEquals(typeof worlds.createWorld, "function");
+  assertEquals(typeof worlds.listWorlds, "function");
+
+  await worlds[Symbol.asyncDispose]();
+  await storage.close();
+});
+
+Deno.test("EmbeddedWorlds - full lifecycle", async () => {
+  const keys = new ApiKeyRepository();
+  const namespaces = new NamespaceRepository();
+  const worldsRepo = new WorldRepository();
+  const storage = new KvStoreEngine();
+
+  await namespaces.insert({
+    id: "test-ns",
+    label: "Test",
+    created_at: Date.now(),
+    updated_at: Date.now(),
+  });
+
+  const worlds = new EmbeddedWorlds({
+    storage,
+    management: { keys, namespaces, worlds: worldsRepo },
+    namespace: "test-ns",
+  });
+
+  await worlds.init();
+
+  const world = await worlds.createWorld({
+    id: "test-world",
+    displayName: "Test World",
+  });
+
+  assertEquals(world.id, "test-world");
+  assertEquals(world.displayName, "Test World");
+
+  const found = await worlds.getWorld({ source: "test-world" });
+  assertExists(found);
+
+  const list = await worlds.listWorlds();
+  assertEquals(list.worlds.length, 1);
+
+  await worlds[Symbol.asyncDispose]();
+  await storage.close();
 });
