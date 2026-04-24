@@ -1,6 +1,15 @@
 import type { Quad } from "n3";
 
-import type { Source } from "../schema.ts";
+import type {
+  ExportWorldRequest,
+  GetServiceDescriptionRequest,
+  ImportWorldRequest,
+  SearchWorldsRequest,
+  SearchWorldsResponse,
+  Source,
+  SparqlQueryRequest,
+  SparqlQueryResponse,
+} from "../schema.ts";
 
 import type { ManagementLayer } from "../management/worlds.ts";
 import { resolveSource } from "../sources/resolver.ts";
