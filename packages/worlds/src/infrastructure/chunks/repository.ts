@@ -1,4 +1,4 @@
-import type { ChunkTableUpsert } from "../../resources/chunk.types.ts";
+import type { ChunkRowUpsert } from "../../resources/table.types.ts";
 
 /**
  * ChunksRepository handles the persistence of text chunks and their vector embeddings in-memory.
@@ -7,7 +7,7 @@ import type { ChunkTableUpsert } from "../../resources/chunk.types.ts";
 export class ChunksRepository {
   private static readonly worldChunks = new Map<
     string,
-    Map<string, ChunkTableUpsert>
+    Map<string, ChunkRowUpsert>
   >();
 
   private readonly worldKey: string;
@@ -26,7 +26,7 @@ export class ChunksRepository {
    * upsert inserts or replaces a text chunk record.
    * @param chunk The chunk data to upsert.
    */
-  public upsert(chunk: ChunkTableUpsert): void {
+  public upsert(chunk: ChunkRowUpsert): void {
     ChunksRepository.worldChunks.get(this.worldKey)!.set(chunk.id, {
       ...chunk,
     });
@@ -50,7 +50,7 @@ export class ChunksRepository {
   /**
    * getForWorld returns all chunks for this world.
    */
-  getForWorld(): ChunkTableUpsert[] {
+  getForWorld(): ChunkRowUpsert[] {
     return Array.from(
       ChunksRepository.worldChunks.get(this.worldKey)?.values() ?? [],
     );

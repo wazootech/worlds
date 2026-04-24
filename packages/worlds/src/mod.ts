@@ -8,14 +8,21 @@ export {
 export { createWorlds, initRegistry } from "./engine/factory.ts";
 
 // Types
-export type { ContentType, Source, TransactionMode } from "./api/v1/types.gen.ts";
+export type { ContentType, Source, TransactionMode } from "@wazoo/worlds-spec";
+export type {
+  WorldsRegistry,
+  WorldsManagementPlane,
+  WorldsDataPlane,
+  WorldsOptions,
+} from "./engine/factory.ts";
 
 // Testing Utilities
 export { createTestNamespace, createTestRegistry } from "./testing/registry.ts";
 
 // Utilities
 export { isSparqlUpdate } from "./utils.ts";
-export { resolveSource, toWorldName } from "./sources/resolver.ts";
+export { resolveSource, setResolverConfig, toWorldName } from "./sources/resolver.ts";
+export type { ResolverConfig } from "./sources/resolver.ts";
 export {
   type Serialization,
   SERIALIZATIONS,

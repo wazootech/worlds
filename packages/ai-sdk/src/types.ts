@@ -2,16 +2,16 @@ import type { ZodType } from "zod";
 import type {
   WorldsDataPlane,
   WorldsManagementPlane,
-  WorldSource,
+  Source,
 } from "@wazoo/worlds-sdk";
 
-export type { WorldSource };
+export type { Source };
 
 /**
  * SourceInput is a flexible way to specify a data source.
  * It can be a string (ID or world) for read-only access, or a Source object for granular control.
  */
-export type SourceInput = string | WorldSource;
+export type SourceInput = string | Source;
 
 /**
  * WorldsTool defines the metadata and schema for a Worlds tool.

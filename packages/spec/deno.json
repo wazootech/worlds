@@ -1,0 +1,12 @@
+{
+  "name": "@wazoo/worlds-spec",
+  "version": "1.0.0",
+  "exports": {
+    ".": "./types.gen.ts",
+    "./zod": "./zod.gen.ts",
+    "./generate": "./generate.ts"
+  },
+  "tasks": {
+    "generate": "deno run -A generate.ts"
+  }
+}

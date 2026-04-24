@@ -4,8 +4,7 @@ import type { SearchWorldsRequest, SearchWorldsResult } from "../schema.ts";
 import type { Embeddings } from "../vectors/embeddings.ts";
 import type { ManagementLayer } from "../management/worlds.ts";
 import type { StoreEngine } from "./store.ts";
-import type { WorldId } from "../resources/world.types.ts";
-import type { ChunkId } from "../resources/chunk.types.ts";
+import type { WorldId, ChunkId } from "@wazoo/worlds-spec";
 
 /**
  * SearchEngine handles semantic search operations.

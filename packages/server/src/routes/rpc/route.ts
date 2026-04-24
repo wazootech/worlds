@@ -174,9 +174,9 @@ export async function handleRpc(
         !/[\s\n\r\t]/.test(parseResult.data.data)
       ) {
         try {
-          parseResult.data.data = decodeBase64(
+          (parseResult.data as any).data = decodeBase64(
             parseResult.data.data,
-          ) as unknown as ArrayBuffer;
+          );
         } catch {
           // Keep as string if not valid base64
         }

@@ -12,7 +12,7 @@ import { OpenRouterEmbeddings } from "../vectors/openrouter.ts";
 import { createOllama } from "ollama-ai-provider";
 import type { EmbeddingModel } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { resolveSource } from "../sources/resolver.ts";
+import { resolveSource, setResolverConfig } from "../sources/resolver.ts";
 import {
   type CreateWorldRequest,
   type DeleteWorldRequest,

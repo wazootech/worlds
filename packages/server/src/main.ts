@@ -1,11 +1,21 @@
 import type { Router } from "@fartlabs/rt";
 import type { WorldsRegistry } from "@wazoo/worlds-sdk";
 import { createServer } from "./server.ts";
-import { initRegistry } from "@wazoo/worlds-sdk";
+import { initRegistry, setResolverConfig } from "@wazoo/worlds-sdk";
+
+const resolverConfig = {
+  defaultNamespace: Deno.env.get("WORLDS_NS"),
+  defaultId: Deno.env.get("WORLDS_ID"),
+};
+if (resolverConfig.defaultNamespace || resolverConfig.defaultId) {
+  setResolverConfig(resolverConfig);
+}
 
 const registry: WorldsRegistry = await initRegistry({
   envs: {
     WORLDS_API_KEY: Deno.env.get("WORLDS_API_KEY"),
+    WORLDS_NS: Deno.env.get("WORLDS_NS"),
+    WORLDS_ID: Deno.env.get("WORLDS_ID"),
     LIBSQL_URL: Deno.env.get("LIBSQL_URL") ?? undefined,
     LIBSQL_AUTH_TOKEN: Deno.env.get("LIBSQL_AUTH_TOKEN"),
     TURSO_API_TOKEN: Deno.env.get("TURSO_API_TOKEN"),

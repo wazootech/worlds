@@ -1,4 +1,4 @@
-import type { ErrorResponseData } from "./api/v1/types.gen.ts";
+import type { ErrorResponseData } from "@wazoo/worlds-spec";
 
 /**
  * isErrorResponseData check if a value is an ErrorResponseData.

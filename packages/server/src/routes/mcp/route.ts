@@ -10,33 +10,21 @@ import type {
   SearchWorldsRequest,
   SparqlQueryRequest,
   UpdateWorldRequest,
-  WorldsDataPlane,
-  WorldsManagementPlane,
   WorldsRegistry,
 } from "@wazoo/worlds-sdk";
 import type {
-  CreateToolsOptions,
   SourceInput,
 } from "@wazoo/worlds-ai-sdk/types";
 
-import { sparql, worldsSparqlTool } from "@wazoo/worlds-ai-sdk/tools/sparql";
-import { search, worldsSearchTool } from "@wazoo/worlds-ai-sdk/tools/search";
-import { list, worldsListTool } from "@wazoo/worlds-ai-sdk/tools/list";
-import { get, worldsGetTool } from "@wazoo/worlds-ai-sdk/tools/get";
-import { create, worldsCreateTool } from "@wazoo/worlds-ai-sdk/tools/create";
-import { updateWorld, worldsUpdateTool } from "@wazoo/worlds-ai-sdk/tools/update";
-import {
-  deleteWorld,
-  worldsDeleteTool,
-} from "@wazoo/worlds-ai-sdk/tools/delete";
-import {
-  importWorld,
-  worldsImportTool,
-} from "@wazoo/worlds-ai-sdk/tools/import";
-import {
-  exportWorld,
-  worldsExportTool,
-} from "@wazoo/worlds-ai-sdk/tools/export";
+import { worldsSparqlTool } from "@wazoo/worlds-ai-sdk/tools/sparql";
+import { worldsSearchTool } from "@wazoo/worlds-ai-sdk/tools/search";
+import { worldsListTool } from "@wazoo/worlds-ai-sdk/tools/list";
+import { worldsGetTool } from "@wazoo/worlds-ai-sdk/tools/get";
+import { worldsCreateTool } from "@wazoo/worlds-ai-sdk/tools/create";
+import { worldsUpdateTool } from "@wazoo/worlds-ai-sdk/tools/update";
+import { worldsDeleteTool } from "@wazoo/worlds-ai-sdk/tools/delete";
+import { worldsImportTool } from "@wazoo/worlds-ai-sdk/tools/import";
+import { worldsExportTool } from "@wazoo/worlds-ai-sdk/tools/export";
 
 type McpToolOptions = {
   name: string;
@@ -51,10 +39,8 @@ type McpToolOptions = {
 type ToolDefinition = {
   tool: McpToolOptions;
   fn: (
-    management: WorldsManagementPlane,
-    data: WorldsDataPlane,
-    sources: CreateToolsOptions["sources"],
-    args: unknown,
+    registry: WorldsRegistry,
+    args: any,
   ) => Promise<unknown>;
 };
 
@@ -66,7 +52,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (_m, data, _s, a) => createWorldsSparqlTool({ data, sources }).execute(a as SparqlQueryRequest),
+    fn: (r, a) => r.sparql(a as SparqlQueryRequest),
   },
   {
     tool: {
@@ -75,7 +61,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (m, _data, _s, a) => createWorldsListTool({ management: m }).execute(a as ListWorldsRequest),
+    fn: (r, a) => r.listWorlds(a as ListWorldsRequest),
   },
   {
     tool: {
@@ -84,35 +70,35 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (m, _data, _s, a) => createWorldsGetTool({ management: m }).execute(a as GetWorldRequest),
+    fn: (r, a) => r.getWorld(a as GetWorldRequest),
   },
   {
     tool: {
       ...worldsCreateTool,
       title: "Create",
     },
-    fn: (m, _data, _s, a) => createWorldsCreateTool({ management: m }).execute(a as CreateWorldRequest),
+    fn: (r, a) => r.createWorld(a as CreateWorldRequest),
   },
   {
     tool: {
       ...worldsUpdateTool,
       title: "Update",
     },
-    fn: (m, _data, _s, a) => createWorldsUpdateTool({ management: m }).execute(a as UpdateWorldRequest),
+    fn: (r, a) => r.updateWorld(a as UpdateWorldRequest),
   },
   {
     tool: {
       ...worldsDeleteTool,
       title: "Delete",
     },
-    fn: (m, _data, _s, a) => createWorldsDeleteTool({ management: m }).execute(a as DeleteWorldRequest),
+    fn: (r, a) => r.deleteWorld(a as DeleteWorldRequest),
   },
   {
     tool: {
       ...worldsImportTool,
       title: "Import",
     },
-    fn: (_m, data, _s, a) => importWorld(data, a as ImportWorldRequest),
+    fn: (r, a) => r.import(a as ImportWorldRequest),
   },
   {
     tool: {
@@ -121,7 +107,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (_m, data, _s, a) => exportWorld(data, a as ExportWorldRequest),
+    fn: (r, a) => r.export(a as ExportWorldRequest),
   },
   {
     tool: {
@@ -130,7 +116,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (_m, data, _s, a) => search(data, a as SearchWorldsRequest),
+    fn: (r, a) => r.search(a as SearchWorldsRequest),
   },
 ];
 
@@ -152,26 +138,16 @@ type McpResponse = {
   };
 };
 
-/** mcpRouter defines the MCP server route and implements JSON-RPC methods. */
 /**
  * mcpRouter creates a router for the MCP server.
  */
 export default (registry: WorldsRegistry) => {
-  const engine = registry.activeEngine; // Registry uses activeEngine property or .engine()
-  if (!engine) {
-    throw new Error("Engine not initialized in registry");
-  }
-
-  const sources: SourceInput[] = [];
-
   const handleMcpRequest = async (request: Request): Promise<Response> => {
     const authorized = await authorizeRequest(registry, request);
     if (!authorized.admin) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    // Spec compliance: Streamable HTTP requires the client to send the protocol version header
-    // after initialization. For the first 'initialize' request, it might not be present yet.
     const protocolVersionHeader = request.headers.get("mcp-protocol-version");
 
     let mcpReq: McpRequest;
@@ -183,7 +159,6 @@ export default (registry: WorldsRegistry) => {
 
     const { method, params, id = null } = mcpReq;
 
-    // Validate protocol version header for all methods besides initialize
     if (
       method !== "initialize" && protocolVersionHeader &&
       protocolVersionHeader !== "2024-11-05"
@@ -214,7 +189,6 @@ export default (registry: WorldsRegistry) => {
         case "initialize": {
           const clientVersion = params?.protocolVersion as string;
           if (clientVersion && clientVersion !== "2024-11-05") {
-            // Basic version negotiation: we only support the current stable version
             return Response.json(response(undefined, {
               code: -32603,
               message: `Unsupported protocol version: ${clientVersion}`,
@@ -234,11 +208,9 @@ export default (registry: WorldsRegistry) => {
         }
 
         case "notifications/initialized":
-          // Client acknowledgement of initialization. No response required for notifications.
           return new Response(null, { status: 204 });
 
         case "ping":
-          // Mandatory utility method: must return an empty result.
           return Response.json(response({}));
 
         case "tools/list":
@@ -263,12 +235,7 @@ export default (registry: WorldsRegistry) => {
           }
 
           try {
-            const result = await definition.fn(
-              registry,
-              registry,
-              sources,
-              args,
-            );
+            const result = await definition.fn(registry, args);
             return Response.json(response({
               content: [
                 {

@@ -1,0 +1,10 @@
+{
+  "name": "@wazoo/worlds-spec",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.96.1",
+    "typescript": "^6.0.3",
+    "openapi3-ts": "^4.4.0"
+  }
+}

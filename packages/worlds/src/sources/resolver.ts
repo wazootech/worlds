@@ -1,4 +1,4 @@
-import type { TransactionMode, Source } from "../api/v1/types.gen.ts";
+import type { TransactionMode, Source } from "@wazoo/worlds-spec";
 
 import type { WorldsRegistry } from "../testing/registry.ts";
 
@@ -23,28 +23,30 @@ export type FullyQualifiedSource = {
   mode: TransactionMode;
 };
 
-/**
- * defaultNamespace is the fallback used when storing/looking up
- * namespace-agnostic data in storage or database keys.
- */
-export const defaultNamespace: string | undefined = Deno.env.get("WORLDS_NS");
+export type ResolvedSource = Partial<FullyQualifiedSource>;
 
-/**
- * expandPathNamespace resolves a namespace segment, treating "_" or null as the default.
- */
-export function expandPathNamespace(
-  ns: string | null,
-  defaultNs?: string | null,
-): string | undefined {
-  if (ns === "_" || ns === null) return defaultNs ?? undefined;
-  return ns;
+export interface ResolverConfig {
+  defaultNamespace?: string;
+  defaultId?: string;
 }
 
-/**
- * defaultWorld is the fallback used when storing/looking up
- * world-agnostic data in storage or database keys.
- */
-export const defaultWorld: string | undefined = Deno.env.get("WORLDS_ID");
+let _config: ResolverConfig = {};
+
+export function setResolverConfig(config: ResolverConfig): void {
+  _config = { ..._config, ...config };
+}
+
+export function getResolverConfig(): ResolverConfig {
+  return { ..._config };
+}
+
+function getDefaultNamespace(): string | undefined {
+  return _config.defaultNamespace;
+}
+
+function getDefaultId(): string | undefined {
+  return _config.defaultId;
+}
 
 /**
  * isNamedSource checks if a source is an object with a 'name' property.
@@ -99,14 +101,8 @@ export function isSource(source: unknown): source is Source {
     isNamedSource(source) ||
     isQualifiedSource(source) ||
     isBaseSource(source)
-  );
-}
-
-/**
- * ResolvedSource represents a fully resolved world + namespace pair,
- * potentially carrying a transaction mode.
- */
-export type ResolvedSource = Partial<FullyQualifiedSource>;
+);
+  }
 
 /**
  * parseSourceName parses a "namespace/world" string into components.
@@ -189,8 +185,8 @@ export function resolveSource(
     }
     const parsed = parseSourceName(source);
     return {
-      id: parsed.id ?? defaultWorld,
-      namespace: parsed.namespace ?? registry?.namespace ?? defaultNamespace,
+      id: parsed.id,
+      namespace: parsed.namespace ?? registry?.namespace,
       mode: "deferred",
     };
   }
@@ -204,17 +200,16 @@ export function resolveSource(
     }
     const parsed = parseSourceName(source.name);
     return {
-      id: parsed.id ?? defaultWorld,
-      namespace: parsed.namespace ?? registry?.namespace ?? defaultNamespace,
+      id: parsed.id,
+      namespace: parsed.namespace ?? registry?.namespace,
       mode,
     };
   }
 
   if (isQualifiedSource(source)) {
-    const worldId = ("id" in source ? source.id : undefined) || defaultWorld;
+    const worldId = ("id" in source ? source.id : undefined);
     const namespace = ("namespace" in source ? source.namespace : undefined) ||
-      registry?.namespace ||
-      defaultNamespace;
+      registry?.namespace;
 
     return {
       id: worldId,
@@ -225,8 +220,8 @@ export function resolveSource(
 
   if (isBaseSource(source)) {
     return {
-      id: defaultWorld,
-      namespace: registry?.namespace || defaultNamespace,
+      id: undefined,
+      namespace: registry?.namespace,
       mode,
     };
   }
@@ -262,8 +257,8 @@ export function toWorldName(
     // Handling ResolvedSource or other objects
     const obj = source as Record<string, unknown>;
     resolved = {
-      id: (obj.id as string | undefined) ?? defaultWorld,
-      namespace: (obj.namespace as string | undefined) ?? defaultNamespace,
+      id: obj.id as string | undefined,
+      namespace: obj.namespace as string | undefined,
     };
   }
 

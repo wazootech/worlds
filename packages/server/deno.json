@@ -12,7 +12,9 @@
     "@std/path": "jsr:@std/path@^1.0.8",
     "@std/encoding": "jsr:@std/encoding@^1.0.5",
     "@wazoo/worlds-ai-sdk": "../ai-sdk/src/mod.ts",
-    "@wazoo/worlds-sdk": "../worlds/src/mod.ts"
+    "@wazoo/worlds-sdk": "../worlds/src/mod.ts",
+    "@wazoo/worlds-spec": "../spec/types.gen.ts",
+    "@wazoo/worlds-spec/zod": "../spec/zod.gen.ts"
   },
   "tasks": {
     "start": "deno serve -A --env ./src/main.ts",

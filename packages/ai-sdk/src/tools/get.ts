@@ -25,25 +25,3 @@ export function createWorldsGetTool(
     },
   });
 }
-
-export type WorldsGetTool = Tool<GetWorldRequest, World | null>;
-
-export const worldsGetTool: WorldsTool<GetWorldRequest, World | null> = {
-  name: "worlds_get",
-  description:
-    "Retrieves metadata for a single dataset (world) by its identifier or name.",
-  inputSchema: GetWorldRequestSchema,
-  outputSchema: z.any(),
-  isWrite: false,
-};
-
-export function createWorldsGetTool(
-  { management }: CreateToolsOptions,
-): WorldsGetTool {
-  return tool({
-    ...worldsGetTool,
-    execute: async (input) => {
-      return await get(management, input);
-    },
-  });
-}

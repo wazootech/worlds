@@ -1,5 +1,5 @@
 import type { Quad } from "n3";
-import type { WorldId } from "../resources/world.types.ts";
+import type { WorldId } from "@wazoo/worlds-spec";
 import type {
   CreateWorldRequest,
   DeleteWorldRequest,

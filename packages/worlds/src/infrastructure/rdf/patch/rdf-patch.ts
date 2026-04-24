@@ -3,7 +3,7 @@ import type { Patch, PatchHandler } from "./types.ts";
 import { skolemizeQuad } from "./skolem.ts";
 import type { Embeddings } from "../../../vectors/embeddings.ts";
 import { ChunksRepository } from "../../chunks/repository.ts";
-import type { ChunkId } from "../../../resources/chunk.types.ts";
+import type { ChunkId } from "@wazoo/worlds-spec";
 
 export const META_PREDICATES = [
   "http://www.w3.org/2000/01/rdf-schema#label",

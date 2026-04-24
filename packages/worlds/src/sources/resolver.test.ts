@@ -1,15 +1,19 @@
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import {
-  defaultNamespace,
-  defaultWorld,
   isNamedSource,
   isQualifiedSource,
   isSource,
   resolveSource,
+  setResolverConfig,
   SourceParseError,
   toWorldName,
 } from "./resolver.ts";
-import type { Source } from "../api/v1/types.gen.ts";
+import type { Source } from "@wazoo/worlds-spec";
+
+const TEST_NS = "test-namespace";
+const TEST_ID = "test-world";
+
+setResolverConfig({ defaultNamespace: TEST_NS, defaultId: TEST_ID });
 
 Deno.test("Resolver Helpers - Type Guards", async (t) => {
   await t.step("isNamedSource identifies valid objects", () => {
@@ -42,15 +46,15 @@ Deno.test("Resolver Helpers - Type Guards", async (t) => {
 
   await t.step("resolves empty object as default source", () => {
     const resolved = resolveSource({});
-    assertEquals(resolved.id, defaultWorld);
-    assertEquals(resolved.namespace, defaultNamespace);
+    assertEquals(resolved.id, undefined);
+    assertEquals(resolved.namespace, undefined);
     assertEquals(resolved.mode, "deferred");
   });
 
   await t.step("resolves object with mode flag", () => {
     const resolved = resolveSource({ mode: "write" });
-    assertEquals(resolved.id, defaultWorld);
-    assertEquals(resolved.namespace, defaultNamespace);
+    assertEquals(resolved.id, undefined);
+    assertEquals(resolved.namespace, undefined);
     assertEquals(resolved.mode, "write");
   });
 });
@@ -111,13 +115,11 @@ Deno.test("resolveSource - Edge cases", async (t) => {
   });
 });
 
-Deno.test("resolveSource - Environment variables", async (t) => {
-  await t.step("uses defaultWorld and defaultNamespace constants", () => {
-    // This test verifies that resolveSource uses the exported constants.
-    // Since they are initialized at module load, we compare against them directly.
+Deno.test("resolveSource - Configuration", async (t) => {
+  await t.step("uses configured defaults only when explicitly needed", () => {
     const result = resolveSource({});
-    assertEquals(result.id, defaultWorld);
-    assertEquals(result.namespace, defaultNamespace);
+    assertEquals(result.id, undefined);
+    assertEquals(result.namespace, undefined);
     assertEquals(result.mode, "deferred");
   });
 });
@@ -237,8 +239,8 @@ Deno.test("SourceParseError - thrown on invalid input", async (t) => {
     "empty object resolves to default source instead of throwing",
     () => {
       const result = resolveSource({} as unknown as Source);
-      assertEquals(result.id, defaultWorld);
-      assertEquals(result.namespace, defaultNamespace);
+      assertEquals(result.id, undefined);
+      assertEquals(result.namespace, undefined);
       assertEquals(result.mode, "deferred");
     },
   );

@@ -30,7 +30,7 @@
   },
   "tasks": {
     "test": "deno test -A",
-    "generate": "npx @hey-api/openapi-ts -f openapi-ts.config.ts"
+    "generate": "deno run -A src/spec/generate.ts"
   },
   "publish": {
     "exclude": ["**/*.test.ts", "**/*_test.ts"]
