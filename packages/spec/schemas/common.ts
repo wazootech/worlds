@@ -35,7 +35,6 @@ export function timestamp(
   };
 }
 
-
 export const ContentType: OpenAPIV3_1.SchemaObject = {
   type: "string",
   enum: [

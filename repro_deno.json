@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "cross-fetch/polyfill": "npm:cross-fetch@3.2.0/dist/node-polyfill.js"
+  }
+}

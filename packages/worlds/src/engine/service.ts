@@ -41,6 +41,8 @@ import { KvStoreEngine } from "#/infrastructure/store.ts";
 import { ApiKeyRepository } from "#/management/keys.ts";
 import { NamespaceRepository } from "#/management/namespaces.ts";
 import { WorldRepository } from "#/management/worlds.ts";
+import { executeSparql } from "../infrastructure/rdf/sparql-engine.ts";
+import { ChunksSearchEngine } from "../infrastructure/search.ts";
 
 /**
  * SyncableStore combines an N3 store with a sync method for handlers.
@@ -293,11 +295,6 @@ export class EmbeddedWorlds implements WorldsInterface {
       input.sources?.[0] || input.parent,
     );
 
-    // Dynamic import to keep engine core lean
-
-    const { executeSparql } = await import(
-      "../infrastructure/rdf/sparql-engine.ts"
-    );
     const result = await executeSparql(store as unknown as Store, input.query);
     await sync();
     return result;
@@ -308,9 +305,6 @@ export class EmbeddedWorlds implements WorldsInterface {
   ): Promise<SearchWorldsResponse> {
     if (!this.searchEngine) {
       if (this.embeddings && this.management) {
-        const { ChunksSearchEngine } = await import(
-          "../infrastructure/search.ts"
-        );
         this.searchEngine = new ChunksSearchEngine({
           embeddings: this.embeddings,
           management: this.management,

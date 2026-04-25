@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Worlds API
   version: 1.0.0
-  description: 'API for managing decentralized, multi-model semantic worlds.'
+  description: "API for managing decentralized, multi-model semantic worlds."
 paths:
   /rpc:
     post:
@@ -14,31 +14,31 @@ paths:
           application/json:
             schema:
               oneOf:
-                - $ref: '#/components/schemas/GetWorldRequest'
-                - $ref: '#/components/schemas/CreateWorldRequest'
-                - $ref: '#/components/schemas/UpdateWorldRequest'
-                - $ref: '#/components/schemas/DeleteWorldRequest'
-                - $ref: '#/components/schemas/ListWorldsRequest'
-                - $ref: '#/components/schemas/ImportWorldRequest'
-                - $ref: '#/components/schemas/ExportWorldRequest'
-                - $ref: '#/components/schemas/SearchWorldsRequest'
-                - $ref: '#/components/schemas/SparqlQueryRequest'
+                - $ref: "#/components/schemas/GetWorldRequest"
+                - $ref: "#/components/schemas/CreateWorldRequest"
+                - $ref: "#/components/schemas/UpdateWorldRequest"
+                - $ref: "#/components/schemas/DeleteWorldRequest"
+                - $ref: "#/components/schemas/ListWorldsRequest"
+                - $ref: "#/components/schemas/ImportWorldRequest"
+                - $ref: "#/components/schemas/ExportWorldRequest"
+                - $ref: "#/components/schemas/SearchWorldsRequest"
+                - $ref: "#/components/schemas/SparqlQueryRequest"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/World'
-                  - $ref: '#/components/schemas/ListWorldsResponse'
-                  - $ref: '#/components/schemas/SparqlQueryResponse'
+                  - $ref: "#/components/schemas/World"
+                  - $ref: "#/components/schemas/ListWorldsResponse"
+                  - $ref: "#/components/schemas/SparqlQueryResponse"
                   - type: object
                     properties:
                       results:
                         type: array
                         items:
-                          $ref: '#/components/schemas/SearchResult'
+                          $ref: "#/components/schemas/SearchResult"
                       nextPageToken:
                         type: string
 components:
@@ -54,7 +54,7 @@ components:
         - text
       properties:
         id:
-          $ref: '#/components/schemas/ChunkId'
+          $ref: "#/components/schemas/ChunkId"
         fact_id:
           type: string
         subject:
@@ -66,7 +66,7 @@ components:
         vector:
           type:
             - string
-            - 'null'
+            - "null"
           format: byte
           description: Base64-encoded embedding vector (Uint8Array).
     ChunkId:
@@ -98,7 +98,7 @@ components:
         - source
       properties:
         source:
-          $ref: '#/components/schemas/Source'
+          $ref: "#/components/schemas/Source"
     ErrorResponseData:
       type: object
       required:
@@ -117,9 +117,9 @@ components:
         - source
       properties:
         source:
-          $ref: '#/components/schemas/Source'
+          $ref: "#/components/schemas/Source"
         contentType:
-          $ref: '#/components/schemas/ContentType'
+          $ref: "#/components/schemas/ContentType"
     Fact:
       type: object
       description: A single triple/quad in a world.
@@ -130,7 +130,7 @@ components:
         - type
       properties:
         id:
-          $ref: '#/components/schemas/FactId'
+          $ref: "#/components/schemas/FactId"
         subject:
           type: string
         predicate:
@@ -151,7 +151,7 @@ components:
         deleted_at:
           type:
             - integer
-            - 'null'
+            - "null"
           format: int64
     FactId:
       type: string
@@ -163,7 +163,7 @@ components:
         - source
       properties:
         source:
-          $ref: '#/components/schemas/Source'
+          $ref: "#/components/schemas/Source"
     ImportWorldRequest:
       type: object
       required:
@@ -171,12 +171,12 @@ components:
         - data
       properties:
         source:
-          $ref: '#/components/schemas/Source'
+          $ref: "#/components/schemas/Source"
         data:
           type: string
           description: RDF data to import (can be base64-encoded).
         contentType:
-          $ref: '#/components/schemas/ContentType'
+          $ref: "#/components/schemas/ContentType"
     ListWorldsRequest:
       type: object
       properties:
@@ -194,7 +194,7 @@ components:
         worlds:
           type: array
           items:
-            $ref: '#/components/schemas/World'
+            $ref: "#/components/schemas/World"
         nextPageToken:
           type: string
     Log:
@@ -232,15 +232,15 @@ components:
         vecRank:
           type:
             - number
-            - 'null'
+            - "null"
         ftsRank:
           type:
             - number
-            - 'null'
+            - "null"
         score:
           type: number
         world:
-          $ref: '#/components/schemas/World'
+          $ref: "#/components/schemas/World"
     SearchWorldsRequest:
       type: object
       required:
@@ -249,7 +249,7 @@ components:
         sources:
           type: array
           items:
-            $ref: '#/components/schemas/Source'
+            $ref: "#/components/schemas/Source"
         parent:
           type: string
         query:
@@ -283,7 +283,7 @@ components:
             namespace:
               type: string
             mode:
-              $ref: '#/components/schemas/TransactionMode'
+              $ref: "#/components/schemas/TransactionMode"
     SparqlAskResults:
       type: object
       required:
@@ -296,7 +296,7 @@ components:
             link:
               type:
                 - array
-                - 'null'
+                - "null"
               items:
                 type: string
         boolean:
@@ -304,7 +304,7 @@ components:
     SparqlBinding:
       type: object
       additionalProperties:
-        $ref: '#/components/schemas/SparqlValue'
+        $ref: "#/components/schemas/SparqlValue"
     SparqlQuad:
       type: object
       required:
@@ -339,7 +339,7 @@ components:
             value:
               type: string
         object:
-          $ref: '#/components/schemas/SparqlValue'
+          $ref: "#/components/schemas/SparqlValue"
         graph:
           type: object
           required:
@@ -365,7 +365,7 @@ components:
             link:
               type:
                 - array
-                - 'null'
+                - "null"
               items:
                 type: string
         results:
@@ -376,7 +376,7 @@ components:
             quads:
               type: array
               items:
-                $ref: '#/components/schemas/SparqlQuad'
+                $ref: "#/components/schemas/SparqlQuad"
     SparqlQueryRequest:
       type: object
       required:
@@ -385,7 +385,7 @@ components:
         sources:
           type: array
           items:
-            $ref: '#/components/schemas/Source'
+            $ref: "#/components/schemas/Source"
         parent:
           type: string
         query:
@@ -400,10 +400,10 @@ components:
             type: string
     SparqlQueryResponse:
       oneOf:
-        - $ref: '#/components/schemas/SparqlSelectResults'
-        - $ref: '#/components/schemas/SparqlAskResults'
-        - $ref: '#/components/schemas/SparqlQuadsResults'
-        - type: 'null'
+        - $ref: "#/components/schemas/SparqlSelectResults"
+        - $ref: "#/components/schemas/SparqlAskResults"
+        - $ref: "#/components/schemas/SparqlQuadsResults"
+        - type: "null"
     SparqlSelectResults:
       type: object
       required:
@@ -422,7 +422,7 @@ components:
             link:
               type:
                 - array
-                - 'null'
+                - "null"
               items:
                 type: string
         results:
@@ -433,7 +433,7 @@ components:
             bindings:
               type: array
               items:
-                $ref: '#/components/schemas/SparqlBinding'
+                $ref: "#/components/schemas/SparqlBinding"
     SparqlValue:
       description: A value in a SPARQL result.
       oneOf:
@@ -470,7 +470,7 @@ components:
                 - literal
             value:
               type: string
-            'xml:lang':
+            "xml:lang":
               type: string
             datatype:
               type: string
@@ -491,11 +491,11 @@ components:
                 - object
               properties:
                 subject:
-                  $ref: '#/components/schemas/SparqlValue'
+                  $ref: "#/components/schemas/SparqlValue"
                 predicate:
-                  $ref: '#/components/schemas/SparqlValue'
+                  $ref: "#/components/schemas/SparqlValue"
                 object:
-                  $ref: '#/components/schemas/SparqlValue'
+                  $ref: "#/components/schemas/SparqlValue"
     TransactionMode:
       type: string
       enum:
@@ -509,7 +509,7 @@ components:
         - source
       properties:
         source:
-          $ref: '#/components/schemas/Source'
+          $ref: "#/components/schemas/Source"
         displayName:
           type: string
         description:
@@ -525,7 +525,7 @@ components:
           description: The canonical resource name.
           readOnly: true
         id:
-          $ref: '#/components/schemas/WorldId'
+          $ref: "#/components/schemas/WorldId"
         namespace:
           type: string
         displayName:
@@ -539,7 +539,7 @@ components:
         deleteTime:
           type:
             - number
-            - 'null'
+            - "null"
     WorldId:
       type: string
       description: A branded identifier for a World resource.

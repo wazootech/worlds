@@ -5,6 +5,7 @@ import type { Embeddings } from "#/vectors/embeddings.ts";
 import type { ManagementLayer } from "#/management/worlds.ts";
 import type { StoreEngine } from "./store.ts";
 import type { ChunkId, WorldId } from "@wazoo/worlds-spec";
+import { ChunksRepository } from "./chunks/repository.ts";
 
 /**
  * SearchEngine handles semantic search operations.
@@ -66,9 +67,6 @@ export class ChunksSearchEngine implements SearchEngine {
     const allResults: SearchWorldsResult[] = [];
 
     for (const worldRow of result.worlds) {
-      const { ChunksRepository } = await import(
-        "./chunks/repository.ts"
-      );
       const repo = new ChunksRepository(
         worldRow.id!,
         worldRow.namespace ?? undefined,
@@ -161,10 +159,6 @@ export class ChunksSearchEngine implements SearchEngine {
 
   async applyPatches(patches: Patch[]): Promise<void> {
     for (const patch of patches) {
-      const { ChunksRepository } = await import(
-        "./chunks/repository.ts"
-      );
-
       for (const deletion of patch.deletions ?? []) {
         const key = `${deletion.graph.value}/${deletion.subject.value}`;
         const parts = key.split("/");
