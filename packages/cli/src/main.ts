@@ -1,12 +1,16 @@
 import { parseArgs } from "@std/cli/parse-args";
+import { Worlds } from "@wazoo/worlds-sdk";
 import { WorldsCli } from "./cli.ts";
-import { createWorlds } from "@wazoo/worlds-sdk";
 
 /**
  * main is the entry point for the Worlds CLI.
  */
 export async function main() {
-  const worlds = await createWorlds();
+  const worlds = new Worlds();
+  await worlds.init();
+  await using _ = {
+    [Symbol.asyncDispose]: () => worlds[Symbol.asyncDispose](),
+  };
   const cli = new WorldsCli(worlds);
 
   if (Deno.args.length === 0) {

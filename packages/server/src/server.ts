@@ -1,21 +1,21 @@
-import type { WorldsRegistry } from "@wazoo/worlds-sdk";
+import type { WorldsInterface } from "@wazoo/worlds-sdk";
 import { Router } from "@fartlabs/rt";
 import mcpRouter from "./routes/mcp/route.ts";
 import worldsRouter from "./routes/rpc/route.ts";
 
 /**
- * createServer creates a server from a WorldsRegistry.
+ * createServer creates a server from a WorldsInterface instance.
  */
 export function createServer(
-  registry: WorldsRegistry,
+  worlds: WorldsInterface,
 ): Router {
   const app = new Router();
 
   // Connect Modular Worlds RPC Router
-  app.use(worldsRouter(registry));
+  app.use(worldsRouter(worlds));
 
   // Connect MCP router
-  app.use(mcpRouter(registry));
+  app.use(mcpRouter(worlds));
 
   return app;
 }

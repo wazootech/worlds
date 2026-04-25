@@ -1,5 +1,4 @@
 import { Router } from "@fartlabs/rt";
-import { authorizeRequest } from "#/middleware/auth.ts";
 import type {
   CreateWorldRequest,
   DeleteWorldRequest,
@@ -10,7 +9,7 @@ import type {
   SearchWorldsRequest,
   SparqlQueryRequest,
   UpdateWorldRequest,
-  WorldsRegistry,
+  WorldsInterface,
 } from "@wazoo/worlds-sdk";
 
 import { worldsSparqlTool } from "@wazoo/worlds-ai-sdk/tools/sparql";
@@ -36,8 +35,8 @@ type McpToolOptions = {
 type ToolDefinition = {
   tool: McpToolOptions;
   fn: (
-    registry: WorldsRegistry,
-    args: any,
+    worlds: WorldsInterface,
+    args: unknown,
   ) => Promise<unknown>;
 };
 
@@ -49,7 +48,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (r, a) => r.sparql(a as SparqlQueryRequest),
+    fn: (w, a) => w.sparql(a as SparqlQueryRequest),
   },
   {
     tool: {
@@ -58,7 +57,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (r, a) => r.listWorlds(a as ListWorldsRequest),
+    fn: (w, a) => w.listWorlds(a as ListWorldsRequest),
   },
   {
     tool: {
@@ -67,35 +66,35 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (r, a) => r.getWorld(a as GetWorldRequest),
+    fn: (w, a) => w.getWorld(a as GetWorldRequest),
   },
   {
     tool: {
       ...worldsCreateTool,
       title: "Create",
     },
-    fn: (r, a) => r.createWorld(a as CreateWorldRequest),
+    fn: (w, a) => w.createWorld(a as CreateWorldRequest),
   },
   {
     tool: {
       ...worldsUpdateTool,
       title: "Update",
     },
-    fn: (r, a) => r.updateWorld(a as UpdateWorldRequest),
+    fn: (w, a) => w.updateWorld(a as UpdateWorldRequest),
   },
   {
     tool: {
       ...worldsDeleteTool,
       title: "Delete",
     },
-    fn: (r, a) => r.deleteWorld(a as DeleteWorldRequest),
+    fn: (w, a) => w.deleteWorld(a as DeleteWorldRequest),
   },
   {
     tool: {
       ...worldsImportTool,
       title: "Import",
     },
-    fn: (r, a) => r.import(a as ImportWorldRequest),
+    fn: (w, a) => w.import(a as ImportWorldRequest),
   },
   {
     tool: {
@@ -104,7 +103,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (r, a) => r.export(a as ExportWorldRequest),
+    fn: (w, a) => w.export(a as ExportWorldRequest),
   },
   {
     tool: {
@@ -113,7 +112,7 @@ const TOOLS: ToolDefinition[] = [
       readOnlyHint: true,
       idempotentHint: true,
     },
-    fn: (r, a) => r.search(a as SearchWorldsRequest),
+    fn: (w, a) => w.search(a as SearchWorldsRequest),
   },
 ];
 
@@ -138,13 +137,8 @@ type McpResponse = {
 /**
  * mcpRouter creates a router for the MCP server.
  */
-export default (registry: WorldsRegistry) => {
+export default (worlds: WorldsInterface) => {
   const handleMcpRequest = async (request: Request): Promise<Response> => {
-    const authorized = await authorizeRequest(registry, request);
-    if (!authorized.admin) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-
     const protocolVersionHeader = request.headers.get("mcp-protocol-version");
 
     let mcpReq: McpRequest;
@@ -232,7 +226,7 @@ export default (registry: WorldsRegistry) => {
           }
 
           try {
-            const result = await definition.fn(registry, args);
+            const result = await definition.fn(worlds, args);
             return Response.json(response({
               content: [
                 {

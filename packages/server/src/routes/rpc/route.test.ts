@@ -1,53 +1,45 @@
 import { assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
-import type { WorldsRegistry } from "@wazoo/worlds-sdk";
-import {
-  createTestNamespace,
-  createTestRegistry,
-  LocalWorlds,
-} from "@wazoo/worlds-sdk";
+import { ApiKeyRepository, SecureWorlds, Worlds } from "@wazoo/worlds-sdk";
+import { createServer } from "../../server.ts";
 
 Deno.test("Worlds RPC API", async (t) => {
-  await using registry = (await createTestRegistry()) as WorldsRegistry;
-  await using worlds = new LocalWorlds(registry);
-  registry.activeEngine = worlds;
-  await worlds.init();
+  const worlds = new Worlds();
+  await using _ = {
+    [Symbol.asyncDispose]: () => worlds[Symbol.asyncDispose](),
+  };
 
-  const worldsRepository = registry.management.worlds;
-  const { createServer } = await import("../../server.ts");
-  const app = await createServer(registry);
+  const apiKeyRepository = new ApiKeyRepository();
+  const namespace = "_";
+  const testApiKey = `test-key-${ulid()}`;
+  await apiKeyRepository.create(testApiKey, namespace);
+
+  const secureWorlds = new SecureWorlds({
+    worlds,
+    apiKeyRepository,
+  });
+
+  const app = createServer(secureWorlds);
 
   await t.step(
     "POST /rpc (action: get) returns world metadata (Admin)",
     async () => {
-      const { apiKey, id: namespaceId } = await createTestNamespace(
-        registry,
-      );
       const world = "test-world-" + ulid();
-      const now = Date.now();
-      // WorldsRepository insert uses internal record format
-      await worldsRepository.insert({
-        namespace: namespaceId,
+      const created = await worlds.createWorld({
         id: world,
-        label: "Test World",
+        displayName: "Test World",
         description: "Test Description",
-        connection_uri: null,
-        created_at: now,
-        updated_at: now,
-        deleted_at: null,
       });
-      // Storage create is now lazy or handled by engine
 
       const response = await app.fetch(
         new Request(`http://localhost/rpc`, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             action: "get",
-            source: `${namespaceId}/${world}`,
+            source: created.id,
           }),
         }),
       );
@@ -60,16 +52,13 @@ Deno.test("Worlds RPC API", async (t) => {
   );
 
   await t.step(
-    "POST /rpc (action: create) creates a new world (Admin Only)",
+    "POST /rpc (action: create) creates a new world",
     async () => {
-      const { apiKey } = await createTestNamespace(registry);
-
       const world = ("new-world-" + ulid()).toLowerCase();
       const req = new Request("http://localhost/rpc", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           action: "create",
@@ -88,86 +77,124 @@ Deno.test("Worlds RPC API", async (t) => {
   );
 
   await t.step(
-    "POST /rpc (action: export) - Content Negotiation (Turtle)",
+    "POST /rpc (action: list) returns list of worlds",
     async () => {
-      const { apiKey, id: namespaceId } = await createTestNamespace(
-        registry,
-      );
-      const world = "export-world-" + ulid();
-      const now = Date.now();
-      await worldsRepository.insert({
-        namespace: namespaceId,
-        id: world,
-        label: "Export World",
-        description: undefined,
-        connection_uri: null,
-        created_at: now,
-        updated_at: now,
-        deleted_at: null,
-      });
-
-      const response = await app.fetch(
-        new Request(`http://localhost/rpc`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-            "Accept": "text/turtle",
-          },
-          body: JSON.stringify({
-            action: "export",
-            source: `${namespaceId}/${world}`,
-            contentType: "text/turtle",
-          }),
+      const req = new Request("http://localhost/rpc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "list",
         }),
-      );
+      });
+      const response = await app.fetch(req);
       assertEquals(response.status, 200);
-      assertEquals(response.headers.get("Content-Type"), "text/turtle");
+
+      const result = await response.json();
+      assertEquals(result.worlds.length >= 2, true);
     },
   );
 
   await t.step(
-    "POST /rpc (action: get) returns 200 without Auth if no apiKey is set",
+    "POST /rpc (action: update) updates a world",
     async () => {
-      await using unprotectedRegistry = await createTestRegistry();
-      await using unprotectedWorlds = new LocalWorlds(unprotectedRegistry);
-      unprotectedRegistry.activeEngine = unprotectedWorlds;
-      await unprotectedWorlds.init();
-
-      unprotectedRegistry.apiKey = undefined as unknown as string;
-      const appUnprotected = await createServer(unprotectedRegistry);
-      const world = "unprotected-world-" + ulid();
-      const now = Date.now();
-      const unprotectedWorldsRepository = unprotectedRegistry.management.worlds;
-      const namespace = unprotectedRegistry.namespace ?? "_";
-      await unprotectedWorldsRepository.insert({
-        namespace,
+      const world = "update-world-" + ulid();
+      await worlds.createWorld({
         id: world,
-        label: "Unprotected World",
-        description: undefined,
-        connection_uri: null,
-        created_at: now,
-        updated_at: now,
-        deleted_at: null,
+        displayName: "Original Name",
       });
 
-      const response = await appUnprotected.fetch(
-        new Request(`http://localhost/rpc`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            action: "get",
-            source: `${namespace}/${world}`,
-          }),
+      const req = new Request("http://localhost/rpc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "update",
+          source: world,
+          displayName: "Updated Name",
+          description: "Updated Description",
         }),
-      );
-
+      });
+      const response = await app.fetch(req);
       assertEquals(response.status, 200);
-      const worldResult = await response.json();
-      assertEquals(worldResult.displayName, "Unprotected World");
-      assertEquals(worldResult.id, world);
+
+      const result = await response.json();
+      assertEquals(result.displayName, "Updated Name");
+      assertEquals(result.description, "Updated Description");
+    },
+  );
+
+  await t.step(
+    "POST /rpc (action: delete) deletes a world",
+    async () => {
+      const world = "delete-world-" + ulid();
+      await worlds.createWorld({
+        id: world,
+        displayName: "To Delete",
+      });
+
+      const req = new Request("http://localhost/rpc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "delete",
+          source: world,
+        }),
+      });
+      const response = await app.fetch(req);
+      assertEquals(response.status, 204);
+
+      const getReq = new Request("http://localhost/rpc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "get",
+          source: world,
+        }),
+      });
+      const getResponse = await app.fetch(getReq);
+      assertEquals(getResponse.status, 404);
+    },
+  );
+
+  await t.step(
+    "POST /rpc (action: get) returns 404 for non-existent world",
+    async () => {
+      const req = new Request("http://localhost/rpc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "get",
+          source: "non-existent-world",
+        }),
+      });
+      const response = await app.fetch(req);
+      assertEquals(response.status, 404);
+    },
+  );
+
+  await t.step(
+    "POST /rpc (action: unknown) returns 400",
+    async () => {
+      const req = new Request("http://localhost/rpc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "unknown",
+        }),
+      });
+      const response = await app.fetch(req);
+      assertEquals(response.status, 400);
     },
   );
 });

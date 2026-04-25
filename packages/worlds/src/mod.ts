@@ -32,3 +32,11 @@ export * from "./schema.ts";
 
 // Internal types for advanced users
 export * as WorldsInternal from "./internal/mod.ts";
+
+// Server module
+export {
+  type AuthorizedRequest,
+  SecureWorlds,
+  type SecureWorldsOptions,
+} from "./server/secure-worlds.ts";
+export { ApiKeyRepository } from "./management/keys.ts";

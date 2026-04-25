@@ -1,4 +1,4 @@
-import type { AuthorizedRequest } from "#/middleware/auth.ts";
+import type { AuthorizedRequest } from "@wazoo/worlds-sdk";
 
 /**
  * assertNamespacePathAllowed returns an error response when the caller may not

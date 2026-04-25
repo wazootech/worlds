@@ -1,6 +1,6 @@
 import { Router } from "@fartlabs/rt";
 import { decodeBase64 } from "@std/encoding/base64";
-import type { WorldsRegistry } from "@wazoo/worlds-sdk";
+import type { WorldsInterface } from "@wazoo/worlds-sdk";
 import {
   worldsCreateInputSchema,
   worldsDeleteInputSchema,
@@ -12,7 +12,6 @@ import {
   worldsSparqlInputSchema,
   worldsUpdateInputSchema,
 } from "#/utils/validation/worlds.validation.ts";
-import { authorizeRequest } from "#/middleware/auth.ts";
 import {
   BadRequestError,
   InternalServerError,
@@ -23,11 +22,11 @@ import {
 /**
  * rpcRouter creates a router for the Unified RPC API.
  */
-export default (registry: WorldsRegistry) => {
+export default (worlds: WorldsInterface) => {
   return new Router()
     .post("/rpc", async (ctx) => {
       try {
-        return await handleRpc(registry, ctx);
+        return await handleRpc(worlds, ctx);
       } catch (error: unknown) {
         // Handle standardized HTTP errors (any object with a numeric status property)
         if (
@@ -66,7 +65,7 @@ export default (registry: WorldsRegistry) => {
  * handleRpc is the unified entry point for all Worlds RPC actions.
  */
 export async function handleRpc(
-  registry: WorldsRegistry,
+  worlds: WorldsInterface,
   ctx: { request: Request; params?: URLPatternResult },
 ): Promise<Response> {
   const body = await ctx.request.json().catch(() => ({}));
@@ -74,18 +73,6 @@ export async function handleRpc(
 
   if (!action) {
     throw new BadRequestError("RPC action required in body");
-  }
-
-  const engine = registry.activeEngine;
-  if (!engine) {
-    throw new InternalServerError("Engine not initialized");
-  }
-
-  const authorized = await authorizeRequest(registry, ctx.request);
-  if (!authorized.admin && !authorized.namespaceId) {
-    throw new UnauthorizedError(
-      `Admin/Namespace access required for ${action}`,
-    );
   }
 
   console.log(
@@ -100,8 +87,8 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const worlds = await registry.listWorlds(parseResult.data);
-      return Response.json(worlds);
+      const result = await worlds.listWorlds(parseResult.data);
+      return Response.json(result);
     }
     case "create": {
       const parseResult = worldsCreateInputSchema.safeParse(params);
@@ -110,7 +97,7 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const world = await registry.createWorld(parseResult.data);
+      const world = await worlds.createWorld(parseResult.data);
       return Response.json(world, { status: 201 });
     }
     case "get": {
@@ -120,7 +107,7 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const world = await registry.getWorld(parseResult.data);
+      const world = await worlds.getWorld(parseResult.data);
       if (!world) {
         throw new NotFoundError("World not found");
       }
@@ -133,7 +120,7 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const world = await registry.updateWorld(parseResult.data);
+      const world = await worlds.updateWorld(parseResult.data);
       return Response.json(world);
     }
     case "delete": {
@@ -143,7 +130,7 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      await registry.deleteWorld(parseResult.data);
+      await worlds.deleteWorld(parseResult.data);
       return new Response(null, { status: 204 });
     }
     case "export": {
@@ -153,7 +140,7 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const data = await engine.export(parseResult.data);
+      const data = await worlds.export(parseResult.data);
       return new Response(data, {
         headers: {
           "Content-Type": parseResult.data.contentType || "application/n-quads",
@@ -174,14 +161,15 @@ export async function handleRpc(
         !/[\s\n\r\t]/.test(parseResult.data.data)
       ) {
         try {
-          (parseResult.data as any).data = decodeBase64(
-            parseResult.data.data,
-          );
+          (parseResult.data as unknown as Record<string, unknown>).data =
+            decodeBase64(
+              parseResult.data.data,
+            );
         } catch {
           // Keep as string if not valid base64
         }
       }
-      await engine.import(parseResult.data);
+      await worlds.import(parseResult.data);
       return new Response(null, { status: 204 });
     }
     case "sparql": {
@@ -191,7 +179,7 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const result = await engine.sparql(parseResult.data);
+      const result = await worlds.sparql(parseResult.data);
       return Response.json(result);
     }
     case "search": {
@@ -201,7 +189,7 @@ export async function handleRpc(
           `Invalid parameters: ${parseResult.error.message}`,
         );
       }
-      const results = await engine.search(parseResult.data);
+      const results = await worlds.search(parseResult.data);
       return Response.json(results);
     }
     default:

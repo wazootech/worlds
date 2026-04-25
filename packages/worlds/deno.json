@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "exports": {
     ".": "./src/mod.ts",
+    "./config": "./src/config.ts",
     "./engine": "./src/engine/service.ts",
     "./remote": "./src/sdk/client.ts",
     "./schema": "./src/schema.ts",
+    "./server": "./src/server/secure-worlds.ts",
     "./testing": "./src/testing/context.ts"
   },
   "imports": {
