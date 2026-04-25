@@ -1,5 +1,5 @@
-import { Hono } from "jsr:@hono/hono";
-import type { Context } from "jsr:@hono/hono";
+import { Hono } from "@hono/hono";
+import type { Context } from "@hono/hono";
 import { decodeBase64 } from "@std/encoding/base64";
 import type { WorldsInterface } from "@wazoo/worlds-sdk";
 import {

@@ -1,5 +1,5 @@
-import { Hono } from "jsr:@hono/hono";
-import type { Context } from "jsr:@hono/hono";
+import { Hono } from "@hono/hono";
+import type { Context } from "@hono/hono";
 import type {
   CreateWorldRequest,
   DeleteWorldRequest,

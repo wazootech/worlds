@@ -40,6 +40,7 @@
     "npm:n3@^2.0.3": "2.0.3",
     "npm:ollama-ai-provider@^1.2.0": "1.2.0_zod@4.3.6",
     "npm:ollama@~0.5.12": "0.5.18",
+    "npm:openapi3-ts@^4.5.0": "4.5.0",
     "npm:rdf-canonize@5": "5.0.0",
     "npm:shacl-engine@^1.1.0": "1.1.0",
     "npm:zod@^4.3.6": "4.3.6"
@@ -6389,6 +6390,12 @@
         "fn.name"
       ]
     },
+    "openapi3-ts@4.5.0": {
+      "integrity": "sha512-jaL+HgTq2Gj5jRcfdutgRGLosCy/hT8sQf6VOy+P+g36cZOjI1iukdPnijC+4CmeRzg/jEllJUboEic2FhxhtQ==",
+      "dependencies": [
+        "yaml"
+      ]
+    },
     "p-finally@1.0.0": {
       "integrity": "sha512-LICb2p9CB7FS+0eR1oqWnHhp0FljGLZCWBE9aix0Uye9W8LTQPwMTYVGWQWIw9RdQiDg4+epXQODwIYJtSJaow=="
     },
@@ -6993,6 +7000,10 @@
     "y18n@5.0.8": {
       "integrity": "sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA=="
     },
+    "yaml@2.8.3": {
+      "integrity": "sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg==",
+      "bin": true
+    },
     "yargs-parser@20.2.9": {
       "integrity": "sha512-y11nGElTIV+CT3Zv9t7VKl+Q3hTQoT9a1Qzezhhl6Rp21gJ/IVTW7Z3y9EWXhuUBC2Shnf+DX0antecpAwSP8w=="
     },
@@ -7099,6 +7110,7 @@
       "jsr:@std/encoding@^1.0.10",
       "jsr:@std/path@^1.1.4",
       "jsr:@std/ulid@1",
+      "jsr:@std/yaml@1",
       "npm:@comunica/query-sparql-rdfjs-lite@^5.2.1",
       "npm:@libsql/client@~0.17.3",
       "npm:@modelcontextprotocol/sdk@^1.29.0",
@@ -7124,6 +7136,12 @@
           "jsr:@std/encoding@^1.0.5",
           "jsr:@std/http@^1.0.25",
           "jsr:@std/path@^1.0.8"
+        ]
+      },
+      "packages/spec": {
+        "dependencies": [
+          "jsr:@std/yaml@1",
+          "npm:openapi3-ts@^4.5.0"
         ]
       },
       "packages/worlds": {

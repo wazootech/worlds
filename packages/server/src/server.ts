@@ -1,5 +1,5 @@
 import type { WorldsInterface } from "@wazoo/worlds-sdk";
-import { Hono } from "jsr:@hono/hono";
+import { Hono } from "@hono/hono";
 import mcpRouter from "./routes/mcp/route.ts";
 import worldsRouter from "./routes/rpc/route.ts";
 
