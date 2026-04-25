@@ -55,10 +55,17 @@
   "links": [
     "./packages/worlds/vendor/jsonld-context-parser"
   ],
+  "fmt": {
+    "exclude": [
+      "scratch",
+      "./packages/worlds/vendor"
+    ]
+  },
   "lint": {
     "exclude": [
       "scratch",
       "packages/spec",
+      "./packages/worlds/vendor",
       "packages/worlds/src/api",
       "packages/worlds/src/resources",
       "packages/server/src/routes/mcp/route.ts",
