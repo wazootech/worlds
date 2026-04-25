@@ -1,7 +1,4 @@
-import type {
-  RemoteWorldsOptions,
-  WorldsInterface,
-} from "#/engine/service.ts";
+import type { RemoteWorldsOptions, WorldsInterface } from "#/engine/service.ts";
 import { isErrorResponseData } from "#/utils.ts";
 import { encodeBase64 } from "@std/encoding/base64";
 import type {
