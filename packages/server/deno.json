@@ -7,14 +7,10 @@
   },
   "imports": {
     "#/": "./src/",
-    "@fartlabs/rt": "jsr:@fartlabs/rt@^0.0.11",
+    "@hono/hono": "jsr:@hono/hono@^4.0.0",
     "@std/http": "jsr:@std/http@^1.0.25",
     "@std/path": "jsr:@std/path@^1.0.8",
-    "@std/encoding": "jsr:@std/encoding@^1.0.5",
-    "@wazoo/worlds-ai-sdk": "../ai-sdk/src/mod.ts",
-    "@wazoo/worlds-sdk": "../worlds/src/mod.ts",
-    "@wazoo/worlds-spec": "../spec/types.gen.ts",
-    "@wazoo/worlds-spec/zod": "../spec/zod.gen.ts"
+    "@std/encoding": "jsr:@std/encoding@^1.0.5"
   },
   "tasks": {
     "start": "deno serve -A --env ./src/main.ts",

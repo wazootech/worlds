@@ -13,7 +13,7 @@
   "imports": {
     "#/": "./src/",
     "@std/ulid": "jsr:@std/ulid@^1.0.0",
-    "@fartlabs/rt": "jsr:@fartlabs/rt@^0.0.11",
+    "@hono/hono": "jsr:@hono/hono@^4.0.0",
     "@langchain/textsplitters": "npm:@langchain/textsplitters@^1.0.1",
     "@comunica/query-sparql-rdfjs-lite": "npm:@comunica/query-sparql-rdfjs-lite@^5.1.3",
     "@types/n3": "npm:@types/n3@^1.26.1",

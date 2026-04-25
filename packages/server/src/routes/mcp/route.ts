@@ -1,4 +1,5 @@
-import { Router } from "@fartlabs/rt";
+import { Hono } from "jsr:@hono/hono";
+import type { Context } from "jsr:@hono/hono";
 import type {
   CreateWorldRequest,
   DeleteWorldRequest,
@@ -138,14 +139,17 @@ type McpResponse = {
  * mcpRouter creates a router for the MCP server.
  */
 export default (worlds: WorldsInterface) => {
-  const handleMcpRequest = async (request: Request): Promise<Response> => {
-    const protocolVersionHeader = request.headers.get("mcp-protocol-version");
+  const app = new Hono();
+
+  const handleMcpRequest = async (c: Context): Promise<Response> => {
+    const request = c.req;
+    const protocolVersionHeader = request.header("mcp-protocol-version");
 
     let mcpReq: McpRequest;
     try {
       mcpReq = await request.json();
     } catch {
-      return new Response("Invalid JSON", { status: 400 });
+      return c.text("Invalid JSON", 400);
     }
 
     const { method, params, id = null } = mcpReq;
@@ -154,7 +158,7 @@ export default (worlds: WorldsInterface) => {
       method !== "initialize" && protocolVersionHeader &&
       protocolVersionHeader !== "2024-11-05"
     ) {
-      return Response.json({
+      return c.json({
         jsonrpc: "2.0",
         id,
         error: {
@@ -180,13 +184,13 @@ export default (worlds: WorldsInterface) => {
         case "initialize": {
           const clientVersion = params?.protocolVersion as string;
           if (clientVersion && clientVersion !== "2024-11-05") {
-            return Response.json(response(undefined, {
+            return c.json(response(undefined, {
               code: -32603,
               message: `Unsupported protocol version: ${clientVersion}`,
             }));
           }
 
-          return Response.json(response({
+          return c.json(response({
             protocolVersion: "2024-11-05",
             capabilities: {
               tools: {},
@@ -199,13 +203,13 @@ export default (worlds: WorldsInterface) => {
         }
 
         case "notifications/initialized":
-          return new Response(null, { status: 204 });
+          return c.body(null, { status: 204 });
 
         case "ping":
-          return Response.json(response({}));
+          return c.json(response({}));
 
         case "tools/list":
-          return Response.json(response({
+          return c.json(response({
             tools: TOOLS.map(({ tool }) => ({
               name: tool.name,
               description: tool.description,
@@ -219,7 +223,7 @@ export default (worlds: WorldsInterface) => {
           const definition = TOOLS.find((t) => t.tool.name === name);
 
           if (!definition) {
-            return Response.json(response(undefined, {
+            return c.json(response(undefined, {
               code: -32601,
               message: `Tool not found: ${name}`,
             }));
@@ -227,7 +231,7 @@ export default (worlds: WorldsInterface) => {
 
           try {
             const result = await definition.fn(worlds, args);
-            return Response.json(response({
+            return c.json(response({
               content: [
                 {
                   type: "text",
@@ -236,7 +240,7 @@ export default (worlds: WorldsInterface) => {
               ],
             }));
           } catch (error) {
-            return Response.json(response({
+            return c.json(response({
               isError: true,
               content: [
                 {
@@ -249,24 +253,23 @@ export default (worlds: WorldsInterface) => {
         }
 
         default:
-          return Response.json(response(undefined, {
+          return c.json(response(undefined, {
             code: -32601,
             message: `Method not found: ${method}`,
           }));
       }
     } catch (error) {
-      return Response.json(response(undefined, {
+      return c.json(response(undefined, {
         code: -32603,
         message: error instanceof Error ? error.message : String(error),
       }));
     }
   };
 
-  const mcpRouter = new Router();
-  mcpRouter.post("/mcp", (ctx) => handleMcpRequest(ctx.request));
-  mcpRouter.get("/mcp", () => new Response("MCP Lite is up", { status: 200 }));
+  app.post("/mcp", handleMcpRequest);
+  app.get("/mcp", (c) => c.text("MCP Lite is up", 200));
 
-  return mcpRouter;
+  return app;
 };
 
 export type { McpToolOptions };

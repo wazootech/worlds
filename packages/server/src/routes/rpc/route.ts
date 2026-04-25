@@ -1,4 +1,5 @@
-import { Router } from "@fartlabs/rt";
+import { Hono } from "jsr:@hono/hono";
+import type { Context } from "jsr:@hono/hono";
 import { decodeBase64 } from "@std/encoding/base64";
 import type { WorldsInterface } from "@wazoo/worlds-sdk";
 import {
@@ -23,42 +24,45 @@ import {
  * rpcRouter creates a router for the Unified RPC API.
  */
 export default (worlds: WorldsInterface) => {
-  return new Router()
-    .post("/rpc", async (ctx) => {
-      try {
-        return await handleRpc(worlds, ctx);
-      } catch (error: unknown) {
-        // Handle standardized HTTP errors (any object with a numeric status property)
-        if (
-          error && typeof error === "object" && "status" in error &&
-          typeof (error as { status: unknown }).status === "number"
-        ) {
-          const httpError = error as { status: number; message?: string };
-          return Response.json(
-            {
-              error: {
-                code: httpError.status,
-                message: httpError.message || "An error occurred",
-              },
+  const app = new Hono();
+
+  app.post("/rpc", async (c) => {
+    try {
+      return await handleRpc(worlds, c);
+    } catch (error: unknown) {
+      // Handle standardized HTTP errors (any object with a numeric status property)
+      if (
+        error && typeof error === "object" && "status" in error &&
+        typeof (error as { status: unknown }).status === "number"
+      ) {
+        const httpError = error as { status: number; message?: string };
+        return c.json(
+          {
+            error: {
+              code: httpError.status,
+              message: httpError.message || "An error occurred",
             },
-            { status: httpError.status },
-          );
-        }
-
-        if (error instanceof Error) {
-          console.error(`[RPC Middleware Error]:`, error.stack);
-        } else {
-          console.error(`[RPC Middleware Error]:`, error);
-        }
-
-        const message = error instanceof Error ? error.message : String(error);
-        const stack = error instanceof Error ? error.stack : undefined;
-        return Response.json(
-          { error: { code: 500, message, stack } },
-          { status: 500 },
+          },
+          httpError.status as any,
         );
       }
-    });
+
+      if (error instanceof Error) {
+        console.error(`[RPC Middleware Error]:`, error.stack);
+      } else {
+        console.error(`[RPC Middleware Error]:`, error);
+      }
+
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
+      return c.json(
+        { error: { code: 500, message, stack } },
+        500,
+      );
+    }
+  });
+
+  return app;
 };
 
 /**
@@ -66,9 +70,9 @@ export default (worlds: WorldsInterface) => {
  */
 export async function handleRpc(
   worlds: WorldsInterface,
-  ctx: { request: Request; params?: URLPatternResult },
+  c: Context,
 ): Promise<Response> {
-  const body = await ctx.request.json().catch(() => ({}));
+  const body = await c.req.json().catch(() => ({}));
   const { action, ...params } = body;
 
   if (!action) {
@@ -88,7 +92,7 @@ export async function handleRpc(
         );
       }
       const result = await worlds.listWorlds(parseResult.data);
-      return Response.json(result);
+      return c.json(result);
     }
     case "create": {
       const parseResult = worldsCreateInputSchema.safeParse(params);
@@ -98,7 +102,7 @@ export async function handleRpc(
         );
       }
       const world = await worlds.createWorld(parseResult.data);
-      return Response.json(world, { status: 201 });
+      return c.json(world, 201);
     }
     case "get": {
       const parseResult = worldsGetInputSchema.safeParse(params);
@@ -111,7 +115,7 @@ export async function handleRpc(
       if (!world) {
         throw new NotFoundError("World not found");
       }
-      return Response.json(world);
+      return c.json(world);
     }
     case "update": {
       const parseResult = worldsUpdateInputSchema.safeParse(params);
@@ -121,7 +125,7 @@ export async function handleRpc(
         );
       }
       const world = await worlds.updateWorld(parseResult.data);
-      return Response.json(world);
+      return c.json(world);
     }
     case "delete": {
       const parseResult = worldsDeleteInputSchema.safeParse(params);
@@ -131,7 +135,7 @@ export async function handleRpc(
         );
       }
       await worlds.deleteWorld(parseResult.data);
-      return new Response(null, { status: 204 });
+      return c.body(null, { status: 204 });
     }
     case "export": {
       const parseResult = worldsExportInputSchema.safeParse(params);
@@ -141,10 +145,8 @@ export async function handleRpc(
         );
       }
       const data = await worlds.export(parseResult.data);
-      return new Response(data, {
-        headers: {
-          "Content-Type": parseResult.data.contentType || "application/n-quads",
-        },
+      return c.body(data, 200, {
+        "Content-Type": parseResult.data.contentType || "application/n-quads",
       });
     }
     case "import": {
@@ -170,7 +172,7 @@ export async function handleRpc(
         }
       }
       await worlds.import(parseResult.data);
-      return new Response(null, { status: 204 });
+      return c.body(null, { status: 204 });
     }
     case "sparql": {
       const parseResult = worldsSparqlInputSchema.safeParse(params);
@@ -180,7 +182,7 @@ export async function handleRpc(
         );
       }
       const result = await worlds.sparql(parseResult.data);
-      return Response.json(result);
+      return c.json(result);
     }
     case "search": {
       const parseResult = worldsSearchInputSchema.safeParse(params);
@@ -190,7 +192,7 @@ export async function handleRpc(
         );
       }
       const results = await worlds.search(parseResult.data);
-      return Response.json(results);
+      return c.json(results);
     }
     default:
       throw new BadRequestError(`Unknown RPC action: ${action}`);

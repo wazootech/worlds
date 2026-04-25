@@ -1,5 +1,5 @@
 import type { WorldsInterface } from "@wazoo/worlds-sdk";
-import { Router } from "@fartlabs/rt";
+import { Hono } from "jsr:@hono/hono";
 import mcpRouter from "./routes/mcp/route.ts";
 import worldsRouter from "./routes/rpc/route.ts";
 
@@ -8,14 +8,14 @@ import worldsRouter from "./routes/rpc/route.ts";
  */
 export function createServer(
   worlds: WorldsInterface,
-): Router {
-  const app = new Router();
+): Hono {
+  const app = new Hono();
 
   // Connect Modular Worlds RPC Router
-  app.use(worldsRouter(worlds));
+  app.route("/", worldsRouter(worlds));
 
   // Connect MCP router
-  app.use(mcpRouter(worlds));
+  app.route("/", mcpRouter(worlds));
 
   return app;
 }

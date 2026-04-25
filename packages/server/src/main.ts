@@ -1,4 +1,3 @@
-import type { Router } from "@fartlabs/rt";
 import {
   ApiKeyRepository,
   SecureWorlds,
@@ -28,7 +27,7 @@ const secureWorlds = new SecureWorlds({
   adminApiKey: Deno.env.get("WORLDS_API_KEY"),
 });
 
-const app: Router = createServer(secureWorlds);
+const app = createServer(secureWorlds);
 
 export default {
   fetch: (request: Request) => app.fetch(request),

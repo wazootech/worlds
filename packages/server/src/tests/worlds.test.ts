@@ -21,7 +21,7 @@ Deno.test("World routes", async (t) => {
   const adminWorlds = new Worlds({
     url: "http://localhost",
     fetch: (url: string | URL | Request, init?: RequestInit) =>
-      server.fetch(new Request(url, init)),
+      Promise.resolve(server.fetch(new Request(url, init))),
   });
 
   let world: string | null;
