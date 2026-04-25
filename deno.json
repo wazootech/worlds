@@ -15,7 +15,7 @@
     "test": "deno test -A ./packages/ai-sdk ./packages/cli ./packages/server ./packages/worlds",
     "lint": "deno lint --json",
     "fmt": "deno fmt --check",
-    "check": "deno check packages/ai-sdk/src/factory.ts packages/ai-sdk/src/mod.ts packages/ai-sdk/src/types.ts packages/cli/src/main.ts packages/cli/src/cli.ts packages/server/src/main.ts packages/server/src/mod.ts packages/server/src/server.ts packages/worlds/src/mod.ts packages/worlds/src/schema.ts packages/worlds/src/engine/factory.ts packages/worlds/src/engine/service.ts packages/worlds/src/engine/utils.ts",
+    "check": "deno check ./packages/ai-sdk/src/mod.ts ./packages/cli/src/main.ts ./packages/server/src/main.ts ./packages/worlds/src/mod.ts",
     "generate": "deno task --cwd packages/spec generate",
     "publish:dry": "deno publish --dry-run --allow-dirty --quiet",
     "reset:console": "npm run reset --prefix ./packages/console",
