@@ -16,7 +16,6 @@
     "exclude": ["*.gen.ts", "schemas/*.ts", "spec.ts"]
   },
   "publish": {
-    "exclude": ["**/*.test.ts", "**/*_test.ts"],
-    "allow-slow-types": true
+    "exclude": ["**/*.test.ts", "**/*_test.ts"]
   }
 }
