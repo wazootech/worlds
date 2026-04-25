@@ -6,7 +6,7 @@ import {
   type SparqlQueryRequest,
   type SparqlQueryResponse,
 } from "@wazoo/worlds-sdk";
-import { SparqlQueryRequestSchema } from "#/utils/validation.ts";
+import { zSparqlQueryRequest } from "@wazoo/worlds-spec/zod";
 import type { CreateToolsOptions, SourceInput, WorldsTool } from "#/types.ts";
 import { z } from "zod";
 
@@ -22,7 +22,7 @@ export const worldsSparqlTool: WorldsTool<
   name: "worlds_sparql",
   description:
     "Executes a SPARQL query or update against the RDF data stored in one or more worlds.",
-  inputSchema: SparqlQueryRequestSchema,
+  inputSchema: zSparqlQueryRequest,
   outputSchema: z.any(),
   isWrite: true,
 };

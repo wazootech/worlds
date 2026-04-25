@@ -4,7 +4,7 @@ import type {
   SearchWorldsRequest,
   SearchWorldsResponse,
 } from "@wazoo/worlds-sdk";
-import { SearchWorldsRequestSchema } from "#/utils/validation.ts";
+import { zSearchWorldsRequest } from "@wazoo/worlds-spec/zod";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 import { z } from "zod";
 
@@ -20,7 +20,7 @@ export const worldsSearchTool: WorldsTool<
   name: "worlds_search",
   description:
     "Performs a semantic search across one or more worlds. Use this tool when you need to find information based on its meaning or context. Returns an array of match results with similarity scores.",
-  inputSchema: SearchWorldsRequestSchema,
+  inputSchema: zSearchWorldsRequest,
   outputSchema: z.any(),
   isWrite: false,
 };

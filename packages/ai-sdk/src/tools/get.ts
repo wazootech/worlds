@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
 import type { GetWorldRequest, World } from "@wazoo/worlds-sdk";
-import { GetWorldRequestSchema } from "#/utils/validation.ts";
+import { zGetWorldRequest } from "@wazoo/worlds-spec/zod";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 import { z } from "zod";
 
@@ -11,7 +11,7 @@ export const worldsGetTool: WorldsTool<GetWorldRequest, World | null> = {
   name: "worlds_get",
   description:
     "Retrieves metadata for a single dataset (world) by its identifier or name.",
-  inputSchema: GetWorldRequestSchema,
+  inputSchema: zGetWorldRequest,
   outputSchema: z.any(),
   isWrite: false,
 };

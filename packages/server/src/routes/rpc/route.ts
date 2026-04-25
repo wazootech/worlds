@@ -3,16 +3,16 @@ import type { Context } from "jsr:@hono/hono";
 import { decodeBase64 } from "@std/encoding/base64";
 import type { WorldsInterface } from "@wazoo/worlds-sdk";
 import {
-  worldsCreateInputSchema,
-  worldsDeleteInputSchema,
-  worldsExportInputSchema,
-  worldsGetInputSchema,
-  worldsImportInputSchema,
-  worldsListInputSchema,
-  worldsSearchInputSchema,
-  worldsSparqlInputSchema,
-  worldsUpdateInputSchema,
-} from "#/utils/validation/worlds.validation.ts";
+  zCreateWorldRequest,
+  zDeleteWorldRequest,
+  zExportWorldRequest,
+  zGetWorldRequest,
+  zImportWorldRequest,
+  zListWorldsRequest,
+  zSearchWorldsRequest,
+  zSparqlQueryRequest,
+  zUpdateWorldRequest,
+} from "@wazoo/worlds-spec/zod";
 import {
   BadRequestError,
   InternalServerError,
@@ -85,7 +85,7 @@ export async function handleRpc(
 
   switch (action) {
     case "list": {
-      const parseResult = worldsListInputSchema.safeParse(params);
+      const parseResult = zListWorldsRequest.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
@@ -95,7 +95,7 @@ export async function handleRpc(
       return c.json(result);
     }
     case "create": {
-      const parseResult = worldsCreateInputSchema.safeParse(params);
+      const parseResult = zCreateWorldRequest.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
@@ -105,7 +105,7 @@ export async function handleRpc(
       return c.json(world, 201);
     }
     case "get": {
-      const parseResult = worldsGetInputSchema.safeParse(params);
+      const parseResult = zGetWorldRequest.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
@@ -118,7 +118,7 @@ export async function handleRpc(
       return c.json(world);
     }
     case "update": {
-      const parseResult = worldsUpdateInputSchema.safeParse(params);
+      const parseResult = zUpdateWorldRequest.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
@@ -128,7 +128,7 @@ export async function handleRpc(
       return c.json(world);
     }
     case "delete": {
-      const parseResult = worldsDeleteInputSchema.safeParse(params);
+      const parseResult = zDeleteWorldRequest.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
@@ -138,7 +138,7 @@ export async function handleRpc(
       return c.body(null, { status: 204 });
     }
     case "export": {
-      const parseResult = worldsExportInputSchema.safeParse(params);
+      const parseResult = zExportWorldRequest.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
@@ -150,7 +150,7 @@ export async function handleRpc(
       });
     }
     case "import": {
-      const parseResult = worldsImportInputSchema.safeParse(params);
+      const parseResult = zImportWorldRequest.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
@@ -175,7 +175,7 @@ export async function handleRpc(
       return c.body(null, { status: 204 });
     }
     case "sparql": {
-      const parseResult = worldsSparqlInputSchema.safeParse(params);
+      const parseResult = zSparqlQueryRequest.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
@@ -185,7 +185,7 @@ export async function handleRpc(
       return c.json(result);
     }
     case "search": {
-      const parseResult = worldsSearchInputSchema.safeParse(params);
+      const parseResult = zSearchWorldsRequest.safeParse(params);
       if (!parseResult.success) {
         throw new BadRequestError(
           `Invalid parameters: ${parseResult.error.message}`,
