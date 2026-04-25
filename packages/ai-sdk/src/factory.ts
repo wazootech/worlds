@@ -6,16 +6,16 @@ import {
 } from "./tools/sparql.ts";
 import type { WorldsSearchTool } from "./tools/search.ts";
 import { createWorldsSearchTool } from "./tools/search.ts";
-import type { WorldsListTool } from "./tools/list.ts";
-import { createWorldsListTool } from "./tools/list.ts";
-import type { WorldsGetTool } from "./tools/get.ts";
-import { createWorldsGetTool } from "./tools/get.ts";
-import type { WorldsCreateTool } from "./tools/create.ts";
-import { createWorldsCreateTool } from "./tools/create.ts";
-import type { WorldsUpdateTool } from "./tools/update.ts";
-import { createWorldsUpdateTool } from "./tools/update.ts";
-import type { WorldsDeleteTool } from "./tools/delete.ts";
-import { createWorldsDeleteTool } from "./tools/delete.ts";
+import type { WorldsListWorldTool } from "./tools/list-world.ts";
+import { createWorldsListWorldTool } from "./tools/list-world.ts";
+import type { WorldsGetWorldTool } from "./tools/get-world.ts";
+import { createWorldsGetWorldTool } from "./tools/get-world.ts";
+import type { WorldsCreateWorldTool } from "./tools/create-world.ts";
+import { createWorldsCreateWorldTool } from "./tools/create-world.ts";
+import type { WorldsUpdateWorldTool } from "./tools/update-world.ts";
+import { createWorldsUpdateWorldTool } from "./tools/update-world.ts";
+import type { WorldsDeleteWorldTool } from "./tools/delete-world.ts";
+import { createWorldsDeleteWorldTool } from "./tools/delete-world.ts";
 import type { WorldsImportTool } from "./tools/import.ts";
 import { createWorldsImportTool } from "./tools/import.ts";
 import type { WorldsExportTool } from "./tools/export.ts";
@@ -27,11 +27,11 @@ import { createWorldsExportTool } from "./tools/export.ts";
 export function createTools(options: CreateToolsOptions): {
   sparql: WorldsSparqlTool;
   search: WorldsSearchTool;
-  list: WorldsListTool;
-  get: WorldsGetTool;
-  create: WorldsCreateTool;
-  update: WorldsUpdateTool;
-  delete: WorldsDeleteTool;
+  listWorld: WorldsListWorldTool;
+  getWorld: WorldsGetWorldTool;
+  createWorld: WorldsCreateWorldTool;
+  updateWorld: WorldsUpdateWorldTool;
+  deleteWorld: WorldsDeleteWorldTool;
   import: WorldsImportTool;
   export: WorldsExportTool;
 } {
@@ -48,11 +48,11 @@ export function createTools(options: CreateToolsOptions): {
   return {
     sparql: createWorldsSparqlTool(normalizedOptions),
     search: createWorldsSearchTool(normalizedOptions),
-    list: createWorldsListTool(normalizedOptions),
-    get: createWorldsGetTool(normalizedOptions),
-    create: createWorldsCreateTool(normalizedOptions),
-    update: createWorldsUpdateTool(normalizedOptions),
-    delete: createWorldsDeleteTool(normalizedOptions),
+    listWorld: createWorldsListWorldTool(normalizedOptions),
+    getWorld: createWorldsGetWorldTool(normalizedOptions),
+    createWorld: createWorldsCreateWorldTool(normalizedOptions),
+    updateWorld: createWorldsUpdateWorldTool(normalizedOptions),
+    deleteWorld: createWorldsDeleteWorldTool(normalizedOptions),
     import: createWorldsImportTool(normalizedOptions),
     export: createWorldsExportTool(normalizedOptions),
   };

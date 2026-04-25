@@ -8,11 +8,10 @@ export * from "./factory.ts";
 
 export * from "./tools/sparql.ts";
 export * from "./tools/search.ts";
-export * from "./tools/list.ts";
-export * from "./tools/get.ts";
-export * from "./tools/create.ts";
-export * from "./tools/update.ts";
-export * from "./tools/delete.ts";
-export * from "./tools/import.ts";
+export * from "./tools/list-world.ts";
+export * from "./tools/get-world.ts";
+export * from "./tools/create-world.ts";
+export * from "./tools/update-world.ts";
+export * from "./tools/delete-world.ts";
 export * from "./tools/import.ts";
 export * from "./tools/export.ts";

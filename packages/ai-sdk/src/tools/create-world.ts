@@ -4,10 +4,10 @@ import type { CreateWorldRequest, World } from "@wazoo/worlds-sdk";
 import { zCreateWorldRequest, zWorld } from "@wazoo/worlds-spec/zod";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-export type WorldsCreateTool = Tool<CreateWorldRequest, World>;
+export type WorldsCreateWorldTool = Tool<CreateWorldRequest, World>;
 
-export const worldsCreateTool: WorldsTool<CreateWorldRequest, World> = {
-  name: "worlds_create",
+export const worldsCreateWorldTool: WorldsTool<CreateWorldRequest, World> = {
+  name: "worlds_create_world",
   description:
     "Initializes a new dataset (world) with a provided display name and optional description.",
   inputSchema: zCreateWorldRequest,
@@ -15,11 +15,11 @@ export const worldsCreateTool: WorldsTool<CreateWorldRequest, World> = {
   isWrite: true,
 };
 
-export function createWorldsCreateTool(
+export function createWorldsCreateWorldTool(
   { worlds }: CreateToolsOptions,
-): WorldsCreateTool {
+): WorldsCreateWorldTool {
   return tool({
-    ...worldsCreateTool,
+    ...worldsCreateWorldTool,
     execute: async (input: CreateWorldRequest) => {
       return await worlds.createWorld(input);
     },

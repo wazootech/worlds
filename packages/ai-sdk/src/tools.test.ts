@@ -1,11 +1,11 @@
 import { assertExists } from "@std/assert";
 import { worldsSparqlTool } from "./tools/sparql.ts";
 import { worldsSearchTool } from "./tools/search.ts";
-import { worldsListTool } from "./tools/list.ts";
-import { worldsGetTool } from "./tools/get.ts";
-import { worldsCreateTool } from "./tools/create.ts";
-import { worldsUpdateTool } from "./tools/update.ts";
-import { worldsDeleteTool } from "./tools/delete.ts";
+import { worldsListWorldTool } from "./tools/list-world.ts";
+import { worldsGetWorldTool } from "./tools/get-world.ts";
+import { worldsCreateWorldTool } from "./tools/create-world.ts";
+import { worldsUpdateWorldTool } from "./tools/update-world.ts";
+import { worldsDeleteWorldTool } from "./tools/delete-world.ts";
 import { worldsImportTool } from "./tools/import.ts";
 import { worldsExportTool } from "./tools/export.ts";
 
@@ -23,39 +23,39 @@ Deno.test("search tool has correct shape", () => {
   assertExists(worldsSearchTool.outputSchema);
 });
 
-Deno.test("list tool has correct shape", () => {
-  assertExists(worldsListTool.name);
-  assertExists(worldsListTool.description);
-  assertExists(worldsListTool.inputSchema);
-  assertExists(worldsListTool.outputSchema);
+Deno.test("listWorld tool has correct shape", () => {
+  assertExists(worldsListWorldTool.name);
+  assertExists(worldsListWorldTool.description);
+  assertExists(worldsListWorldTool.inputSchema);
+  assertExists(worldsListWorldTool.outputSchema);
 });
 
-Deno.test("get tool has correct shape", () => {
-  assertExists(worldsGetTool.name);
-  assertExists(worldsGetTool.description);
-  assertExists(worldsGetTool.inputSchema);
-  assertExists(worldsGetTool.outputSchema);
+Deno.test("getWorld tool has correct shape", () => {
+  assertExists(worldsGetWorldTool.name);
+  assertExists(worldsGetWorldTool.description);
+  assertExists(worldsGetWorldTool.inputSchema);
+  assertExists(worldsGetWorldTool.outputSchema);
 });
 
-Deno.test("create tool has correct shape", () => {
-  assertExists(worldsCreateTool.name);
-  assertExists(worldsCreateTool.description);
-  assertExists(worldsCreateTool.inputSchema);
-  assertExists(worldsCreateTool.outputSchema);
+Deno.test("createWorld tool has correct shape", () => {
+  assertExists(worldsCreateWorldTool.name);
+  assertExists(worldsCreateWorldTool.description);
+  assertExists(worldsCreateWorldTool.inputSchema);
+  assertExists(worldsCreateWorldTool.outputSchema);
 });
 
-Deno.test("update tool has correct shape", () => {
-  assertExists(worldsUpdateTool.name);
-  assertExists(worldsUpdateTool.description);
-  assertExists(worldsUpdateTool.inputSchema);
-  assertExists(worldsUpdateTool.outputSchema);
+Deno.test("updateWorld tool has correct shape", () => {
+  assertExists(worldsUpdateWorldTool.name);
+  assertExists(worldsUpdateWorldTool.description);
+  assertExists(worldsUpdateWorldTool.inputSchema);
+  assertExists(worldsUpdateWorldTool.outputSchema);
 });
 
-Deno.test("delete tool has correct shape", () => {
-  assertExists(worldsDeleteTool.name);
-  assertExists(worldsDeleteTool.description);
-  assertExists(worldsDeleteTool.inputSchema);
-  assertExists(worldsDeleteTool.outputSchema);
+Deno.test("deleteWorld tool has correct shape", () => {
+  assertExists(worldsDeleteWorldTool.name);
+  assertExists(worldsDeleteWorldTool.description);
+  assertExists(worldsDeleteWorldTool.inputSchema);
+  assertExists(worldsDeleteWorldTool.outputSchema);
 });
 
 Deno.test("import tool has correct shape", () => {

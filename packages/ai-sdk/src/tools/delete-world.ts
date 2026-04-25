@@ -5,10 +5,10 @@ import { zDeleteWorldRequest } from "@wazoo/worlds-spec/zod";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 import { z } from "zod";
 
-export type WorldsDeleteTool = Tool<DeleteWorldRequest, void>;
+export type WorldsDeleteWorldTool = Tool<DeleteWorldRequest, void>;
 
-export const worldsDeleteTool: WorldsTool<DeleteWorldRequest, void> = {
-  name: "worlds_delete",
+export const worldsDeleteWorldTool: WorldsTool<DeleteWorldRequest, void> = {
+  name: "worlds_delete_world",
   description:
     "Permanently deletes a dataset (world) and all of the RDF data and vector embeddings contained within it. CAUTION: This operation is destructive and cannot be undone.",
   inputSchema: zDeleteWorldRequest,
@@ -16,11 +16,11 @@ export const worldsDeleteTool: WorldsTool<DeleteWorldRequest, void> = {
   isWrite: true,
 };
 
-export function createWorldsDeleteTool(
+export function createWorldsDeleteWorldTool(
   { worlds }: CreateToolsOptions,
-): WorldsDeleteTool {
+): WorldsDeleteWorldTool {
   return tool({
-    ...worldsDeleteTool,
+    ...worldsDeleteWorldTool,
     execute: async (input: DeleteWorldRequest) => {
       return await worlds.deleteWorld(input);
     },

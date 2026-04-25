@@ -4,10 +4,10 @@ import type { UpdateWorldRequest, World } from "@wazoo/worlds-sdk";
 import { zUpdateWorldRequest, zWorld } from "@wazoo/worlds-spec/zod";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 
-export type WorldsUpdateTool = Tool<UpdateWorldRequest, World>;
+export type WorldsUpdateWorldTool = Tool<UpdateWorldRequest, World>;
 
-export const worldsUpdateTool: WorldsTool<UpdateWorldRequest, World> = {
-  name: "worlds_update",
+export const worldsUpdateWorldTool: WorldsTool<UpdateWorldRequest, World> = {
+  name: "worlds_update_world",
   description:
     "Modifies metadata for an existing dataset (world), such as its display name or description.",
   inputSchema: zUpdateWorldRequest,
@@ -15,11 +15,11 @@ export const worldsUpdateTool: WorldsTool<UpdateWorldRequest, World> = {
   isWrite: true,
 };
 
-export function createWorldsUpdateTool(
+export function createWorldsUpdateWorldTool(
   { worlds }: CreateToolsOptions,
-): WorldsUpdateTool {
+): WorldsUpdateWorldTool {
   return tool({
-    ...worldsUpdateTool,
+    ...worldsUpdateWorldTool,
     execute: async (input: UpdateWorldRequest) => {
       return await worlds.updateWorld(input);
     },

@@ -5,10 +5,10 @@ import { zGetWorldRequest } from "@wazoo/worlds-spec/zod";
 import type { CreateToolsOptions, WorldsTool } from "#/types.ts";
 import { z } from "zod";
 
-export type WorldsGetTool = Tool<GetWorldRequest, World | null>;
+export type WorldsGetWorldTool = Tool<GetWorldRequest, World | null>;
 
-export const worldsGetTool: WorldsTool<GetWorldRequest, World | null> = {
-  name: "worlds_get",
+export const worldsGetWorldTool: WorldsTool<GetWorldRequest, World | null> = {
+  name: "worlds_get_world",
   description:
     "Retrieves metadata for a single dataset (world) by its identifier or name.",
   inputSchema: zGetWorldRequest,
@@ -16,11 +16,11 @@ export const worldsGetTool: WorldsTool<GetWorldRequest, World | null> = {
   isWrite: false,
 };
 
-export function createWorldsGetTool(
+export function createWorldsGetWorldTool(
   { worlds }: CreateToolsOptions,
-): WorldsGetTool {
+): WorldsGetWorldTool {
   return tool({
-    ...worldsGetTool,
+    ...worldsGetWorldTool,
     execute: async (input: GetWorldRequest) => {
       return await worlds.getWorld(input);
     },
