@@ -1,9 +1,9 @@
 import { assertEquals } from "@std/assert";
-import { EmbeddedWorlds } from "../engine/service.ts";
-import { KvStoreEngine } from "../infrastructure/store.ts";
-import { ApiKeyRepository } from "../management/keys.ts";
-import { NamespaceRepository } from "../management/namespaces.ts";
-import { WorldRepository } from "../management/worlds.ts";
+import { EmbeddedWorlds } from "#/engine/service.ts";
+import { KvStoreEngine } from "#/infrastructure/store.ts";
+import { ApiKeyRepository } from "#/management/keys.ts";
+import { NamespaceRepository } from "#/management/namespaces.ts";
+import { WorldRepository } from "#/management/worlds.ts";
 
 function createMockEmbeddings() {
   return {

@@ -17,30 +17,30 @@ import type {
   UpdateWorldRequest,
   World,
   WorldId,
-} from "../schema.ts";
+} from "#/schema.ts";
 
-import { RemoteWorlds } from "../sdk/client.ts";
+import { RemoteWorlds } from "#/sdk/client.ts";
 
-import type { ManagementLayer, WorldRow } from "../management/worlds.ts";
-import { resolveSource } from "../sources/resolver.ts";
-import { createIndexedStore } from "../infrastructure/rdf/patch/indexed-store.ts";
-import { SearchIndexHandler } from "../infrastructure/rdf/patch/rdf-patch.ts";
-import type { Embeddings } from "../vectors/embeddings.ts";
+import type { ManagementLayer, WorldRow } from "#/management/worlds.ts";
+import { resolveSource } from "#/sources/resolver.ts";
+import { createIndexedStore } from "#/infrastructure/rdf/patch/indexed-store.ts";
+import { SearchIndexHandler } from "#/infrastructure/rdf/patch/rdf-patch.ts";
+import type { Embeddings } from "#/vectors/embeddings.ts";
 import type {
   SearchEngine,
   SparqlEngine,
   StoreEngine,
-} from "../infrastructure/mod.ts";
+} from "#/infrastructure/mod.ts";
 import {
   generateBlobFromN3Store,
   generateN3StoreFromBlob,
-} from "../infrastructure/rdf/n3.ts";
+} from "#/infrastructure/rdf/n3.ts";
 import { Store } from "n3";
-import { resolveConfig } from "../config.ts";
-import { KvStoreEngine } from "../infrastructure/store.ts";
-import { ApiKeyRepository } from "../management/keys.ts";
-import { NamespaceRepository } from "../management/namespaces.ts";
-import { WorldRepository } from "../management/worlds.ts";
+import { resolveConfig } from "#/config.ts";
+import { KvStoreEngine } from "#/infrastructure/store.ts";
+import { ApiKeyRepository } from "#/management/keys.ts";
+import { NamespaceRepository } from "#/management/namespaces.ts";
+import { WorldRepository } from "#/management/worlds.ts";
 
 /**
  * SyncableStore combines an N3 store with a sync method for handlers.

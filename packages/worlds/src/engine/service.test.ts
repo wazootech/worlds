@@ -1,10 +1,10 @@
 import { assertEquals, assertExists, assertRejects } from "@std/assert";
-import type { SparqlSelectResult, World } from "../schema.ts";
+import type { SparqlSelectResult, World } from "#/schema.ts";
 import { EmbeddedWorlds } from "./service.ts";
-import { ApiKeyRepository } from "../management/keys.ts";
-import { NamespaceRepository } from "../management/namespaces.ts";
-import { WorldRepository } from "../management/worlds.ts";
-import { KvStoreEngine } from "../infrastructure/store.ts";
+import { ApiKeyRepository } from "#/management/keys.ts";
+import { NamespaceRepository } from "#/management/namespaces.ts";
+import { WorldRepository } from "#/management/worlds.ts";
+import { KvStoreEngine } from "#/infrastructure/store.ts";
 
 Deno.test({
   name: "EmbeddedWorlds (Shell Architecture)",

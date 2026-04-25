@@ -94,6 +94,7 @@ export async function handleRpc(
       const result = await worlds.listWorlds(parseResult.data);
       return c.json(result);
     }
+
     case "create": {
       const parseResult = zCreateWorldRequest.safeParse(params);
       if (!parseResult.success) {
@@ -104,6 +105,7 @@ export async function handleRpc(
       const world = await worlds.createWorld(parseResult.data);
       return c.json(world, 201);
     }
+
     case "get": {
       const parseResult = zGetWorldRequest.safeParse(params);
       if (!parseResult.success) {
@@ -117,6 +119,7 @@ export async function handleRpc(
       }
       return c.json(world);
     }
+
     case "update": {
       const parseResult = zUpdateWorldRequest.safeParse(params);
       if (!parseResult.success) {
@@ -127,6 +130,7 @@ export async function handleRpc(
       const world = await worlds.updateWorld(parseResult.data);
       return c.json(world);
     }
+
     case "delete": {
       const parseResult = zDeleteWorldRequest.safeParse(params);
       if (!parseResult.success) {
@@ -137,6 +141,7 @@ export async function handleRpc(
       await worlds.deleteWorld(parseResult.data);
       return c.body(null, { status: 204 });
     }
+
     case "export": {
       const parseResult = zExportWorldRequest.safeParse(params);
       if (!parseResult.success) {
@@ -149,6 +154,7 @@ export async function handleRpc(
         "Content-Type": parseResult.data.contentType || "application/n-quads",
       });
     }
+
     case "import": {
       const parseResult = zImportWorldRequest.safeParse(params);
       if (!parseResult.success) {
@@ -174,6 +180,7 @@ export async function handleRpc(
       await worlds.import(parseResult.data);
       return c.body(null, { status: 204 });
     }
+
     case "sparql": {
       const parseResult = zSparqlQueryRequest.safeParse(params);
       if (!parseResult.success) {
@@ -184,6 +191,7 @@ export async function handleRpc(
       const result = await worlds.sparql(parseResult.data);
       return c.json(result);
     }
+
     case "search": {
       const parseResult = zSearchWorldsRequest.safeParse(params);
       if (!parseResult.success) {
@@ -194,7 +202,9 @@ export async function handleRpc(
       const results = await worlds.search(parseResult.data);
       return c.json(results);
     }
-    default:
+
+    default: {
       throw new BadRequestError(`Unknown RPC action: ${action}`);
+    }
   }
 }

@@ -1,9 +1,9 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { EmbeddedWorlds, Worlds } from "./service.ts";
-import { ApiKeyRepository } from "../management/keys.ts";
-import { NamespaceRepository } from "../management/namespaces.ts";
-import { WorldRepository } from "../management/worlds.ts";
-import { KvStoreEngine } from "../infrastructure/store.ts";
+import { ApiKeyRepository } from "#/management/keys.ts";
+import { NamespaceRepository } from "#/management/namespaces.ts";
+import { WorldRepository } from "#/management/worlds.ts";
+import { KvStoreEngine } from "#/infrastructure/store.ts";
 
 Deno.test("Worlds with direct injection - creates embedded instance", async () => {
   const keys = new ApiKeyRepository();

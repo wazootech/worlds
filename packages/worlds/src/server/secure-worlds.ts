@@ -1,5 +1,5 @@
-import type { WorldsInterface } from "../engine/service.ts";
-import type { ApiKeyRepository } from "../management/keys.ts";
+import type { WorldsInterface } from "#/engine/service.ts";
+import type { ApiKeyRepository } from "#/management/keys.ts";
 import type {
   CreateWorldRequest,
   DeleteWorldRequest,
@@ -14,7 +14,7 @@ import type {
   SparqlQueryResponse,
   UpdateWorldRequest,
   World,
-} from "../schema.ts";
+} from "#/schema.ts";
 
 /**
  * AuthorizedRequest is the result of a successful authentication.

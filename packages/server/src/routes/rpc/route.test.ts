@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import { ulid } from "@std/ulid/ulid";
 import { ApiKeyRepository, SecureWorlds, Worlds } from "@wazoo/worlds-sdk";
-import { createServer } from "../../server.ts";
+import { createServer } from "#/server.ts";
 
 Deno.test("Worlds RPC API", async (t) => {
   const worlds = new Worlds();

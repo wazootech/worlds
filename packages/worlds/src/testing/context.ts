@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import type { EmbeddedWorlds, WorldsInterface } from "../engine/service.ts";
+import type { EmbeddedWorlds, WorldsInterface } from "#/engine/service.ts";
 import { createTestWorlds } from "./registry.ts";
 
 export type { WorldsInterface };

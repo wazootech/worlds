@@ -1,5 +1,5 @@
 import { decodeCursor, encodeCursor } from "#/utils.ts";
-import type { World, WorldId } from "../schema.ts";
+import type { World, WorldId } from "#/schema.ts";
 import type { ApiKeyRepository } from "./keys.ts";
 import type { NamespaceRepository } from "./namespaces.ts";
 

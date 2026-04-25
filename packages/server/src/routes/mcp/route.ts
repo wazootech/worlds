@@ -15,11 +15,11 @@ import type {
 
 import { worldsSparqlTool } from "@wazoo/worlds-ai-sdk/tools/sparql";
 import { worldsSearchTool } from "@wazoo/worlds-ai-sdk/tools/search";
-import { worldsListTool } from "@wazoo/worlds-ai-sdk/tools/list";
-import { worldsGetTool } from "@wazoo/worlds-ai-sdk/tools/get";
-import { worldsCreateTool } from "@wazoo/worlds-ai-sdk/tools/create";
-import { worldsUpdateTool } from "@wazoo/worlds-ai-sdk/tools/update";
-import { worldsDeleteTool } from "@wazoo/worlds-ai-sdk/tools/delete";
+import { worldsListWorldTool } from "@wazoo/worlds-ai-sdk/tools/list-world";
+import { worldsGetWorldTool } from "@wazoo/worlds-ai-sdk/tools/get-world";
+import { worldsCreateWorldTool } from "@wazoo/worlds-ai-sdk/tools/create-world";
+import { worldsUpdateWorldTool } from "@wazoo/worlds-ai-sdk/tools/update-world";
+import { worldsDeleteWorldTool } from "@wazoo/worlds-ai-sdk/tools/delete-world";
 import { worldsImportTool } from "@wazoo/worlds-ai-sdk/tools/import";
 import { worldsExportTool } from "@wazoo/worlds-ai-sdk/tools/export";
 
@@ -45,7 +45,7 @@ const TOOLS: ToolDefinition[] = [
   {
     tool: {
       ...worldsSparqlTool,
-      title: "SPARQL",
+      title: "worlds_sparql",
       readOnlyHint: true,
       idempotentHint: true,
     },
@@ -53,8 +53,8 @@ const TOOLS: ToolDefinition[] = [
   },
   {
     tool: {
-      ...worldsListTool,
-      title: "List",
+      ...worldsListWorldTool,
+      title: "worlds_list_world",
       readOnlyHint: true,
       idempotentHint: true,
     },
@@ -62,8 +62,8 @@ const TOOLS: ToolDefinition[] = [
   },
   {
     tool: {
-      ...worldsGetTool,
-      title: "Get",
+      ...worldsGetWorldTool,
+      title: "worlds_get_world",
       readOnlyHint: true,
       idempotentHint: true,
     },
@@ -71,36 +71,36 @@ const TOOLS: ToolDefinition[] = [
   },
   {
     tool: {
-      ...worldsCreateTool,
-      title: "Create",
+      ...worldsCreateWorldTool,
+      title: "worlds_create_world",
     },
     fn: (w, a) => w.createWorld(a as CreateWorldRequest),
   },
   {
     tool: {
-      ...worldsUpdateTool,
-      title: "Update",
+      ...worldsUpdateWorldTool,
+      title: "worlds_update_world",
     },
     fn: (w, a) => w.updateWorld(a as UpdateWorldRequest),
   },
   {
     tool: {
-      ...worldsDeleteTool,
-      title: "Delete",
+      ...worldsDeleteWorldTool,
+      title: "worlds_delete_world",
     },
     fn: (w, a) => w.deleteWorld(a as DeleteWorldRequest),
   },
   {
     tool: {
       ...worldsImportTool,
-      title: "Import",
+      title: "worlds_import",
     },
     fn: (w, a) => w.import(a as ImportWorldRequest),
   },
   {
     tool: {
       ...worldsExportTool,
-      title: "Export",
+      title: "worlds_export",
       readOnlyHint: true,
       idempotentHint: true,
     },
@@ -109,7 +109,7 @@ const TOOLS: ToolDefinition[] = [
   {
     tool: {
       ...worldsSearchTool,
-      title: "Search",
+      title: "worlds_search",
       readOnlyHint: true,
       idempotentHint: true,
     },

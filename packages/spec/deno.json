@@ -6,6 +6,9 @@
     "./zod": "./zod.gen.ts",
     "./generate": "./generate.ts"
   },
+  "imports": {
+    "#/": "./"
+  },
   "tasks": {
     "generate": "deno run -A generate.ts"
   },

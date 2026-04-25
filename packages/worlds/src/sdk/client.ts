@@ -1,8 +1,8 @@
 import type {
   RemoteWorldsOptions,
   WorldsInterface,
-} from "../engine/service.ts";
-import { isErrorResponseData } from "../utils.ts";
+} from "#/engine/service.ts";
+import { isErrorResponseData } from "#/utils.ts";
 import { encodeBase64 } from "@std/encoding/base64";
 import type {
   CreateWorldRequest,
@@ -18,7 +18,7 @@ import type {
   SparqlQueryResponse,
   UpdateWorldRequest,
   World,
-} from "../schema.ts";
+} from "#/schema.ts";
 
 export class RemoteWorlds implements WorldsInterface {
   private readonly fetch: typeof fetch;

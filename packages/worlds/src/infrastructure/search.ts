@@ -1,8 +1,8 @@
 import type { Patch } from "./rdf/patch/types.ts";
-import type { SearchWorldsRequest, SearchWorldsResult } from "../schema.ts";
+import type { SearchWorldsRequest, SearchWorldsResult } from "#/schema.ts";
 
-import type { Embeddings } from "../vectors/embeddings.ts";
-import type { ManagementLayer } from "../management/worlds.ts";
+import type { Embeddings } from "#/vectors/embeddings.ts";
+import type { ManagementLayer } from "#/management/worlds.ts";
 import type { StoreEngine } from "./store.ts";
 import type { ChunkId, WorldId } from "@wazoo/worlds-spec";
 

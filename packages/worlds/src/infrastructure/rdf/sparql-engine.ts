@@ -5,7 +5,7 @@ import type {
   SparqlQuad,
   SparqlQueryResponse,
   SparqlValue,
-} from "../../schema.ts";
+} from "#/schema.ts";
 
 export const queryEngine: QueryEngine = new QueryEngine();
 

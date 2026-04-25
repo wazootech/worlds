@@ -17,9 +17,7 @@
     "./types": "./src/types.ts"
   },
   "imports": {
-    "#/": "./src/",
-    "@wazoo/worlds-spec": "../spec/types.gen.ts",
-    "@wazoo/worlds-spec/zod": "../spec/zod.gen.ts"
+    "#/": "./src/"
   },
   "tasks": {
     "test": "deno test -A"

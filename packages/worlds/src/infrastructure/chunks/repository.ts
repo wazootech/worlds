@@ -1,4 +1,4 @@
-import type { ChunkRowUpsert } from "../../resources/table.types.ts";
+import type { ChunkRowUpsert } from "#/resources/table.types.ts";
 
 /**
  * ChunksRepository handles the persistence of text chunks and their vector embeddings in-memory.

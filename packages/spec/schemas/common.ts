@@ -1,5 +1,5 @@
 import { SchemaObject } from "npm:openapi3-ts/oas31";
-import * as lib from "../lib.ts";
+import * as lib from "#/lib.ts";
 
 export const ContentType: SchemaObject = {
   type: "string",

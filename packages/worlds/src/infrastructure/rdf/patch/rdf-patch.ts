@@ -1,8 +1,8 @@
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import type { Patch, PatchHandler } from "./types.ts";
 import { skolemizeQuad } from "./skolem.ts";
-import type { Embeddings } from "../../../vectors/embeddings.ts";
-import { ChunksRepository } from "../../chunks/repository.ts";
+import type { Embeddings } from "#/vectors/embeddings.ts";
+import { ChunksRepository } from "#/infrastructure/chunks/repository.ts";
 import type { ChunkId } from "@wazoo/worlds-spec";
 
 export const META_PREDICATES = [

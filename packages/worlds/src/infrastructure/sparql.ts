@@ -3,7 +3,7 @@ import type {
   ImportWorldRequest,
   SparqlQueryRequest,
   SparqlQueryResponse,
-} from "../schema.ts";
+} from "#/schema.ts";
 
 /**
  * SparqlEngine handles RDF store operations.
