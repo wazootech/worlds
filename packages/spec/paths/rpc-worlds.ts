@@ -1,6 +1,6 @@
-import type { PathItemObject } from "openapi3-ts/oas31";
+import type { OpenAPIV3_1 } from "openapi-types";
 
-export const rpcWorlds: PathItemObject = {
+export const rpcWorlds: OpenAPIV3_1.PathItemObject = {
   post: {
     summary: "Unified RPC endpoint for worlds.",
     operationId: "worldsRpc",

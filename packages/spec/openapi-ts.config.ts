@@ -1,7 +1,5 @@
-import { defineConfig } from "@hey-api/openapi-ts";
-
-export default defineConfig({
-  input: "./spec.yaml",
+export default {
+  input: "./spec.gen.yaml",
   output: {
     path: ".",
     index: false,
@@ -11,4 +9,4 @@ export default defineConfig({
     "@hey-api/typescript",
     "zod",
   ],
-});
+};

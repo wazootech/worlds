@@ -1,25 +1,19 @@
 {
   "name": "@wazoo/worlds-spec",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "exports": {
     ".": "./types.gen.ts",
-    "./zod": "./zod.gen.ts",
-    "./generate": "./generate.ts"
+    "./zod": "./zod.gen.ts"
   },
   "imports": {
     "#/": "./",
-    "openapi3-ts/oas31": "npm:openapi3-ts@^4.5.0/oas31",
-    "@std/yaml": "jsr:@std/yaml@^1.0.0"
+    "openapi-types": "npm:openapi-types@^12.1.3"
   },
   "tasks": {
-    "generate": "deno run -A generate.ts"
+    "generate": "deno run -A spec.ts"
   },
   "lint": {
-    "exclude": [
-      "*.gen.ts",
-      "schemas/*.ts",
-      "generate.ts"
-    ]
+    "exclude": ["*.gen.ts", "schemas/*.ts", "spec.ts"]
   },
   "publish": {
     "exclude": ["**/*.test.ts", "**/*_test.ts"],

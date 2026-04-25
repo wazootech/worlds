@@ -1,9 +1,9 @@
-import { SchemaObject } from "openapi3-ts/oas31";
-import * as lib from "#/lib.ts";
+import type { OpenAPIV3_1 } from "openapi-types";
+import * as lib from "./common.ts";
 
 export const FactId = lib.brandedId("Fact");
 
-export const Fact: SchemaObject = {
+export const Fact: OpenAPIV3_1.SchemaObject = {
   type: "object",
   description: "A single triple/quad in a world.",
   required: ["subject", "predicate", "object", "type"],

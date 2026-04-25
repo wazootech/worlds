@@ -1,6 +1,6 @@
-import { SchemaObject } from "openapi3-ts/oas31";
+import type { OpenAPIV3_1 } from "openapi-types";
 
-export const Source: SchemaObject = {
+export const Source: OpenAPIV3_1.SchemaObject = {
   oneOf: [
     { type: "string", description: "A source name identifier." },
     {

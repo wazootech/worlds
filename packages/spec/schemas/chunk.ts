@@ -1,9 +1,9 @@
-import { SchemaObject } from "openapi3-ts/oas31";
-import * as lib from "#/lib.ts";
+import type { OpenAPIV3_1 } from "openapi-types";
+import * as lib from "./common.ts";
 
 export const ChunkId = lib.brandedId("Chunk");
 
-export const Chunk: SchemaObject = {
+export const Chunk: OpenAPIV3_1.SchemaObject = {
   type: "object",
   description: "A text chunk with an optional embedding vector.",
   required: ["id", "fact_id", "subject", "predicate", "text"],

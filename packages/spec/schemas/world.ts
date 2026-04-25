@@ -1,9 +1,9 @@
-import { SchemaObject } from "openapi3-ts/oas31";
-import * as lib from "#/lib.ts";
+import type { OpenAPIV3_1 } from "openapi-types";
+import * as u from "./common.ts";
 
-export const WorldId = lib.brandedId("World");
+export const WorldId = u.brandedId("World");
 
-export const World: SchemaObject = {
+export const World: OpenAPIV3_1.SchemaObject = {
   type: "object",
   description: "Metadata for a single world.",
   required: ["displayName"],

@@ -1,6 +1,6 @@
-import { SchemaObject } from "openapi3-ts/oas31";
+import type { OpenAPIV3_1 } from "openapi-types";
 
-export const GetWorldRequest: SchemaObject = {
+export const GetWorldRequest: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["source"],
   properties: {
@@ -8,7 +8,7 @@ export const GetWorldRequest: SchemaObject = {
   },
 };
 
-export const CreateWorldRequest: SchemaObject = {
+export const CreateWorldRequest: OpenAPIV3_1.SchemaObject = {
   type: "object",
   properties: {
     parent: { type: "string" },
@@ -18,7 +18,7 @@ export const CreateWorldRequest: SchemaObject = {
   },
 };
 
-export const UpdateWorldRequest: SchemaObject = {
+export const UpdateWorldRequest: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["source"],
   properties: {
@@ -28,7 +28,7 @@ export const UpdateWorldRequest: SchemaObject = {
   },
 };
 
-export const DeleteWorldRequest: SchemaObject = {
+export const DeleteWorldRequest: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["source"],
   properties: {
@@ -36,7 +36,7 @@ export const DeleteWorldRequest: SchemaObject = {
   },
 };
 
-export const ListWorldsRequest: SchemaObject = {
+export const ListWorldsRequest: OpenAPIV3_1.SchemaObject = {
   type: "object",
   properties: {
     parent: { type: "string" },
@@ -45,7 +45,7 @@ export const ListWorldsRequest: SchemaObject = {
   },
 };
 
-export const ListWorldsResponse: SchemaObject = {
+export const ListWorldsResponse: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["worlds"],
   properties: {
@@ -57,7 +57,7 @@ export const ListWorldsResponse: SchemaObject = {
   },
 };
 
-export const ImportWorldRequest: SchemaObject = {
+export const ImportWorldRequest: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["source", "data"],
   properties: {
@@ -70,7 +70,7 @@ export const ImportWorldRequest: SchemaObject = {
   },
 };
 
-export const ExportWorldRequest: SchemaObject = {
+export const ExportWorldRequest: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["source"],
   properties: {
@@ -79,7 +79,7 @@ export const ExportWorldRequest: SchemaObject = {
   },
 };
 
-export const SearchWorldsRequest: SchemaObject = {
+export const SearchWorldsRequest: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["query"],
   properties: {
@@ -97,7 +97,7 @@ export const SearchWorldsRequest: SchemaObject = {
   },
 };
 
-export const SparqlQueryRequest: SchemaObject = {
+export const SparqlQueryRequest: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["query"],
   properties: {

@@ -7,21 +7,6 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "deno.enable": false,
-  "deno.enablePaths": [
-    "packages/server",
-    "packages/worlds",
-    "packages/ai-sdk",
-    "packages/cli"
-  ],
-  "deno.lint": true,
-  "deno.unstable": [],
-  "deno.suggest.imports.hosts": {
-    "https://deno.land": true
-  },
-  "search.exclude": {
-    "**/node_modules": true,
-    "**/.next": true,
-    "**/dist": true
-  }
+  "deno.enable": true,
+  "deno.disablePaths": ["./packages/console", "./packages/docs"]
 }

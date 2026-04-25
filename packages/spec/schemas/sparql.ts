@@ -1,6 +1,6 @@
-import { SchemaObject } from "openapi3-ts/oas31";
+import type { OpenAPIV3_1 } from "openapi-types";
 
-export const SparqlValue: SchemaObject = {
+export const SparqlValue: OpenAPIV3_1.SchemaObject = {
   description: "A value in a SPARQL result.",
   oneOf: [
     {
@@ -48,12 +48,12 @@ export const SparqlValue: SchemaObject = {
   ],
 };
 
-export const SparqlBinding: SchemaObject = {
+export const SparqlBinding: OpenAPIV3_1.SchemaObject = {
   type: "object",
   additionalProperties: { "$ref": "#/components/schemas/SparqlValue" },
 };
 
-export const SparqlSelectResults: SchemaObject = {
+export const SparqlSelectResults: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["head", "results"],
   properties: {
@@ -78,7 +78,7 @@ export const SparqlSelectResults: SchemaObject = {
   },
 };
 
-export const SparqlAskResults: SchemaObject = {
+export const SparqlAskResults: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["head", "boolean"],
   properties: {
@@ -92,7 +92,7 @@ export const SparqlAskResults: SchemaObject = {
   },
 };
 
-export const SparqlQuad: SchemaObject = {
+export const SparqlQuad: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["subject", "predicate", "object", "graph"],
   properties: {
@@ -124,7 +124,7 @@ export const SparqlQuad: SchemaObject = {
   },
 };
 
-export const SparqlQuadsResults: SchemaObject = {
+export const SparqlQuadsResults: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["head", "results"],
   properties: {
@@ -147,7 +147,7 @@ export const SparqlQuadsResults: SchemaObject = {
   },
 };
 
-export const SparqlQueryResponse: SchemaObject = {
+export const SparqlQueryResponse: OpenAPIV3_1.SchemaObject = {
   oneOf: [
     { "$ref": "#/components/schemas/SparqlSelectResults" },
     { "$ref": "#/components/schemas/SparqlAskResults" },

@@ -1,6 +1,6 @@
-import { SchemaObject } from "openapi3-ts/oas31";
+import type { OpenAPIV3_1 } from "openapi-types";
 
-export const SearchResult: SchemaObject = {
+export const SearchResult: OpenAPIV3_1.SchemaObject = {
   type: "object",
   required: ["subject", "predicate", "object", "score", "world"],
   properties: {
