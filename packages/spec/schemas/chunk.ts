@@ -1,4 +1,4 @@
-import { SchemaObject } from "npm:openapi3-ts/oas31";
+import { SchemaObject } from "openapi3-ts/oas31";
 import * as lib from "#/lib.ts";
 
 export const ChunkId = lib.brandedId("Chunk");

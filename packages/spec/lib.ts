@@ -1,4 +1,4 @@
-import type { SchemaObject } from "npm:openapi3-ts/oas31";
+import type { SchemaObject } from "openapi3-ts/oas31";
 
 export * from "./zod.gen.ts";
 

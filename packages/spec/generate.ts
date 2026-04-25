@@ -1,4 +1,4 @@
-import { OpenApiBuilder } from "openapi3-ts";
+import { OpenApiBuilder } from "openapi3-ts/oas31";
 import { stringify } from "@std/yaml";
 import * as schemas from "./schemas/mod.ts";
 import * as paths from "./paths/mod.ts";
