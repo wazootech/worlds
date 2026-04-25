@@ -33,7 +33,7 @@
     "@std/cli": "jsr:@std/cli@1.0.29",
     "@std/yaml": "jsr:@std/yaml@^1.1.0",
     "openapi-types": "npm:openapi-types@^12.1.3",
-    "@comunica/query-sparql-rdfjs-lite": "npm:@comunica/query-sparql-rdfjs-lite@^5.2.1",
+    "@comunica/query-sparql-rdfjs-lite": "npm:@comunica/query-sparql-rdfjs-lite@^5.1.3",
     "zod": "npm:zod@^4.3.6",
     "@std/assert": "jsr:@std/assert@^1.0.19",
     "@std/ulid": "jsr:@std/ulid@1",
@@ -51,6 +51,10 @@
     "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.29.0"
   },
   "exclude": ["./packages/console", "./packages/docs", "./.gemini"],
+  "nodeModulesDir": "auto",
+  "links": [
+    "./packages/worlds/vendor/jsonld-context-parser"
+  ],
   "lint": {
     "exclude": [
       "scratch",

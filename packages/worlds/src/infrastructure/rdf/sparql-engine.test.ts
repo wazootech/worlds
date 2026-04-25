@@ -2,6 +2,7 @@ import { assertEquals } from "@std/assert";
 import { executeSparql } from "./sparql-engine.ts";
 import { DataFactory, Store } from "n3";
 
+
 const { namedNode, literal, quad, defaultGraph } = DataFactory;
 
 Deno.test("executeSparql", async (t) => {
