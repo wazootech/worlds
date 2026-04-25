@@ -72,9 +72,10 @@ export function resolveConfig(options: WorldsOptions): ResolvedConfig {
     parsed.scheme === "http" || parsed.scheme === "https" ||
     parsed.scheme === "ws" || parsed.scheme === "wss"
   ) {
+    const path = parsed.path === "/" ? "" : parsed.path;
     const baseUrl = `${parsed.scheme}://${parsed.host}${
       parsed.port ? ":" + parsed.port : ""
-    }${parsed.path}`;
+    }${path}`;
     return {
       mode: "remote",
       storageType: "memory",

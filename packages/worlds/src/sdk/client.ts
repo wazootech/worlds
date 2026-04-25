@@ -2,7 +2,7 @@ import type {
   RemoteWorldsOptions,
   WorldsInterface,
 } from "../engine/service.ts";
-import { parseError } from "../utils.ts";
+import { isErrorResponseData } from "../utils.ts";
 import { encodeBase64 } from "@std/encoding/base64";
 import type {
   CreateWorldRequest,
@@ -126,7 +126,15 @@ export class RemoteWorlds implements WorldsInterface {
     });
 
     if (!response.ok) {
-      const errorMessage = await parseError(response);
+      let errorMessage = `HTTP ${response.status}`;
+      try {
+        const body = await response.json();
+        if (isErrorResponseData(body)) {
+          errorMessage = body.error.message;
+        }
+      } catch {
+        // Response body is not JSON, use status text
+      }
       const error = new Error(`RPC ${action} failed: ${errorMessage}`);
       Object.assign(error, { status: response.status });
       throw error;

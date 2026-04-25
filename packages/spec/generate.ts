@@ -1,12 +1,12 @@
-import { OpenApiBuilder } from "npm:openapi3-ts/oas31";
-import { stringify } from "jsr:@std/yaml";
+import { OpenApiBuilder } from "npm:openapi3-ts@4.5.0/oas31";
+import { stringify } from "jsr:@std/yaml@^1.0.0";
 import * as schemas from "./schemas/mod.ts";
 import * as paths from "./paths/mod.ts";
 
 /**
  * Build the OpenAPI 3.1.0 specification.
  */
-export function buildSpec() {
+export function buildSpec(): ReturnType<typeof OpenApiBuilder.create> {
   const builder = new OpenApiBuilder({
     openapi: "3.1.0",
     info: {

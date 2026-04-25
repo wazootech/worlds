@@ -8,5 +8,16 @@
   },
   "tasks": {
     "generate": "deno run -A generate.ts"
+  },
+  "lint": {
+    "exclude": [
+      "*.gen.ts",
+      "schemas/*.ts",
+      "generate.ts"
+    ]
+  },
+  "publish": {
+    "exclude": ["**/*.test.ts", "**/*_test.ts"],
+    "allow-slow-types": true
   }
 }

@@ -14,10 +14,9 @@ export const Chunk: SchemaObject = {
     predicate: { type: "string" },
     text: { type: "string" },
     vector: {
-      type: "string",
+      type: ["string", "null"],
       format: "byte",
       description: "Base64-encoded embedding vector (Uint8Array).",
-      nullable: true,
     },
   },
 };

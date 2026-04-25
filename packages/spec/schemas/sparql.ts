@@ -62,7 +62,7 @@ export const SparqlSelectResults: SchemaObject = {
       required: ["vars"],
       properties: {
         vars: { type: "array", items: { type: "string" } },
-        link: { type: "array", items: { type: "string" }, nullable: true },
+        link: { type: ["array", "null"], items: { type: "string" } },
       },
     },
     results: {
@@ -85,7 +85,7 @@ export const SparqlAskResults: SchemaObject = {
     head: {
       type: "object",
       properties: {
-        link: { type: "array", items: { type: "string" }, nullable: true },
+        link: { type: ["array", "null"], items: { type: "string" } },
       },
     },
     boolean: { type: "boolean" },
@@ -131,7 +131,7 @@ export const SparqlQuadsResults: SchemaObject = {
     head: {
       type: "object",
       properties: {
-        link: { type: "array", items: { type: "string" }, nullable: true },
+        link: { type: ["array", "null"], items: { type: "string" } },
       },
     },
     results: {
