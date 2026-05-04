@@ -22,6 +22,7 @@ import type {
 export interface AuthorizedRequest {
   admin: boolean;
   namespaceId?: string;
+  worldId?: string;
 }
 
 /**
@@ -68,10 +69,14 @@ export class SecureWorlds implements WorldsInterface {
       return { admin: true };
     }
 
-    const namespaceId = await this.apiKeyRepository.resolveNamespace(apiKey);
+    const resolved = await this.apiKeyRepository.resolve(apiKey);
 
-    if (namespaceId) {
-      return { admin: false, namespaceId: namespaceId ?? undefined };
+    if (resolved) {
+      return {
+        admin: false,
+        namespaceId: resolved.namespace,
+        worldId: resolved.worldId,
+      };
     }
 
     return { admin: false };

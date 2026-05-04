@@ -6,24 +6,34 @@ import { WorldRepository } from "./worlds.ts";
 Deno.test("ApiKeyRepository", async (t) => {
   const repo = new ApiKeyRepository();
 
-  await t.step("create stores key", async () => {
+  await t.step("create stores key with namespace", async () => {
     await repo.create("test-api-key", "test-namespace");
 
-    const namespace = await repo.resolveNamespace("test-api-key");
-    assertEquals(namespace, "test-namespace");
+    const resolved = await repo.resolve("test-api-key");
+    assertExists(resolved);
+    assertEquals(resolved!.namespace, "test-namespace");
+    assertEquals(resolved!.worldId, undefined);
   });
 
-  await t.step("resolveNamespace returns null for unknown key", async () => {
-    const namespace = await repo.resolveNamespace("unknown-key");
-    assertEquals(namespace, null);
+  await t.step("create stores key with worldId", async () => {
+    await repo.create("world-scoped-key", undefined, "test-world");
+
+    const resolved = await repo.resolve("world-scoped-key");
+    assertExists(resolved);
+    assertEquals(resolved!.namespace, undefined);
+    assertEquals(resolved!.worldId, "test-world");
+  });
+
+  await t.step("resolve returns null for unknown key", async () => {
+    const resolved = await repo.resolve("unknown-key");
+    assertEquals(resolved, null);
   });
 
   await t.step("delete removes key", async () => {
     await repo.create("key-to-delete", "ns");
     await repo.delete("key-to-delete");
-
-    const namespace = await repo.resolveNamespace("key-to-delete");
-    assertEquals(namespace, null);
+    const resolved = await repo.resolve("key-to-delete");
+    assertEquals(resolved, null);
   });
 });
 

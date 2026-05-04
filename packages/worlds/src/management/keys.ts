@@ -9,13 +9,37 @@ export interface ApiKeyRow {
 
   /**
    * namespace is the namespace ID associated with this key.
+   * If set, the key grants access to all worlds within the namespace.
+   * Mutually exclusive with worldId.
    */
   namespace?: string;
+
+  /**
+   * worldId is the world ID associated with this key.
+   * If set, the key grants access to only this specific world.
+   * Mutually exclusive with namespace.
+   */
+  worldId?: string;
 
   /**
    * created_at is the unix timestamp of creation.
    */
   created_at: number;
+}
+
+/**
+ * ResolveResult is the authorization result for an API key.
+ */
+export interface ResolveResult {
+  /**
+   * namespace is the namespace this key grants access to, if any.
+   */
+  namespace?: string;
+
+  /**
+   * worldId is the world this key grants access to, if any.
+   */
+  worldId?: string;
 }
 
 /**
@@ -32,27 +56,34 @@ export class ApiKeyRepository {
   constructor() {}
 
   /**
-   * resolveNamespace finds the namespace ID linked to the provided API key.
+   * resolve finds the namespace and world ID linked to the provided API key.
    * @param apiKey The API key secret to resolve.
-   * @returns The namespace ID (undefined for root namespace) or null if not found.
+   * @returns The resolve result (both fields undefined if not found).
    */
-  async resolveNamespace(apiKey: string): Promise<string | undefined | null> {
+  async resolve(apiKey: string): Promise<ResolveResult | null> {
     const keyHash = await this.hashApiKey(apiKey);
     const row = this.keys.get(keyHash);
     if (!row) return null;
-    return row.namespace ?? null;
+    return { namespace: row.namespace, worldId: row.worldId };
   }
 
   /**
    * create stores a new API key.
    * @param apiKey The API key to store.
-   * @param namespace The namespace to associate with the key.
+   * @param namespace The namespace to associate with the key (all-worlds access).
+   * @param worldId The world ID to associate with the key (single-world access).
+   *                 Mutually exclusive with namespace.
    */
-  async create(apiKey: string, namespace?: string): Promise<void> {
+  async create(
+    apiKey: string,
+    namespace?: string,
+    worldId?: string,
+  ): Promise<void> {
     const keyHash = await this.hashApiKey(apiKey);
     this.keys.set(keyHash, {
       key_hash: keyHash,
       namespace,
+      worldId,
       created_at: Date.now(),
     });
   }

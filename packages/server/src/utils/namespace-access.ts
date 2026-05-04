@@ -7,10 +7,24 @@ import type { AuthorizedRequest } from "@wazoo/worlds-sdk";
 export function assertNamespacePathAllowed(
   authorized: AuthorizedRequest,
   resolvedNamespace: string,
+  resolvedWorldId?: string,
 ): Response | null {
   if (authorized.admin) {
     return null;
   }
+
+  // World-scoped key: only allow access to the exact world
+  if (authorized.worldId) {
+    if (resolvedWorldId && authorized.worldId === resolvedWorldId) {
+      return null;
+    }
+    return Response.json(
+      { error: { message: "World does not match API key" } },
+      { status: 403 },
+    );
+  }
+
+  // Namespace-scoped key
   if (!authorized.namespaceId) {
     return Response.json(
       { error: { message: "Unauthorized" } },
